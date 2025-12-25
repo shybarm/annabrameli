@@ -196,9 +196,28 @@ export default function PatientDetail() {
     }
   };
 
+  const getPublicAppOrigin = () => {
+    const host = window.location.host;
+
+    // If we are in a Lovable preview URL (id-preview--<id>.lovable.app), convert to the public URL (<id>.lovableproject.com)
+    if (/^id-preview--.+\.lovable\.app$/i.test(host)) {
+      const publicHost = host
+        .replace(/^id-preview--/i, '')
+        .replace(/\.lovable\.app$/i, '.lovableproject.com');
+      return `${window.location.protocol}//${publicHost}`;
+    }
+
+    return window.location.origin;
+  };
+
+  const buildIntakeLink = (token?: string | null) => {
+    if (!token) return null;
+    return `${getPublicAppOrigin()}/intake/${token}`;
+  };
+
   const handleGenerateIntakeLink = async () => {
     if (!id) return;
-    
+
     setIsGeneratingIntake(true);
     try {
       // Create new intake token
@@ -210,10 +229,10 @@ export default function PatientDetail() {
 
       if (error) throw error;
 
-      const link = `${window.location.origin}/intake/${data.token}`;
-      setIntakeLink(link);
+      const link = buildIntakeLink(data.token);
+      if (link) setIntakeLink(link);
+
       queryClient.invalidateQueries({ queryKey: ['intake-token', id] });
-      
       toast({ title: 'הקישור נוצר בהצלחה' });
     } catch (error: any) {
       console.error('Intake link error:', error);
@@ -224,14 +243,14 @@ export default function PatientDetail() {
   };
 
   const handleSendIntakeWhatsApp = () => {
-    if (!patient?.phone || !intakeLink && !intakeToken?.token) return;
-    
+    if (!patient?.phone || (!intakeLink && !intakeToken?.token)) return;
+
     const phone = patient.phone.replace(/\D/g, '');
-    const link = intakeLink || `${window.location.origin}/intake/${intakeToken?.token}`;
+    const link = intakeLink || buildIntakeLink(intakeToken?.token) || '';
     const message = encodeURIComponent(
       `שלום ${patient.first_name}! 👋\n\n` +
-      `לפני הביקור במרפאה, נבקש למלא טופס קליטה קצר:\n${link}\n\n` +
-      `תודה,\nמרפאת ד"ר אנה ברמלי`
+        `לפני הביקור במרפאה, נבקש למלא טופס קליטה קצר:\n${link}\n\n` +
+        `תודה,\nמרפאת ד"ר אנה ברמלי`
     );
     window.open(`https://wa.me/972${phone.slice(-9)}?text=${message}`, '_blank');
 
@@ -246,7 +265,8 @@ export default function PatientDetail() {
   };
 
   const handleCopyIntakeLink = () => {
-    const link = intakeLink || `${window.location.origin}/intake/${intakeToken?.token}`;
+    const link = intakeLink || buildIntakeLink(intakeToken?.token);
+    if (!link) return;
     navigator.clipboard.writeText(link);
     toast({ title: 'הקישור הועתק!' });
   };
