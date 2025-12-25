@@ -181,6 +181,79 @@ export function useCreateInvoice() {
   });
 }
 
+export interface InvoiceUpdateInput {
+  notes?: string;
+  due_date?: string | null;
+  items: {
+    id?: string;
+    description: string;
+    quantity: number;
+    unit_price: number;
+  }[];
+}
+
+export function useUpdateInvoice() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ id, input }: { id: string; input: InvoiceUpdateInput }) => {
+      // Calculate totals
+      const subtotal = input.items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
+      const tax_rate = 18;
+      const tax_amount = subtotal * (tax_rate / 100);
+      const total = subtotal + tax_amount;
+      
+      // Update invoice
+      const { error: invoiceError } = await supabase
+        .from('invoices')
+        .update({
+          notes: input.notes,
+          due_date: input.due_date,
+          subtotal,
+          tax_rate,
+          tax_amount,
+          total,
+        })
+        .eq('id', id);
+      
+      if (invoiceError) throw invoiceError;
+      
+      // Delete existing items
+      const { error: deleteError } = await supabase
+        .from('invoice_items')
+        .delete()
+        .eq('invoice_id', id);
+      
+      if (deleteError) throw deleteError;
+      
+      // Create new invoice items
+      const items = input.items.map(item => ({
+        invoice_id: id,
+        description: item.description,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+        total: item.quantity * item.unit_price,
+      }));
+      
+      const { error: itemsError } = await supabase
+        .from('invoice_items')
+        .insert(items);
+      
+      if (itemsError) throw itemsError;
+      
+      return { id };
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      queryClient.invalidateQueries({ queryKey: ['invoices', variables.id] });
+      toast({ title: 'החשבונית עודכנה בהצלחה' });
+    },
+    onError: (error) => {
+      toast({ title: 'שגיאה בעדכון החשבונית', description: error.message, variant: 'destructive' });
+    },
+  });
+}
+
 export function useUpdateInvoiceStatus() {
   const queryClient = useQueryClient();
   
