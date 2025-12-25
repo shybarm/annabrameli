@@ -17,7 +17,8 @@ import { toast } from '@/hooks/use-toast';
 import { DocumentViewer } from '@/components/admin/DocumentViewer';
 import { 
   ArrowRight, User, Phone, Mail, Calendar, CreditCard, 
-  FileText, Edit, Save, X, MessageCircle, Upload, File, Pill, Stethoscope, Eye, Sparkles
+  FileText, Edit, Save, X, MessageCircle, Upload, File, Pill, Stethoscope, Eye, Sparkles,
+  ClipboardList, Link, CheckCircle
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
@@ -42,6 +43,26 @@ export default function PatientDetail() {
   const [viewerIndex, setViewerIndex] = useState(0);
   const [aiSummary, setAiSummary] = useState('');
   const [isSummarizing, setIsSummarizing] = useState(false);
+  const [isGeneratingIntake, setIsGeneratingIntake] = useState(false);
+  const [intakeLink, setIntakeLink] = useState<string | null>(null);
+
+  // Fetch intake token
+  const { data: intakeToken } = useQuery({
+    queryKey: ['intake-token', id],
+    queryFn: async () => {
+      if (!id) return null;
+      const { data, error } = await supabase
+        .from('intake_tokens')
+        .select('*')
+        .eq('patient_id', id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!id,
+  });
 
   // Fetch patient documents
   const { data: documents } = useQuery({
@@ -175,6 +196,61 @@ export default function PatientDetail() {
     }
   };
 
+  const handleGenerateIntakeLink = async () => {
+    if (!id) return;
+    
+    setIsGeneratingIntake(true);
+    try {
+      // Create new intake token
+      const { data, error } = await supabase
+        .from('intake_tokens')
+        .insert({ patient_id: id })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const link = `${window.location.origin}/intake/${data.token}`;
+      setIntakeLink(link);
+      queryClient.invalidateQueries({ queryKey: ['intake-token', id] });
+      
+      toast({ title: 'הקישור נוצר בהצלחה' });
+    } catch (error: any) {
+      console.error('Intake link error:', error);
+      toast({ title: 'שגיאה ביצירת הקישור', description: error.message, variant: 'destructive' });
+    } finally {
+      setIsGeneratingIntake(false);
+    }
+  };
+
+  const handleSendIntakeWhatsApp = () => {
+    if (!patient?.phone || !intakeLink && !intakeToken?.token) return;
+    
+    const phone = patient.phone.replace(/\D/g, '');
+    const link = intakeLink || `${window.location.origin}/intake/${intakeToken?.token}`;
+    const message = encodeURIComponent(
+      `שלום ${patient.first_name}! 👋\n\n` +
+      `לפני הביקור במרפאה, נבקש למלא טופס קליטה קצר:\n${link}\n\n` +
+      `תודה,\nמרפאת ד"ר אנה ברמלי`
+    );
+    window.open(`https://wa.me/972${phone.slice(-9)}?text=${message}`, '_blank');
+
+    // Mark as sent
+    if (intakeToken?.id) {
+      supabase
+        .from('intake_tokens')
+        .update({ sent_via: 'whatsapp', sent_at: new Date().toISOString() })
+        .eq('id', intakeToken.id)
+        .then(() => queryClient.invalidateQueries({ queryKey: ['intake-token', id] }));
+    }
+  };
+
+  const handleCopyIntakeLink = () => {
+    const link = intakeLink || `${window.location.origin}/intake/${intakeToken?.token}`;
+    navigator.clipboard.writeText(link);
+    toast({ title: 'הקישור הועתק!' });
+  };
+
   if (isLoading) {
     return (
       <AdminLayout>
@@ -238,9 +314,69 @@ export default function PatientDetail() {
           </div>
         </div>
 
+        {/* Intake Form Card */}
+        {!(patient as any).intake_completed_at && (
+          <Card className="border-primary/50 bg-primary/5">
+            <CardContent className="flex items-center justify-between py-4">
+              <div className="flex items-center gap-3">
+                <ClipboardList className="h-5 w-5 text-primary" />
+                <div>
+                  <p className="font-medium">טופס קליטה</p>
+                  <p className="text-sm text-muted-foreground">
+                    {intakeToken?.token && !intakeToken.completed_at 
+                      ? 'קישור נוצר - ממתין למילוי' 
+                      : 'שלח קישור למטופל למילוי הטופס לפני הביקור הראשון'}
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                {intakeToken?.token && !intakeToken.completed_at ? (
+                  <>
+                    <Button variant="outline" size="sm" onClick={handleCopyIntakeLink}>
+                      <Link className="h-4 w-4 ml-1" />
+                      העתק קישור
+                    </Button>
+                    {patient.phone && (
+                      <Button variant="outline" size="sm" onClick={handleSendIntakeWhatsApp}>
+                        <MessageCircle className="h-4 w-4 ml-1" />
+                        שלח בוואטסאפ
+                      </Button>
+                    )}
+                  </>
+                ) : (
+                  <Button 
+                    size="sm" 
+                    onClick={handleGenerateIntakeLink}
+                    disabled={isGeneratingIntake}
+                    className="bg-primary text-primary-foreground"
+                  >
+                    <ClipboardList className="h-4 w-4 ml-1" />
+                    {isGeneratingIntake ? 'יוצר...' : 'צור קישור'}
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {(patient as any).intake_completed_at && (
+          <Card className="border-green-500/50 bg-green-50/50">
+            <CardContent className="flex items-center gap-3 py-4">
+              <CheckCircle className="h-5 w-5 text-green-600" />
+              <div>
+                <p className="font-medium text-green-700">טופס קליטה מולא</p>
+                <p className="text-sm text-muted-foreground">
+                  בתאריך {format(new Date((patient as any).intake_completed_at), 'dd/MM/yyyy', { locale: he })}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <Tabs defaultValue="info" className="space-y-4">
           <TabsList className="flex-wrap">
             <TabsTrigger value="info">פרטים אישיים</TabsTrigger>
+            <TabsTrigger value="intake">נתוני קליטה</TabsTrigger>
             <TabsTrigger value="visits">סיכומי ביקורים</TabsTrigger>
             <TabsTrigger value="appointments">תורים ({appointments?.length || 0})</TabsTrigger>
             <TabsTrigger value="billing">חיוב ({invoices?.length || 0})</TabsTrigger>
@@ -353,6 +489,60 @@ export default function PatientDetail() {
                   <InfoItem icon={User} label="שם" value={patient.emergency_contact_name || '-'} />
                   <InfoItem icon={Phone} label="טלפון" value={patient.emergency_contact_phone || '-'} dir="ltr" />
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Intake Data Tab */}
+          <TabsContent value="intake">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ClipboardList className="h-5 w-5 text-primary" />
+                  נתוני קליטה
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {(patient as any).intake_completed_at ? (
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {(patient as any).main_complaint && (
+                      <div className="sm:col-span-2 p-3 bg-muted rounded-lg">
+                        <p className="text-sm font-medium text-muted-foreground">תלונה עיקרית:</p>
+                        <p>{(patient as any).main_complaint}</p>
+                      </div>
+                    )}
+                    {(patient as any).chronic_conditions?.length > 0 && (
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">מחלות כרוניות:</p>
+                        <p>{(patient as any).chronic_conditions.join(', ')}</p>
+                      </div>
+                    )}
+                    {(patient as any).current_medications && (
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">תרופות:</p>
+                        <p>{(patient as any).current_medications}</p>
+                      </div>
+                    )}
+                    {(patient as any).smoking_status && (
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">עישון:</p>
+                        <p>{(patient as any).smoking_status}</p>
+                      </div>
+                    )}
+                    {(patient as any).treatment_goals && (
+                      <div className="sm:col-span-2">
+                        <p className="text-sm font-medium text-muted-foreground">ציפיות מהטיפול:</p>
+                        <p>{(patient as any).treatment_goals}</p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <ClipboardList className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
+                    <p className="text-muted-foreground">טופס קליטה טרם מולא</p>
+                    <p className="text-sm text-muted-foreground">שלח קישור למטופל למילוי הטופס</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

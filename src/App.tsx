@@ -14,6 +14,7 @@ import Updates from "./pages/Updates";
 import FAQ from "./pages/FAQ";
 import Contact from "./pages/Contact";
 import Auth from "./pages/Auth";
+import PatientIntake from "./pages/PatientIntake";
 import AdminDashboard from "./pages/admin/Dashboard";
 import PatientsList from "./pages/admin/PatientsList";
 import PatientDetail from "./pages/admin/PatientDetail";
@@ -57,6 +58,9 @@ const App = () => (
             
             {/* Auth */}
             <Route path="/auth" element={<Auth />} />
+            
+            {/* Patient Intake (public) */}
+            <Route path="/intake/:token" element={<PatientIntake />} />
             
             {/* Admin routes */}
             <Route path="/admin" element={<AdminDashboard />} />

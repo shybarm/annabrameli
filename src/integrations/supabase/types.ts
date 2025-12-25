@@ -209,6 +209,50 @@ export type Database = {
         }
         Relationships: []
       }
+      intake_tokens: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          expires_at: string
+          id: string
+          patient_id: string | null
+          sent_at: string | null
+          sent_via: string | null
+          token: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string
+          id?: string
+          patient_id?: string | null
+          sent_at?: string | null
+          sent_via?: string | null
+          token?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string
+          id?: string
+          patient_id?: string | null
+          sent_at?: string | null
+          sent_via?: string | null
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intake_tokens_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invoice_items: {
         Row: {
           created_at: string
@@ -432,15 +476,20 @@ export type Database = {
       patients: {
         Row: {
           address: string | null
+          alcohol_consumption: string | null
           allergies: string[] | null
+          chronic_conditions: string[] | null
           city: string | null
           consent_signed: boolean | null
           consent_signed_at: string | null
           created_at: string
+          current_medications: string | null
           date_of_birth: string | null
           email: string | null
           emergency_contact_name: string | null
           emergency_contact_phone: string | null
+          exercise_frequency: string | null
+          family_medical_history: string | null
           first_name: string
           gdpr_consent: boolean | null
           gdpr_consent_at: string | null
@@ -449,24 +498,45 @@ export type Database = {
           id_number: string | null
           insurance_number: string | null
           insurance_provider: string | null
+          intake_completed_at: string | null
+          intake_token_id: string | null
           last_name: string
+          main_complaint: string | null
+          marital_status: string | null
           medical_notes: string | null
+          num_children: number | null
+          occupation: string | null
           phone: string | null
+          preferred_contact_method: string | null
+          preferred_contact_time: string | null
+          previous_surgeries: string | null
+          previous_treatments: string | null
+          referral_source: string | null
+          sleep_hours: number | null
+          smoking_status: string | null
           status: string | null
+          stress_level: string | null
+          symptoms_duration: string | null
+          treatment_goals: string | null
           updated_at: string
           user_id: string | null
         }
         Insert: {
           address?: string | null
+          alcohol_consumption?: string | null
           allergies?: string[] | null
+          chronic_conditions?: string[] | null
           city?: string | null
           consent_signed?: boolean | null
           consent_signed_at?: string | null
           created_at?: string
+          current_medications?: string | null
           date_of_birth?: string | null
           email?: string | null
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
+          exercise_frequency?: string | null
+          family_medical_history?: string | null
           first_name: string
           gdpr_consent?: boolean | null
           gdpr_consent_at?: string | null
@@ -475,24 +545,45 @@ export type Database = {
           id_number?: string | null
           insurance_number?: string | null
           insurance_provider?: string | null
+          intake_completed_at?: string | null
+          intake_token_id?: string | null
           last_name: string
+          main_complaint?: string | null
+          marital_status?: string | null
           medical_notes?: string | null
+          num_children?: number | null
+          occupation?: string | null
           phone?: string | null
+          preferred_contact_method?: string | null
+          preferred_contact_time?: string | null
+          previous_surgeries?: string | null
+          previous_treatments?: string | null
+          referral_source?: string | null
+          sleep_hours?: number | null
+          smoking_status?: string | null
           status?: string | null
+          stress_level?: string | null
+          symptoms_duration?: string | null
+          treatment_goals?: string | null
           updated_at?: string
           user_id?: string | null
         }
         Update: {
           address?: string | null
+          alcohol_consumption?: string | null
           allergies?: string[] | null
+          chronic_conditions?: string[] | null
           city?: string | null
           consent_signed?: boolean | null
           consent_signed_at?: string | null
           created_at?: string
+          current_medications?: string | null
           date_of_birth?: string | null
           email?: string | null
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
+          exercise_frequency?: string | null
+          family_medical_history?: string | null
           first_name?: string
           gdpr_consent?: boolean | null
           gdpr_consent_at?: string | null
@@ -501,14 +592,38 @@ export type Database = {
           id_number?: string | null
           insurance_number?: string | null
           insurance_provider?: string | null
+          intake_completed_at?: string | null
+          intake_token_id?: string | null
           last_name?: string
+          main_complaint?: string | null
+          marital_status?: string | null
           medical_notes?: string | null
+          num_children?: number | null
+          occupation?: string | null
           phone?: string | null
+          preferred_contact_method?: string | null
+          preferred_contact_time?: string | null
+          previous_surgeries?: string | null
+          previous_treatments?: string | null
+          referral_source?: string | null
+          sleep_hours?: number | null
+          smoking_status?: string | null
           status?: string | null
+          stress_level?: string | null
+          symptoms_duration?: string | null
+          treatment_goals?: string | null
           updated_at?: string
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "patients_intake_token_id_fkey"
+            columns: ["intake_token_id"]
+            isOneToOne: false
+            referencedRelation: "intake_tokens"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payments: {
         Row: {
