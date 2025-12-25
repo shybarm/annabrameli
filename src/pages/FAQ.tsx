@@ -229,7 +229,14 @@ const FAQ = () => {
                   {faqCategories.map((category) => (
                     <button
                       key={category.title}
-                      onClick={() => setActiveCategory(category.title)}
+                      onClick={() => {
+                        setActiveCategory(category.title);
+                        // Scroll to the category section
+                        const element = document.getElementById(category.title.replace(/\s+/g, "-"));
+                        if (element) {
+                          element.scrollIntoView({ behavior: "smooth", block: "start" });
+                        }
+                      }}
                       className={`w-full text-right px-3 py-2 rounded-lg text-sm transition-colors ${
                         activeCategory === category.title
                           ? "bg-primary text-primary-foreground"
