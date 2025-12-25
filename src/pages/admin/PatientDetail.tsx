@@ -281,8 +281,11 @@ export default function PatientDetail() {
             title: doc.title,
             document_type: doc.document_type,
             created_at: doc.created_at,
+            file_path: doc.file_path,
+            mime_type: doc.mime_type,
           })),
           patientName: patient ? `${patient.first_name} ${patient.last_name}` : undefined,
+          patientId: id,
         },
       });
 
