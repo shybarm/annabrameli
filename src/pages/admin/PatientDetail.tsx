@@ -29,7 +29,7 @@ import {
 import { 
   ArrowRight, User, Phone, Mail, Calendar, CreditCard, 
   FileText, Edit, Save, X, MessageCircle, Upload, File, Pill, Stethoscope, Eye, Sparkles,
-  ClipboardList, Link, CheckCircle, Trash2
+  ClipboardList, Link, CheckCircle, Trash2, Tag, Loader2
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
@@ -60,7 +60,7 @@ export default function PatientDetail() {
   const [deletingDocId, setDeletingDocId] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<{ total: number; completed: number } | null>(null);
-
+  const [taggingDocs, setTaggingDocs] = useState<Set<string>>(new Set());
   // Delete document mutation
   const deleteDocument = useMutation({
     mutationFn: async (doc: { id: string; file_path: string }) => {
@@ -167,8 +167,8 @@ export default function PatientDetail() {
     window.open(`https://wa.me/972${phone.slice(-9)}?text=${message}`, '_blank');
   };
 
-  const uploadFile = async (file: File): Promise<boolean> => {
-    if (!id) return false;
+  const uploadFile = async (file: File): Promise<string | null> => {
+    if (!id) return null;
     
     try {
       const fileExt = file.name.split('.').pop();
@@ -180,7 +180,7 @@ export default function PatientDetail() {
 
       if (uploadError) throw uploadError;
 
-      const { error: dbError } = await supabase
+      const { data: docData, error: dbError } = await supabase
         .from('patient_documents')
         .insert({
           patient_id: id,
@@ -189,13 +189,34 @@ export default function PatientDetail() {
           document_type: file.type.includes('image') ? 'imaging' : 'other',
           mime_type: file.type,
           file_size: file.size,
-        });
+        })
+        .select('id')
+        .single();
 
       if (dbError) throw dbError;
-      return true;
+      return docData?.id || null;
     } catch (error: any) {
       toast({ title: `שגיאה בהעלאת ${file.name}`, description: error.message, variant: 'destructive' });
-      return false;
+      return null;
+    }
+  };
+
+  const tagDocument = async (docId: string, filePath: string, mimeType: string, title: string) => {
+    setTaggingDocs(prev => new Set(prev).add(docId));
+    try {
+      const { data, error } = await supabase.functions.invoke('tag-document', {
+        body: { documentId: docId, filePath, mimeType, title },
+      });
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ['patient-documents', id] });
+    } catch (error) {
+      console.error('Tagging error:', error);
+    } finally {
+      setTaggingDocs(prev => {
+        const next = new Set(prev);
+        next.delete(docId);
+        return next;
+      });
     }
   };
 
@@ -205,23 +226,33 @@ export default function PatientDetail() {
     setIsUploading(true);
     setUploadProgress({ total: files.length, completed: 0 });
 
-    let successCount = 0;
+    const uploadedDocs: { id: string; filePath: string; mimeType: string; title: string }[] = [];
+    
     for (let i = 0; i < files.length; i++) {
-      const success = await uploadFile(files[i]);
-      if (success) successCount++;
+      const file = files[i];
+      const filePath = `${id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${file.name.split('.').pop()}`;
+      const docId = await uploadFile(file);
+      if (docId) {
+        uploadedDocs.push({ id: docId, filePath, mimeType: file.type, title: file.name });
+      }
       setUploadProgress({ total: files.length, completed: i + 1 });
     }
 
     queryClient.invalidateQueries({ queryKey: ['patient-documents', id] });
     
-    if (successCount === files.length) {
-      toast({ title: `${successCount} קבצים הועלו בהצלחה` });
-    } else if (successCount > 0) {
-      toast({ title: `${successCount} מתוך ${files.length} קבצים הועלו בהצלחה`, variant: 'default' });
+    if (uploadedDocs.length === files.length) {
+      toast({ title: `${uploadedDocs.length} קבצים הועלו בהצלחה` });
+    } else if (uploadedDocs.length > 0) {
+      toast({ title: `${uploadedDocs.length} מתוך ${files.length} קבצים הועלו בהצלחה`, variant: 'default' });
     }
     
     setIsUploading(false);
     setUploadProgress(null);
+
+    // Trigger AI tagging for all uploaded docs in background
+    for (const doc of uploadedDocs) {
+      tagDocument(doc.id, doc.filePath, doc.mimeType, doc.title);
+    }
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -920,7 +951,7 @@ export default function PatientDetail() {
                       {documents.map((doc, index) => (
                         <div 
                           key={doc.id} 
-                          className="flex items-center gap-3 p-3 border rounded-lg hover:bg-accent/50 group relative"
+                          className="flex flex-col gap-2 p-3 border rounded-lg hover:bg-accent/50 group relative"
                         >
                           <div 
                             className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer"
@@ -934,7 +965,36 @@ export default function PatientDetail() {
                               </p>
                             </div>
                           </div>
-                          <div className="flex items-center gap-1">
+                          {/* AI Tags */}
+                          <div className="flex flex-wrap gap-1 min-h-[24px]">
+                            {taggingDocs.has(doc.id) ? (
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                                <span>מזהה סוג מסמך...</span>
+                              </div>
+                            ) : (doc as any).ai_tags?.length > 0 ? (
+                              (doc as any).ai_tags.map((tag: string, i: number) => (
+                                <Badge key={i} variant="secondary" className="text-xs flex items-center gap-1">
+                                  <Tag className="h-3 w-3" />
+                                  {tag}
+                                </Badge>
+                              ))
+                            ) : (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 text-xs text-muted-foreground hover:text-foreground"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  tagDocument(doc.id, doc.file_path, doc.mime_type || '', doc.title);
+                                }}
+                              >
+                                <Tag className="h-3 w-3 mr-1" />
+                                זהה סוג מסמך
+                              </Button>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1 absolute top-2 left-2">
                             <Button
                               variant="ghost"
                               size="icon"

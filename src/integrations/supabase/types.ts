@@ -527,6 +527,8 @@ export type Database = {
       }
       patient_documents: {
         Row: {
+          ai_summary: string | null
+          ai_tags: string[] | null
           created_at: string
           description: string | null
           document_type: string
@@ -539,6 +541,8 @@ export type Database = {
           uploaded_by: string | null
         }
         Insert: {
+          ai_summary?: string | null
+          ai_tags?: string[] | null
           created_at?: string
           description?: string | null
           document_type: string
@@ -551,6 +555,8 @@ export type Database = {
           uploaded_by?: string | null
         }
         Update: {
+          ai_summary?: string | null
+          ai_tags?: string[] | null
           created_at?: string
           description?: string | null
           document_type?: string
