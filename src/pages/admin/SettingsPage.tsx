@@ -1,19 +1,265 @@
+import { useState, useEffect } from 'react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Settings, Building, Clock, Users } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Settings, Building, Clock, Users, Bell, Plus, Trash2, Play } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
+
+interface ReminderSchedule {
+  id: string;
+  hours_before: number;
+  send_whatsapp: boolean;
+  send_email: boolean;
+  is_active: boolean;
+}
 
 export default function SettingsPage() {
+  const queryClient = useQueryClient();
+  const [newHours, setNewHours] = useState('');
+
+  // Fetch reminder schedules
+  const { data: reminders, isLoading: loadingReminders } = useQuery({
+    queryKey: ['reminder-schedules'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('reminder_schedules')
+        .select('*')
+        .order('hours_before', { ascending: false });
+      if (error) throw error;
+      return data as ReminderSchedule[];
+    },
+  });
+
+  // Update reminder mutation
+  const updateReminder = useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<ReminderSchedule> }) => {
+      const { error } = await supabase
+        .from('reminder_schedules')
+        .update(updates)
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['reminder-schedules'] });
+      toast({ title: 'התזכורת עודכנה' });
+    },
+    onError: (error: any) => {
+      toast({ title: 'שגיאה', description: error.message, variant: 'destructive' });
+    },
+  });
+
+  // Add reminder mutation
+  const addReminder = useMutation({
+    mutationFn: async (hours_before: number) => {
+      const { error } = await supabase
+        .from('reminder_schedules')
+        .insert({ hours_before, send_whatsapp: true, send_email: true, is_active: true });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['reminder-schedules'] });
+      setNewHours('');
+      toast({ title: 'התזכורת נוספה' });
+    },
+    onError: (error: any) => {
+      toast({ title: 'שגיאה', description: error.message, variant: 'destructive' });
+    },
+  });
+
+  // Delete reminder mutation
+  const deleteReminder = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('reminder_schedules')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['reminder-schedules'] });
+      toast({ title: 'התזכורת נמחקה' });
+    },
+    onError: (error: any) => {
+      toast({ title: 'שגיאה', description: error.message, variant: 'destructive' });
+    },
+  });
+
+  // Test reminders
+  const testReminders = async () => {
+    try {
+      toast({ title: 'בודק תזכורות...' });
+      const { data, error } = await supabase.functions.invoke('send-appointment-reminders');
+      if (error) throw error;
+      toast({ 
+        title: 'בדיקת תזכורות הסתיימה', 
+        description: data.message || 'הבדיקה בוצעה בהצלחה'
+      });
+    } catch (error: any) {
+      toast({ title: 'שגיאה', description: error.message, variant: 'destructive' });
+    }
+  };
+
+  const handleAddReminder = () => {
+    const hours = parseInt(newHours);
+    if (isNaN(hours) || hours <= 0) {
+      toast({ title: 'יש להזין מספר חיובי', variant: 'destructive' });
+      return;
+    }
+    if (reminders?.some(r => r.hours_before === hours)) {
+      toast({ title: 'כבר קיימת תזכורת לזמן זה', variant: 'destructive' });
+      return;
+    }
+    addReminder.mutate(hours);
+  };
+
+  const formatHours = (hours: number) => {
+    if (hours < 1) return `${hours * 60} דקות`;
+    if (hours === 1) return 'שעה';
+    if (hours < 24) return `${hours} שעות`;
+    if (hours === 24) return 'יום';
+    return `${Math.floor(hours / 24)} ימים`;
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-6 max-w-3xl">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">הגדרות</h1>
+          <h1 className="text-2xl font-bold text-foreground">הגדרות</h1>
           <p className="text-muted-foreground">הגדרות המרפאה והמערכת</p>
         </div>
+
+        {/* Reminder Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Bell className="h-5 w-5" />
+              תזכורות תורים
+            </CardTitle>
+            <CardDescription>
+              הגדרת תזכורות אוטומטיות בוואטסאפ ובאימייל לפני תורים
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {loadingReminders ? (
+              <div className="flex justify-center py-4">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
+              </div>
+            ) : (
+              <>
+                {reminders && reminders.length > 0 ? (
+                  <div className="space-y-3">
+                    {reminders.map((reminder) => (
+                      <div 
+                        key={reminder.id} 
+                        className="flex items-center justify-between p-4 border rounded-lg bg-card"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="font-medium min-w-[80px]">
+                            {formatHours(reminder.hours_before)} לפני
+                          </div>
+                          <div className="flex items-center gap-6">
+                            <label className="flex items-center gap-2 text-sm">
+                              <Switch
+                                checked={reminder.send_whatsapp}
+                                onCheckedChange={(checked) => 
+                                  updateReminder.mutate({ 
+                                    id: reminder.id, 
+                                    updates: { send_whatsapp: checked } 
+                                  })
+                                }
+                              />
+                              WhatsApp
+                            </label>
+                            <label className="flex items-center gap-2 text-sm">
+                              <Switch
+                                checked={reminder.send_email}
+                                onCheckedChange={(checked) => 
+                                  updateReminder.mutate({ 
+                                    id: reminder.id, 
+                                    updates: { send_email: checked } 
+                                  })
+                                }
+                              />
+                              אימייל
+                            </label>
+                            <label className="flex items-center gap-2 text-sm">
+                              <Switch
+                                checked={reminder.is_active}
+                                onCheckedChange={(checked) => 
+                                  updateReminder.mutate({ 
+                                    id: reminder.id, 
+                                    updates: { is_active: checked } 
+                                  })
+                                }
+                              />
+                              פעיל
+                            </label>
+                          </div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => deleteReminder.mutate(reminder.id)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground text-center py-4">
+                    אין תזכורות מוגדרות
+                  </p>
+                )}
+
+                <Separator />
+
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2 flex-1">
+                    <Input
+                      type="number"
+                      value={newHours}
+                      onChange={(e) => setNewHours(e.target.value)}
+                      placeholder="שעות לפני"
+                      className="w-32"
+                      min={1}
+                    />
+                    <span className="text-muted-foreground">שעות לפני התור</span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={handleAddReminder}
+                    disabled={addReminder.isPending}
+                  >
+                    <Plus className="h-4 w-4 ml-2" />
+                    הוסף תזכורת
+                  </Button>
+                </div>
+
+                <div className="pt-2">
+                  <Button
+                    variant="outline"
+                    onClick={testReminders}
+                    className="w-full sm:w-auto"
+                  >
+                    <Play className="h-4 w-4 ml-2" />
+                    בדוק ושלח תזכורות עכשיו
+                  </Button>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    לחץ כדי לשלוח תזכורות לכל התורים הקרובים שעדיין לא קיבלו תזכורת
+                  </p>
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Clinic Info */}
         <Card>
@@ -97,10 +343,6 @@ export default function SettingsPage() {
               <div className="space-y-2">
                 <Label htmlFor="max_daily">מקסימום תורים ביום</Label>
                 <Input id="max_daily" type="number" defaultValue="20" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="reminder">תזכורת שעות לפני</Label>
-                <Input id="reminder" type="number" defaultValue="24" />
               </div>
             </div>
             <Button className="bg-primary text-primary-foreground hover:bg-primary/90">שמור שינויים</Button>
