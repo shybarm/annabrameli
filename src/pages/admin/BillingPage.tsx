@@ -117,7 +117,11 @@ export default function BillingPage() {
                   </thead>
                   <tbody className="divide-y">
                     {invoices.map((invoice) => (
-                      <tr key={invoice.id} className="hover:bg-gray-50">
+                      <tr 
+                        key={invoice.id} 
+                        className="hover:bg-gray-50 cursor-pointer"
+                        onClick={() => navigate(`/admin/billing/${invoice.id}`)}
+                      >
                         <td className="py-3 font-mono text-sm">{invoice.invoice_number}</td>
                         <td className="py-3">
                           {invoice.patients 
@@ -140,11 +144,14 @@ export default function BillingPage() {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => updateStatus.mutate({ 
-                                  id: invoice.id, 
-                                  status: 'paid',
-                                  amount_paid: Number(invoice.total)
-                                })}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  updateStatus.mutate({ 
+                                    id: invoice.id, 
+                                    status: 'paid',
+                                    amount_paid: Number(invoice.total)
+                                  });
+                                }}
                               >
                                 סמן כשולם
                               </Button>
