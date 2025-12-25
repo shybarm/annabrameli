@@ -121,6 +121,28 @@ export default function ExpensesPage() {
                     dir="ltr"
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label>תדירות</Label>
+                  <Select
+                    value={newExpense.recurring ? newExpense.recurring_interval : 'one_time'}
+                    onValueChange={(v) => {
+                      if (v === 'one_time') {
+                        setNewExpense(prev => ({ ...prev, recurring: false, recurring_interval: '' }));
+                      } else {
+                        setNewExpense(prev => ({ ...prev, recurring: true, recurring_interval: v }));
+                      }
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="בחר תדירות" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="one_time">חד פעמי</SelectItem>
+                      <SelectItem value="weekly">שבועי</SelectItem>
+                      <SelectItem value="monthly">חודשי</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 <Button type="submit" className="w-full" disabled={!newExpense.category || !newExpense.amount}>
                   הוסף הוצאה
                 </Button>
