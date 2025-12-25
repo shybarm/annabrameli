@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Phone } from "lucide-react";
+import { Menu, X, Phone, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "@/hooks/useAuth";
 
 const navLinks = [
   { href: "/", label: "ראשי" },
@@ -17,6 +18,7 @@ export const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
+  const { user, isStaff } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -68,8 +70,20 @@ export const Header = () => {
             ))}
           </div>
 
-          {/* CTA Button */}
+          {/* CTA Buttons */}
           <div className="hidden lg:flex items-center gap-3">
+            {user && isStaff ? (
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/admin">
+                  <Settings className="w-4 h-4 ml-2" />
+                  ניהול
+                </Link>
+              </Button>
+            ) : (
+              <Button variant="ghost" size="sm" asChild>
+                <Link to="/auth">כניסה לצוות</Link>
+              </Button>
+            )}
             <Button variant="default" size="sm" className="shadow-teal" asChild>
               <Link to="/contact">
                 <Phone className="w-4 h-4 ml-2" />
@@ -111,7 +125,19 @@ export const Header = () => {
                     {link.label}
                   </Link>
                 ))}
-                <div className="pt-4 px-4">
+                <div className="pt-4 px-4 space-y-2">
+                  {user && isStaff ? (
+                    <Button variant="outline" className="w-full" asChild>
+                      <Link to="/admin">
+                        <Settings className="w-4 h-4 ml-2" />
+                        ניהול
+                      </Link>
+                    </Button>
+                  ) : (
+                    <Button variant="ghost" className="w-full" asChild>
+                      <Link to="/auth">כניסה לצוות</Link>
+                    </Button>
+                  )}
                   <Button variant="default" className="w-full shadow-teal" asChild>
                     <Link to="/contact">
                       <Phone className="w-4 h-4 ml-2" />
