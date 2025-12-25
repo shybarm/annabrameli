@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
@@ -13,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Stethoscope, Calendar as CalendarIcon, Clock, ArrowRight, CheckCircle } from 'lucide-react';
+import { Stethoscope, Calendar as CalendarIcon, Clock, ArrowRight, CheckCircle, Upload, X, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
 
@@ -30,10 +30,14 @@ const timeSlots = [
   '16:00', '16:30', '17:00', '17:30'
 ];
 
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const ALLOWED_FILE_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
+
 export default function GuestBooking() {
   const navigate = useNavigate();
   const [step, setStep] = useState<'info' | 'appointment' | 'success'>('info');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Form state
   const [firstName, setFirstName] = useState('');
@@ -44,9 +48,69 @@ export default function GuestBooking() {
   const [date, setDate] = useState<Date>();
   const [time, setTime] = useState('');
   const [notes, setNotes] = useState('');
+  const [documents, setDocuments] = useState<File[]>([]);
 
   const { data: appointmentTypes } = useAppointmentTypes();
   const selectedType = appointmentTypes?.find(t => t.id === appointmentTypeId);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const validFiles: File[] = [];
+    
+    for (const file of files) {
+      if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+        toast({
+          title: 'סוג קובץ לא נתמך',
+          description: `${file.name} - נא להעלות PDF או תמונות בלבד`,
+          variant: 'destructive',
+        });
+        continue;
+      }
+      if (file.size > MAX_FILE_SIZE) {
+        toast({
+          title: 'קובץ גדול מדי',
+          description: `${file.name} - גודל מקסימלי 10MB`,
+          variant: 'destructive',
+        });
+        continue;
+      }
+      validFiles.push(file);
+    }
+    
+    setDocuments(prev => [...prev, ...validFiles]);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const removeDocument = (index: number) => {
+    setDocuments(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const uploadDocuments = async (patientId: string) => {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    
+    for (const file of documents) {
+      const formData = new FormData();
+      formData.append('patient_id', patientId);
+      formData.append('file', file);
+      formData.append('title', file.name);
+      formData.append('document_type', 'referral');
+
+      try {
+        const response = await fetch(`${supabaseUrl}/functions/v1/guest-upload-document`, {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          console.error('Failed to upload document:', file.name);
+        }
+      } catch (error) {
+        console.error('Error uploading document:', error);
+      }
+    }
+  };
 
   const handleContinue = () => {
     try {
@@ -83,12 +147,17 @@ export default function GuestBooking() {
           last_name: lastName.trim(),
           phone: phone.trim(),
           email: email.trim() || null,
-          status: 'new',
+          status: 'active',
         })
         .select()
         .single();
 
       if (patientError) throw patientError;
+
+      // Upload documents if any
+      if (documents.length > 0) {
+        await uploadDocuments(patient.id);
+      }
 
       // Create appointment
       const scheduledAt = new Date(date);
@@ -339,6 +408,52 @@ export default function GuestBooking() {
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+
+                {/* Document Upload */}
+                <div className="space-y-2">
+                  <Label>מסמכים (אופציונלי)</Label>
+                  <p className="text-xs text-muted-foreground">ניתן להעלות הפניות, בדיקות קודמות או מסמכים רפואיים</p>
+                  
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png,.webp"
+                    multiple
+                    onChange={handleFileSelect}
+                    className="hidden"
+                  />
+                  
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full"
+                  >
+                    <Upload className="h-4 w-4 ml-2" />
+                    העלאת מסמכים
+                  </Button>
+                  
+                  {documents.length > 0 && (
+                    <div className="space-y-2 mt-2">
+                      {documents.map((file, index) => (
+                        <div key={index} className="flex items-center justify-between p-2 bg-muted rounded-lg">
+                          <div className="flex items-center gap-2 overflow-hidden">
+                            <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
+                            <span className="text-sm truncate">{file.name}</span>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeDocument(index)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Notes */}
