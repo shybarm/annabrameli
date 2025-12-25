@@ -30,6 +30,7 @@ export default function AppointmentDetail() {
   const [medications, setMedications] = useState('');
   const [status, setStatus] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
 
   // Fetch appointment
   const { data: appointment, isLoading } = useQuery({
@@ -84,6 +85,7 @@ export default function AppointmentDetail() {
       medications?: string;
       visit_completed_at?: string;
       visit_shared_whatsapp_at?: string;
+      visit_shared_email_at?: string;
     }) => {
       const { error } = await supabase
         .from('appointments')
@@ -199,6 +201,47 @@ export default function AppointmentDetail() {
     
     // Mark as shared via WhatsApp
     updateAppointment.mutate({ visit_shared_whatsapp_at: new Date().toISOString() });
+  };
+
+  const handleSendEmail = async () => {
+    if (!appointment?.patients?.email) {
+      toast({ title: 'אין כתובת אימייל למטופל', variant: 'destructive' });
+      return;
+    }
+    
+    if (!visitSummary.trim() && !treatmentPlan.trim() && !medications.trim()) {
+      toast({ title: 'אין תוכן לשליחה', variant: 'destructive' });
+      return;
+    }
+
+    setIsSendingEmail(true);
+    try {
+      const patientName = `${appointment.patients.first_name || ''} ${appointment.patients.last_name || ''}`.trim();
+      const visitDate = format(new Date(appointment.scheduled_at), 'dd/MM/yyyy', { locale: he });
+
+      const { data, error } = await supabase.functions.invoke('send-visit-summary', {
+        body: {
+          patientEmail: appointment.patients.email,
+          patientName,
+          visitDate,
+          visitSummary: visitSummary.trim() || undefined,
+          treatmentPlan: treatmentPlan.trim() || undefined,
+          medications: medications.trim() || undefined,
+        },
+      });
+
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || 'Failed to send email');
+
+      // Mark as shared via email
+      await updateAppointment.mutateAsync({ visit_shared_email_at: new Date().toISOString() });
+      toast({ title: 'האימייל נשלח בהצלחה' });
+    } catch (error: any) {
+      console.error('Email send error:', error);
+      toast({ title: 'שגיאה בשליחת האימייל', description: error.message, variant: 'destructive' });
+    } finally {
+      setIsSendingEmail(false);
+    }
   };
 
   const handlePrint = () => {
@@ -514,6 +557,15 @@ export default function AppointmentDetail() {
                   >
                     <MessageCircle className="h-4 w-4 ml-2" />
                     שלח ב-WhatsApp
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    onClick={handleSendEmail}
+                    disabled={isSendingEmail || !appointment.patients?.email || (!visitSummary.trim() && !treatmentPlan.trim() && !medications.trim())}
+                  >
+                    <Mail className="h-4 w-4 ml-2" />
+                    {isSendingEmail ? 'שולח...' : 'שלח באימייל'}
                   </Button>
                   
                   <Button 

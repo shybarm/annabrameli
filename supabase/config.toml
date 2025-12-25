@@ -1,1 +1,4 @@
 project_id = "ftatmcyrmeyhghgckvbj"
+
+[functions.send-visit-summary]
+verify_jwt = false
