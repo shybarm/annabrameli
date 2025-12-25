@@ -81,16 +81,19 @@ export default function PatientIntake() {
 
   const loadTokenData = async () => {
     try {
-      // Fetch token and patient data
+      // First fetch token data only
       const { data: tokenInfo, error: tokenError } = await supabase
         .from('intake_tokens')
-        .select('*, patients(*)')
+        .select('*')
         .eq('token', token)
         .gt('expires_at', new Date().toISOString())
         .is('completed_at', null)
         .maybeSingle();
 
-      if (tokenError) throw tokenError;
+      if (tokenError) {
+        console.error('Token error:', tokenError);
+        throw tokenError;
+      }
 
       if (!tokenInfo) {
         setError('הקישור לא תקף או שפג תוקפו');
@@ -100,27 +103,41 @@ export default function PatientIntake() {
 
       setTokenData(tokenInfo);
       
-      if (tokenInfo.patients) {
-        setPatientData(tokenInfo.patients);
-        // Pre-fill form with existing patient data
-        setFormData(prev => ({
-          ...prev,
-          first_name: tokenInfo.patients.first_name || '',
-          last_name: tokenInfo.patients.last_name || '',
-          id_number: tokenInfo.patients.id_number || '',
-          date_of_birth: tokenInfo.patients.date_of_birth || '',
-          gender: tokenInfo.patients.gender || '',
-          phone: tokenInfo.patients.phone || '',
-          email: tokenInfo.patients.email || '',
-          address: tokenInfo.patients.address || '',
-          city: tokenInfo.patients.city || '',
-          emergency_contact_name: tokenInfo.patients.emergency_contact_name || '',
-          emergency_contact_phone: tokenInfo.patients.emergency_contact_phone || '',
-          insurance_provider: tokenInfo.patients.insurance_provider || '',
-          insurance_number: tokenInfo.patients.insurance_number || '',
-          allergies: tokenInfo.patients.allergies?.join(', ') || '',
-          medical_notes: tokenInfo.patients.medical_notes || '',
-        }));
+      // Now fetch patient data separately - RLS allows via valid token
+      if (tokenInfo.patient_id) {
+        const { data: patientInfo, error: patientError } = await supabase
+          .from('patients')
+          .select('*')
+          .eq('id', tokenInfo.patient_id)
+          .maybeSingle();
+
+        if (patientError) {
+          console.error('Patient fetch error:', patientError);
+          // Don't throw - patient might not be accessible but form can still work
+        }
+
+        if (patientInfo) {
+          setPatientData(patientInfo);
+          // Pre-fill form with existing patient data
+          setFormData(prev => ({
+            ...prev,
+            first_name: patientInfo.first_name || '',
+            last_name: patientInfo.last_name || '',
+            id_number: patientInfo.id_number || '',
+            date_of_birth: patientInfo.date_of_birth || '',
+            gender: patientInfo.gender || '',
+            phone: patientInfo.phone || '',
+            email: patientInfo.email || '',
+            address: patientInfo.address || '',
+            city: patientInfo.city || '',
+            emergency_contact_name: patientInfo.emergency_contact_name || '',
+            emergency_contact_phone: patientInfo.emergency_contact_phone || '',
+            insurance_provider: patientInfo.insurance_provider || '',
+            insurance_number: patientInfo.insurance_number || '',
+            allergies: patientInfo.allergies?.join(', ') || '',
+            medical_notes: patientInfo.medical_notes || '',
+          }));
+        }
       }
 
       setLoading(false);
