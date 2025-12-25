@@ -1,6 +1,7 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { toast } from '@/hooks/use-toast';
 
 export interface PatientRecord {
   id: string;
@@ -8,6 +9,14 @@ export interface PatientRecord {
   last_name: string;
   email: string | null;
   phone: string | null;
+  date_of_birth: string | null;
+  gender: string | null;
+  address: string | null;
+  city: string | null;
+  preferred_contact_method: string | null;
+  preferred_contact_time: string | null;
+  emergency_contact_name: string | null;
+  emergency_contact_phone: string | null;
 }
 
 export interface PatientAppointment {
@@ -43,7 +52,11 @@ export function usePatientRecord() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('patients')
-        .select('id, first_name, last_name, email, phone')
+        .select(`
+          id, first_name, last_name, email, phone, date_of_birth, gender,
+          address, city, preferred_contact_method, preferred_contact_time,
+          emergency_contact_name, emergency_contact_phone
+        `)
         .eq('user_id', user!.id)
         .maybeSingle();
 
@@ -51,6 +64,40 @@ export function usePatientRecord() {
       return data as PatientRecord | null;
     },
     enabled: !!user,
+  });
+}
+
+export function useUpdatePatientProfile() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async (updates: Partial<Omit<PatientRecord, 'id'>>) => {
+      const { data: patient } = await supabase
+        .from('patients')
+        .select('id')
+        .eq('user_id', user!.id)
+        .single();
+
+      if (!patient) throw new Error('Patient record not found');
+
+      const { data, error } = await supabase
+        .from('patients')
+        .update(updates)
+        .eq('id', patient.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['patient-record'] });
+      toast({ title: 'הפרטים עודכנו בהצלחה' });
+    },
+    onError: (error) => {
+      toast({ title: 'שגיאה בעדכון', description: error.message, variant: 'destructive' });
+    },
   });
 }
 
