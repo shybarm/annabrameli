@@ -24,8 +24,12 @@ import AppointmentDetail from "./pages/admin/AppointmentDetail";
 import NewAppointment from "./pages/admin/NewAppointment";
 import BillingPage from "./pages/admin/BillingPage";
 import NewInvoice from "./pages/admin/NewInvoice";
+import InvoiceDetail from "./pages/admin/InvoiceDetail";
+import ExpensesPage from "./pages/admin/ExpensesPage";
 import MessagesPage from "./pages/admin/MessagesPage";
 import SettingsPage from "./pages/admin/SettingsPage";
+import TeamPage from "./pages/admin/TeamPage";
+import ReferralDashboard from "./pages/admin/ReferralDashboard";
 import PatientPortal from "./pages/patient/PatientPortal";
 import GuestBooking from "./pages/GuestBooking";
 import NotFound from "./pages/NotFound";
@@ -80,7 +84,11 @@ const App = () => (
             <Route path="/admin/appointments/:id" element={<AppointmentDetail />} />
             <Route path="/admin/billing" element={<BillingPage />} />
             <Route path="/admin/billing/new" element={<NewInvoice />} />
+            <Route path="/admin/billing/:id" element={<InvoiceDetail />} />
+            <Route path="/admin/expenses" element={<ExpensesPage />} />
             <Route path="/admin/messages" element={<MessagesPage />} />
+            <Route path="/admin/team" element={<TeamPage />} />
+            <Route path="/admin/referrals" element={<ReferralDashboard />} />
             <Route path="/admin/settings" element={<SettingsPage />} />
             
             <Route path="*" element={<NotFound />} />
