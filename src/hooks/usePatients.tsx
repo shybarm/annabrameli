@@ -130,6 +130,28 @@ export function useUpdatePatient() {
   });
 }
 
+export function useDeletePatient() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('patients')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['patients'] });
+      toast({ title: 'המטופל נמחק בהצלחה' });
+    },
+    onError: (error) => {
+      toast({ title: 'שגיאה במחיקת המטופל', description: error.message, variant: 'destructive' });
+    },
+  });
+}
+
 export function useSearchPatients(query: string) {
   return useQuery({
     queryKey: ['patients', 'search', query],
