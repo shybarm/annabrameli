@@ -322,25 +322,40 @@ export default function PatientDetail() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {appointments && appointments.filter(a => a.internal_notes).length > 0 ? (
+                {appointments && appointments.filter(a => a.visit_summary || a.treatment_plan || a.medications).length > 0 ? (
                   <div className="space-y-4">
                     {appointments
-                      .filter(apt => apt.internal_notes)
+                      .filter(apt => apt.visit_summary || apt.treatment_plan || apt.medications)
                       .map((apt) => (
                         <div 
                           key={apt.id}
                           className="p-4 rounded-lg border bg-card cursor-pointer hover:shadow-md transition-shadow"
                           onClick={() => navigate(`/admin/appointments/${apt.id}`)}
                         >
-                          <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center justify-between mb-3">
                             <p className="font-semibold">{apt.appointment_types?.name_he || 'ביקור'}</p>
                             <span className="text-sm text-muted-foreground">
                               {format(new Date(apt.scheduled_at), 'dd/MM/yyyy', { locale: he })}
                             </span>
                           </div>
-                          <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                            {apt.internal_notes}
-                          </p>
+                          {apt.visit_summary && (
+                            <div className="mb-2">
+                              <p className="text-xs font-medium text-muted-foreground mb-1">סיכום:</p>
+                              <p className="text-sm whitespace-pre-wrap line-clamp-3">{apt.visit_summary}</p>
+                            </div>
+                          )}
+                          {apt.treatment_plan && (
+                            <div className="mb-2">
+                              <p className="text-xs font-medium text-muted-foreground mb-1">תוכנית טיפול:</p>
+                              <p className="text-sm whitespace-pre-wrap line-clamp-2">{apt.treatment_plan}</p>
+                            </div>
+                          )}
+                          {apt.medications && (
+                            <div>
+                              <p className="text-xs font-medium text-muted-foreground mb-1">תרופות:</p>
+                              <p className="text-sm whitespace-pre-wrap line-clamp-2">{apt.medications}</p>
+                            </div>
+                          )}
                         </div>
                       ))}
                   </div>

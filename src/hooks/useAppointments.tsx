@@ -23,6 +23,12 @@ export interface Appointment {
   status: string;
   notes: string | null;
   internal_notes: string | null;
+  visit_summary: string | null;
+  treatment_plan: string | null;
+  medications: string | null;
+  visit_completed_at: string | null;
+  visit_shared_whatsapp_at: string | null;
+  visit_shared_email_at: string | null;
   reminder_sent: boolean;
   cancelled_at: string | null;
   cancellation_reason: string | null;
@@ -33,6 +39,7 @@ export interface Appointment {
     first_name: string;
     last_name: string;
     phone: string | null;
+    id_number?: string | null;
   };
   appointment_types?: AppointmentType;
 }
