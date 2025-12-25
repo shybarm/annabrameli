@@ -258,7 +258,7 @@ export default function NewAppointment() {
             </Button>
             <Button 
               type="submit" 
-              className="bg-medical-600 hover:bg-medical-700" 
+              className="bg-primary text-primary-foreground hover:bg-primary/90" 
               disabled={!selectedPatientId || createAppointment.isPending}
             >
               <Save className="h-4 w-4 ml-2" />

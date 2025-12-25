@@ -131,7 +131,7 @@ export function useCreateInvoice() {
       
       // Calculate totals
       const subtotal = input.items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
-      const tax_rate = 17;
+      const tax_rate = 18;
       const tax_amount = subtotal * (tax_rate / 100);
       const total = subtotal + tax_amount;
       

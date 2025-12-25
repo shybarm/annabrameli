@@ -40,7 +40,7 @@ export default function BillingPage() {
             <h1 className="text-2xl font-bold text-gray-900">חיוב וחשבוניות</h1>
             <p className="text-muted-foreground">ניהול חשבוניות ותשלומים</p>
           </div>
-          <Button onClick={() => navigate('/admin/billing/new')} className="bg-medical-600 hover:bg-medical-700">
+          <Button onClick={() => navigate('/admin/billing/new')} className="bg-primary text-primary-foreground hover:bg-primary/90">
             <Plus className="h-4 w-4 ml-2" />
             חשבונית חדשה
           </Button>

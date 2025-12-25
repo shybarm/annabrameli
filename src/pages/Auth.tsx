@@ -138,7 +138,7 @@ export default function Auth() {
                       />
                     </div>
                   </div>
-                  <Button type="submit" className="w-full bg-medical-600 hover:bg-medical-700" disabled={isLoading}>
+                  <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" disabled={isLoading}>
                     {isLoading ? 'מתחבר...' : 'התחבר'}
                   </Button>
                 </form>
@@ -201,7 +201,7 @@ export default function Auth() {
                       />
                     </div>
                   </div>
-                  <Button type="submit" className="w-full bg-medical-600 hover:bg-medical-700" disabled={isLoading}>
+                  <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" disabled={isLoading}>
                     {isLoading ? 'נרשם...' : 'הרשמה'}
                   </Button>
                 </form>
