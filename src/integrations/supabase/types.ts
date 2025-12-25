@@ -60,13 +60,19 @@ export type Database = {
           duration_minutes: number
           id: string
           internal_notes: string | null
+          medications: string | null
           notes: string | null
           patient_id: string
           reminder_sent: boolean | null
           reminder_sent_at: string | null
           scheduled_at: string
           status: string | null
+          treatment_plan: string | null
           updated_at: string
+          visit_completed_at: string | null
+          visit_shared_email_at: string | null
+          visit_shared_whatsapp_at: string | null
+          visit_summary: string | null
         }
         Insert: {
           appointment_type_id?: string | null
@@ -77,13 +83,19 @@ export type Database = {
           duration_minutes?: number
           id?: string
           internal_notes?: string | null
+          medications?: string | null
           notes?: string | null
           patient_id: string
           reminder_sent?: boolean | null
           reminder_sent_at?: string | null
           scheduled_at: string
           status?: string | null
+          treatment_plan?: string | null
           updated_at?: string
+          visit_completed_at?: string | null
+          visit_shared_email_at?: string | null
+          visit_shared_whatsapp_at?: string | null
+          visit_summary?: string | null
         }
         Update: {
           appointment_type_id?: string | null
@@ -94,13 +106,19 @@ export type Database = {
           duration_minutes?: number
           id?: string
           internal_notes?: string | null
+          medications?: string | null
           notes?: string | null
           patient_id?: string
           reminder_sent?: boolean | null
           reminder_sent_at?: string | null
           scheduled_at?: string
           status?: string | null
+          treatment_plan?: string | null
           updated_at?: string
+          visit_completed_at?: string | null
+          visit_shared_email_at?: string | null
+          visit_shared_whatsapp_at?: string | null
+          visit_summary?: string | null
         }
         Relationships: [
           {
