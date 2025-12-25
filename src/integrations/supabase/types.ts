@@ -63,8 +63,12 @@ export type Database = {
           medications: string | null
           notes: string | null
           patient_id: string
+          reminder_24h_sent_at: string | null
+          reminder_2h_sent_at: string | null
+          reminder_email_sent_at: string | null
           reminder_sent: boolean | null
           reminder_sent_at: string | null
+          reminder_whatsapp_sent_at: string | null
           scheduled_at: string
           status: string | null
           treatment_plan: string | null
@@ -86,8 +90,12 @@ export type Database = {
           medications?: string | null
           notes?: string | null
           patient_id: string
+          reminder_24h_sent_at?: string | null
+          reminder_2h_sent_at?: string | null
+          reminder_email_sent_at?: string | null
           reminder_sent?: boolean | null
           reminder_sent_at?: string | null
+          reminder_whatsapp_sent_at?: string | null
           scheduled_at: string
           status?: string | null
           treatment_plan?: string | null
@@ -109,8 +117,12 @@ export type Database = {
           medications?: string | null
           notes?: string | null
           patient_id?: string
+          reminder_24h_sent_at?: string | null
+          reminder_2h_sent_at?: string | null
+          reminder_email_sent_at?: string | null
           reminder_sent?: boolean | null
           reminder_sent_at?: string | null
+          reminder_whatsapp_sent_at?: string | null
           scheduled_at?: string
           status?: string | null
           treatment_plan?: string | null
@@ -585,6 +597,36 @@ export type Database = {
           preferred_language?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      reminder_schedules: {
+        Row: {
+          created_at: string
+          hours_before: number
+          id: string
+          is_active: boolean | null
+          send_email: boolean | null
+          send_whatsapp: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          hours_before: number
+          id?: string
+          is_active?: boolean | null
+          send_email?: boolean | null
+          send_whatsapp?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          hours_before?: number
+          id?: string
+          is_active?: boolean | null
+          send_email?: boolean | null
+          send_whatsapp?: boolean | null
+          updated_at?: string
         }
         Relationships: []
       }
