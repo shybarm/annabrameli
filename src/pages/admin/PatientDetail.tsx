@@ -29,7 +29,7 @@ import {
 import { 
   ArrowRight, User, Phone, Mail, Calendar, CreditCard, 
   FileText, Edit, Save, X, MessageCircle, Upload, File, Pill, Stethoscope, Eye, Sparkles,
-  ClipboardList, Link, CheckCircle, Trash2, Tag, Loader2
+  ClipboardList, Link, CheckCircle, Trash2, Tag, Loader2, Copy
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
@@ -879,8 +879,21 @@ export default function PatientDetail() {
                 </CardHeader>
                 {aiSummary && (
                   <CardContent>
-                    <div className="bg-muted/50 p-4 rounded-lg whitespace-pre-wrap text-sm">
-                      {aiSummary}
+                    <div className="relative bg-muted/50 p-4 rounded-lg">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute top-2 left-2 h-8 w-8"
+                        onClick={() => {
+                          navigator.clipboard.writeText(aiSummary);
+                          toast({ title: 'הסיכום הועתק!' });
+                        }}
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                      <div className="whitespace-pre-wrap text-sm pr-0 pl-10">
+                        {aiSummary}
+                      </div>
                     </div>
                   </CardContent>
                 )}
