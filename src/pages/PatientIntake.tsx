@@ -81,63 +81,48 @@ export default function PatientIntake() {
 
   const loadTokenData = async () => {
     try {
-      // First fetch token data only
-      const { data: tokenInfo, error: tokenError } = await supabase
-        .from('intake_tokens')
-        .select('*')
-        .eq('token', token)
-        .gt('expires_at', new Date().toISOString())
-        .is('completed_at', null)
-        .maybeSingle();
+      // Use edge function to fetch token and patient data securely
+      const { data, error } = await supabase.functions.invoke('get-intake-patient', {
+        body: { token },
+      });
 
-      if (tokenError) {
-        console.error('Token error:', tokenError);
-        throw tokenError;
+      if (error) {
+        console.error('Token validation error:', error);
+        setError('שגיאה בטעינת הטופס');
+        setLoading(false);
+        return;
       }
 
-      if (!tokenInfo) {
+      if (!data?.valid) {
         setError('הקישור לא תקף או שפג תוקפו');
         setLoading(false);
         return;
       }
 
-      setTokenData(tokenInfo);
+      setTokenData(data.tokenData);
       
-      // Now fetch patient data separately - RLS allows via valid token
-      if (tokenInfo.patient_id) {
-        const { data: patientInfo, error: patientError } = await supabase
-          .from('patients')
-          .select('*')
-          .eq('id', tokenInfo.patient_id)
-          .maybeSingle();
-
-        if (patientError) {
-          console.error('Patient fetch error:', patientError);
-          // Don't throw - patient might not be accessible but form can still work
-        }
-
-        if (patientInfo) {
-          setPatientData(patientInfo);
-          // Pre-fill form with existing patient data
-          setFormData(prev => ({
-            ...prev,
-            first_name: patientInfo.first_name || '',
-            last_name: patientInfo.last_name || '',
-            id_number: patientInfo.id_number || '',
-            date_of_birth: patientInfo.date_of_birth || '',
-            gender: patientInfo.gender || '',
-            phone: patientInfo.phone || '',
-            email: patientInfo.email || '',
-            address: patientInfo.address || '',
-            city: patientInfo.city || '',
-            emergency_contact_name: patientInfo.emergency_contact_name || '',
-            emergency_contact_phone: patientInfo.emergency_contact_phone || '',
-            insurance_provider: patientInfo.insurance_provider || '',
-            insurance_number: patientInfo.insurance_number || '',
-            allergies: patientInfo.allergies?.join(', ') || '',
-            medical_notes: patientInfo.medical_notes || '',
-          }));
-        }
+      if (data.patientData) {
+        const patientInfo = data.patientData;
+        setPatientData(patientInfo);
+        // Pre-fill form with existing patient data
+        setFormData(prev => ({
+          ...prev,
+          first_name: patientInfo.first_name || '',
+          last_name: patientInfo.last_name || '',
+          id_number: patientInfo.id_number || '',
+          date_of_birth: patientInfo.date_of_birth || '',
+          gender: patientInfo.gender || '',
+          phone: patientInfo.phone || '',
+          email: patientInfo.email || '',
+          address: patientInfo.address || '',
+          city: patientInfo.city || '',
+          emergency_contact_name: patientInfo.emergency_contact_name || '',
+          emergency_contact_phone: patientInfo.emergency_contact_phone || '',
+          insurance_provider: patientInfo.insurance_provider || '',
+          insurance_number: patientInfo.insurance_number || '',
+          allergies: patientInfo.allergies?.join(', ') || '',
+          medical_notes: patientInfo.medical_notes || '',
+        }));
       }
 
       setLoading(false);
@@ -168,76 +153,28 @@ export default function PatientIntake() {
     setSubmitting(true);
 
     try {
-      // Parse allergies and chronic conditions
-      const allergiesArray = formData.allergies.split(',').map(a => a.trim()).filter(Boolean);
-      const chronicArray = formData.chronic_conditions.split(',').map(c => c.trim()).filter(Boolean);
+      // Use edge function to submit intake securely
+      const { data, error } = await supabase.functions.invoke('submit-intake', {
+        body: { token, formData },
+      });
 
-      // Update patient record
-      const { error: updateError } = await supabase
-        .from('patients')
-        .update({
-          first_name: formData.first_name,
-          last_name: formData.last_name,
-          id_number: formData.id_number || null,
-          date_of_birth: formData.date_of_birth || null,
-          gender: formData.gender || null,
-          phone: formData.phone || null,
-          email: formData.email || null,
-          address: formData.address || null,
-          city: formData.city || null,
-          occupation: formData.occupation || null,
-          marital_status: formData.marital_status || null,
-          num_children: formData.num_children ? parseInt(formData.num_children) : null,
-          referral_source: formData.referral_source || null,
-          emergency_contact_name: formData.emergency_contact_name || null,
-          emergency_contact_phone: formData.emergency_contact_phone || null,
-          insurance_provider: formData.insurance_provider || null,
-          insurance_number: formData.insurance_number || null,
-          allergies: allergiesArray.length > 0 ? allergiesArray : null,
-          chronic_conditions: chronicArray.length > 0 ? chronicArray : null,
-          current_medications: formData.current_medications || null,
-          previous_surgeries: formData.previous_surgeries || null,
-          family_medical_history: formData.family_medical_history || null,
-          smoking_status: formData.smoking_status || null,
-          alcohol_consumption: formData.alcohol_consumption || null,
-          exercise_frequency: formData.exercise_frequency || null,
-          sleep_hours: formData.sleep_hours ? parseInt(formData.sleep_hours) : null,
-          stress_level: formData.stress_level || null,
-          main_complaint: formData.main_complaint || null,
-          symptoms_duration: formData.symptoms_duration || null,
-          previous_treatments: formData.previous_treatments || null,
-          treatment_goals: formData.treatment_goals || null,
-          preferred_contact_method: formData.preferred_contact_method || null,
-          preferred_contact_time: formData.preferred_contact_time || null,
-          medical_notes: formData.medical_notes || null,
-          consent_signed: true,
-          consent_signed_at: new Date().toISOString(),
-          gdpr_consent: true,
-          gdpr_consent_at: new Date().toISOString(),
-          intake_completed_at: new Date().toISOString(),
-          intake_token_id: tokenData.id,
-        })
-        .eq('id', tokenData.patient_id);
+      if (error) {
+        console.error('Submit error:', error);
+        throw new Error('שגיאה בשליחת הטופס');
+      }
 
-      if (updateError) throw updateError;
-
-      // Mark token as completed
-      const { error: tokenUpdateError } = await supabase
-        .from('intake_tokens')
-        .update({ completed_at: new Date().toISOString() })
-        .eq('id', tokenData.id);
-
-      if (tokenUpdateError) throw tokenUpdateError;
+      if (!data?.success) {
+        throw new Error(data?.error || 'שגיאה בשליחת הטופס');
+      }
 
       // Send notification email to clinic staff
       try {
         await supabase.functions.invoke('notify-intake-complete', {
           body: {
-            patientId: tokenData.patient_id,
-            patientName: `${formData.first_name} ${formData.last_name}`,
+            patientId: data.patientId,
+            patientName: data.patientName,
           },
         });
-        console.log('Intake notification sent');
       } catch (notifyError) {
         console.error('Failed to send intake notification:', notifyError);
         // Don't fail the form submission if notification fails
