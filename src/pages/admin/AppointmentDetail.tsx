@@ -106,9 +106,40 @@ export default function AppointmentDetail() {
     },
   });
 
+  // File validation constants
+  const ALLOWED_FILE_TYPES = [
+    'application/pdf',
+    'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  ];
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
   // Upload file mutation
   const uploadFile = async (file: File) => {
     if (!appointment?.patient_id) return;
+    
+    // Validate file type
+    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+      toast({ 
+        title: 'סוג קובץ לא נתמך', 
+        description: 'נא להעלות רק PDF, תמונות או מסמכי Office',
+        variant: 'destructive' 
+      });
+      return;
+    }
+    
+    // Validate file size
+    if (file.size > MAX_FILE_SIZE) {
+      toast({ 
+        title: 'קובץ גדול מדי', 
+        description: 'גודל מקסימלי: 10MB',
+        variant: 'destructive' 
+      });
+      return;
+    }
     
     setIsUploading(true);
     try {
