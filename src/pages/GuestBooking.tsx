@@ -172,7 +172,7 @@ export default function GuestBooking() {
           scheduled_at: scheduledAt.toISOString(),
           duration_minutes: selectedType?.duration_minutes || 30,
           notes: notes.trim() || null,
-          status: 'pending', // Guest appointments start as pending
+          // Let the database default status apply ("scheduled") to satisfy constraints
         });
 
       if (appointmentError) throw appointmentError;
