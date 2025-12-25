@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,18 @@ import { toast } from '@/hooks/use-toast';
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, user, loading, isStaff, isPatient } = useAuth();
+
+  // Redirect authenticated users
+  useEffect(() => {
+    if (!loading && user) {
+      if (isStaff) {
+        navigate('/admin');
+      } else {
+        navigate('/portal');
+      }
+    }
+  }, [loading, user, isStaff, isPatient, navigate]);
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -32,11 +43,11 @@ export default function Auth() {
           : error.message,
         variant: 'destructive',
       });
+      setIsLoading(false);
     } else {
       toast({ title: 'התחברת בהצלחה' });
-      navigate('/admin');
+      // Navigation handled by useEffect after roles are fetched
     }
-    setIsLoading(false);
   };
 
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -70,14 +81,14 @@ export default function Auth() {
         description: message,
         variant: 'destructive',
       });
+      setIsLoading(false);
     } else {
       toast({ 
         title: 'נרשמת בהצלחה!',
         description: 'ברוכים הבאים למערכת',
       });
-      navigate('/admin');
+      // Navigation handled by useEffect after roles are fetched
     }
-    setIsLoading(false);
   };
 
   return (

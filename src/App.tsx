@@ -26,6 +26,7 @@ import BillingPage from "./pages/admin/BillingPage";
 import NewInvoice from "./pages/admin/NewInvoice";
 import MessagesPage from "./pages/admin/MessagesPage";
 import SettingsPage from "./pages/admin/SettingsPage";
+import PatientPortal from "./pages/patient/PatientPortal";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -61,6 +62,9 @@ const App = () => (
             
             {/* Patient Intake (public) */}
             <Route path="/intake/:token" element={<PatientIntake />} />
+            
+            {/* Patient Portal */}
+            <Route path="/portal" element={<PatientPortal />} />
             
             {/* Admin routes */}
             <Route path="/admin" element={<AdminDashboard />} />
