@@ -15,6 +15,13 @@ import FAQ from "./pages/FAQ";
 import Contact from "./pages/Contact";
 import Auth from "./pages/Auth";
 import AdminDashboard from "./pages/admin/Dashboard";
+import PatientsList from "./pages/admin/PatientsList";
+import NewPatient from "./pages/admin/NewPatient";
+import AppointmentsList from "./pages/admin/AppointmentsList";
+import NewAppointment from "./pages/admin/NewAppointment";
+import BillingPage from "./pages/admin/BillingPage";
+import MessagesPage from "./pages/admin/MessagesPage";
+import SettingsPage from "./pages/admin/SettingsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -50,7 +57,16 @@ const App = () => (
             
             {/* Admin routes */}
             <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/admin/*" element={<AdminDashboard />} />
+            <Route path="/admin/patients" element={<PatientsList />} />
+            <Route path="/admin/patients/new" element={<NewPatient />} />
+            <Route path="/admin/patients/:id" element={<PatientsList />} />
+            <Route path="/admin/appointments" element={<AppointmentsList />} />
+            <Route path="/admin/appointments/new" element={<NewAppointment />} />
+            <Route path="/admin/appointments/:id" element={<AppointmentsList />} />
+            <Route path="/admin/billing" element={<BillingPage />} />
+            <Route path="/admin/billing/new" element={<BillingPage />} />
+            <Route path="/admin/messages" element={<MessagesPage />} />
+            <Route path="/admin/settings" element={<SettingsPage />} />
             
             <Route path="*" element={<NotFound />} />
           </Routes>
