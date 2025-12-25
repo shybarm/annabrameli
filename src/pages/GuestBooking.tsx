@@ -87,12 +87,13 @@ export default function GuestBooking() {
     setDocuments(prev => prev.filter((_, i) => i !== index));
   };
 
-  const uploadDocuments = async (patientId: string) => {
+  const uploadDocuments = async (patientId: string, uploadToken: string) => {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     
     for (const file of documents) {
       const formData = new FormData();
       formData.append('patient_id', patientId);
+      formData.append('upload_token', uploadToken);
       formData.append('file', file);
       formData.append('title', file.name);
       formData.append('document_type', 'referral');
@@ -104,7 +105,8 @@ export default function GuestBooking() {
         });
 
         if (!response.ok) {
-          console.error('Failed to upload document:', file.name);
+          const errorData = await response.json().catch(() => ({}));
+          console.error('Failed to upload document:', file.name, errorData);
         }
       } catch (error) {
         console.error('Error uploading document:', error);
@@ -154,9 +156,20 @@ export default function GuestBooking() {
 
       if (patientError) throw patientError;
 
-      // Upload documents if any
+      // Upload documents if any - create secure upload token first
       if (documents.length > 0) {
-        await uploadDocuments(patient.id);
+        // Create a short-lived upload token for secure document upload
+        const { data: tokenData, error: tokenError } = await supabase
+          .from('upload_tokens')
+          .insert({ patient_id: patient.id })
+          .select('token')
+          .single();
+
+        if (tokenError) {
+          console.error('Failed to create upload token:', tokenError);
+        } else {
+          await uploadDocuments(patient.id, tokenData.token);
+        }
       }
 
       // Create appointment

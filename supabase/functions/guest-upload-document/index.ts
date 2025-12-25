@@ -19,30 +19,43 @@ serve(async (req) => {
 
     const formData = await req.formData();
     const patientId = formData.get("patient_id") as string;
+    const uploadToken = formData.get("upload_token") as string;
     const file = formData.get("file") as File;
     const title = formData.get("title") as string || file.name;
     const documentType = formData.get("document_type") as string || "other";
 
-    if (!patientId || !file) {
+    // Validate required fields
+    if (!patientId || !file || !uploadToken) {
+      console.log("Missing required fields:", { patientId: !!patientId, file: !!file, uploadToken: !!uploadToken });
       return new Response(
-        JSON.stringify({ error: "patient_id and file are required" }),
+        JSON.stringify({ error: "patient_id, upload_token, and file are required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Verify patient exists
-    const { data: patient, error: patientError } = await supabase
-      .from("patients")
-      .select("id")
-      .eq("id", patientId)
+    // Validate upload token - must match patient_id, not be expired, and not be used
+    const { data: tokenData, error: tokenError } = await supabase
+      .from("upload_tokens")
+      .select("*")
+      .eq("token", uploadToken)
+      .eq("patient_id", patientId)
+      .gt("expires_at", new Date().toISOString())
+      .is("used_at", null)
       .single();
 
-    if (patientError || !patient) {
+    if (tokenError || !tokenData) {
+      console.log("Token validation failed:", { tokenError, uploadToken: uploadToken?.substring(0, 8) + "..." });
       return new Response(
-        JSON.stringify({ error: "Patient not found" }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ error: "Invalid or expired upload token" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // Mark token as used (but don't block if this fails)
+    await supabase
+      .from("upload_tokens")
+      .update({ used_at: new Date().toISOString() })
+      .eq("id", tokenData.id);
 
     // Upload file to storage
     const fileBuffer = await file.arrayBuffer();
@@ -87,6 +100,8 @@ serve(async (req) => {
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    console.log("Document uploaded successfully:", { documentId: document.id, patientId });
 
     return new Response(
       JSON.stringify({ success: true, document }),
