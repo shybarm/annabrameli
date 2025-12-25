@@ -309,7 +309,7 @@ export default function NewPatient() {
             <Button type="button" variant="outline" onClick={() => navigate('/admin/patients')}>
               ביטול
             </Button>
-            <Button type="submit" className="bg-medical-600 hover:bg-medical-700" disabled={createPatient.isPending}>
+            <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90" disabled={createPatient.isPending}>
               <Save className="h-4 w-4 ml-2" />
               {createPatient.isPending ? 'שומר...' : 'שמור מטופל'}
             </Button>

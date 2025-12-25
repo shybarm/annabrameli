@@ -163,7 +163,7 @@ export default function AppointmentDetail() {
     return (
       <AdminLayout>
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-medical-600" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
         </div>
       </AdminLayout>
     );
@@ -192,7 +192,7 @@ export default function AppointmentDetail() {
               <ArrowRight className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">פרטי התור</h1>
+              <h1 className="text-2xl font-bold text-foreground">פרטי התור</h1>
               <p className="text-muted-foreground">
                 {format(new Date(appointment.scheduled_at), 'EEEE, d בMMMM yyyy', { locale: he })}
               </p>
@@ -208,16 +208,16 @@ export default function AppointmentDetail() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5 text-medical-600" />
+                <User className="h-5 w-5 text-primary" />
                 פרטי המטופל
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div 
-                className="flex items-center gap-4 p-4 bg-medical-50 rounded-lg cursor-pointer hover:bg-medical-100"
+                className="flex items-center gap-4 p-4 bg-primary/10 rounded-lg cursor-pointer hover:bg-primary/20"
                 onClick={() => navigate(`/admin/patients/${appointment.patient_id}`)}
               >
-                <div className="flex items-center justify-center w-14 h-14 rounded-full bg-medical-200 text-medical-700 font-bold text-lg">
+                <div className="flex items-center justify-center w-14 h-14 rounded-full bg-primary/20 text-primary font-bold text-lg">
                   {appointment.patients?.first_name?.charAt(0)}{appointment.patients?.last_name?.charAt(0)}
                 </div>
                 <div>
@@ -256,7 +256,7 @@ export default function AppointmentDetail() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-medical-600" />
+                <Calendar className="h-5 w-5 text-primary" />
                 פרטי התור
               </CardTitle>
             </CardHeader>
@@ -309,7 +309,7 @@ export default function AppointmentDetail() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5 text-medical-600" />
+              <FileText className="h-5 w-5 text-primary" />
               סיכום ביקור והערות פנימיות
             </CardTitle>
           </CardHeader>
@@ -344,7 +344,7 @@ export default function AppointmentDetail() {
             <Button 
               onClick={handleSaveNotes} 
               disabled={updateAppointment.isPending}
-              className="bg-medical-600 hover:bg-medical-700"
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
               <Save className="h-4 w-4 ml-2" />
               {updateAppointment.isPending ? 'שומר...' : 'שמור הערות'}
@@ -356,7 +356,7 @@ export default function AppointmentDetail() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5 text-medical-600" />
+              <FileText className="h-5 w-5 text-primary" />
               מסמכים וקבצים
             </CardTitle>
             <Button 

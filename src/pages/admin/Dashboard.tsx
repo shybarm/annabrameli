@@ -66,7 +66,7 @@ export default function AdminDashboard() {
               <Plus className="h-4 w-4 ml-2" />
               מטופל חדש
             </Button>
-            <Button onClick={() => navigate('/admin/appointments/new')} className="bg-medical-600 hover:bg-medical-700">
+            <Button onClick={() => navigate('/admin/appointments/new')} className="bg-primary text-primary-foreground hover:bg-primary/90">
               <Plus className="h-4 w-4 ml-2" />
               תור חדש
             </Button>

@@ -43,7 +43,7 @@ export default function SettingsPage() {
                 <Input id="clinic_address" defaultValue="רחוב הרופאים 1, תל אביב" />
               </div>
             </div>
-            <Button className="bg-medical-600 hover:bg-medical-700">שמור שינויים</Button>
+            <Button className="bg-primary text-primary-foreground hover:bg-primary/90">שמור שינויים</Button>
           </CardContent>
         </Card>
 
@@ -76,7 +76,7 @@ export default function SettingsPage() {
               </div>
             </div>
             <Separator className="my-4" />
-            <Button className="bg-medical-600 hover:bg-medical-700">שמור שינויים</Button>
+            <Button className="bg-primary text-primary-foreground hover:bg-primary/90">שמור שינויים</Button>
           </CardContent>
         </Card>
 
@@ -103,7 +103,7 @@ export default function SettingsPage() {
                 <Input id="reminder" type="number" defaultValue="24" />
               </div>
             </div>
-            <Button className="bg-medical-600 hover:bg-medical-700">שמור שינויים</Button>
+            <Button className="bg-primary text-primary-foreground hover:bg-primary/90">שמור שינויים</Button>
           </CardContent>
         </Card>
 

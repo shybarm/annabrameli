@@ -70,7 +70,7 @@ export default function NewInvoice() {
   };
 
   const subtotal = items.reduce((sum, item) => sum + item.total, 0);
-  const taxRate = 17;
+  const taxRate = 18;
   const taxAmount = subtotal * (taxRate / 100);
   const total = subtotal + taxAmount;
 
@@ -275,7 +275,7 @@ export default function NewInvoice() {
             </Button>
             <Button 
               type="submit" 
-              className="bg-medical-600 hover:bg-medical-700" 
+              className="bg-primary text-primary-foreground hover:bg-primary/90" 
               disabled={!selectedPatientId || createInvoice.isPending}
             >
               <Save className="h-4 w-4 ml-2" />
