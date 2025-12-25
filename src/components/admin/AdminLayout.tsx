@@ -17,9 +17,12 @@ import {
   Stethoscope,
   UserCircle,
   ChevronLeft,
+  Wallet,
+  UsersRound,
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { ClinicSelector } from './ClinicSelector';
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -30,7 +33,9 @@ const navItems = [
   { href: '/admin/patients', icon: Users, label: 'מטופלים' },
   { href: '/admin/appointments', icon: Calendar, label: 'תורים' },
   { href: '/admin/billing', icon: Receipt, label: 'חיוב וחשבוניות' },
+  { href: '/admin/expenses', icon: Wallet, label: 'הוצאות' },
   { href: '/admin/messages', icon: MessageSquare, label: 'הודעות' },
+  { href: '/admin/team', icon: UsersRound, label: 'צוות' },
   { href: '/admin/settings', icon: Settings, label: 'הגדרות' },
 ];
 
@@ -85,6 +90,11 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
   return (
     <div className="min-h-screen bg-gray-50" dir="rtl">
+      {/* Clinic Selector */}
+      <div className="lg:mr-64">
+        <ClinicSelector />
+      </div>
+
       {/* Mobile header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b z-50 flex items-center justify-between px-4">
         <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(!sidebarOpen)}>
