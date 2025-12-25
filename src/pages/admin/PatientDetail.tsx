@@ -167,8 +167,39 @@ export default function PatientDetail() {
     window.open(`https://wa.me/972${phone.slice(-9)}?text=${message}`, '_blank');
   };
 
+  // File validation constants
+  const ALLOWED_FILE_TYPES = [
+    'application/pdf',
+    'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  ];
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
   const uploadFile = async (file: File): Promise<string | null> => {
     if (!id) return null;
+    
+    // Validate file type
+    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+      toast({ 
+        title: 'סוג קובץ לא נתמך', 
+        description: 'נא להעלות רק PDF, תמונות או מסמכי Office',
+        variant: 'destructive' 
+      });
+      return null;
+    }
+    
+    // Validate file size
+    if (file.size > MAX_FILE_SIZE) {
+      toast({ 
+        title: 'קובץ גדול מדי', 
+        description: 'גודל מקסימלי: 10MB',
+        variant: 'destructive' 
+      });
+      return null;
+    }
     
     try {
       const fileExt = file.name.split('.').pop();
