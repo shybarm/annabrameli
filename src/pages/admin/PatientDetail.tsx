@@ -58,6 +58,8 @@ export default function PatientDetail() {
   const [isGeneratingIntake, setIsGeneratingIntake] = useState(false);
   const [intakeLink, setIntakeLink] = useState<string | null>(null);
   const [deletingDocId, setDeletingDocId] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{ total: number; completed: number } | null>(null);
 
   // Delete document mutation
   const deleteDocument = useMutation({
@@ -165,13 +167,12 @@ export default function PatientDetail() {
     window.open(`https://wa.me/972${phone.slice(-9)}?text=${message}`, '_blank');
   };
 
-  const uploadFile = async (file: File) => {
-    if (!id) return;
+  const uploadFile = async (file: File): Promise<boolean> => {
+    if (!id) return false;
     
-    setIsUploading(true);
     try {
       const fileExt = file.name.split('.').pop();
-      const filePath = `${id}/${Date.now()}.${fileExt}`;
+      const filePath = `${id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from('patient-documents')
@@ -191,21 +192,75 @@ export default function PatientDetail() {
         });
 
       if (dbError) throw dbError;
-
-      queryClient.invalidateQueries({ queryKey: ['patient-documents', id] });
-      toast({ title: 'הקובץ הועלה בהצלחה' });
+      return true;
     } catch (error: any) {
-      toast({ title: 'שגיאה בהעלאת הקובץ', description: error.message, variant: 'destructive' });
-    } finally {
-      setIsUploading(false);
+      toast({ title: `שגיאה בהעלאת ${file.name}`, description: error.message, variant: 'destructive' });
+      return false;
     }
+  };
+
+  const uploadMultipleFiles = async (files: File[]) => {
+    if (!id || files.length === 0) return;
+    
+    setIsUploading(true);
+    setUploadProgress({ total: files.length, completed: 0 });
+
+    let successCount = 0;
+    for (let i = 0; i < files.length; i++) {
+      const success = await uploadFile(files[i]);
+      if (success) successCount++;
+      setUploadProgress({ total: files.length, completed: i + 1 });
+    }
+
+    queryClient.invalidateQueries({ queryKey: ['patient-documents', id] });
+    
+    if (successCount === files.length) {
+      toast({ title: `${successCount} קבצים הועלו בהצלחה` });
+    } else if (successCount > 0) {
+      toast({ title: `${successCount} מתוך ${files.length} קבצים הועלו בהצלחה`, variant: 'default' });
+    }
+    
+    setIsUploading(false);
+    setUploadProgress(null);
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (files) {
-      Array.from(files).forEach(uploadFile);
+    if (files && files.length > 0) {
+      uploadMultipleFiles(Array.from(files));
     }
+    // Reset input so same file can be selected again
+    e.target.value = '';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = Array.from(e.dataTransfer.files).filter(file => {
+      const validTypes = ['image/', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+      return validTypes.some(type => file.type.startsWith(type) || file.type === type);
+    });
+
+    if (files.length === 0) {
+      toast({ title: 'סוג קובץ לא נתמך', description: 'ניתן להעלות תמונות, PDF או מסמכי Word', variant: 'destructive' });
+      return;
+    }
+
+    uploadMultipleFiles(files);
   };
 
   const openDocumentViewer = (index: number) => {
@@ -797,18 +852,30 @@ export default function PatientDetail() {
                 )}
               </Card>
 
-              {/* Documents List */}
-              <Card>
+              {/* Documents List with Drag & Drop */}
+              <Card
+                className={`transition-all ${isDragging ? 'ring-2 ring-primary ring-offset-2 bg-primary/5' : ''}`}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+              >
                 <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle>מסמכים ({documents?.length || 0})</CardTitle>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isUploading}
-                  >
-                    <Upload className="h-4 w-4 ml-2" />
-                    {isUploading ? 'מעלה...' : 'העלה קובץ'}
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    {uploadProgress && (
+                      <span className="text-sm text-muted-foreground">
+                        {uploadProgress.completed}/{uploadProgress.total}
+                      </span>
+                    )}
+                    <Button 
+                      variant="outline" 
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isUploading}
+                    >
+                      <Upload className="h-4 w-4 ml-2" />
+                      {isUploading ? 'מעלה...' : 'העלה קבצים'}
+                    </Button>
+                  </div>
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -819,6 +886,32 @@ export default function PatientDetail() {
                   />
                 </CardHeader>
                 <CardContent>
+                  {/* Drag & Drop Zone */}
+                  {isDragging && (
+                    <div className="border-2 border-dashed border-primary rounded-lg p-8 mb-4 text-center bg-primary/5 animate-pulse">
+                      <Upload className="h-12 w-12 text-primary mx-auto mb-2" />
+                      <p className="text-primary font-medium">שחרר כדי להעלות</p>
+                    </div>
+                  )}
+
+                  {/* Upload Progress */}
+                  {isUploading && uploadProgress && (
+                    <div className="mb-4 p-4 bg-muted rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium">מעלה קבצים...</span>
+                        <span className="text-sm text-muted-foreground">
+                          {uploadProgress.completed} / {uploadProgress.total}
+                        </span>
+                      </div>
+                      <div className="w-full bg-muted-foreground/20 rounded-full h-2">
+                        <div 
+                          className="bg-primary h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${(uploadProgress.completed / uploadProgress.total) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
                   {documents && documents.length > 0 ? (
                     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                       {documents.map((doc, index) => (
@@ -880,11 +973,15 @@ export default function PatientDetail() {
                         </div>
                       ))}
                     </div>
-                  ) : (
-                    <div className="text-center py-8">
-                      <FileText className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                      <p className="text-muted-foreground">אין מסמכים</p>
-                      <p className="text-sm text-muted-foreground">לחץ על "העלה קובץ" כדי להוסיף מסמכים</p>
+                  ) : !isDragging && (
+                    <div 
+                      className="border-2 border-dashed border-muted-foreground/20 rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 hover:bg-muted/50 transition-all"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <Upload className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
+                      <p className="text-muted-foreground font-medium">גרור קבצים לכאן</p>
+                      <p className="text-sm text-muted-foreground">או לחץ לבחירת קבצים</p>
+                      <p className="text-xs text-muted-foreground mt-2">תמונות, PDF, Word</p>
                     </div>
                   )}
                 </CardContent>
