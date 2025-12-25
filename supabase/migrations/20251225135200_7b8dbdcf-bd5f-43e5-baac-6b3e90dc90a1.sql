@@ -1,0 +1,3 @@
+-- Allow staff to delete patients
+-- The existing "Staff can manage patients" policy with command ALL already covers DELETE
+-- No additional migration needed as the policy already exists
