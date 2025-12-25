@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.guest-upload-document]
 verify_jwt = false
+
+[functions.notify-intake-complete]
+verify_jwt = false

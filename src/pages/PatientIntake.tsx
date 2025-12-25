@@ -229,6 +229,20 @@ export default function PatientIntake() {
 
       if (tokenUpdateError) throw tokenUpdateError;
 
+      // Send notification email to clinic staff
+      try {
+        await supabase.functions.invoke('notify-intake-complete', {
+          body: {
+            patientId: tokenData.patient_id,
+            patientName: `${formData.first_name} ${formData.last_name}`,
+          },
+        });
+        console.log('Intake notification sent');
+      } catch (notifyError) {
+        console.error('Failed to send intake notification:', notifyError);
+        // Don't fail the form submission if notification fails
+      }
+
       setSubmitted(true);
       toast({ title: 'הטופס נשלח בהצלחה!' });
     } catch (err: any) {
