@@ -124,7 +124,7 @@ export default function AppointmentDetail() {
           patient_id: appointment.patient_id,
           title: file.name,
           file_path: filePath,
-          document_type: file.type.includes('image') ? 'image' : 'document',
+          document_type: file.type.includes('image') ? 'imaging' : 'other',
           mime_type: file.type,
           file_size: file.size,
         });

@@ -107,7 +107,7 @@ export default function PatientDetail() {
           patient_id: id,
           title: file.name,
           file_path: filePath,
-          document_type: file.type.includes('image') ? 'image' : 'document',
+          document_type: file.type.includes('image') ? 'imaging' : 'other',
           mime_type: file.type,
           file_size: file.size,
         });
