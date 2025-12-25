@@ -1,0 +1,128 @@
+import { useState } from 'react';
+import { AdminLayout } from '@/components/admin/AdminLayout';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { usePatients } from '@/hooks/usePatients';
+import { useNavigate } from 'react-router-dom';
+import { Plus, Search, Phone, Mail, User } from 'lucide-react';
+import { format } from 'date-fns';
+
+export default function PatientsList() {
+  const navigate = useNavigate();
+  const { data: patients, isLoading } = usePatients();
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredPatients = patients?.filter(patient => {
+    const query = searchQuery.toLowerCase();
+    return (
+      patient.first_name.toLowerCase().includes(query) ||
+      patient.last_name.toLowerCase().includes(query) ||
+      patient.phone?.toLowerCase().includes(query) ||
+      patient.id_number?.toLowerCase().includes(query)
+    );
+  }) || [];
+
+  return (
+    <AdminLayout>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">מטופלים</h1>
+            <p className="text-muted-foreground">ניהול רשימת המטופלים במרפאה</p>
+          </div>
+          <Button onClick={() => navigate('/admin/patients/new')} className="bg-medical-600 hover:bg-medical-700">
+            <Plus className="h-4 w-4 ml-2" />
+            מטופל חדש
+          </Button>
+        </div>
+
+        {/* Search */}
+        <div className="relative max-w-md">
+          <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="חיפוש לפי שם, טלפון או ת.ז..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pr-10"
+          />
+        </div>
+
+        {/* Patients List */}
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-medical-600" />
+          </div>
+        ) : filteredPatients.length > 0 ? (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {filteredPatients.map((patient) => (
+              <Card 
+                key={patient.id} 
+                className="cursor-pointer hover:shadow-md transition-shadow"
+                onClick={() => navigate(`/admin/patients/${patient.id}`)}
+              >
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center justify-center w-12 h-12 rounded-full bg-medical-100 text-medical-700 font-medium text-lg">
+                        {patient.first_name.charAt(0)}{patient.last_name.charAt(0)}
+                      </div>
+                      <div>
+                        <CardTitle className="text-lg">
+                          {patient.first_name} {patient.last_name}
+                        </CardTitle>
+                        {patient.id_number && (
+                          <p className="text-sm text-muted-foreground">ת.ז: {patient.id_number}</p>
+                        )}
+                      </div>
+                    </div>
+                    <Badge variant={patient.status === 'active' ? 'default' : 'secondary'}>
+                      {patient.status === 'active' ? 'פעיל' : 'לא פעיל'}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {patient.phone && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Phone className="h-4 w-4" />
+                      <span dir="ltr">{patient.phone}</span>
+                    </div>
+                  )}
+                  {patient.email && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Mail className="h-4 w-4" />
+                      <span>{patient.email}</span>
+                    </div>
+                  )}
+                  <div className="text-xs text-muted-foreground pt-2 border-t">
+                    נוסף: {format(new Date(patient.created_at), 'd/M/yyyy')}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <Card className="py-12">
+            <CardContent className="text-center">
+              <User className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                {searchQuery ? 'לא נמצאו תוצאות' : 'אין מטופלים במערכת'}
+              </h3>
+              <p className="text-muted-foreground mb-4">
+                {searchQuery ? 'נסה לחפש עם מילות מפתח אחרות' : 'התחל להוסיף מטופלים למרפאה'}
+              </p>
+              {!searchQuery && (
+                <Button onClick={() => navigate('/admin/patients/new')}>
+                  <Plus className="h-4 w-4 ml-2" />
+                  הוסף מטופל ראשון
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    </AdminLayout>
+  );
+}
