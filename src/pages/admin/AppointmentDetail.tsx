@@ -11,9 +11,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { DocumentViewer } from '@/components/admin/DocumentViewer';
 import { 
   ArrowRight, User, Clock, Calendar, FileText, Save, 
-  Upload, MessageCircle, CreditCard, File, Printer, Mail, Pill, Stethoscope
+  Upload, MessageCircle, CreditCard, File, Printer, Mail, Pill, Stethoscope, Eye
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
@@ -31,6 +32,8 @@ export default function AppointmentDetail() {
   const [status, setStatus] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [viewerIndex, setViewerIndex] = useState(0);
 
   // Fetch appointment
   const { data: appointment, isLoading } = useQuery({
@@ -647,7 +650,7 @@ export default function AppointmentDetail() {
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
                   <FileText className="h-5 w-5 text-primary" />
-                  מסמכים וקבצים
+                  מסמכים וקבצים ({documents?.length || 0})
                 </CardTitle>
                 <Button 
                   variant="outline" 
@@ -669,8 +672,15 @@ export default function AppointmentDetail() {
               <CardContent>
                 {documents && documents.length > 0 ? (
                   <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                    {documents.map((doc) => (
-                      <div key={doc.id} className="flex items-center gap-3 p-3 border rounded-lg">
+                    {documents.map((doc, index) => (
+                      <div 
+                        key={doc.id} 
+                        className="flex items-center gap-3 p-3 border rounded-lg hover:bg-accent/50 cursor-pointer group"
+                        onClick={() => {
+                          setViewerIndex(index);
+                          setViewerOpen(true);
+                        }}
+                      >
                         <File className="h-8 w-8 text-muted-foreground" />
                         <div className="flex-1 min-w-0">
                           <p className="font-medium truncate">{doc.title}</p>
@@ -678,6 +688,7 @@ export default function AppointmentDetail() {
                             {format(new Date(doc.created_at), 'dd/MM/yyyy')}
                           </p>
                         </div>
+                        <Eye className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                       </div>
                     ))}
                   </div>
@@ -688,6 +699,16 @@ export default function AppointmentDetail() {
                 )}
               </CardContent>
             </Card>
+            
+            {/* Document Viewer Modal */}
+            {documents && documents.length > 0 && (
+              <DocumentViewer
+                documents={documents}
+                initialIndex={viewerIndex}
+                isOpen={viewerOpen}
+                onClose={() => setViewerOpen(false)}
+              />
+            )}
           </TabsContent>
         </Tabs>
       </div>

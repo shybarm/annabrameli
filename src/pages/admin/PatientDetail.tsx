@@ -14,9 +14,10 @@ import { usePatientInvoices } from '@/hooks/useInvoices';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { DocumentViewer } from '@/components/admin/DocumentViewer';
 import { 
   ArrowRight, User, Phone, Mail, Calendar, CreditCard, 
-  FileText, Edit, Save, X, MessageCircle, Upload, File, Pill, Stethoscope
+  FileText, Edit, Save, X, MessageCircle, Upload, File, Pill, Stethoscope, Eye, Sparkles
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
@@ -37,6 +38,10 @@ export default function PatientDetail() {
   const [isUploading, setIsUploading] = useState(false);
   const [medicalNotes, setMedicalNotes] = useState('');
   const [allergiesInput, setAllergiesInput] = useState('');
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [viewerIndex, setViewerIndex] = useState(0);
+  const [aiSummary, setAiSummary] = useState('');
+  const [isSummarizing, setIsSummarizing] = useState(false);
 
   // Fetch patient documents
   const { data: documents } = useQuery({
@@ -127,6 +132,46 @@ export default function PatientDetail() {
     const files = e.target.files;
     if (files) {
       Array.from(files).forEach(uploadFile);
+    }
+  };
+
+  const openDocumentViewer = (index: number) => {
+    setViewerIndex(index);
+    setViewerOpen(true);
+  };
+
+  const handleGenerateSummary = async () => {
+    if (!documents || documents.length === 0) return;
+    
+    setIsSummarizing(true);
+    setAiSummary('');
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('summarize-documents', {
+        body: {
+          documents: documents.map(doc => ({
+            title: doc.title,
+            document_type: doc.document_type,
+            created_at: doc.created_at,
+          })),
+          patientName: patient ? `${patient.first_name} ${patient.last_name}` : undefined,
+        },
+      });
+
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || 'Failed to generate summary');
+      
+      setAiSummary(data.summary);
+      toast({ title: 'הסיכום נוצר בהצלחה' });
+    } catch (error: any) {
+      console.error('Summary error:', error);
+      toast({ 
+        title: 'שגיאה ביצירת הסיכום', 
+        description: error.message, 
+        variant: 'destructive' 
+      });
+    } finally {
+      setIsSummarizing(false);
     }
   };
 
@@ -440,50 +485,93 @@ export default function PatientDetail() {
           </TabsContent>
 
           <TabsContent value="documents">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>מסמכים</CardTitle>
-                <Button 
-                  variant="outline" 
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploading}
-                >
-                  <Upload className="h-4 w-4 ml-2" />
-                  {isUploading ? 'מעלה...' : 'העלה קובץ'}
-                </Button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  multiple
-                  accept="image/*,.pdf,.doc,.docx"
-                  className="hidden"
-                  onChange={handleFileSelect}
-                />
-              </CardHeader>
-              <CardContent>
-                {documents && documents.length > 0 ? (
-                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                    {documents.map((doc) => (
-                      <div key={doc.id} className="flex items-center gap-3 p-3 border rounded-lg hover:bg-accent/50">
-                        <File className="h-8 w-8 text-muted-foreground" />
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium truncate">{doc.title}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {format(new Date(doc.created_at), 'dd/MM/yyyy')}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <FileText className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                    <p className="text-muted-foreground">אין מסמכים</p>
-                    <p className="text-sm text-muted-foreground">לחץ על "העלה קובץ" כדי להוסיף מסמכים</p>
-                  </div>
+            <div className="space-y-4">
+              {/* AI Summary Section */}
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-primary" />
+                    סיכום מסמכים AI
+                  </CardTitle>
+                  <Button 
+                    variant="outline" 
+                    onClick={handleGenerateSummary}
+                    disabled={isSummarizing || !documents || documents.length === 0}
+                  >
+                    <Sparkles className="h-4 w-4 ml-2" />
+                    {isSummarizing ? 'מייצר סיכום...' : 'צור סיכום'}
+                  </Button>
+                </CardHeader>
+                {aiSummary && (
+                  <CardContent>
+                    <div className="bg-muted/50 p-4 rounded-lg whitespace-pre-wrap text-sm">
+                      {aiSummary}
+                    </div>
+                  </CardContent>
                 )}
-              </CardContent>
-            </Card>
+              </Card>
+
+              {/* Documents List */}
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle>מסמכים ({documents?.length || 0})</CardTitle>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                  >
+                    <Upload className="h-4 w-4 ml-2" />
+                    {isUploading ? 'מעלה...' : 'העלה קובץ'}
+                  </Button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    accept="image/*,.pdf,.doc,.docx"
+                    className="hidden"
+                    onChange={handleFileSelect}
+                  />
+                </CardHeader>
+                <CardContent>
+                  {documents && documents.length > 0 ? (
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                      {documents.map((doc, index) => (
+                        <div 
+                          key={doc.id} 
+                          className="flex items-center gap-3 p-3 border rounded-lg hover:bg-accent/50 cursor-pointer group"
+                          onClick={() => openDocumentViewer(index)}
+                        >
+                          <File className="h-8 w-8 text-muted-foreground" />
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium truncate">{doc.title}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {format(new Date(doc.created_at), 'dd/MM/yyyy')}
+                            </p>
+                          </div>
+                          <Eye className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <FileText className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
+                      <p className="text-muted-foreground">אין מסמכים</p>
+                      <p className="text-sm text-muted-foreground">לחץ על "העלה קובץ" כדי להוסיף מסמכים</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Document Viewer Modal */}
+            {documents && documents.length > 0 && (
+              <DocumentViewer
+                documents={documents}
+                initialIndex={viewerIndex}
+                isOpen={viewerOpen}
+                onClose={() => setViewerOpen(false)}
+              />
+            )}
           </TabsContent>
 
           <TabsContent value="notes">
