@@ -838,7 +838,11 @@ export default function PatientDetail() {
                 {invoices && invoices.length > 0 ? (
                   <div className="space-y-3">
                     {invoices.map((inv) => (
-                      <div key={inv.id} className="flex items-center justify-between p-3 rounded-lg border">
+                      <div 
+                        key={inv.id} 
+                        className="flex items-center justify-between p-3 rounded-lg border cursor-pointer hover:bg-accent/50 transition-colors"
+                        onClick={() => navigate(`/admin/billing/${inv.id}`)}
+                      >
                         <div>
                           <p className="font-medium font-mono">{inv.invoice_number}</p>
                           <p className="text-sm text-muted-foreground">
