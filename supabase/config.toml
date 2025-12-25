@@ -2,3 +2,6 @@ project_id = "ftatmcyrmeyhghgckvbj"
 
 [functions.send-visit-summary]
 verify_jwt = false
+
+[functions.summarize-documents]
+verify_jwt = false
