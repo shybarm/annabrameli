@@ -8,3 +8,9 @@ verify_jwt = false
 
 [functions.send-appointment-reminders]
 verify_jwt = false
+
+[functions.tag-document]
+verify_jwt = false
+
+[functions.guest-upload-document]
+verify_jwt = false
