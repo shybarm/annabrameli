@@ -16,10 +16,13 @@ import Contact from "./pages/Contact";
 import Auth from "./pages/Auth";
 import AdminDashboard from "./pages/admin/Dashboard";
 import PatientsList from "./pages/admin/PatientsList";
+import PatientDetail from "./pages/admin/PatientDetail";
 import NewPatient from "./pages/admin/NewPatient";
 import AppointmentsList from "./pages/admin/AppointmentsList";
+import AppointmentDetail from "./pages/admin/AppointmentDetail";
 import NewAppointment from "./pages/admin/NewAppointment";
 import BillingPage from "./pages/admin/BillingPage";
+import NewInvoice from "./pages/admin/NewInvoice";
 import MessagesPage from "./pages/admin/MessagesPage";
 import SettingsPage from "./pages/admin/SettingsPage";
 import NotFound from "./pages/NotFound";
@@ -59,12 +62,12 @@ const App = () => (
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/patients" element={<PatientsList />} />
             <Route path="/admin/patients/new" element={<NewPatient />} />
-            <Route path="/admin/patients/:id" element={<PatientsList />} />
+            <Route path="/admin/patients/:id" element={<PatientDetail />} />
             <Route path="/admin/appointments" element={<AppointmentsList />} />
             <Route path="/admin/appointments/new" element={<NewAppointment />} />
-            <Route path="/admin/appointments/:id" element={<AppointmentsList />} />
+            <Route path="/admin/appointments/:id" element={<AppointmentDetail />} />
             <Route path="/admin/billing" element={<BillingPage />} />
-            <Route path="/admin/billing/new" element={<BillingPage />} />
+            <Route path="/admin/billing/new" element={<NewInvoice />} />
             <Route path="/admin/messages" element={<MessagesPage />} />
             <Route path="/admin/settings" element={<SettingsPage />} />
             
