@@ -16,6 +16,49 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // SECURITY: This function should only be called by cron scheduler or staff
+  // Verify authorization - either service role token or staff authentication
+  const authHeader = req.headers.get('Authorization');
+  
+  if (authHeader) {
+    // Check if it's a service role call (from cron) or a staff user
+    const token = authHeader.replace('Bearer ', '');
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    
+    // If not service role, verify it's a staff user
+    if (token !== supabaseServiceKey) {
+      const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+        global: { headers: { Authorization: authHeader } }
+      });
+
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error || !user) {
+        console.error("Authentication failed: Invalid or expired token");
+        return new Response(
+          JSON.stringify({ error: 'Unauthorized - invalid token' }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Verify staff role
+      const { data: staffCheck, error: rpcError } = await supabase.rpc('is_staff', { _user_id: user.id });
+      if (rpcError || !staffCheck) {
+        console.error("Authorization failed: Not a staff member");
+        return new Response(
+          JSON.stringify({ error: 'Forbidden - staff only' }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+  } else {
+    // No auth header - reject
+    console.error("Authentication failed: No authorization header");
+    return new Response(
+      JSON.stringify({ error: 'Unauthorized - missing authorization' }),
+      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
   console.log("Starting appointment reminder check...");
 
   try {

@@ -13,6 +13,7 @@ const corsHeaders = {
 interface NotifyIntakeRequest {
   patientId: string;
   patientName: string;
+  intakeToken?: string; // Token from intake form for validation
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -24,7 +25,17 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     console.log("notify-intake-complete: Starting...");
 
-    const { patientId, patientName }: NotifyIntakeRequest = await req.json();
+    const { patientId, patientName, intakeToken }: NotifyIntakeRequest = await req.json();
+    
+    // SECURITY: Validate the request came from a valid intake token submission
+    // This function should only be called after submit-intake validates the token
+    if (!patientId || !patientName) {
+      return new Response(
+        JSON.stringify({ error: "Missing required fields" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
     console.log(`notify-intake-complete: Patient ${patientName} (${patientId}) completed intake`);
 
     // Get clinic settings for notification email

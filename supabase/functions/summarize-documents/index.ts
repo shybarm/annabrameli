@@ -6,12 +6,50 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Helper function to verify staff authentication
+async function verifyStaffAuth(req: Request): Promise<{ isStaff: boolean; userId?: string; error?: string }> {
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader?.startsWith('Bearer ')) {
+    return { isStaff: false, error: 'Missing authorization header' };
+  }
+
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+  
+  const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+    global: { headers: { Authorization: authHeader } }
+  });
+
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user) {
+    return { isStaff: false, error: 'Invalid or expired token' };
+  }
+
+  // Verify staff role using the is_staff function
+  const { data: staffCheck, error: rpcError } = await supabase.rpc('is_staff', { _user_id: user.id });
+  if (rpcError || !staffCheck) {
+    return { isStaff: false, error: 'Access denied - staff only' };
+  }
+
+  return { isStaff: true, userId: user.id };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // SECURITY: Verify staff authentication
+    const { isStaff, error: authError } = await verifyStaffAuth(req);
+    if (!isStaff) {
+      console.error("Authentication failed:", authError);
+      return new Response(
+        JSON.stringify({ error: authError || 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const { documents, patientName, patientId } = await req.json();
     
     if (!documents || !Array.isArray(documents) || documents.length === 0) {
