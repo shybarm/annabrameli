@@ -231,10 +231,13 @@ const FAQ = () => {
                       key={category.title}
                       onClick={() => {
                         setActiveCategory(category.title);
-                        // Scroll to the category section
+                        // Scroll to the category section with offset for header
                         const element = document.getElementById(category.title.replace(/\s+/g, "-"));
                         if (element) {
-                          element.scrollIntoView({ behavior: "smooth", block: "start" });
+                          const headerOffset = 100; // Account for sticky header
+                          const elementPosition = element.getBoundingClientRect().top;
+                          const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                          window.scrollTo({ top: offsetPosition, behavior: "smooth" });
                         }
                       }}
                       className={`w-full text-right px-3 py-2 rounded-lg text-sm transition-colors ${
