@@ -34,8 +34,6 @@ import PatientPortal from "./pages/patient/PatientPortal";
 import GuestBooking from "./pages/GuestBooking";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
-
 // Layout for public pages
 const PublicLayout = ({ children }: { children: React.ReactNode }) => (
   <div className="min-h-screen flex flex-col">
@@ -45,6 +43,15 @@ const PublicLayout = ({ children }: { children: React.ReactNode }) => (
     <ChatWidget />
   </div>
 );
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,
+      retry: 1,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
