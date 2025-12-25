@@ -8,17 +8,28 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { usePatient, useUpdatePatient } from '@/hooks/usePatients';
+import { usePatient, useUpdatePatient, useDeletePatient } from '@/hooks/usePatients';
 import { usePatientAppointments } from '@/hooks/useAppointments';
 import { usePatientInvoices } from '@/hooks/useInvoices';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { DocumentViewer } from '@/components/admin/DocumentViewer';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { 
   ArrowRight, User, Phone, Mail, Calendar, CreditCard, 
   FileText, Edit, Save, X, MessageCircle, Upload, File, Pill, Stethoscope, Eye, Sparkles,
-  ClipboardList, Link, CheckCircle
+  ClipboardList, Link, CheckCircle, Trash2
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
@@ -33,6 +44,7 @@ export default function PatientDetail() {
   const { data: appointments } = usePatientAppointments(id);
   const { data: invoices } = usePatientInvoices(id);
   const updatePatient = useUpdatePatient();
+  const deletePatient = useDeletePatient();
   
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<any>(null);
@@ -45,6 +57,46 @@ export default function PatientDetail() {
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [isGeneratingIntake, setIsGeneratingIntake] = useState(false);
   const [intakeLink, setIntakeLink] = useState<string | null>(null);
+  const [deletingDocId, setDeletingDocId] = useState<string | null>(null);
+
+  // Delete document mutation
+  const deleteDocument = useMutation({
+    mutationFn: async (doc: { id: string; file_path: string }) => {
+      // Delete from storage first
+      const { error: storageError } = await supabase.storage
+        .from('patient-documents')
+        .remove([doc.file_path]);
+      
+      if (storageError) throw storageError;
+
+      // Then delete from database
+      const { error: dbError } = await supabase
+        .from('patient_documents')
+        .delete()
+        .eq('id', doc.id);
+      
+      if (dbError) throw dbError;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['patient-documents', id] });
+      toast({ title: 'המסמך נמחק בהצלחה' });
+      setDeletingDocId(null);
+    },
+    onError: (error: any) => {
+      toast({ title: 'שגיאה במחיקת המסמך', description: error.message, variant: 'destructive' });
+      setDeletingDocId(null);
+    },
+  });
+
+  const handleDeletePatient = async () => {
+    if (!id) return;
+    try {
+      await deletePatient.mutateAsync(id);
+      navigate('/admin/patients');
+    } catch (error) {
+      // Error is handled in the hook
+    }
+  };
 
   // Fetch intake token
   const { data: intakeToken } = useQuery({
@@ -331,6 +383,30 @@ export default function PatientDetail() {
               <Calendar className="h-4 w-4 ml-2" />
               קבע תור
             </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" size="icon">
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>מחיקת מטופל</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    האם אתה בטוח שברצונך למחוק את {patient.first_name} {patient.last_name}? פעולה זו לא ניתנת לביטול.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>ביטול</AlertDialogCancel>
+                  <AlertDialogAction 
+                    onClick={handleDeletePatient}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    מחק מטופל
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
 
@@ -748,17 +824,59 @@ export default function PatientDetail() {
                       {documents.map((doc, index) => (
                         <div 
                           key={doc.id} 
-                          className="flex items-center gap-3 p-3 border rounded-lg hover:bg-accent/50 cursor-pointer group"
-                          onClick={() => openDocumentViewer(index)}
+                          className="flex items-center gap-3 p-3 border rounded-lg hover:bg-accent/50 group relative"
                         >
-                          <File className="h-8 w-8 text-muted-foreground" />
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium truncate">{doc.title}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {format(new Date(doc.created_at), 'dd/MM/yyyy')}
-                            </p>
+                          <div 
+                            className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer"
+                            onClick={() => openDocumentViewer(index)}
+                          >
+                            <File className="h-8 w-8 text-muted-foreground flex-shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium truncate">{doc.title}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {format(new Date(doc.created_at), 'dd/MM/yyyy')}
+                              </p>
+                            </div>
                           </div>
-                          <Eye className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => openDocumentViewer(index)}
+                            >
+                              <Eye className="h-4 w-4 text-muted-foreground" />
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>מחיקת מסמך</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    האם אתה בטוח שברצונך למחוק את "{doc.title}"? פעולה זו לא ניתנת לביטול.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>ביטול</AlertDialogCancel>
+                                  <AlertDialogAction 
+                                    onClick={() => deleteDocument.mutate({ id: doc.id, file_path: doc.file_path })}
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  >
+                                    מחק מסמך
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
                         </div>
                       ))}
                     </div>
