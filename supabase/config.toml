@@ -1,21 +1,24 @@
 project_id = "ftatmcyrmeyhghgckvbj"
 
+# Staff-only functions - require JWT authentication
 [functions.send-visit-summary]
-verify_jwt = false
+verify_jwt = true
 
 [functions.summarize-documents]
-verify_jwt = false
+verify_jwt = true
 
+[functions.tag-document]
+verify_jwt = true
+
+[functions.notify-intake-complete]
+verify_jwt = true
+
+# Scheduler function - should be called by cron, but we'll add internal auth check
 [functions.send-appointment-reminders]
 verify_jwt = false
 
-[functions.tag-document]
-verify_jwt = false
-
+# Guest functions - need public access but validate tokens internally
 [functions.guest-upload-document]
-verify_jwt = false
-
-[functions.notify-intake-complete]
 verify_jwt = false
 
 [functions.get-intake-patient]
