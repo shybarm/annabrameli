@@ -79,13 +79,17 @@ export const Header = () => {
                   ניהול
                 </Link>
               </Button>
+            ) : user ? (
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/portal">הפורטל שלי</Link>
+              </Button>
             ) : (
               <Button variant="ghost" size="sm" asChild>
-                <Link to="/auth">כניסה לצוות</Link>
+                <Link to="/auth">התחברות</Link>
               </Button>
             )}
             <Button variant="default" size="sm" className="shadow-teal" asChild>
-              <Link to="/contact">
+              <Link to="/book">
                 <Phone className="w-4 h-4 ml-2" />
                 קביעת תור
               </Link>
@@ -133,13 +137,17 @@ export const Header = () => {
                         ניהול
                       </Link>
                     </Button>
+                  ) : user ? (
+                    <Button variant="outline" className="w-full" asChild>
+                      <Link to="/portal">הפורטל שלי</Link>
+                    </Button>
                   ) : (
                     <Button variant="ghost" className="w-full" asChild>
-                      <Link to="/auth">כניסה לצוות</Link>
+                      <Link to="/auth">התחברות</Link>
                     </Button>
                   )}
                   <Button variant="default" className="w-full shadow-teal" asChild>
-                    <Link to="/contact">
+                    <Link to="/book">
                       <Phone className="w-4 h-4 ml-2" />
                       קביעת תור
                     </Link>

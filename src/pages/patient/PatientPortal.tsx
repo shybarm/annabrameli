@@ -5,10 +5,12 @@ import { usePatientRecord } from '@/hooks/usePatientPortal';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Calendar, FileText, ClipboardList, LogOut, Home, User } from 'lucide-react';
+import { Calendar, FileText, ClipboardList, LogOut, Home, User, MessageCircle } from 'lucide-react';
 import PatientAppointmentsTab from '@/components/patient/PatientAppointmentsTab';
 import PatientDocumentsTab from '@/components/patient/PatientDocumentsTab';
 import PatientVisitSummariesTab from '@/components/patient/PatientVisitSummariesTab';
+import PatientMessagesTab from '@/components/patient/PatientMessagesTab';
+import PatientAppointmentRequest from '@/components/patient/PatientAppointmentRequest';
 
 export default function PatientPortal() {
   const navigate = useNavigate();
@@ -92,14 +94,18 @@ export default function PatientPortal() {
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 py-6">
         <Tabs defaultValue="appointments" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-6">
+          <TabsList className="grid w-full grid-cols-4 mb-6">
             <TabsTrigger value="appointments" className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
               <span className="hidden sm:inline">תורים</span>
             </TabsTrigger>
             <TabsTrigger value="summaries" className="flex items-center gap-2">
               <ClipboardList className="h-4 w-4" />
-              <span className="hidden sm:inline">סיכומי ביקור</span>
+              <span className="hidden sm:inline">סיכומים</span>
+            </TabsTrigger>
+            <TabsTrigger value="messages" className="flex items-center gap-2">
+              <MessageCircle className="h-4 w-4" />
+              <span className="hidden sm:inline">הודעות</span>
             </TabsTrigger>
             <TabsTrigger value="documents" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
@@ -108,11 +114,18 @@ export default function PatientPortal() {
           </TabsList>
 
           <TabsContent value="appointments">
+            <div className="mb-4">
+              <PatientAppointmentRequest />
+            </div>
             <PatientAppointmentsTab />
           </TabsContent>
 
           <TabsContent value="summaries">
             <PatientVisitSummariesTab />
+          </TabsContent>
+
+          <TabsContent value="messages">
+            <PatientMessagesTab />
           </TabsContent>
 
           <TabsContent value="documents">

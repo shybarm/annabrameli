@@ -27,6 +27,7 @@ import NewInvoice from "./pages/admin/NewInvoice";
 import MessagesPage from "./pages/admin/MessagesPage";
 import SettingsPage from "./pages/admin/SettingsPage";
 import PatientPortal from "./pages/patient/PatientPortal";
+import GuestBooking from "./pages/GuestBooking";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -62,6 +63,9 @@ const App = () => (
             
             {/* Patient Intake (public) */}
             <Route path="/intake/:token" element={<PatientIntake />} />
+            
+            {/* Guest Booking (public) */}
+            <Route path="/book" element={<GuestBooking />} />
             
             {/* Patient Portal */}
             <Route path="/portal" element={<PatientPortal />} />

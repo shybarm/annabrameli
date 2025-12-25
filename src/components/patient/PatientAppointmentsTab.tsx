@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Calendar, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 
 const statusConfig: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: React.ElementType }> = {
+  pending: { label: 'ממתין לאישור', variant: 'outline', icon: Clock },
   scheduled: { label: 'מתוכנן', variant: 'default', icon: Calendar },
   confirmed: { label: 'מאושר', variant: 'default', icon: CheckCircle },
   completed: { label: 'הושלם', variant: 'secondary', icon: CheckCircle },
