@@ -49,6 +49,8 @@ export default function StaffIntake() {
     
     // Medical History
     allergies: '',
+    allergy_reaction_type: '',
+    allergy_severity: '',
     chronic_conditions: '',
     current_medications: '',
     previous_surgeries: '',
@@ -113,6 +115,8 @@ export default function StaffIntake() {
           insurance_provider: data.insurance_provider || '',
           insurance_number: data.insurance_number || '',
           allergies: data.allergies?.join(', ') || '',
+          allergy_reaction_type: data.allergy_reaction_type || '',
+          allergy_severity: data.allergy_severity || '',
           chronic_conditions: data.chronic_conditions?.join(', ') || '',
           current_medications: data.current_medications || '',
           previous_surgeries: data.previous_surgeries || '',
@@ -182,6 +186,8 @@ export default function StaffIntake() {
         insurance_provider: formData.insurance_provider || null,
         insurance_number: formData.insurance_number || null,
         allergies: allergiesArray,
+        allergy_reaction_type: formData.allergy_reaction_type || null,
+        allergy_severity: formData.allergy_severity || null,
         chronic_conditions: chronicArray,
         current_medications: formData.current_medications || null,
         previous_surgeries: formData.previous_surgeries || null,
@@ -470,13 +476,43 @@ export default function StaffIntake() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="allergies">אלרגיות (מופרד בפסיקים)</Label>
+                <Label htmlFor="allergies">אלרגיות ורגישויות (מופרדות בפסיקים)</Label>
                 <Input
                   id="allergies"
                   value={formData.allergies}
                   onChange={(e) => handleChange('allergies', e.target.value)}
                   placeholder="לדוגמה: פניצילין, אגוזים, אבק"
                 />
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>סוג תגובה</Label>
+                  <Select value={formData.allergy_reaction_type} onValueChange={(v) => handleChange('allergy_reaction_type', v)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="בחר/י" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="skin">עורית (פריחה, גרד)</SelectItem>
+                      <SelectItem value="respiratory">נשימתית (קוצר נשימה, נזלת)</SelectItem>
+                      <SelectItem value="digestive">עיכולית (בחילות, הקאות)</SelectItem>
+                      <SelectItem value="anaphylactic">אנפילקטית (תגובה חמורה)</SelectItem>
+                      <SelectItem value="other">אחר</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>חומרת התגובה</Label>
+                  <Select value={formData.allergy_severity} onValueChange={(v) => handleChange('allergy_severity', v)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="בחר/י" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="mild">קל</SelectItem>
+                      <SelectItem value="moderate">בינוני</SelectItem>
+                      <SelectItem value="severe">קשה</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="chronic_conditions">מחלות כרוניות (מופרד בפסיקים)</Label>
