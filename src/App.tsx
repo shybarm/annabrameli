@@ -31,6 +31,7 @@ import SettingsPage from "./pages/admin/SettingsPage";
 import TeamPage from "./pages/admin/TeamPage";
 import ReferralDashboard from "./pages/admin/ReferralDashboard";
 import StaffIntake from "./pages/admin/StaffIntake";
+import AuditLogPage from "./pages/admin/AuditLogPage";
 import PatientPortal from "./pages/patient/PatientPortal";
 import GuestBooking from "./pages/GuestBooking";
 import NotFound from "./pages/NotFound";
@@ -99,6 +100,7 @@ const App = () => (
             <Route path="/admin/referrals" element={<ReferralDashboard />} />
             <Route path="/admin/intake" element={<StaffIntake />} />
             <Route path="/admin/settings" element={<SettingsPage />} />
+            <Route path="/admin/audit-log" element={<AuditLogPage />} />
             
             <Route path="*" element={<NotFound />} />
           </Routes>

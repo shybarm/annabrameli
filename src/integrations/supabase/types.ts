@@ -71,6 +71,11 @@ export type Database = {
           reminder_sent_at: string | null
           reminder_whatsapp_sent_at: string | null
           scheduled_at: string
+          signature_data: string | null
+          signature_name: string | null
+          signature_role: string | null
+          signed_at: string | null
+          signed_by: string | null
           status: string | null
           treatment_plan: string | null
           updated_at: string
@@ -99,6 +104,11 @@ export type Database = {
           reminder_sent_at?: string | null
           reminder_whatsapp_sent_at?: string | null
           scheduled_at: string
+          signature_data?: string | null
+          signature_name?: string | null
+          signature_role?: string | null
+          signed_at?: string | null
+          signed_by?: string | null
           status?: string | null
           treatment_plan?: string | null
           updated_at?: string
@@ -127,6 +137,11 @@ export type Database = {
           reminder_sent_at?: string | null
           reminder_whatsapp_sent_at?: string | null
           scheduled_at?: string
+          signature_data?: string | null
+          signature_name?: string | null
+          signature_role?: string | null
+          signed_at?: string | null
+          signed_by?: string | null
           status?: string | null
           treatment_plan?: string | null
           updated_at?: string
@@ -255,6 +270,51 @@ export type Database = {
           phone?: string | null
           updated_at?: string
           working_hours?: Json | null
+        }
+        Relationships: []
+      }
+      electronic_signatures: {
+        Row: {
+          created_at: string
+          id: string
+          ip_address: string | null
+          record_id: string
+          record_type: string
+          signature_data: string
+          signature_meaning: string
+          signed_at: string
+          signer_id: string
+          signer_name: string
+          signer_role: string
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          record_id: string
+          record_type: string
+          signature_data: string
+          signature_meaning: string
+          signed_at?: string
+          signer_id: string
+          signer_name: string
+          signer_role: string
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          record_id?: string
+          record_type?: string
+          signature_data?: string
+          signature_meaning?: string
+          signed_at?: string
+          signer_id?: string
+          signer_name?: string
+          signer_role?: string
+          user_agent?: string | null
         }
         Relationships: []
       }
