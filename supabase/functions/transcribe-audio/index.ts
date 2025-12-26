@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -42,6 +43,42 @@ serve(async (req) => {
   }
 
   try {
+    // SECURITY: Verify staff authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      console.error('Missing or invalid authorization header');
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized - missing authorization' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }}
+      );
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader }}
+    });
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      console.error('Auth error:', authError?.message || 'No user found');
+      return new Response(
+        JSON.stringify({ error: 'Invalid or expired token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }}
+      );
+    }
+
+    const { data: staffCheck, error: rpcError } = await supabase.rpc('is_staff', { _user_id: user.id });
+    if (rpcError || !staffCheck) {
+      console.error('Staff check failed:', rpcError?.message || 'User is not staff');
+      return new Response(
+        JSON.stringify({ error: 'Forbidden - staff only' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }}
+      );
+    }
+
+    console.log('Staff authentication verified for user:', user.id);
+
     const { audio } = await req.json();
     
     if (!audio) {
