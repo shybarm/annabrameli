@@ -1,20 +1,24 @@
-import { useState } from "react";
-import { MessageCircle, X, Send, Bot, User } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { MessageCircle, X, Send, Bot, User, Calendar, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+import { Link } from "react-router-dom";
 
 interface Message {
   id: string;
   text: string;
   sender: "user" | "bot";
   timestamp: Date;
+  showCTA?: boolean;
 }
 
 const initialMessages: Message[] = [
   {
     id: "1",
-    text: "שלום! אני העוזר הדיגיטלי של ד״ר אנה ברמלי. אשמח לעזור לכם להבין האם כדאי לפנות לבדיקת אלרגיה. ספרו לי, מה מציק לכם?",
+    text: "שלום! אני העוזר הדיגיטלי של ד״ר אנה ברמלי, מומחית באלרגיה ואימונולוגיה. אשמח לעזור לכם להבין האם כדאי לפנות לבדיקת אלרגיה. ספרו לי, מה מציק לכם?",
     sender: "bot",
     timestamp: new Date(),
   },
@@ -24,9 +28,20 @@ export const ChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [inputValue, setInputValue] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [questionCount, setQuestionCount] = useState(0);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const handleSend = () => {
-    if (!inputValue.trim()) return;
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const handleSend = async () => {
+    if (!inputValue.trim() || isLoading) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -37,17 +52,70 @@ export const ChatWidget = () => {
 
     setMessages((prev) => [...prev, userMessage]);
     setInputValue("");
+    setIsLoading(true);
 
-    // Simulate bot response
-    setTimeout(() => {
+    try {
+      // Build conversation history for context
+      const conversationHistory = [...messages, userMessage].map((msg) => ({
+        role: msg.sender === "user" ? "user" : "assistant",
+        content: msg.text,
+      }));
+
+      const { data, error } = await supabase.functions.invoke("chat-assistant", {
+        body: { messages: conversationHistory },
+      });
+
+      if (error) {
+        console.error("Chat error:", error);
+        throw new Error(error.message || "שגיאה בתקשורת עם המערכת");
+      }
+
+      if (data?.error) {
+        throw new Error(data.error);
+      }
+
+      const newQuestionCount = questionCount + 1;
+      setQuestionCount(newQuestionCount);
+
+      // Show CTA after 2-3 exchanges
+      const showCTA = newQuestionCount >= 2;
+
       const botResponse: Message = {
         id: (Date.now() + 1).toString(),
-        text: "תודה על השיתוף. על מנת להעריך את המצב בצורה מקצועית, מומלץ לקבוע תור לבדיקה עם ד״ר ברמלי. האם תרצו לקבוע תור?",
+        text: data.message,
         sender: "bot",
         timestamp: new Date(),
+        showCTA,
       };
+
       setMessages((prev) => [...prev, botResponse]);
-    }, 1500);
+
+    } catch (error: any) {
+      console.error("Error in chat:", error);
+      
+      toast({
+        title: "שגיאה",
+        description: error.message || "לא הצלחנו לעבד את הבקשה",
+        variant: "destructive",
+      });
+
+      // Add fallback message
+      const fallbackMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        text: "מצטער, נתקלנו בבעיה טכנית. לקביעת תור או שאלות נוספות, אנא צרו קשר עם המרפאה ישירות.",
+        sender: "bot",
+        timestamp: new Date(),
+        showCTA: true,
+      };
+      setMessages((prev) => [...prev, fallbackMessage]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleReset = () => {
+    setMessages(initialMessages);
+    setQuestionCount(0);
   };
 
   return (
@@ -75,7 +143,7 @@ export const ChatWidget = () => {
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed bottom-6 left-6 z-50 w-[calc(100vw-3rem)] sm:w-96 h-[500px] max-h-[calc(100vh-6rem)] bg-card rounded-2xl shadow-xl border border-border flex flex-col overflow-hidden"
+            className="fixed bottom-6 left-6 z-50 w-[calc(100vw-3rem)] sm:w-96 h-[550px] max-h-[calc(100vh-6rem)] bg-card rounded-2xl shadow-xl border border-border flex flex-col overflow-hidden"
           >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-border gradient-teal">
@@ -85,7 +153,7 @@ export const ChatWidget = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold text-primary-foreground">העוזר הדיגיטלי</h3>
-                  <p className="text-xs text-primary-foreground/80">שאלון ראשוני לאבחון</p>
+                  <p className="text-xs text-primary-foreground/80">ד״ר אנה ברמלי - אלרגיה ואימונולוגיה</p>
                 </div>
               </div>
               <button
@@ -104,34 +172,79 @@ export const ChatWidget = () => {
                   key={message.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className={`flex items-start gap-3 ${
-                    message.sender === "user" ? "flex-row-reverse" : ""
+                  className={`flex flex-col ${
+                    message.sender === "user" ? "items-end" : "items-start"
                   }`}
                 >
                   <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      message.sender === "user"
-                        ? "bg-primary"
-                        : "bg-accent"
+                    className={`flex items-start gap-3 ${
+                      message.sender === "user" ? "flex-row-reverse" : ""
                     }`}
                   >
-                    {message.sender === "user" ? (
-                      <User className="w-4 h-4 text-primary-foreground" />
-                    ) : (
-                      <Bot className="w-4 h-4 text-primary" />
-                    )}
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                        message.sender === "user"
+                          ? "bg-primary"
+                          : "bg-accent"
+                      }`}
+                    >
+                      {message.sender === "user" ? (
+                        <User className="w-4 h-4 text-primary-foreground" />
+                      ) : (
+                        <Bot className="w-4 h-4 text-primary" />
+                      )}
+                    </div>
+                    <div
+                      className={`max-w-[75%] p-3 rounded-2xl text-sm ${
+                        message.sender === "user"
+                          ? "bg-primary text-primary-foreground rounded-br-sm"
+                          : "bg-muted text-foreground rounded-bl-sm"
+                      }`}
+                    >
+                      {message.text}
+                    </div>
                   </div>
-                  <div
-                    className={`max-w-[75%] p-3 rounded-2xl text-sm ${
-                      message.sender === "user"
-                        ? "bg-primary text-primary-foreground rounded-br-sm"
-                        : "bg-muted text-foreground rounded-bl-sm"
-                    }`}
-                  >
-                    {message.text}
-                  </div>
+                  
+                  {/* CTA Button after bot message */}
+                  {message.sender === "bot" && message.showCTA && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 }}
+                      className="mt-3 mr-11"
+                    >
+                      <Button
+                        size="sm"
+                        className="shadow-teal"
+                        asChild
+                      >
+                        <Link to="/contact">
+                          <Calendar className="w-4 h-4 ml-2" />
+                          קביעת תור לאבחון
+                        </Link>
+                      </Button>
+                    </motion.div>
+                  )}
                 </motion.div>
               ))}
+              
+              {/* Loading indicator */}
+              {isLoading && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="flex items-start gap-3"
+                >
+                  <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center">
+                    <Bot className="w-4 h-4 text-primary" />
+                  </div>
+                  <div className="bg-muted p-3 rounded-2xl rounded-bl-sm">
+                    <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                  </div>
+                </motion.div>
+              )}
+              
+              <div ref={messagesEndRef} />
             </div>
 
             {/* Input */}
@@ -148,14 +261,25 @@ export const ChatWidget = () => {
                   onChange={(e) => setInputValue(e.target.value)}
                   placeholder="הקלידו את השאלה שלכם..."
                   className="flex-1"
+                  disabled={isLoading}
                 />
-                <Button type="submit" size="icon" disabled={!inputValue.trim()}>
+                <Button type="submit" size="icon" disabled={!inputValue.trim() || isLoading}>
                   <Send className="w-4 h-4" />
                 </Button>
               </form>
-              <p className="text-xs text-muted-foreground text-center mt-2">
-                הכלי אינו מהווה ייעוץ רפואי
-              </p>
+              <div className="flex items-center justify-between mt-2">
+                <p className="text-xs text-muted-foreground">
+                  הכלי אינו מהווה ייעוץ רפואי
+                </p>
+                {messages.length > 1 && (
+                  <button
+                    onClick={handleReset}
+                    className="text-xs text-primary hover:underline"
+                  >
+                    התחל מחדש
+                  </button>
+                )}
+              </div>
             </div>
           </motion.div>
         )}
