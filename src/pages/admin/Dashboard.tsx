@@ -341,7 +341,7 @@ export default function AdminDashboard() {
                           ? isLongWait 
                             ? 'waiting-alert border-r-red-500' 
                             : 'bg-yellow-50 border-r-yellow-500'
-                          : apt.status === 'with_doctor'
+                          : apt.status === 'with_doctor' || apt.status === 'in_treatment'
                             ? 'bg-purple-50 border-r-purple-500'
                             : apt.status === 'arrived' || apt.status === 'in_progress' 
                               ? 'bg-orange-50 border-r-orange-500' 
@@ -359,7 +359,7 @@ export default function AdminDashboard() {
                           <div className={`flex items-center justify-center w-12 h-12 rounded-lg flex-shrink-0 ${
                             apt.status === 'waiting_room'
                               ? isLongWait ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
-                              : apt.status === 'with_doctor'
+                              : apt.status === 'with_doctor' || apt.status === 'in_treatment'
                                 ? 'bg-purple-100 text-purple-700'
                                 : apt.status === 'arrived' || apt.status === 'in_progress'
                                   ? 'bg-orange-100 text-orange-700'
@@ -371,7 +371,7 @@ export default function AdminDashboard() {
                           }`}>
                             {apt.status === 'waiting_room' ? (
                               isLongWait ? <AlertTriangle className="h-5 w-5" /> : <Armchair className="h-5 w-5" />
-                            ) : apt.status === 'with_doctor' ? (
+                            ) : apt.status === 'with_doctor' || apt.status === 'in_treatment' ? (
                               <Stethoscope className="h-5 w-5" />
                             ) : (
                               <Clock className="h-5 w-5" />
@@ -455,66 +455,71 @@ export default function AdminDashboard() {
                             )}
                           </div>
                           
-                          {/* Status action buttons */}
+                          {/* Status action buttons with next step indicator */}
                           {apt.status !== 'cancelled' && apt.status !== 'completed' && apt.status !== 'no_show' && (
                             <div className="flex flex-col gap-1">
-                              {/* Scheduled/Confirmed -> Arrived or No Show */}
+                              {/* Scheduled/Confirmed -> Waiting Room or No Show */}
                               {(apt.status === 'scheduled' || apt.status === 'confirmed') && (
                                 <>
                                   <Button
-                                    size="icon"
+                                    size="sm"
                                     variant="outline"
-                                    className="h-9 w-9 text-yellow-600 border-yellow-300 hover:bg-yellow-100 hover:text-yellow-700"
+                                    className="h-8 px-2 text-yellow-600 border-yellow-300 hover:bg-yellow-100 hover:text-yellow-700 gap-1"
                                     onClick={(e) => handleStatusChange(e, apt.id, 'waiting_room')}
-                                    title="בחדר המתנה"
+                                    title="העבר לחדר המתנה"
                                   >
                                     <Armchair className="h-4 w-4" />
+                                    <span className="text-xs hidden sm:inline">חדר המתנה</span>
                                   </Button>
                                   <Button
-                                    size="icon"
+                                    size="sm"
                                     variant="outline"
-                                    className="h-9 w-9 text-red-600 border-red-300 hover:bg-red-100 hover:text-red-700"
+                                    className="h-8 px-2 text-red-600 border-red-300 hover:bg-red-100 hover:text-red-700 gap-1"
                                     onClick={(e) => handleStatusChange(e, apt.id, 'no_show')}
                                     title="לא הגיע"
                                   >
                                     <XCircle className="h-4 w-4" />
+                                    <span className="text-xs hidden sm:inline">לא הגיע</span>
                                   </Button>
                                 </>
                               )}
                               {/* Arrived -> Waiting Room */}
                               {apt.status === 'arrived' && (
                                 <Button
-                                  size="icon"
+                                  size="sm"
                                   variant="outline"
-                                  className="h-9 w-9 text-yellow-600 border-yellow-300 hover:bg-yellow-100 hover:text-yellow-700"
+                                  className="h-8 px-2 text-yellow-600 border-yellow-300 hover:bg-yellow-100 hover:text-yellow-700 gap-1"
                                   onClick={(e) => handleStatusChange(e, apt.id, 'waiting_room')}
-                                  title="בחדר המתנה"
+                                  title="העבר לחדר המתנה"
                                 >
                                   <Armchair className="h-4 w-4" />
+                                  <span className="text-xs hidden sm:inline">חדר המתנה</span>
                                 </Button>
                               )}
-                              {/* Waiting Room -> With Doctor */}
+                              {/* Waiting Room -> In Treatment (Doctor) */}
                               {apt.status === 'waiting_room' && (
                                 <Button
-                                  size="icon"
+                                  size="sm"
                                   variant="outline"
-                                  className="h-9 w-9 text-purple-600 border-purple-300 hover:bg-purple-100 hover:text-purple-700"
-                                  onClick={(e) => handleStatusChange(e, apt.id, 'with_doctor')}
-                                  title="אצל הרופא"
+                                  className="h-8 px-2 text-purple-600 border-purple-300 hover:bg-purple-100 hover:text-purple-700 gap-1"
+                                  onClick={(e) => handleStatusChange(e, apt.id, 'in_treatment')}
+                                  title="העבר לחדר רופא"
                                 >
                                   <Stethoscope className="h-4 w-4" />
+                                  <span className="text-xs hidden sm:inline">חדר רופא</span>
                                 </Button>
                               )}
-                              {/* With Doctor / In Progress -> Completed */}
-                              {(apt.status === 'with_doctor' || apt.status === 'in_progress') && (
+                              {/* In Treatment / With Doctor / In Progress -> Completed */}
+                              {(apt.status === 'in_treatment' || apt.status === 'with_doctor' || apt.status === 'in_progress') && (
                                 <Button
-                                  size="icon"
+                                  size="sm"
                                   variant="outline"
-                                  className="h-9 w-9 text-green-600 border-green-300 hover:bg-green-100 hover:text-green-700"
+                                  className="h-8 px-2 text-green-600 border-green-300 hover:bg-green-100 hover:text-green-700 gap-1"
                                   onClick={(e) => handleStatusChange(e, apt.id, 'completed')}
                                   title="סיים טיפול"
                                 >
                                   <CheckCircle className="h-4 w-4" />
+                                  <span className="text-xs hidden sm:inline">הושלם</span>
                                 </Button>
                               )}
                             </div>
