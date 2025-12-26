@@ -44,7 +44,7 @@ export default function BillingPage() {
           </div>
           <div className="flex gap-2">
             <PageHelpButton tutorial={pageTutorials['/admin/billing']} />
-            <Button onClick={() => navigate('/admin/billing/new')} className="bg-primary text-primary-foreground hover:bg-primary/90">
+            <Button onClick={() => navigate('/admin/billing/new')} className="bg-primary text-primary-foreground hover:bg-primary/90" data-tutorial="new-invoice-btn">
               <Plus className="h-4 w-4 ml-2" />
               חשבונית חדשה
             </Button>
@@ -52,7 +52,7 @@ export default function BillingPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" data-tutorial="billing-stats">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">סה״כ</CardTitle>
@@ -98,7 +98,7 @@ export default function BillingPage() {
         </div>
 
         {/* Invoices List */}
-        <Card>
+        <Card data-tutorial="invoices-list">
           <CardHeader>
             <CardTitle>חשבוניות אחרונות</CardTitle>
           </CardHeader>
