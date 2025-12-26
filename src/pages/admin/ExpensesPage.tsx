@@ -10,6 +10,8 @@ import { useExpenses, useExpenseStats, useCreateExpense, useDeleteExpense, EXPEN
 import { Plus, Trash2, Receipt, TrendingDown } from 'lucide-react';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { he } from 'date-fns/locale';
+import { PageHelpButton } from '@/components/tutorial/PageHelpButton';
+import { pageTutorials } from '@/components/tutorial/tutorialData';
 
 export default function ExpensesPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -64,13 +66,15 @@ export default function ExpensesPage() {
             <h1 className="text-2xl font-bold text-foreground">הוצאות</h1>
             <p className="text-muted-foreground">ניהול הוצאות המרפאה</p>
           </div>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
-                <Plus className="h-4 w-4 ml-2" />
-                הוצאה חדשה
-              </Button>
-            </DialogTrigger>
+          <div className="flex gap-2">
+            <PageHelpButton tutorial={pageTutorials['/admin/expenses']} />
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+                  <Plus className="h-4 w-4 ml-2" />
+                  הוצאה חדשה
+                </Button>
+              </DialogTrigger>
             <DialogContent dir="rtl">
               <DialogHeader>
                 <DialogTitle>הוספת הוצאה</DialogTitle>
@@ -148,7 +152,8 @@ export default function ExpensesPage() {
                 </Button>
               </form>
             </DialogContent>
-          </Dialog>
+            </Dialog>
+          </div>
         </div>
 
         {/* Stats */}

@@ -9,6 +9,8 @@ import { useNavigate } from 'react-router-dom';
 import { Plus, Calendar, Clock, ChevronRight, ChevronLeft } from 'lucide-react';
 import { format, addDays, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay } from 'date-fns';
 import { he } from 'date-fns/locale';
+import { PageHelpButton } from '@/components/tutorial/PageHelpButton';
+import { pageTutorials } from '@/components/tutorial/tutorialData';
 
 export default function AppointmentsList() {
   const navigate = useNavigate();
@@ -62,10 +64,13 @@ export default function AppointmentsList() {
             <h1 className="text-2xl font-bold text-gray-900">תורים</h1>
             <p className="text-muted-foreground">ניהול ומעקב אחר תורים</p>
           </div>
-          <Button onClick={() => navigate('/admin/appointments/new')} className="bg-primary text-primary-foreground hover:bg-primary/90">
-            <Plus className="h-4 w-4 ml-2" />
-            תור חדש
-          </Button>
+          <div className="flex gap-2">
+            <PageHelpButton tutorial={pageTutorials['/admin/appointments']} />
+            <Button onClick={() => navigate('/admin/appointments/new')} className="bg-primary text-primary-foreground hover:bg-primary/90">
+              <Plus className="h-4 w-4 ml-2" />
+              תור חדש
+            </Button>
+          </div>
         </div>
 
         {/* Week Navigation */}

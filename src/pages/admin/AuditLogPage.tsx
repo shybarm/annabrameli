@@ -14,6 +14,8 @@ import { useAuditLog, useAuditLogTables } from '@/hooks/useAuditLog';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { History, Filter, Eye, RefreshCw } from 'lucide-react';
+import { PageHelpButton } from '@/components/tutorial/PageHelpButton';
+import { pageTutorials } from '@/components/tutorial/tutorialData';
 
 const tableLabels: Record<string, string> = {
   patients: 'מטופלים',
@@ -129,10 +131,13 @@ export default function AuditLogPage() {
               <p className="text-muted-foreground">תיעוד אוטומטי של כל השינויים במערכת</p>
             </div>
           </div>
-          <Button onClick={() => refetch()} variant="outline" size="sm">
-            <RefreshCw className="h-4 w-4 ml-1" />
-            רענן
-          </Button>
+          <div className="flex gap-2">
+            <PageHelpButton tutorial={pageTutorials['/admin/audit-log']} />
+            <Button onClick={() => refetch()} variant="outline" size="sm">
+              <RefreshCw className="h-4 w-4 ml-1" />
+              רענן
+            </Button>
+          </div>
         </div>
 
         {/* Filters */}

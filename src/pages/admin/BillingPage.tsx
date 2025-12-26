@@ -6,6 +6,8 @@ import { useInvoices, useInvoiceStats, useUpdateInvoiceStatus } from '@/hooks/us
 import { useNavigate } from 'react-router-dom';
 import { Plus, Receipt, TrendingUp, Clock, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
+import { PageHelpButton } from '@/components/tutorial/PageHelpButton';
+import { pageTutorials } from '@/components/tutorial/tutorialData';
 
 export default function BillingPage() {
   const navigate = useNavigate();
@@ -40,10 +42,13 @@ export default function BillingPage() {
             <h1 className="text-2xl font-bold text-gray-900">חיוב וחשבוניות</h1>
             <p className="text-muted-foreground">ניהול חשבוניות ותשלומים</p>
           </div>
-          <Button onClick={() => navigate('/admin/billing/new')} className="bg-primary text-primary-foreground hover:bg-primary/90">
-            <Plus className="h-4 w-4 ml-2" />
-            חשבונית חדשה
-          </Button>
+          <div className="flex gap-2">
+            <PageHelpButton tutorial={pageTutorials['/admin/billing']} />
+            <Button onClick={() => navigate('/admin/billing/new')} className="bg-primary text-primary-foreground hover:bg-primary/90">
+              <Plus className="h-4 w-4 ml-2" />
+              חשבונית חדשה
+            </Button>
+          </div>
         </div>
 
         {/* Stats */}
