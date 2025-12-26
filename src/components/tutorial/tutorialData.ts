@@ -1,0 +1,247 @@
+import { 
+  LayoutDashboard, Users, Calendar, Receipt, FileText, 
+  MessageSquare, Settings, Stethoscope, History, UserPlus,
+  ClipboardList, Wallet, PenTool
+} from 'lucide-react';
+
+export interface TutorialStepData {
+  title: string;
+  description: string;
+  icon: any;
+}
+
+export interface PageTutorial {
+  pageId: string;
+  pageName: string;
+  steps: TutorialStepData[];
+}
+
+export const onboardingSteps: TutorialStepData[] = [
+  {
+    title: 'ברוכים הבאים! 🎉',
+    description: 'שמחים שהצטרפת למערכת ניהול המרפאה! בוא נלמד יחד איך להשתמש בכל הכלים העוצמתיים שלנו.',
+    icon: Stethoscope
+  },
+  {
+    title: 'לוח הבקרה',
+    description: 'כאן תראה את כל המידע החשוב במבט אחד - תורים להיום, סטטיסטיקות, ועוד. זו נקודת ההתחלה שלך.',
+    icon: LayoutDashboard
+  },
+  {
+    title: 'ניהול מטופלים',
+    description: 'כאן תוכל להוסיף מטופלים חדשים, לראות את ההיסטוריה שלהם, ולשלוח טפסי קליטה. לחץ על "מטופלים" בתפריט.',
+    icon: Users
+  },
+  {
+    title: 'ניהול תורים',
+    description: 'קבע תורים, עדכן סטטוסים, וכתוב סיכומי ביקור. אחרי הביקור תוכל לחתום דיגיטלית ולשלוח למטופל.',
+    icon: Calendar
+  },
+  {
+    title: 'חיוב וחשבוניות',
+    description: 'צור חשבוניות, עקוב אחרי תשלומים, ונהל את ההכנסות שלך בקלות.',
+    icon: Receipt
+  },
+  {
+    title: 'צריך עזרה?',
+    description: 'בכל דף יש כפתור "עזרה" 💡 שיראה לך הדרכה ספציפית לאותו דף. אל תהסס להשתמש בו!',
+    icon: MessageSquare
+  }
+];
+
+export const pageTutorials: Record<string, PageTutorial> = {
+  '/admin': {
+    pageId: 'dashboard',
+    pageName: 'לוח בקרה',
+    steps: [
+      {
+        title: 'סקירה כללית',
+        description: 'כאן תראה את כל הנתונים החשובים - תורים להיום, כמה מטופלים חדשים, והכנסות.',
+        icon: LayoutDashboard
+      },
+      {
+        title: 'תורים להיום',
+        description: 'ברשימה תראה את כל התורים המתוכננים להיום. לחץ על תור כדי לראות פרטים ולכתוב סיכום.',
+        icon: Calendar
+      }
+    ]
+  },
+  '/admin/patients': {
+    pageId: 'patients',
+    pageName: 'מטופלים',
+    steps: [
+      {
+        title: 'רשימת המטופלים',
+        description: 'כאן תראה את כל המטופלים במרפאה. תוכל לחפש לפי שם, טלפון או מייל.',
+        icon: Users
+      },
+      {
+        title: 'הוספת מטופל חדש',
+        description: 'לחץ על "מטופל חדש" כדי להוסיף מטופל. מלא את הפרטים הבסיסיים ושלח טופס קליטה.',
+        icon: UserPlus
+      },
+      {
+        title: 'טופס קליטה',
+        description: 'אחרי יצירת מטופל, לחץ על "שלח טופס קליטה" כדי לשלוח לינק למטופל למילוי ההיסטוריה הרפואית.',
+        icon: ClipboardList
+      }
+    ]
+  },
+  '/admin/appointments': {
+    pageId: 'appointments',
+    pageName: 'תורים',
+    steps: [
+      {
+        title: 'לוח התורים',
+        description: 'כאן תראה את כל התורים. תוכל לסנן לפי תאריך וסטטוס.',
+        icon: Calendar
+      },
+      {
+        title: 'קביעת תור חדש',
+        description: 'לחץ על "תור חדש" כדי לקבוע תור. בחר מטופל, סוג תור, תאריך ושעה.',
+        icon: Calendar
+      },
+      {
+        title: 'סיכום ביקור',
+        description: 'לאחר הביקור, לחץ על התור וכתוב סיכום. תוכל גם לחתום דיגיטלית ולשלוח למטופל.',
+        icon: FileText
+      }
+    ]
+  },
+  '/admin/billing': {
+    pageId: 'billing',
+    pageName: 'חיוב וחשבוניות',
+    steps: [
+      {
+        title: 'רשימת החשבוניות',
+        description: 'כאן תראה את כל החשבוניות. תוכל לסנן לפי סטטוס (טיוטה, נשלחה, שולמה).',
+        icon: Receipt
+      },
+      {
+        title: 'יצירת חשבונית',
+        description: 'לחץ על "חשבונית חדשה". בחר מטופל, הוסף פריטים עם מחירים, ושמור.',
+        icon: Receipt
+      },
+      {
+        title: 'שליחת חשבונית',
+        description: 'אחרי יצירת חשבונית, תוכל לשלוח אותה במייל או WhatsApp למטופל.',
+        icon: MessageSquare
+      }
+    ]
+  },
+  '/admin/expenses': {
+    pageId: 'expenses',
+    pageName: 'הוצאות',
+    steps: [
+      {
+        title: 'מעקב הוצאות',
+        description: 'כאן תוכל לתעד את כל ההוצאות של המרפאה - שכירות, ציוד, חומרים ועוד.',
+        icon: Wallet
+      },
+      {
+        title: 'הוספת הוצאה',
+        description: 'לחץ על "הוצאה חדשה", בחר קטגוריה, הזן סכום ותיאור.',
+        icon: Wallet
+      }
+    ]
+  },
+  '/admin/messages': {
+    pageId: 'messages',
+    pageName: 'הודעות',
+    steps: [
+      {
+        title: 'תיבת הודעות',
+        description: 'כאן תראה הודעות מהמטופלים. תוכל לקרוא ולהשיב להודעות.',
+        icon: MessageSquare
+      }
+    ]
+  },
+  '/admin/settings': {
+    pageId: 'settings',
+    pageName: 'הגדרות',
+    steps: [
+      {
+        title: 'הגדרות המרפאה',
+        description: 'כאן תוכל לערוך את פרטי המרפאה, שעות פעילות, וסוגי תורים.',
+        icon: Settings
+      },
+      {
+        title: 'תזכורות אוטומטיות',
+        description: 'הגדר תזכורות שיישלחו אוטומטית למטופלים לפני התור.',
+        icon: Calendar
+      }
+    ]
+  },
+  '/admin/audit-log': {
+    pageId: 'audit-log',
+    pageName: 'יומן ביקורת',
+    steps: [
+      {
+        title: 'מעקב שינויים',
+        description: 'כאן תוכל לראות את כל השינויים שנעשו במערכת - מי שינה, מה שינה, ומתי.',
+        icon: History
+      },
+      {
+        title: 'סינון',
+        description: 'תוכל לסנן לפי טבלה (מטופלים, תורים וכו׳), סוג פעולה, ותאריכים.',
+        icon: History
+      }
+    ]
+  }
+};
+
+// For appointment detail page
+export const appointmentDetailTutorial: PageTutorial = {
+  pageId: 'appointment-detail',
+  pageName: 'פרטי תור',
+  steps: [
+    {
+      title: 'פרטי התור',
+      description: 'כאן תראה את כל המידע על התור - פרטי המטופל, תאריך, שעה וסוג התור.',
+      icon: Calendar
+    },
+    {
+      title: 'סיכום הביקור',
+      description: 'בלשונית "סיכום ביקור" תוכל לכתוב את ממצאי הביקור, תוכנית טיפול ותרופות.',
+      icon: FileText
+    },
+    {
+      title: 'חתימה דיגיטלית',
+      description: 'אחרי שכתבת סיכום, לחץ על "חתום דיגיטלית" כדי לאשר את הסיכום. זה חשוב לתיעוד רפואי!',
+      icon: PenTool
+    },
+    {
+      title: 'שליחה למטופל',
+      description: 'תוכל לשלוח את הסיכום למטופל באימייל או WhatsApp, או להדפיס אותו.',
+      icon: MessageSquare
+    }
+  ]
+};
+
+// For patient detail page
+export const patientDetailTutorial: PageTutorial = {
+  pageId: 'patient-detail',
+  pageName: 'פרטי מטופל',
+  steps: [
+    {
+      title: 'פרופיל המטופל',
+      description: 'כאן תראה את כל המידע על המטופל - פרטים אישיים, היסטוריה רפואית, ואלרגיות.',
+      icon: Users
+    },
+    {
+      title: 'טופס קליטה',
+      description: 'אם המטופל עוד לא מילא טופס קליטה, תוכל לשלוח לו לינק מכאן.',
+      icon: ClipboardList
+    },
+    {
+      title: 'היסטוריית תורים',
+      description: 'בלשונית "תורים" תראה את כל התורים של המטופל - עברו ועתידיים.',
+      icon: Calendar
+    },
+    {
+      title: 'מסמכים',
+      description: 'בלשונית "מסמכים" תוכל להעלות ולצפות במסמכים של המטופל.',
+      icon: FileText
+    }
+  ]
+};

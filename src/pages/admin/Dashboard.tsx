@@ -22,6 +22,9 @@ import {
 import { toast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
+import { OnboardingTutorial } from '@/components/tutorial/OnboardingTutorial';
+import { PageHelpButton } from '@/components/tutorial/PageHelpButton';
+import { pageTutorials } from '@/components/tutorial/tutorialData';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -170,6 +173,9 @@ export default function AdminDashboard() {
   return (
     <AdminLayout>
       <div className="space-y-6">
+        {/* Onboarding Tutorial */}
+        <OnboardingTutorial />
+
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-[#343e42] -mx-4 sm:-mx-6 px-4 sm:px-6 py-4 rounded-lg">
           <div>
@@ -179,6 +185,7 @@ export default function AdminDashboard() {
             </p>
           </div>
           <div className="flex gap-2">
+            <PageHelpButton tutorial={pageTutorials['/admin']} />
             <Button onClick={() => navigate('/admin/patients/new')} variant="outline">
               <Plus className="h-4 w-4 ml-2" />
               מטופל חדש

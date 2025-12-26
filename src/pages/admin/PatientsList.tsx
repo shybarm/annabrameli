@@ -8,6 +8,8 @@ import { usePatients } from '@/hooks/usePatients';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Phone, Mail, User } from 'lucide-react';
 import { format } from 'date-fns';
+import { PageHelpButton } from '@/components/tutorial/PageHelpButton';
+import { pageTutorials } from '@/components/tutorial/tutorialData';
 
 export default function PatientsList() {
   const navigate = useNavigate();
@@ -33,10 +35,13 @@ export default function PatientsList() {
             <h1 className="text-2xl font-bold text-gray-900">מטופלים</h1>
             <p className="text-muted-foreground">ניהול רשימת המטופלים במרפאה</p>
           </div>
-          <Button onClick={() => navigate('/admin/patients/new')} className="bg-primary text-primary-foreground hover:bg-primary/90">
-            <Plus className="h-4 w-4 ml-2" />
-            מטופל חדש
-          </Button>
+          <div className="flex gap-2">
+            <PageHelpButton tutorial={pageTutorials['/admin/patients']} />
+            <Button onClick={() => navigate('/admin/patients/new')} className="bg-primary text-primary-foreground hover:bg-primary/90">
+              <Plus className="h-4 w-4 ml-2" />
+              מטופל חדש
+            </Button>
+          </div>
         </div>
 
         {/* Search */}
