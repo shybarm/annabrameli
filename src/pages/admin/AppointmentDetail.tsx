@@ -17,7 +17,8 @@ import { VoiceRecorder } from '@/components/admin/VoiceRecorder';
 import { ScoringToolbar } from '@/components/admin/scoring/ScoringToolbar';
 import { 
   ArrowRight, User, Clock, Calendar, FileText, Save, 
-  Upload, MessageCircle, CreditCard, File, Printer, Mail, Pill, Stethoscope, Eye, ClipboardList
+  Upload, MessageCircle, CreditCard, File, Printer, Mail, Pill, Stethoscope, Eye, ClipboardList,
+  Activity, FlaskConical, ScanLine
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
@@ -32,6 +33,9 @@ export default function AppointmentDetail() {
   const [chiefComplaint, setChiefComplaint] = useState('');
   const [currentIllness, setCurrentIllness] = useState('');
   const [hasAsthma, setHasAsthma] = useState(false);
+  const [physicalExam, setPhysicalExam] = useState('');
+  const [labTests, setLabTests] = useState('');
+  const [auxiliaryTests, setAuxiliaryTests] = useState('');
   const [visitSummary, setVisitSummary] = useState('');
   const [treatmentPlan, setTreatmentPlan] = useState('');
   const [medications, setMedications] = useState('');
@@ -216,6 +220,15 @@ export default function AppointmentDetail() {
     let text = `סיכום ביקור - ${patientName}\n`;
     text += `תאריך: ${visitDate}\n\n`;
     
+    if (physicalExam.trim()) {
+      text += `🔍 בדיקה גופנית:\n${physicalExam}\n\n`;
+    }
+    if (labTests.trim()) {
+      text += `🧪 בדיקות מעבדה:\n${labTests}\n\n`;
+    }
+    if (auxiliaryTests.trim()) {
+      text += `📊 בדיקות עזר:\n${auxiliaryTests}\n\n`;
+    }
     if (visitSummary.trim()) {
       text += `📋 סיכום הביקור:\n${visitSummary}\n\n`;
     }
@@ -315,6 +328,27 @@ export default function AppointmentDetail() {
             <p><strong>תאריך:</strong> ${appointment?.scheduled_at ? format(new Date(appointment.scheduled_at), 'dd/MM/yyyy', { locale: he }) : ''}</p>
             ${appointment?.patients?.id_number ? `<p><strong>ת.ז:</strong> ${appointment.patients.id_number}</p>` : ''}
             <hr style="margin: 20px 0;" />
+            
+            ${physicalExam.trim() ? `
+              <div class="section">
+                <div class="section-title">בדיקה גופנית:</div>
+                <div class="content">${physicalExam.replace(/\n/g, '<br>')}</div>
+              </div>
+            ` : ''}
+            
+            ${labTests.trim() ? `
+              <div class="section">
+                <div class="section-title">בדיקות מעבדה:</div>
+                <div class="content">${labTests.replace(/\n/g, '<br>')}</div>
+              </div>
+            ` : ''}
+            
+            ${auxiliaryTests.trim() ? `
+              <div class="section">
+                <div class="section-title">בדיקות עזר:</div>
+                <div class="content">${auxiliaryTests.replace(/\n/g, '<br>')}</div>
+              </div>
+            ` : ''}
             
             ${visitSummary.trim() ? `
               <div class="section">
@@ -632,6 +666,51 @@ export default function AppointmentDetail() {
                     </div>
                   </div>
                 )}
+
+                {/* Physical Examination */}
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <Activity className="h-4 w-4" />
+                    בדיקה גופנית
+                  </Label>
+                  <Textarea
+                    value={physicalExam}
+                    onChange={(e) => setPhysicalExam(e.target.value)}
+                    placeholder="ממצאי הבדיקה הגופנית..."
+                    rows={4}
+                    className="resize-none"
+                  />
+                </div>
+
+                {/* Lab Tests */}
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <FlaskConical className="h-4 w-4" />
+                    בדיקות מעבדה
+                  </Label>
+                  <Textarea
+                    value={labTests}
+                    onChange={(e) => setLabTests(e.target.value)}
+                    placeholder="בדיקות דם, שתן, תרביות וכו'..."
+                    rows={3}
+                    className="resize-none"
+                  />
+                </div>
+
+                {/* Auxiliary Tests */}
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <ScanLine className="h-4 w-4" />
+                    בדיקות עזר (הדמייה, פתולוגיה, פרוצדורות)
+                  </Label>
+                  <Textarea
+                    value={auxiliaryTests}
+                    onChange={(e) => setAuxiliaryTests(e.target.value)}
+                    placeholder="CT, MRI, אולטרסאונד, ביופסיה וכו'..."
+                    rows={3}
+                    className="resize-none"
+                  />
+                </div>
 
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2">
