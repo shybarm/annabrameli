@@ -3,9 +3,12 @@ import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,34 +23,65 @@ import {
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { Users, UserPlus, Shield, Trash2, UserCircle } from 'lucide-react';
+import { Users, UserPlus, Shield, Trash2, UserCircle, Mail, Copy, Clock, CheckCircle, Settings } from 'lucide-react';
+import { format } from 'date-fns';
+import { he } from 'date-fns/locale';
 
 interface TeamMember {
   id: string;
   user_id: string;
   role: 'admin' | 'doctor' | 'secretary' | 'patient';
+  permissions: Record<string, boolean> | null;
   created_at: string;
   profile?: {
     first_name: string | null;
     last_name: string | null;
   };
-  email?: string;
 }
 
-interface AvailableUser {
-  user_id: string;
-  first_name: string | null;
-  last_name: string | null;
-  email?: string;
+interface Invitation {
+  id: string;
+  email: string;
+  role: string;
+  invite_code: string;
+  permissions: Record<string, boolean> | null;
+  expires_at: string;
+  accepted_at: string | null;
+  created_at: string;
 }
+
+const defaultPermissions = {
+  canViewPatients: true,
+  canEditPatients: false,
+  canViewAppointments: true,
+  canEditAppointments: false,
+  canViewBilling: false,
+  canEditBilling: false,
+  canViewDocuments: true,
+  canEditDocuments: false,
+};
+
+const permissionLabels: Record<string, string> = {
+  canViewPatients: 'צפייה במטופלים',
+  canEditPatients: 'עריכת מטופלים',
+  canViewAppointments: 'צפייה בתורים',
+  canEditAppointments: 'עריכת תורים',
+  canViewBilling: 'צפייה בחיובים',
+  canEditBilling: 'עריכת חיובים',
+  canViewDocuments: 'צפייה במסמכים',
+  canEditDocuments: 'העלאת מסמכים',
+};
 
 export default function TeamPage() {
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedUserId, setSelectedUserId] = useState('');
-  const [selectedRole, setSelectedRole] = useState('');
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [selectedRole, setSelectedRole] = useState('secretary');
+  const [permissions, setPermissions] = useState<Record<string, boolean>>(defaultPermissions);
+  const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
+  const [editingPermissions, setEditingPermissions] = useState<Record<string, boolean>>(defaultPermissions);
 
-  // Fetch team members with profile info
+  // Fetch team members
   const { data: teamMembers, isLoading } = useQuery({
     queryKey: ['team-members'],
     queryFn: async () => {
@@ -60,7 +94,6 @@ export default function TeamPage() {
       if (rolesError) throw rolesError;
       if (!roles || roles.length === 0) return [];
 
-      // Get profile info for each user
       const userIds = roles.map(r => r.user_id);
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
@@ -69,53 +102,80 @@ export default function TeamPage() {
 
       if (profilesError) throw profilesError;
 
-      // Merge data
       return roles.map(role => ({
         ...role,
+        permissions: role.permissions as Record<string, boolean> | null,
         profile: profiles?.find(p => p.user_id === role.user_id),
       })) as TeamMember[];
     },
   });
 
-  // Fetch all registered users for adding to team
-  const { data: availableUsers } = useQuery({
-    queryKey: ['available-users'],
+  // Fetch pending invitations
+  const { data: invitations } = useQuery({
+    queryKey: ['team-invitations'],
     queryFn: async () => {
-      const { data: profiles, error } = await supabase
-        .from('profiles')
-        .select('user_id, first_name, last_name')
+      const { data, error } = await supabase
+        .from('team_invitations')
+        .select('*')
+        .is('accepted_at', null)
+        .gt('expires_at', new Date().toISOString())
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return profiles as AvailableUser[];
+      return data as Invitation[];
     },
   });
 
-  // Filter out users who already have staff roles
-  const usersWithoutRole = availableUsers?.filter(user => 
-    !teamMembers?.some(member => member.user_id === user.user_id)
-  ) || [];
+  // Send invitation
+  const sendInvite = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke('send-team-invite', {
+        body: { email: inviteEmail, role: selectedRole, permissions },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['team-invitations'] });
+      setIsDialogOpen(false);
+      setInviteEmail('');
+      setSelectedRole('secretary');
+      setPermissions(defaultPermissions);
+      
+      // Copy invite link
+      if (data?.inviteLink) {
+        navigator.clipboard.writeText(data.inviteLink);
+        toast({ title: 'ההזמנה נשלחה והקישור הועתק!' });
+      } else {
+        toast({ title: 'ההזמנה נוצרה בהצלחה' });
+      }
+    },
+    onError: (error: any) => {
+      toast({ title: 'שגיאה בשליחת ההזמנה', description: error.message, variant: 'destructive' });
+    },
+  });
 
-  const addMember = useMutation({
-    mutationFn: async ({ userId, role }: { userId: string; role: string }) => {
+  // Update member permissions
+  const updatePermissions = useMutation({
+    mutationFn: async ({ id, permissions }: { id: string; permissions: Record<string, boolean> }) => {
       const { error } = await supabase
         .from('user_roles')
-        .insert({ user_id: userId, role: role as 'admin' | 'doctor' | 'secretary' });
+        .update({ permissions })
+        .eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['team-members'] });
-      queryClient.invalidateQueries({ queryKey: ['available-users'] });
-      setIsDialogOpen(false);
-      setSelectedUserId('');
-      setSelectedRole('');
-      toast({ title: 'חבר הצוות נוסף בהצלחה' });
+      setEditingMemberId(null);
+      toast({ title: 'ההרשאות עודכנו בהצלחה' });
     },
     onError: (error: any) => {
-      toast({ title: 'שגיאה בהוספת חבר צוות', description: error.message, variant: 'destructive' });
+      toast({ title: 'שגיאה בעדכון ההרשאות', description: error.message, variant: 'destructive' });
     },
   });
 
+  // Remove member
   const removeMember = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
@@ -126,11 +186,25 @@ export default function TeamPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['team-members'] });
-      queryClient.invalidateQueries({ queryKey: ['available-users'] });
       toast({ title: 'חבר הצוות הוסר בהצלחה' });
     },
     onError: (error: any) => {
       toast({ title: 'שגיאה בהסרת חבר הצוות', description: error.message, variant: 'destructive' });
+    },
+  });
+
+  // Delete invitation
+  const deleteInvitation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('team_invitations')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['team-invitations'] });
+      toast({ title: 'ההזמנה בוטלה' });
     },
   });
 
@@ -153,11 +227,15 @@ export default function TeamPage() {
     return 'משתמש לא ידוע';
   };
 
-  const getUserDisplayName = (user: AvailableUser) => {
-    if (user.first_name || user.last_name) {
-      return `${user.first_name || ''} ${user.last_name || ''}`.trim();
-    }
-    return user.user_id.slice(0, 8) + '...';
+  const copyInviteLink = (code: string) => {
+    const link = `${window.location.origin}/join/${code}`;
+    navigator.clipboard.writeText(link);
+    toast({ title: 'הקישור הועתק!' });
+  };
+
+  const handleEditPermissions = (member: TeamMember) => {
+    setEditingMemberId(member.id);
+    setEditingPermissions(member.permissions || defaultPermissions);
   };
 
   return (
@@ -173,150 +251,245 @@ export default function TeamPage() {
             <DialogTrigger asChild>
               <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
                 <UserPlus className="h-4 w-4 ml-2" />
-                הוסף חבר צוות
+                הזמן חבר צוות
               </Button>
             </DialogTrigger>
-            <DialogContent dir="rtl">
+            <DialogContent dir="rtl" className="max-w-md">
               <DialogHeader>
-                <DialogTitle>הוספת חבר צוות</DialogTitle>
+                <DialogTitle>הזמנת חבר צוות חדש</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 pt-4">
-                {usersWithoutRole.length > 0 ? (
-                  <>
-                    <div className="space-y-2">
-                      <Label>בחר משתמש</Label>
-                      <Select value={selectedUserId} onValueChange={setSelectedUserId}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="בחר משתמש רשום" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {usersWithoutRole.map((user) => (
-                            <SelectItem key={user.user_id} value={user.user_id}>
-                              {getUserDisplayName(user)}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>תפקיד</Label>
-                      <Select value={selectedRole} onValueChange={setSelectedRole}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="בחר תפקיד" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="doctor">רופא</SelectItem>
-                          <SelectItem value="secretary">מזכירה</SelectItem>
-                          <SelectItem value="admin">מנהל</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <Button 
-                      className="w-full" 
-                      onClick={() => addMember.mutate({ userId: selectedUserId, role: selectedRole })}
-                      disabled={!selectedUserId || !selectedRole || addMember.isPending}
-                    >
-                      {addMember.isPending ? 'מוסיף...' : 'הוסף לצוות'}
-                    </Button>
-                  </>
-                ) : (
-                  <div className="text-center py-6">
-                    <Users className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                    <p className="text-muted-foreground">אין משתמשים רשומים זמינים להוספה</p>
-                    <p className="text-sm text-muted-foreground mt-2">
-                      המשתמש צריך קודם להירשם למערכת דרך דף ההתחברות
-                    </p>
+                <div className="space-y-2">
+                  <Label>כתובת אימייל</Label>
+                  <Input
+                    type="email"
+                    placeholder="email@example.com"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    dir="ltr"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>תפקיד</Label>
+                  <Select value={selectedRole} onValueChange={setSelectedRole}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="secretary">מזכירה</SelectItem>
+                      <SelectItem value="doctor">רופא</SelectItem>
+                      <SelectItem value="admin">מנהל</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-3">
+                  <Label>הרשאות</Label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {Object.entries(permissionLabels).map(([key, label]) => (
+                      <div key={key} className="flex items-center gap-2">
+                        <Checkbox
+                          id={key}
+                          checked={permissions[key] || false}
+                          onCheckedChange={(checked) => 
+                            setPermissions(prev => ({ ...prev, [key]: !!checked }))
+                          }
+                        />
+                        <Label htmlFor={key} className="text-sm cursor-pointer">
+                          {label}
+                        </Label>
+                      </div>
+                    ))}
                   </div>
-                )}
+                </div>
+                <Button 
+                  className="w-full" 
+                  onClick={() => sendInvite.mutate()}
+                  disabled={!inviteEmail || sendInvite.isPending}
+                >
+                  <Mail className="h-4 w-4 ml-2" />
+                  {sendInvite.isPending ? 'שולח...' : 'שלח הזמנה'}
+                </Button>
               </div>
             </DialogContent>
           </Dialog>
         </div>
 
-        {/* Info Card */}
-        <Card className="border-blue-200 bg-blue-50/50">
-          <CardContent className="py-4">
-            <div className="flex items-start gap-3">
-              <Shield className="h-5 w-5 text-blue-600 mt-0.5" />
-              <div>
-                <p className="font-medium text-blue-800">ניהול צוות</p>
-                <p className="text-sm text-blue-700">
-                  ניתן להוסיף רק משתמשים שכבר נרשמו למערכת. לאחר הרישום, בחר את המשתמש והקצה לו תפקיד.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Tabs */}
+        <Tabs defaultValue="members" dir="rtl">
+          <TabsList>
+            <TabsTrigger value="members">חברי צוות</TabsTrigger>
+            <TabsTrigger value="pending">הזמנות ממתינות ({invitations?.length || 0})</TabsTrigger>
+          </TabsList>
 
-        {/* Team List */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              חברי צוות ({teamMembers?.length || 0})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-              </div>
-            ) : teamMembers && teamMembers.length > 0 ? (
-              <div className="space-y-3">
-                {teamMembers.map((member) => (
-                  <div
-                    key={member.id}
-                    className="flex items-center justify-between p-4 rounded-lg border"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary font-medium">
-                        <UserCircle className="h-6 w-6" />
-                      </div>
-                      <div>
-                        <p className="font-medium">{getMemberName(member)}</p>
-                        <Badge className={roleColors[member.role]}>
-                          {roleLabels[member.role]}
-                        </Badge>
-                      </div>
-                    </div>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="sm">
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent dir="rtl">
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>הסרת חבר צוות</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            האם אתה בטוח שברצונך להסיר את {getMemberName(member)} מהצוות?
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>ביטול</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => removeMember.mutate(member.id)}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          >
-                            הסר
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+          {/* Team Members */}
+          <TabsContent value="members">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  חברי צוות ({teamMembers?.length || 0})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <Users className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                <p className="text-muted-foreground">אין חברי צוות רשומים</p>
-                <p className="text-sm text-muted-foreground mt-2">
-                  הוסף חברי צוות על ידי לחיצה על "הוסף חבר צוות"
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                ) : teamMembers && teamMembers.length > 0 ? (
+                  <div className="space-y-3">
+                    {teamMembers.map((member) => (
+                      <div
+                        key={member.id}
+                        className="flex items-center justify-between p-4 rounded-lg border"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary font-medium">
+                            <UserCircle className="h-6 w-6" />
+                          </div>
+                          <div>
+                            <p className="font-medium">{getMemberName(member)}</p>
+                            <Badge className={roleColors[member.role]}>
+                              {roleLabels[member.role]}
+                            </Badge>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Dialog open={editingMemberId === member.id} onOpenChange={(open) => !open && setEditingMemberId(null)}>
+                            <DialogTrigger asChild>
+                              <Button variant="ghost" size="sm" onClick={() => handleEditPermissions(member)}>
+                                <Settings className="h-4 w-4" />
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent dir="rtl">
+                              <DialogHeader>
+                                <DialogTitle>עריכת הרשאות - {getMemberName(member)}</DialogTitle>
+                              </DialogHeader>
+                              <div className="space-y-4 pt-4">
+                                <div className="grid grid-cols-2 gap-3">
+                                  {Object.entries(permissionLabels).map(([key, label]) => (
+                                    <div key={key} className="flex items-center gap-2">
+                                      <Checkbox
+                                        id={`edit-${key}`}
+                                        checked={editingPermissions[key] || false}
+                                        onCheckedChange={(checked) => 
+                                          setEditingPermissions(prev => ({ ...prev, [key]: !!checked }))
+                                        }
+                                      />
+                                      <Label htmlFor={`edit-${key}`} className="text-sm cursor-pointer">
+                                        {label}
+                                      </Label>
+                                    </div>
+                                  ))}
+                                </div>
+                                <Button 
+                                  className="w-full" 
+                                  onClick={() => updatePermissions.mutate({ id: member.id, permissions: editingPermissions })}
+                                  disabled={updatePermissions.isPending}
+                                >
+                                  {updatePermissions.isPending ? 'שומר...' : 'שמור הרשאות'}
+                                </Button>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="sm">
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent dir="rtl">
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>הסרת חבר צוות</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  האם אתה בטוח שברצונך להסיר את {getMemberName(member)} מהצוות?
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>ביטול</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => removeMember.mutate(member.id)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  הסר
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Users className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
+                    <p className="text-muted-foreground">אין חברי צוות רשומים</p>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      שלח הזמנה לחבר צוות חדש
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Pending Invitations */}
+          <TabsContent value="pending">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="h-5 w-5" />
+                  הזמנות ממתינות
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {invitations && invitations.length > 0 ? (
+                  <div className="space-y-3">
+                    {invitations.map((invite) => (
+                      <div
+                        key={invite.id}
+                        className="flex items-center justify-between p-4 rounded-lg border"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center justify-center w-10 h-10 rounded-full bg-amber-100 text-amber-700">
+                            <Mail className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <p className="font-medium" dir="ltr">{invite.email}</p>
+                            <div className="flex items-center gap-2">
+                              <Badge className={roleColors[invite.role]}>
+                                {roleLabels[invite.role]}
+                              </Badge>
+                              <span className="text-xs text-muted-foreground">
+                                תוקף עד: {format(new Date(invite.expires_at), 'dd/MM/yyyy', { locale: he })}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button variant="ghost" size="sm" onClick={() => copyInviteLink(invite.invite_code)}>
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => deleteInvitation.mutate(invite.id)}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <CheckCircle className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
+                    <p className="text-muted-foreground">אין הזמנות ממתינות</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </AdminLayout>
   );

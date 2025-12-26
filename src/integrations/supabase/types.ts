@@ -973,6 +973,42 @@ export type Database = {
         }
         Relationships: []
       }
+      team_invitations: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invite_code: string
+          invited_by: string | null
+          permissions: Json | null
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          invite_code?: string
+          invited_by?: string | null
+          permissions?: Json | null
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invite_code?: string
+          invited_by?: string | null
+          permissions?: Json | null
+          role?: Database["public"]["Enums"]["app_role"]
+        }
+        Relationships: []
+      }
       upload_tokens: {
         Row: {
           created_at: string
@@ -1013,6 +1049,7 @@ export type Database = {
           clinic_id: string | null
           created_at: string
           id: string
+          permissions: Json | null
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
@@ -1020,6 +1057,7 @@ export type Database = {
           clinic_id?: string | null
           created_at?: string
           id?: string
+          permissions?: Json | null
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
@@ -1027,6 +1065,7 @@ export type Database = {
           clinic_id?: string | null
           created_at?: string
           id?: string
+          permissions?: Json | null
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
         }
