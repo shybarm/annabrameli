@@ -3,12 +3,13 @@ import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAppointments, useAppointmentsRealtime, useAppointmentTypes } from '@/hooks/useAppointments';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { Plus, Calendar, Clock, ChevronRight, ChevronLeft, Stethoscope, CheckCircle } from 'lucide-react';
+import { Plus, Calendar, Clock, ChevronRight, ChevronLeft } from 'lucide-react';
 import { format, addDays, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { PageHelpButton } from '@/components/tutorial/PageHelpButton';
@@ -50,26 +51,18 @@ export default function AppointmentsList() {
 
   const statusColors: Record<string, string> = {
     scheduled: 'bg-blue-100 text-blue-700 border-blue-200',
-    confirmed: 'bg-cyan-100 text-cyan-700 border-cyan-200',
-    arrived: 'bg-amber-100 text-amber-700 border-amber-200',
     waiting_room: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-    with_doctor: 'bg-purple-100 text-purple-700 border-purple-200',
-    in_progress: 'bg-orange-100 text-orange-700 border-orange-200',
+    in_treatment: 'bg-purple-100 text-purple-700 border-purple-200',
     completed: 'bg-green-100 text-green-700 border-green-200',
     cancelled: 'bg-red-100 text-red-700 border-red-200',
-    no_show: 'bg-gray-100 text-gray-700 border-gray-200',
   };
 
   const statusLabels: Record<string, string> = {
     scheduled: 'מתוכנן',
-    confirmed: 'מאושר',
-    arrived: 'הגיע',
     waiting_room: 'בחדר המתנה',
-    with_doctor: 'אצל הרופא',
-    in_progress: 'בטיפול',
+    in_treatment: 'בטיפול',
     completed: 'הושלם',
     cancelled: 'בוטל',
-    no_show: 'לא הגיע',
   };
 
   const getAppointmentsForDay = (date: Date) => {
@@ -221,40 +214,23 @@ export default function AppointmentsList() {
                         {statusLabels[apt.status]}
                       </Badge>
                       
-                      {/* Quick status buttons */}
-                      <div className="flex gap-1 mt-1" onClick={(e) => e.stopPropagation()}>
-                        {(apt.status === 'scheduled' || apt.status === 'confirmed' || apt.status === 'arrived') && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-7 px-2 text-xs bg-yellow-50 hover:bg-yellow-100 text-yellow-700 border-yellow-200"
-                            onClick={(e) => handleStatusChange(apt.id, 'waiting_room', e)}
-                          >
-                            בחדר המתנה
-                          </Button>
-                        )}
-                        {apt.status === 'waiting_room' && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-7 px-2 text-xs bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200"
-                            onClick={(e) => handleStatusChange(apt.id, 'with_doctor', e)}
-                          >
-                            <Stethoscope className="h-3 w-3 ml-1" />
-                            אצל הרופא
-                          </Button>
-                        )}
-                        {(apt.status === 'with_doctor' || apt.status === 'in_progress') && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-7 px-2 text-xs bg-green-50 hover:bg-green-100 text-green-700 border-green-200"
-                            onClick={(e) => handleStatusChange(apt.id, 'completed', e)}
-                          >
-                            <CheckCircle className="h-3 w-3 ml-1" />
-                            סיים ביקור
-                          </Button>
-                        )}
+                      {/* Status dropdown */}
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <Select
+                          value={apt.status}
+                          onValueChange={(newStatus) => handleStatusChange(apt.id, newStatus, { stopPropagation: () => {} } as React.MouseEvent)}
+                        >
+                          <SelectTrigger className={`w-32 h-8 text-xs ${statusColors[apt.status] || 'bg-gray-100'}`}>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="scheduled">מתוכנן</SelectItem>
+                            <SelectItem value="waiting_room">בחדר המתנה</SelectItem>
+                            <SelectItem value="in_treatment">בטיפול</SelectItem>
+                            <SelectItem value="completed">הושלם</SelectItem>
+                            <SelectItem value="cancelled">בוטל</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
                   </div>
