@@ -481,25 +481,62 @@ export default function AppointmentDetail() {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <PageHelpButton tutorial={appointmentDetailTutorial} />
-            <Select value={status} onValueChange={handleStatusChange}>
-              <SelectTrigger 
-                data-tutorial="status-dropdown"
-                className={`w-36 text-base font-medium ${statusColors[status] || 'bg-gray-100'}`}
-              >
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="scheduled">מתוכנן</SelectItem>
-                <SelectItem value="waiting_room">בחדר המתנה</SelectItem>
-                <SelectItem value="in_treatment">חדר רופא</SelectItem>
-                <SelectItem value="completed">הושלם</SelectItem>
-                <SelectItem value="cancelled">בוטל</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <PageHelpButton tutorial={appointmentDetailTutorial} />
         </div>
+
+        {/* Prominent Status Card */}
+        <Card 
+          data-tutorial="status-dropdown"
+          className={`border-2 ${
+            status === 'completed' ? 'border-green-300 bg-green-50' :
+            status === 'in_treatment' ? 'border-purple-300 bg-purple-50' :
+            status === 'waiting_room' ? 'border-yellow-300 bg-yellow-50' :
+            status === 'cancelled' ? 'border-red-300 bg-red-50' :
+            'border-blue-300 bg-blue-50'
+          }`}
+        >
+          <CardContent className="py-4">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className={`p-3 rounded-full ${
+                  status === 'completed' ? 'bg-green-200 text-green-700' :
+                  status === 'in_treatment' ? 'bg-purple-200 text-purple-700' :
+                  status === 'waiting_room' ? 'bg-yellow-200 text-yellow-700' :
+                  status === 'cancelled' ? 'bg-red-200 text-red-700' :
+                  'bg-blue-200 text-blue-700'
+                }`}>
+                  <Stethoscope className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">סטטוס התור</p>
+                  <p className={`text-xl font-bold ${
+                    status === 'completed' ? 'text-green-700' :
+                    status === 'in_treatment' ? 'text-purple-700' :
+                    status === 'waiting_room' ? 'text-yellow-700' :
+                    status === 'cancelled' ? 'text-red-700' :
+                    'text-blue-700'
+                  }`}>
+                    {statusLabels[status] || status}
+                  </p>
+                </div>
+              </div>
+              <Select value={status} onValueChange={handleStatusChange}>
+                <SelectTrigger 
+                  className={`w-44 h-12 text-lg font-bold ${statusColors[status] || 'bg-gray-100'} border-2`}
+                >
+                  <SelectValue placeholder="שנה סטטוס" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="scheduled" className="text-base py-2">📅 מתוכנן</SelectItem>
+                  <SelectItem value="waiting_room" className="text-base py-2">🪑 בחדר המתנה</SelectItem>
+                  <SelectItem value="in_treatment" className="text-base py-2">👨‍⚕️ חדר רופא</SelectItem>
+                  <SelectItem value="completed" className="text-base py-2">✅ הושלם</SelectItem>
+                  <SelectItem value="cancelled" className="text-base py-2">❌ בוטל</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Cancellation Reason Dialog */}
         <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
