@@ -29,17 +29,41 @@ export function OnboardingTutorial({ forceShow, onComplete }: OnboardingTutorial
     }
   }, [forceShow]);
 
-  // Handle element highlighting
+  const [dialogPosition, setDialogPosition] = useState<'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'>('bottom-right');
+
+  // Handle element highlighting and dialog positioning
   useEffect(() => {
     if (!show) return;
     
     const step = onboardingSteps[currentStep];
-    if (!step?.highlightSelector) return;
+    if (!step?.highlightSelector) {
+      setDialogPosition('bottom-right');
+      return;
+    }
     
     const element = document.querySelector(step.highlightSelector);
     if (element) {
       element.classList.add('tutorial-highlight');
       element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      
+      // Calculate best position for dialog based on element location
+      const rect = element.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      
+      const elementCenterX = rect.left + rect.width / 2;
+      const elementCenterY = rect.top + rect.height / 2;
+      
+      // Position dialog on opposite side of the element
+      if (elementCenterY < viewportHeight / 2) {
+        // Element is in top half, put dialog at bottom
+        setDialogPosition(elementCenterX < viewportWidth / 2 ? 'bottom-right' : 'bottom-left');
+      } else {
+        // Element is in bottom half, put dialog at top
+        setDialogPosition(elementCenterX < viewportWidth / 2 ? 'top-right' : 'top-left');
+      }
+    } else {
+      setDialogPosition('bottom-right');
     }
     
     return () => {
@@ -76,13 +100,20 @@ export function OnboardingTutorial({ forceShow, onComplete }: OnboardingTutorial
 
   const step = onboardingSteps[currentStep];
 
+  const positionClasses = {
+    'top-left': 'top-4 left-4',
+    'top-right': 'top-4 right-4',
+    'bottom-left': 'bottom-4 left-4',
+    'bottom-right': 'bottom-4 right-4',
+  };
+
   return (
     <>
       {/* Dark overlay behind highlighted element */}
       <div className="tutorial-overlay" />
       
-      {/* Tutorial dialog - positioned at top-left to avoid covering highlighted element */}
-      <div className="fixed top-4 left-4 z-[100] pointer-events-none animate-in fade-in slide-in-from-left-4 duration-300">
+      {/* Tutorial dialog - positioned dynamically to avoid covering highlighted element */}
+      <div className={`fixed ${positionClasses[dialogPosition]} z-[100] pointer-events-none animate-in fade-in duration-300 max-w-sm`}>
         <div className="pointer-events-auto">
           <TutorialStep
             title={step.title}
