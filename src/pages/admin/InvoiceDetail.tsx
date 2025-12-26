@@ -7,10 +7,12 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useInvoice, useUpdateInvoiceStatus, useUpdateInvoice } from '@/hooks/useInvoices';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { ArrowRight, Printer, Mail, CheckCircle, Edit, Save, X, Plus, Trash2, Link2, Copy, MessageCircle, ExternalLink } from 'lucide-react';
+import { ArrowRight, Printer, Mail, CheckCircle, Edit, Save, X, Plus, Trash2, Link2, Copy, MessageCircle, ExternalLink, CreditCard, Wallet } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface EditableItem {
@@ -32,6 +34,9 @@ export default function InvoiceDetail() {
   const [editNotes, setEditNotes] = useState('');
   const [editDueDate, setEditDueDate] = useState('');
   const [editPaymentLink, setEditPaymentLink] = useState('');
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<string>('bit');
+  const [paymentReference, setPaymentReference] = useState('');
 
   useEffect(() => {
     if (invoice) {
@@ -92,9 +97,36 @@ export default function InvoiceDetail() {
     }
   };
 
-  const handleMarkAsPaid = () => {
+  const handleOpenPaymentDialog = () => {
+    setPaymentMethod('bit');
+    setPaymentReference('');
+    setShowPaymentDialog(true);
+  };
+
+  const handleCollectPayment = async () => {
     if (!id) return;
-    updateStatus.mutate({ id, status: 'paid', amount_paid: Number(invoice?.total) });
+    
+    try {
+      // Update invoice status
+      await updateStatus.mutateAsync({ id, status: 'paid', amount_paid: Number(invoice?.total) });
+      
+      // Record payment in payments table
+      const { error } = await supabase.from('payments').insert({
+        invoice_id: id,
+        patient_id: invoice?.patient_id,
+        amount: Number(invoice?.total),
+        payment_method: paymentMethod,
+        payment_reference: paymentReference || null,
+        status: 'completed',
+      });
+      
+      if (error) throw error;
+      
+      toast({ title: 'התשלום נרשם בהצלחה' });
+      setShowPaymentDialog(false);
+    } catch (error: any) {
+      toast({ title: 'שגיאה ברישום התשלום', description: error.message, variant: 'destructive' });
+    }
   };
 
   const handlePrint = () => {
@@ -264,9 +296,9 @@ export default function InvoiceDetail() {
                       <Mail className="h-4 w-4 sm:ml-1" />
                       <span className="hidden sm:inline">תזכורת</span>
                     </Button>
-                    <Button size="sm" onClick={handleMarkAsPaid}>
-                      <CheckCircle className="h-4 w-4 sm:ml-1" />
-                      <span className="hidden sm:inline">שולם</span>
+                    <Button size="sm" onClick={handleOpenPaymentDialog}>
+                      <Wallet className="h-4 w-4 sm:ml-1" />
+                      <span className="hidden sm:inline">גביית תשלום</span>
                     </Button>
                   </>
                 )}
@@ -517,6 +549,86 @@ export default function InvoiceDetail() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Payment Collection Dialog */}
+      <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
+        <DialogContent className="sm:max-w-md" dir="rtl">
+          <DialogHeader>
+            <DialogTitle className="text-right">גביית תשלום</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="text-center text-2xl font-bold text-primary">
+              ₪{Number(invoice?.total).toLocaleString()}
+            </div>
+            
+            <div className="space-y-3">
+              <Label>אמצעי תשלום</Label>
+              <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="grid grid-cols-2 gap-3">
+                <div>
+                  <RadioGroupItem value="bit" id="bit" className="peer sr-only" />
+                  <Label
+                    htmlFor="bit"
+                    className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer"
+                  >
+                    <Wallet className="mb-2 h-6 w-6" />
+                    <span className="font-medium">Bit</span>
+                  </Label>
+                </div>
+                <div>
+                  <RadioGroupItem value="paybox" id="paybox" className="peer sr-only" />
+                  <Label
+                    htmlFor="paybox"
+                    className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer"
+                  >
+                    <CreditCard className="mb-2 h-6 w-6" />
+                    <span className="font-medium">PayBox</span>
+                  </Label>
+                </div>
+                <div>
+                  <RadioGroupItem value="credit_card" id="credit_card" className="peer sr-only" />
+                  <Label
+                    htmlFor="credit_card"
+                    className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer"
+                  >
+                    <CreditCard className="mb-2 h-6 w-6" />
+                    <span className="font-medium">כרטיס אשראי</span>
+                  </Label>
+                </div>
+                <div>
+                  <RadioGroupItem value="cash" id="cash" className="peer sr-only" />
+                  <Label
+                    htmlFor="cash"
+                    className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer"
+                  >
+                    <Wallet className="mb-2 h-6 w-6" />
+                    <span className="font-medium">מזומן</span>
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="reference">מספר אסמכתא (אופציונלי)</Label>
+              <Input
+                id="reference"
+                value={paymentReference}
+                onChange={(e) => setPaymentReference(e.target.value)}
+                placeholder="הזן מספר אסמכתא..."
+                dir="ltr"
+              />
+            </div>
+          </div>
+          <DialogFooter className="flex-row-reverse gap-2">
+            <Button onClick={handleCollectPayment} disabled={updateStatus.isPending}>
+              <CheckCircle className="h-4 w-4 ml-2" />
+              {updateStatus.isPending ? 'מעבד...' : 'אשר תשלום'}
+            </Button>
+            <Button variant="outline" onClick={() => setShowPaymentDialog(false)}>
+              ביטול
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 }
