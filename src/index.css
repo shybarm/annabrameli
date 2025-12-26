@@ -250,23 +250,32 @@
 /* Tutorial highlight effect */
 .tutorial-highlight {
   position: relative;
-  z-index: 51 !important;
+  z-index: 60 !important;
   animation: tutorialPulse 1.5s ease-in-out infinite;
   border-radius: var(--radius);
   outline: 4px solid hsl(174 62% 40%);
   outline-offset: 6px;
-  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6), 0 0 30px 10px hsl(174 62% 50% / 0.5);
+  box-shadow: 0 0 30px 10px hsl(174 62% 50% / 0.5);
   background-color: hsl(var(--card)) !important;
+}
+
+/* Overlay that sits between the page and highlighted element */
+.tutorial-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 55;
+  pointer-events: none;
 }
 
 @keyframes tutorialPulse {
   0%, 100% {
     outline-color: hsl(174 62% 40%);
-    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6), 0 0 20px 5px hsl(174 62% 50% / 0.4);
+    box-shadow: 0 0 20px 5px hsl(174 62% 50% / 0.4);
   }
   50% {
     outline-color: hsl(174 62% 55%);
-    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6), 0 0 40px 15px hsl(174 62% 50% / 0.6);
+    box-shadow: 0 0 40px 15px hsl(174 62% 50% / 0.6);
   }
 }
 

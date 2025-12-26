@@ -85,20 +85,28 @@ export function PageHelpButton({ tutorial }: PageHelpButtonProps) {
       </Tooltip>
 
       {show && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-300">
-          <TutorialStep
-            title={step.title}
-            description={step.description}
-            icon={createElement(step.icon, { className: "h-5 w-5" })}
-            stepNumber={currentStep + 1}
-            totalSteps={tutorial.steps.length}
-            onNext={handleNext}
-            onPrev={handlePrev}
-            onClose={handleClose}
-            isFirst={currentStep === 0}
-            isLast={currentStep === tutorial.steps.length - 1}
-          />
-        </div>
+        <>
+          {/* Dark overlay behind highlighted element */}
+          <div className="tutorial-overlay" />
+          
+          {/* Tutorial dialog - highest z-index */}
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 pointer-events-none">
+            <div className="pointer-events-auto">
+              <TutorialStep
+                title={step.title}
+                description={step.description}
+                icon={createElement(step.icon, { className: "h-5 w-5" })}
+                stepNumber={currentStep + 1}
+                totalSteps={tutorial.steps.length}
+                onNext={handleNext}
+                onPrev={handlePrev}
+                onClose={handleClose}
+                isFirst={currentStep === 0}
+                isLast={currentStep === tutorial.steps.length - 1}
+              />
+            </div>
+          </div>
+        </>
       )}
     </>
   );
