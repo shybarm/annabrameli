@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,7 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Settings, Building, Clock, Users, Bell, Plus, Trash2, Play, HelpCircle, RotateCcw } from 'lucide-react';
 import { useOnboarding } from '@/components/tutorial/OnboardingTutorial';
-import { OnboardingTutorial } from '@/components/tutorial/OnboardingTutorial';
+import { FullAppTour } from '@/components/tutorial/FullAppTour';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -98,6 +99,7 @@ function DayScheduleRow({ day, defaultOpen, defaultClose, defaultClosed }: DaySc
 }
 
 export default function SettingsPage() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [newHours, setNewHours] = useState('');
   const { resetOnboarding } = useOnboarding();
@@ -438,7 +440,7 @@ export default function SettingsPage() {
             <p className="text-muted-foreground mb-4">
               ניהול משתמשי הצוות והרשאות הגישה שלהם למערכת
             </p>
-            <Button variant="outline">ניהול צוות</Button>
+            <Button variant="outline" onClick={() => navigate('/admin/team')}>ניהול צוות</Button>
           </CardContent>
         </Card>
 
@@ -466,10 +468,9 @@ export default function SettingsPage() {
         </Card>
       </div>
 
-      {/* Onboarding Tutorial */}
+      {/* Full App Tour */}
       {showTutorial && (
-        <OnboardingTutorial 
-          forceShow={true} 
+        <FullAppTour 
           onComplete={() => setShowTutorial(false)} 
         />
       )}
