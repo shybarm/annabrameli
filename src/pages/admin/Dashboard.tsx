@@ -54,10 +54,10 @@ export default function AdminDashboard() {
     <AdminLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-gray-200 -mx-4 sm:-mx-6 px-4 sm:px-6 py-4 rounded-lg">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-[#343e42] -mx-4 sm:-mx-6 px-4 sm:px-6 py-4 rounded-lg">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">לוח בקרה</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-2xl font-bold text-white">לוח בקרה</h1>
+            <p className="text-gray-300">
               {format(new Date(), 'EEEE, d בMMMM yyyy', { locale: he })}
             </p>
           </div>
