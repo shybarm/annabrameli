@@ -308,10 +308,31 @@ export default function AppointmentDetail() {
     }
   };
 
+  // HTML escape function to prevent XSS attacks
+  const escapeHtml = (unsafe: string): string => {
+    return unsafe
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  };
+
   const handlePrint = () => {
     const printContent = buildVisitSummaryText();
     const printWindow = window.open('', '_blank');
     if (printWindow) {
+      // Escape all user-provided data to prevent XSS
+      const safeFirstName = escapeHtml(appointment?.patients?.first_name || '');
+      const safeLastName = escapeHtml(appointment?.patients?.last_name || '');
+      const safeIdNumber = escapeHtml(appointment?.patients?.id_number || '');
+      const safePhysicalExam = escapeHtml(physicalExam).replace(/\n/g, '<br>');
+      const safeLabTests = escapeHtml(labTests).replace(/\n/g, '<br>');
+      const safeAuxiliaryTests = escapeHtml(auxiliaryTests).replace(/\n/g, '<br>');
+      const safeVisitSummary = escapeHtml(visitSummary).replace(/\n/g, '<br>');
+      const safeTreatmentPlan = escapeHtml(treatmentPlan).replace(/\n/g, '<br>');
+      const safeMedications = escapeHtml(medications).replace(/\n/g, '<br>');
+
       printWindow.document.write(`
         <html dir="rtl">
           <head>
@@ -335,50 +356,50 @@ export default function AppointmentDetail() {
           </head>
           <body>
             <h1>סיכום ביקור</h1>
-            <p><strong>מטופל:</strong> ${appointment?.patients?.first_name || ''} ${appointment?.patients?.last_name || ''}</p>
+            <p><strong>מטופל:</strong> ${safeFirstName} ${safeLastName}</p>
             <p><strong>תאריך:</strong> ${appointment?.scheduled_at ? format(new Date(appointment.scheduled_at), 'dd/MM/yyyy', { locale: he }) : ''}</p>
-            ${appointment?.patients?.id_number ? `<p><strong>ת.ז:</strong> ${appointment.patients.id_number}</p>` : ''}
+            ${safeIdNumber ? `<p><strong>ת.ז:</strong> ${safeIdNumber}</p>` : ''}
             <hr style="margin: 20px 0;" />
             
             ${physicalExam.trim() ? `
               <div class="section">
                 <div class="section-title">בדיקה גופנית:</div>
-                <div class="content">${physicalExam.replace(/\n/g, '<br>')}</div>
+                <div class="content">${safePhysicalExam}</div>
               </div>
             ` : ''}
             
             ${labTests.trim() ? `
               <div class="section">
                 <div class="section-title">בדיקות מעבדה:</div>
-                <div class="content">${labTests.replace(/\n/g, '<br>')}</div>
+                <div class="content">${safeLabTests}</div>
               </div>
             ` : ''}
             
             ${auxiliaryTests.trim() ? `
               <div class="section">
                 <div class="section-title">בדיקות עזר:</div>
-                <div class="content">${auxiliaryTests.replace(/\n/g, '<br>')}</div>
+                <div class="content">${safeAuxiliaryTests}</div>
               </div>
             ` : ''}
             
             ${visitSummary.trim() ? `
               <div class="section">
                 <div class="section-title">סיכום הביקור:</div>
-                <div class="content">${visitSummary.replace(/\n/g, '<br>')}</div>
+                <div class="content">${safeVisitSummary}</div>
               </div>
             ` : ''}
             
             ${treatmentPlan.trim() ? `
               <div class="section">
                 <div class="section-title">תוכנית טיפול:</div>
-                <div class="content">${treatmentPlan.replace(/\n/g, '<br>')}</div>
+                <div class="content">${safeTreatmentPlan}</div>
               </div>
             ` : ''}
             
             ${medications.trim() ? `
               <div class="section">
                 <div class="section-title">תרופות:</div>
-                <div class="content">${medications.replace(/\n/g, '<br>')}</div>
+                <div class="content">${safeMedications}</div>
               </div>
             ` : ''}
             
