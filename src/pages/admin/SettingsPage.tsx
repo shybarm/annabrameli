@@ -19,6 +19,47 @@ interface ReminderSchedule {
   is_active: boolean;
 }
 
+interface DaySchedule {
+  day: string;
+  defaultOpen: string;
+  defaultClose: string;
+  defaultClosed: boolean;
+}
+
+function DayScheduleRow({ day, defaultOpen, defaultClose, defaultClosed }: DaySchedule) {
+  const [isClosed, setIsClosed] = useState(defaultClosed);
+  
+  return (
+    <div className="flex items-center gap-4">
+      <span className="w-20 font-medium">{day}</span>
+      <label className="flex items-center gap-2 min-w-[80px]">
+        <Switch
+          checked={!isClosed}
+          onCheckedChange={(checked) => setIsClosed(!checked)}
+        />
+        <span className="text-sm">{isClosed ? 'סגור' : 'פתוח'}</span>
+      </label>
+      {!isClosed && (
+        <>
+          <Input 
+            type="time" 
+            defaultValue={defaultOpen} 
+            className="w-32" 
+            dir="ltr" 
+          />
+          <span>עד</span>
+          <Input 
+            type="time" 
+            defaultValue={defaultClose} 
+            className="w-32" 
+            dir="ltr" 
+          />
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function SettingsPage() {
   const queryClient = useQueryClient();
   const [newHours, setNewHours] = useState('');
@@ -300,26 +341,17 @@ export default function SettingsPage() {
               <Clock className="h-5 w-5" />
               שעות פעילות
             </CardTitle>
-            <CardDescription>הגדרת שעות קבלה</CardDescription>
+            <CardDescription>הגדרת שעות קבלה (שעון 24 שעות)</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי'].map((day, index) => (
-                <div key={day} className="flex items-center gap-4">
-                  <span className="w-20 font-medium">{day}</span>
-                  <Input type="time" defaultValue="08:00" className="w-32" dir="ltr" />
-                  <span>עד</span>
-                  <Input type="time" defaultValue={index === 4 ? "14:00" : "18:00"} className="w-32" dir="ltr" />
-                </div>
-              ))}
-              <div className="flex items-center gap-4 text-muted-foreground">
-                <span className="w-20 font-medium">שישי</span>
-                <span>סגור</span>
-              </div>
-              <div className="flex items-center gap-4 text-muted-foreground">
-                <span className="w-20 font-medium">שבת</span>
-                <span>סגור</span>
-              </div>
+              <DayScheduleRow day="ראשון" defaultOpen="08:00" defaultClose="18:00" defaultClosed={false} />
+              <DayScheduleRow day="שני" defaultOpen="08:00" defaultClose="18:00" defaultClosed={false} />
+              <DayScheduleRow day="שלישי" defaultOpen="08:00" defaultClose="18:00" defaultClosed={false} />
+              <DayScheduleRow day="רביעי" defaultOpen="08:00" defaultClose="18:00" defaultClosed={false} />
+              <DayScheduleRow day="חמישי" defaultOpen="08:00" defaultClose="14:00" defaultClosed={false} />
+              <DayScheduleRow day="שישי" defaultOpen="08:00" defaultClose="13:00" defaultClosed={true} />
+              <DayScheduleRow day="שבת" defaultOpen="08:00" defaultClose="18:00" defaultClosed={true} />
             </div>
             <Separator className="my-4" />
             <Button className="bg-primary text-primary-foreground hover:bg-primary/90">שמור שינויים</Button>
