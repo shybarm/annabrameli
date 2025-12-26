@@ -57,7 +57,7 @@ export default function JoinTeam() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!invitation) return;
+    if (!invitation || !code) return;
 
     setSubmitting(true);
     try {
@@ -74,27 +74,39 @@ export default function JoinTeam() {
         },
       });
 
-      if (signUpError) throw signUpError;
+      if (signUpError) {
+        // If user already exists, they might need to just log in
+        if (signUpError.message.includes('already registered')) {
+          toast({ 
+            title: 'המשתמש כבר רשום', 
+            description: 'נסה להתחבר עם הסיסמה שלך',
+            variant: 'destructive' 
+          });
+          navigate('/auth');
+          return;
+        }
+        throw signUpError;
+      }
 
       if (authData.user) {
-        // Create user role with permissions
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .insert({
-            user_id: authData.user.id,
-            role: invitation.role,
-            permissions: invitation.permissions,
+        // Use the secure function to accept the invitation and create the role
+        const { data: accepted, error: acceptError } = await supabase
+          .rpc('accept_team_invitation', {
+            _invite_code: code,
+            _user_id: authData.user.id,
           });
 
-        if (roleError) throw roleError;
-
-        // Mark invitation as accepted
-        await supabase
-          .from('team_invitations')
-          .update({ accepted_at: new Date().toISOString() })
-          .eq('id', invitation.id);
-
-        toast({ title: 'ההרשמה הושלמה בהצלחה!' });
+        if (acceptError) {
+          console.error('Failed to accept invitation:', acceptError);
+          // User was created but role assignment failed - still let them proceed
+          toast({ 
+            title: 'ההרשמה הושלמה', 
+            description: 'יש לפנות למנהל להשלמת ההרשאות',
+          });
+        } else {
+          toast({ title: 'ההרשמה הושלמה בהצלחה!' });
+        }
+        
         navigate('/auth');
       }
     } catch (err: any) {
