@@ -586,6 +586,8 @@ export type Database = {
           address: string | null
           alcohol_consumption: string | null
           allergies: string[] | null
+          allergy_reaction_type: string | null
+          allergy_severity: string | null
           chronic_conditions: string[] | null
           city: string | null
           consent_signed: boolean | null
@@ -633,6 +635,8 @@ export type Database = {
           address?: string | null
           alcohol_consumption?: string | null
           allergies?: string[] | null
+          allergy_reaction_type?: string | null
+          allergy_severity?: string | null
           chronic_conditions?: string[] | null
           city?: string | null
           consent_signed?: boolean | null
@@ -680,6 +684,8 @@ export type Database = {
           address?: string | null
           alcohol_consumption?: string | null
           allergies?: string[] | null
+          allergy_reaction_type?: string | null
+          allergy_severity?: string | null
           chronic_conditions?: string[] | null
           city?: string | null
           consent_signed?: boolean | null
