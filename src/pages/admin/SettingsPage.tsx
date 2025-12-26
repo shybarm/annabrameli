@@ -6,7 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
-import { Settings, Building, Clock, Users, Bell, Plus, Trash2, Play } from 'lucide-react';
+import { Settings, Building, Clock, Users, Bell, Plus, Trash2, Play, HelpCircle, RotateCcw } from 'lucide-react';
+import { useOnboarding } from '@/components/tutorial/OnboardingTutorial';
+import { OnboardingTutorial } from '@/components/tutorial/OnboardingTutorial';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -63,6 +65,13 @@ function DayScheduleRow({ day, defaultOpen, defaultClose, defaultClosed }: DaySc
 export default function SettingsPage() {
   const queryClient = useQueryClient();
   const [newHours, setNewHours] = useState('');
+  const { resetOnboarding } = useOnboarding();
+  const [showTutorial, setShowTutorial] = useState(false);
+
+  const handleResetTutorial = () => {
+    resetOnboarding();
+    setShowTutorial(true);
+  };
 
   // Fetch reminder schedules
   const { data: reminders, isLoading: loadingReminders } = useQuery({
@@ -397,7 +406,38 @@ export default function SettingsPage() {
             <Button variant="outline">ניהול צוות</Button>
           </CardContent>
         </Card>
+
+        {/* Help & Tutorial */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <HelpCircle className="h-5 w-5" />
+              עזרה והדרכה
+            </CardTitle>
+            <CardDescription>הצג את ההדרכה הראשונית מחדש</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground mb-4">
+              לחץ כאן כדי לאפס ולהציג מחדש את ההדרכה הראשונית של המערכת
+            </p>
+            <Button 
+              variant="outline" 
+              onClick={handleResetTutorial}
+            >
+              <RotateCcw className="h-4 w-4 ml-2" />
+              הפעל הדרכה מחדש
+            </Button>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Onboarding Tutorial */}
+      {showTutorial && (
+        <OnboardingTutorial 
+          forceShow={true} 
+          onComplete={() => setShowTutorial(false)} 
+        />
+      )}
     </AdminLayout>
   );
 }
