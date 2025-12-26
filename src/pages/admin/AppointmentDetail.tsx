@@ -14,7 +14,7 @@ import { toast } from '@/hooks/use-toast';
 import { DocumentViewer } from '@/components/admin/DocumentViewer';
 import { 
   ArrowRight, User, Clock, Calendar, FileText, Save, 
-  Upload, MessageCircle, CreditCard, File, Printer, Mail, Pill, Stethoscope, Eye
+  Upload, MessageCircle, CreditCard, File, Printer, Mail, Pill, Stethoscope, Eye, ClipboardList
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
@@ -433,7 +433,7 @@ export default function AppointmentDetail() {
                 </div>
               </div>
               
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 {appointment.patients?.phone && (
                   <Button variant="outline" className="flex-1" onClick={handleWhatsApp}>
                     <MessageCircle className="h-4 w-4 ml-2" />
@@ -449,6 +449,17 @@ export default function AppointmentDetail() {
                   חשבונית
                 </Button>
               </div>
+              
+              {/* Fill Intake Button - Show if not completed */}
+              {!appointment.patients?.intake_completed_at && (
+                <Button 
+                  className="w-full bg-yellow-500 hover:bg-yellow-600 text-white"
+                  onClick={() => navigate(`/admin/intake?patient=${appointment.patient_id}&appointment=${id}`)}
+                >
+                  <ClipboardList className="h-4 w-4 ml-2" />
+                  מלא טופס קליטה
+                </Button>
+              )}
             </CardContent>
           </Card>
 
