@@ -4,6 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { useAppointments, useAppointmentsRealtime, useAppointmentTypes } from '@/hooks/useAppointments';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -19,6 +22,9 @@ export default function AppointmentsList() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [cancellingAppointmentId, setCancellingAppointmentId] = useState<string | null>(null);
+  const [cancellationReason, setCancellationReason] = useState('');
   const weekStart = startOfWeek(selectedDate, { weekStartsOn: 0 });
   const weekEnd = endOfWeek(selectedDate, { weekStartsOn: 0 });
   const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
@@ -33,10 +39,15 @@ export default function AppointmentsList() {
 
   // Update status mutation
   const updateStatus = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+    mutationFn: async ({ id, status, cancellation_reason }: { id: string; status: string; cancellation_reason?: string }) => {
+      const updateData: any = { status };
+      if (status === 'cancelled') {
+        updateData.cancelled_at = new Date().toISOString();
+        updateData.cancellation_reason = cancellation_reason || null;
+      }
       const { error } = await supabase
         .from('appointments')
-        .update({ status })
+        .update(updateData)
         .eq('id', id);
       if (error) throw error;
     },
@@ -60,7 +71,7 @@ export default function AppointmentsList() {
   const statusLabels: Record<string, string> = {
     scheduled: 'מתוכנן',
     waiting_room: 'בחדר המתנה',
-    in_treatment: 'בטיפול',
+    in_treatment: 'חדר רופא',
     completed: 'הושלם',
     cancelled: 'בוטל',
   };
@@ -77,7 +88,26 @@ export default function AppointmentsList() {
 
   const handleStatusChange = (id: string, newStatus: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    updateStatus.mutate({ id, status: newStatus });
+    if (newStatus === 'cancelled') {
+      setCancellingAppointmentId(id);
+      setCancellationReason('');
+      setCancelDialogOpen(true);
+    } else {
+      updateStatus.mutate({ id, status: newStatus });
+    }
+  };
+
+  const handleConfirmCancel = () => {
+    if (cancellingAppointmentId) {
+      updateStatus.mutate({ 
+        id: cancellingAppointmentId, 
+        status: 'cancelled',
+        cancellation_reason: cancellationReason 
+      });
+      setCancelDialogOpen(false);
+      setCancellingAppointmentId(null);
+      setCancellationReason('');
+    }
   };
 
   return (
@@ -226,7 +256,7 @@ export default function AppointmentsList() {
                           <SelectContent>
                             <SelectItem value="scheduled">מתוכנן</SelectItem>
                             <SelectItem value="waiting_room">בחדר המתנה</SelectItem>
-                            <SelectItem value="in_treatment">בטיפול</SelectItem>
+                            <SelectItem value="in_treatment">חדר רופא</SelectItem>
                             <SelectItem value="completed">הושלם</SelectItem>
                             <SelectItem value="cancelled">בוטל</SelectItem>
                           </SelectContent>
@@ -251,6 +281,35 @@ export default function AppointmentsList() {
             )}
           </CardContent>
         </Card>
+
+        {/* Cancellation Reason Dialog */}
+        <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>סיבת ביטול התור</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <Label htmlFor="cancellation-reason">
+                למה התור בוטל? (המידע יעזור לנו לשפר את השירות)
+              </Label>
+              <Textarea
+                id="cancellation-reason"
+                placeholder="לדוגמה: המטופל ביקש לדחות, בעיית לו&quot;ז, מחלה..."
+                value={cancellationReason}
+                onChange={(e) => setCancellationReason(e.target.value)}
+                rows={3}
+              />
+            </div>
+            <DialogFooter className="gap-2">
+              <Button variant="outline" onClick={() => setCancelDialogOpen(false)}>
+                חזור
+              </Button>
+              <Button variant="destructive" onClick={handleConfirmCancel}>
+                בטל תור
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </AdminLayout>
   );
