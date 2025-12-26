@@ -66,14 +66,27 @@ export function VoiceRecorder({ onTranscription, disabled }: VoiceRecorderProps)
       
       reader.onloadend = async () => {
         const base64Audio = (reader.result as string).split(',')[1];
-        
+
         try {
+          const {
+            data: { session },
+            error: sessionError,
+          } = await supabase.auth.getSession();
+
+          if (sessionError) throw sessionError;
+          if (!session?.access_token) {
+            throw new Error('נדרש להתחבר למערכת כדי לבצע תמלול');
+          }
+
           const { data, error } = await supabase.functions.invoke('transcribe-audio', {
-            body: { audio: base64Audio }
+            body: { audio: base64Audio },
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+            },
           });
 
           if (error) throw error;
-          
+
           if (data?.transcription) {
             onTranscription(data.transcription);
             toast({ title: 'התמלול הושלם' });
