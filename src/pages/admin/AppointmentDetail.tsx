@@ -24,6 +24,8 @@ import {
   Upload, MessageCircle, CreditCard, File, Printer, Mail, Pill, Stethoscope, Eye, ClipboardList,
   Activity, FlaskConical, ScanLine, PenTool, CheckCircle
 } from 'lucide-react';
+import { PageHelpButton } from '@/components/tutorial/PageHelpButton';
+import { appointmentDetailTutorial } from '@/components/tutorial/tutorialData';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 
@@ -453,9 +455,12 @@ export default function AppointmentDetail() {
               </p>
             </div>
           </div>
-          <Badge className={statusColors[appointment.status] + ' text-lg px-4 py-2'}>
-            {statusLabels[appointment.status]}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <PageHelpButton tutorial={appointmentDetailTutorial} />
+            <Badge className={statusColors[appointment.status] + ' text-lg px-4 py-2'}>
+              {statusLabels[appointment.status]}
+            </Badge>
+          </div>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
@@ -519,7 +524,7 @@ export default function AppointmentDetail() {
           </Card>
 
           {/* Appointment Info */}
-          <Card>
+          <Card data-tutorial="appointment-info">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Calendar className="h-5 w-5 text-primary" />
@@ -582,7 +587,7 @@ export default function AppointmentDetail() {
               <FileText className="h-4 w-4" />
               הערות פנימיות
             </TabsTrigger>
-            <TabsTrigger value="documents" className="flex items-center gap-2">
+            <TabsTrigger value="documents" className="flex items-center gap-2" data-tutorial="documents-tab">
               <File className="h-4 w-4" />
               מסמכים
             </TabsTrigger>
@@ -597,7 +602,7 @@ export default function AppointmentDetail() {
                   סיכום ביקור ותוכנית טיפול
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-6" data-tutorial="visit-summary-form">
                 {/* Scoring Toolbar */}
                 <ScoringToolbar 
                   onScoreAdd={(toolName, score, interpretation) => {
@@ -767,7 +772,7 @@ export default function AppointmentDetail() {
                   />
                 </div>
 
-                <div className="flex flex-wrap gap-3 pt-4 border-t">
+                <div className="flex flex-wrap gap-3 pt-4 border-t" data-tutorial="share-buttons">
                   <Button 
                     onClick={handleSaveVisitSummary} 
                     disabled={updateAppointment.isPending}
@@ -850,7 +855,7 @@ export default function AppointmentDetail() {
 
                 {/* Existing Signatures Display */}
                 {signatures && signatures.length > 0 && (
-                  <div className="pt-4 border-t space-y-3">
+                  <div className="pt-4 border-t space-y-3" data-tutorial="signature-section">
                     <Label className="flex items-center gap-2">
                       <CheckCircle className="h-4 w-4 text-green-600" />
                       חתימות דיגיטליות
