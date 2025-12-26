@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -403,14 +403,43 @@ export default function AppointmentDetail() {
   const statusLabels: Record<string, string> = {
     scheduled: 'מתוכנן',
     waiting_room: 'בחדר המתנה',
-    in_treatment: 'בטיפול',
+    in_treatment: 'חדר רופא',
     completed: 'הושלם',
     cancelled: 'בוטל',
   };
 
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [cancellationReason, setCancellationReason] = useState('');
+
   const handleStatusChange = (newStatus: string) => {
-    setStatus(newStatus);
-    updateAppointment.mutate({ status: newStatus });
+    if (newStatus === 'cancelled') {
+      setCancellationReason('');
+      setCancelDialogOpen(true);
+    } else {
+      setStatus(newStatus);
+      updateAppointment.mutate({ status: newStatus });
+    }
+  };
+
+  const handleConfirmCancel = async () => {
+    setStatus('cancelled');
+    const { error } = await supabase
+      .from('appointments')
+      .update({ 
+        status: 'cancelled',
+        cancelled_at: new Date().toISOString(),
+        cancellation_reason: cancellationReason || null
+      })
+      .eq('id', id);
+    
+    if (error) {
+      toast({ title: 'שגיאה', description: error.message, variant: 'destructive' });
+    } else {
+      queryClient.invalidateQueries({ queryKey: ['appointment', id] });
+      queryClient.invalidateQueries({ queryKey: ['appointments'] });
+      toast({ title: 'התור בוטל' });
+      setCancelDialogOpen(false);
+    }
   };
 
   if (isLoading) {
@@ -464,13 +493,42 @@ export default function AppointmentDetail() {
               <SelectContent>
                 <SelectItem value="scheduled">מתוכנן</SelectItem>
                 <SelectItem value="waiting_room">בחדר המתנה</SelectItem>
-                <SelectItem value="in_treatment">בטיפול</SelectItem>
+                <SelectItem value="in_treatment">חדר רופא</SelectItem>
                 <SelectItem value="completed">הושלם</SelectItem>
                 <SelectItem value="cancelled">בוטל</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
+
+        {/* Cancellation Reason Dialog */}
+        <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>סיבת ביטול התור</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <Label htmlFor="cancel-reason">
+                למה התור בוטל? (המידע יעזור לנו לשפר את השירות)
+              </Label>
+              <Textarea
+                id="cancel-reason"
+                placeholder="לדוגמה: המטופל ביקש לדחות, בעיית לו&quot;ז, מחלה..."
+                value={cancellationReason}
+                onChange={(e) => setCancellationReason(e.target.value)}
+                rows={3}
+              />
+            </div>
+            <DialogFooter className="gap-2">
+              <Button variant="outline" onClick={() => setCancelDialogOpen(false)}>
+                חזור
+              </Button>
+              <Button variant="destructive" onClick={handleConfirmCancel}>
+                בטל תור
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Patient Info */}
