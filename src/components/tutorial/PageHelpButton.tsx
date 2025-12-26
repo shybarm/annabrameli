@@ -1,6 +1,6 @@
 import { useState, useEffect, createElement } from 'react';
 import { Button } from '@/components/ui/button';
-import { HelpCircle } from 'lucide-react';
+import { Lightbulb } from 'lucide-react';
 import { TutorialStep } from './TutorialStep';
 import { PageTutorial } from './tutorialData';
 import {
@@ -113,7 +113,7 @@ export function PageHelpButton({ tutorial }: PageHelpButtonProps) {
             onClick={handleOpen}
             className="gap-2"
           >
-            <HelpCircle className="h-4 w-4" />
+            <Lightbulb className="h-4 w-4" />
             <span className="hidden sm:inline">עזרה</span>
           </Button>
         </TooltipTrigger>
