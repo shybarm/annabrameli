@@ -34,3 +34,7 @@ verify_jwt = false
 # AI Chat assistant - public endpoint for website visitors
 [functions.chat-assistant]
 verify_jwt = false
+
+# Team invite - handles auth internally
+[functions.send-team-invite]
+verify_jwt = false
