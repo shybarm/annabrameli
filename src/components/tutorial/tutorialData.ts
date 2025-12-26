@@ -8,6 +8,7 @@ export interface TutorialStepData {
   title: string;
   description: string;
   icon: any;
+  highlightSelector?: string; // CSS selector to highlight element on page
 }
 
 export interface PageTutorial {
@@ -57,12 +58,14 @@ export const pageTutorials: Record<string, PageTutorial> = {
       {
         title: 'סקירה כללית',
         description: 'כאן תראה את כל הנתונים החשובים - תורים להיום, כמה מטופלים חדשים, והכנסות.',
-        icon: LayoutDashboard
+        icon: LayoutDashboard,
+        highlightSelector: '[data-tutorial="stats-cards"]'
       },
       {
         title: 'תורים להיום',
         description: 'ברשימה תראה את כל התורים המתוכננים להיום. לחץ על תור כדי לראות פרטים ולכתוב סיכום.',
-        icon: Calendar
+        icon: Calendar,
+        highlightSelector: '[data-tutorial="today-appointments"]'
       }
     ]
   },
@@ -73,17 +76,20 @@ export const pageTutorials: Record<string, PageTutorial> = {
       {
         title: 'רשימת המטופלים',
         description: 'כאן תראה את כל המטופלים במרפאה. תוכל לחפש לפי שם, טלפון או מייל.',
-        icon: Users
+        icon: Users,
+        highlightSelector: '[data-tutorial="patients-list"]'
       },
       {
         title: 'הוספת מטופל חדש',
         description: 'לחץ על "מטופל חדש" כדי להוסיף מטופל. מלא את הפרטים הבסיסיים ושלח טופס קליטה.',
-        icon: UserPlus
+        icon: UserPlus,
+        highlightSelector: '[data-tutorial="new-patient-btn"]'
       },
       {
         title: 'טופס קליטה',
         description: 'אחרי יצירת מטופל, לחץ על "שלח טופס קליטה" כדי לשלוח לינק למטופל למילוי ההיסטוריה הרפואית.',
-        icon: ClipboardList
+        icon: ClipboardList,
+        highlightSelector: '[data-tutorial="intake-btn"]'
       }
     ]
   },
@@ -94,17 +100,26 @@ export const pageTutorials: Record<string, PageTutorial> = {
       {
         title: 'לוח התורים',
         description: 'כאן תראה את כל התורים. תוכל לסנן לפי תאריך וסטטוס.',
-        icon: Calendar
+        icon: Calendar,
+        highlightSelector: '[data-tutorial="calendar-view"]'
       },
       {
         title: 'קביעת תור חדש',
         description: 'לחץ על "תור חדש" כדי לקבוע תור. בחר מטופל, סוג תור, תאריך ושעה.',
-        icon: Calendar
+        icon: Calendar,
+        highlightSelector: '[data-tutorial="new-appointment-btn"]'
+      },
+      {
+        title: 'סטטוס תור',
+        description: 'כשמטופל נכנס לחדר הרופא, לחץ על "אצל הרופא" כדי לעדכן סטטוס. בסיום לחץ על "סיים ביקור" לסטטוס ירוק.',
+        icon: Stethoscope,
+        highlightSelector: '[data-tutorial="appointment-status"]'
       },
       {
         title: 'סיכום ביקור',
         description: 'לאחר הביקור, לחץ על התור וכתוב סיכום. תוכל גם לחתום דיגיטלית ולשלוח למטופל.',
-        icon: FileText
+        icon: FileText,
+        highlightSelector: '[data-tutorial="appointments-list"]'
       }
     ]
   },
@@ -115,17 +130,20 @@ export const pageTutorials: Record<string, PageTutorial> = {
       {
         title: 'רשימת החשבוניות',
         description: 'כאן תראה את כל החשבוניות. תוכל לסנן לפי סטטוס (טיוטה, נשלחה, שולמה).',
-        icon: Receipt
+        icon: Receipt,
+        highlightSelector: '[data-tutorial="invoices-list"]'
       },
       {
         title: 'יצירת חשבונית',
         description: 'לחץ על "חשבונית חדשה". בחר מטופל, הוסף פריטים עם מחירים, ושמור.',
-        icon: Receipt
+        icon: Receipt,
+        highlightSelector: '[data-tutorial="new-invoice-btn"]'
       },
       {
         title: 'שליחת חשבונית',
         description: 'אחרי יצירת חשבונית, תוכל לשלוח אותה במייל או WhatsApp למטופל.',
-        icon: MessageSquare
+        icon: MessageSquare,
+        highlightSelector: '[data-tutorial="invoice-actions"]'
       }
     ]
   },
@@ -136,12 +154,14 @@ export const pageTutorials: Record<string, PageTutorial> = {
       {
         title: 'מעקב הוצאות',
         description: 'כאן תוכל לתעד את כל ההוצאות של המרפאה - שכירות, ציוד, חומרים ועוד.',
-        icon: Wallet
+        icon: Wallet,
+        highlightSelector: '[data-tutorial="expenses-list"]'
       },
       {
         title: 'הוספת הוצאה',
         description: 'לחץ על "הוצאה חדשה", בחר קטגוריה, הזן סכום ותיאור.',
-        icon: Wallet
+        icon: Wallet,
+        highlightSelector: '[data-tutorial="new-expense-btn"]'
       }
     ]
   },

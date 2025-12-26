@@ -392,10 +392,11 @@ export default function AppointmentDetail() {
 
   const statusColors: Record<string, string> = {
     scheduled: 'bg-blue-100 text-blue-700',
-    confirmed: 'bg-green-100 text-green-700',
-    arrived: 'bg-emerald-100 text-emerald-700',
+    confirmed: 'bg-cyan-100 text-cyan-700',
+    arrived: 'bg-amber-100 text-amber-700',
+    with_doctor: 'bg-purple-100 text-purple-700',
     in_progress: 'bg-yellow-100 text-yellow-700',
-    completed: 'bg-gray-100 text-gray-700',
+    completed: 'bg-green-100 text-green-700',
     cancelled: 'bg-red-100 text-red-700',
     no_show: 'bg-orange-100 text-orange-700',
   };
@@ -404,6 +405,7 @@ export default function AppointmentDetail() {
     scheduled: 'מתוכנן',
     confirmed: 'מאושר',
     arrived: 'הגיע',
+    with_doctor: 'אצל הרופא',
     in_progress: 'בטיפול',
     completed: 'הושלם',
     cancelled: 'בוטל',

@@ -29,9 +29,34 @@ export function OnboardingTutorial({ forceShow, onComplete }: OnboardingTutorial
     }
   }, [forceShow]);
 
+  // Handle element highlighting
+  useEffect(() => {
+    if (!show) return;
+    
+    const step = onboardingSteps[currentStep];
+    if (!step?.highlightSelector) return;
+    
+    const element = document.querySelector(step.highlightSelector);
+    if (element) {
+      element.classList.add('tutorial-highlight');
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    
+    return () => {
+      // Clean up previous highlight
+      document.querySelectorAll('.tutorial-highlight').forEach(el => {
+        el.classList.remove('tutorial-highlight');
+      });
+    };
+  }, [show, currentStep]);
+
   const handleComplete = () => {
     localStorage.setItem(ONBOARDING_KEY, 'true');
     setShow(false);
+    // Clean up highlights
+    document.querySelectorAll('.tutorial-highlight').forEach(el => {
+      el.classList.remove('tutorial-highlight');
+    });
     onComplete?.();
   };
 
