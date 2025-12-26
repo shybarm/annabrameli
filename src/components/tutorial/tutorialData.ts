@@ -1,7 +1,8 @@
 import { 
   LayoutDashboard, Users, Calendar, Receipt, FileText, 
   MessageSquare, Settings, Stethoscope, History, UserPlus,
-  ClipboardList, Wallet, PenTool, Calculator, Share2, File
+  ClipboardList, Wallet, PenTool, Calculator, Share2, File,
+  Mic, ListOrdered
 } from 'lucide-react';
 
 export interface TutorialStepData {
@@ -111,7 +112,7 @@ export const pageTutorials: Record<string, PageTutorial> = {
       },
       {
         title: 'סטטוס תור',
-        description: 'כשמטופל נכנס לחדר הרופא, לחץ על "אצל הרופא" כדי לעדכן סטטוס. בסיום לחץ על "סיים ביקור" לסטטוס ירוק.',
+        description: 'שנה סטטוס בתפריט הנפתח: מתוכנן → בחדר המתנה → בטיפול → הושלם (ירוק). הסטטוס מעודכן אוטומטית ונראה לכל הצוות.',
         icon: Stethoscope,
         highlightSelector: '[data-tutorial="appointment-status"]'
       },
@@ -216,6 +217,12 @@ export const appointmentDetailTutorial: PageTutorial = {
   pageName: 'פרטי תור',
   steps: [
     {
+      title: 'סטטוס התור',
+      description: 'בראש הדף יש תפריט נפתח לשינוי סטטוס: מתוכנן (כחול) → בחדר המתנה (צהוב) → בטיפול (סגול) → הושלם (ירוק). הסטטוס נראה לכל הצוות בזמן אמת!',
+      icon: ListOrdered,
+      highlightSelector: '[data-tutorial="status-dropdown"]'
+    },
+    {
       title: 'פרטי התור',
       description: 'כאן תראה את כל המידע על התור - פרטי המטופל, תאריך, שעה וסוג התור.',
       icon: Calendar,
@@ -229,9 +236,15 @@ export const appointmentDetailTutorial: PageTutorial = {
     },
     {
       title: 'סיכום הביקור',
-      description: 'בלשונית "סיכום ביקור" תוכל לכתוב את ממצאי הביקור - תלונה עיקרית, בדיקה גופנית, תוכנית טיפול ותרופות.',
+      description: 'בלשונית "סיכום ביקור" תוכל לכתוב את ממצאי הביקור. 🎤 טיפ: לחץ על כפתור ההקלטה כדי להקליט קולית במקום להקליד - המערכת תתמלל אוטומטית!',
       icon: Stethoscope,
       highlightSelector: '[data-tutorial="visit-summary-form"]'
+    },
+    {
+      title: 'מילוי טופס קליטה',
+      description: 'לפני הביקור, שלח למטופל טופס קליטה דיגיטלי. המטופל ימלא היסטוריה רפואית, אלרגיות ותרופות מהבית - והמידע יופיע אוטומטית בכרטיס שלו.',
+      icon: ClipboardList,
+      highlightSelector: '[data-tutorial="intake-link"]'
     },
     {
       title: 'חתימה דיגיטלית',

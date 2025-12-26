@@ -455,7 +455,10 @@ export default function AppointmentDetail() {
           <div className="flex items-center gap-2">
             <PageHelpButton tutorial={appointmentDetailTutorial} />
             <Select value={status} onValueChange={handleStatusChange}>
-              <SelectTrigger className={`w-36 text-base font-medium ${statusColors[status] || 'bg-gray-100'}`}>
+              <SelectTrigger 
+                data-tutorial="status-dropdown"
+                className={`w-36 text-base font-medium ${statusColors[status] || 'bg-gray-100'}`}
+              >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
