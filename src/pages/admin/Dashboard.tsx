@@ -2,7 +2,7 @@ import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useTodaysAppointments, useAppointmentsRealtime, useUpdateAppointment, usePatientAppointments } from '@/hooks/useAppointments';
+import { useTodaysAppointments, useAppointmentsRealtime, useUpdateAppointment } from '@/hooks/useAppointments';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
@@ -15,6 +15,7 @@ import {
   XCircle,
   UserPlus,
   RotateCcw,
+  MessageCircle,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
@@ -29,6 +30,7 @@ export default function AdminDashboard() {
 
   // Fetch patient appointment counts to determine new vs returning
   const patientIds = todaysAppointments?.map(apt => apt.patient_id) || [];
+  
   const { data: patientAppointmentCounts } = useQuery({
     queryKey: ['patient-appointment-counts', patientIds],
     queryFn: async () => {
@@ -47,6 +49,35 @@ export default function AdminDashboard() {
       }
       
       return counts;
+    },
+    enabled: patientIds.length > 0,
+  });
+
+  // Fetch last message for each patient
+  const { data: patientLastMessages } = useQuery({
+    queryKey: ['patient-last-messages', patientIds],
+    queryFn: async () => {
+      if (patientIds.length === 0) return {};
+      
+      const messages: Record<string, string> = {};
+      
+      for (const patientId of patientIds) {
+        const { data } = await supabase
+          .from('messages')
+          .select('content')
+          .eq('patient_id', patientId)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        
+        if (data?.content) {
+          // Get first line only
+          const firstLine = data.content.split('\n')[0].trim();
+          messages[patientId] = firstLine.length > 60 ? firstLine.substring(0, 60) + '...' : firstLine;
+        }
+      }
+      
+      return messages;
     },
     enabled: patientIds.length > 0,
   });
@@ -158,6 +189,7 @@ export default function AdminDashboard() {
                 {activeAppointments.map((apt) => {
                   const patientData = apt.patients as any;
                   const isNew = isNewPatient(apt.patient_id);
+                  const lastMessage = patientLastMessages?.[apt.patient_id];
                   
                   return (
                     <div
@@ -213,8 +245,16 @@ export default function AdminDashboard() {
                             
                             {/* Main Complaint */}
                             {patientData?.main_complaint && (
-                              <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                                <span className="font-medium">תלונה עיקרית:</span> {patientData.main_complaint}
+                              <p className="text-sm text-muted-foreground mt-1 line-clamp-1">
+                                <span className="font-medium">תלונה:</span> {patientData.main_complaint}
+                              </p>
+                            )}
+                            
+                            {/* Last Message */}
+                            {lastMessage && (
+                              <p className="text-sm text-blue-600 mt-1 flex items-center gap-1 line-clamp-1">
+                                <MessageCircle className="h-3 w-3 flex-shrink-0" />
+                                <span className="truncate">{lastMessage}</span>
                               </p>
                             )}
                           </div>
