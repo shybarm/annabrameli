@@ -89,8 +89,8 @@ export function PageHelpButton({ tutorial }: PageHelpButtonProps) {
           {/* Dark overlay behind highlighted element */}
           <div className="tutorial-overlay" />
           
-          {/* Tutorial dialog - highest z-index */}
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 pointer-events-none">
+          {/* Tutorial dialog - positioned at top-left to avoid covering highlighted element */}
+          <div className="fixed top-4 left-4 z-[100] pointer-events-none animate-in fade-in slide-in-from-left-4 duration-300">
             <div className="pointer-events-auto">
               <TutorialStep
                 title={step.title}
