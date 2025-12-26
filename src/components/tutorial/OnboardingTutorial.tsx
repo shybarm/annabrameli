@@ -107,6 +107,14 @@ export function OnboardingTutorial({ forceShow, onComplete }: OnboardingTutorial
     'bottom-right': 'bottom-4 right-4',
   };
 
+  // Arrow points toward the highlighted element (opposite of dialog position)
+  const arrowDirectionMap: Record<typeof dialogPosition, 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'> = {
+    'top-left': 'bottom-right',
+    'top-right': 'bottom-left',
+    'bottom-left': 'top-right',
+    'bottom-right': 'top-left',
+  };
+
   return (
     <>
       {/* Dark overlay behind highlighted element */}
@@ -126,6 +134,7 @@ export function OnboardingTutorial({ forceShow, onComplete }: OnboardingTutorial
             onClose={handleComplete}
             isFirst={currentStep === 0}
             isLast={currentStep === onboardingSteps.length - 1}
+            arrowDirection={step.highlightSelector ? arrowDirectionMap[dialogPosition] : undefined}
           />
         </div>
       </div>

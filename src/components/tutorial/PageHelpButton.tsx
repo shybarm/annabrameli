@@ -95,6 +95,14 @@ export function PageHelpButton({ tutorial }: PageHelpButtonProps) {
     'bottom-right': 'bottom-4 right-4',
   };
 
+  // Arrow points toward the highlighted element (opposite of dialog position)
+  const arrowDirectionMap: Record<typeof dialogPosition, 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'> = {
+    'top-left': 'bottom-right',
+    'top-right': 'bottom-left',
+    'bottom-left': 'top-right',
+    'bottom-right': 'top-left',
+  };
+
   return (
     <>
       <Tooltip>
@@ -133,6 +141,7 @@ export function PageHelpButton({ tutorial }: PageHelpButtonProps) {
                 onClose={handleClose}
                 isFirst={currentStep === 0}
                 isLast={currentStep === tutorial.steps.length - 1}
+                arrowDirection={step.highlightSelector ? arrowDirectionMap[dialogPosition] : undefined}
               />
             </div>
           </div>
