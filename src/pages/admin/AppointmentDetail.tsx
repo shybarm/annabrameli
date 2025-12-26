@@ -8,10 +8,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { DocumentViewer } from '@/components/admin/DocumentViewer';
+import { VoiceRecorder } from '@/components/admin/VoiceRecorder';
+import { ScoringToolbar } from '@/components/admin/scoring/ScoringToolbar';
 import { 
   ArrowRight, User, Clock, Calendar, FileText, Save, 
   Upload, MessageCircle, CreditCard, File, Printer, Mail, Pill, Stethoscope, Eye, ClipboardList
@@ -26,6 +29,9 @@ export default function AppointmentDetail() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [internalNotes, setInternalNotes] = useState('');
+  const [chiefComplaint, setChiefComplaint] = useState('');
+  const [currentIllness, setCurrentIllness] = useState('');
+  const [hasAsthma, setHasAsthma] = useState(false);
   const [visitSummary, setVisitSummary] = useState('');
   const [treatmentPlan, setTreatmentPlan] = useState('');
   const [medications, setMedications] = useState('');
@@ -543,6 +549,88 @@ export default function AppointmentDetail() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
+                {/* Scoring Toolbar */}
+                <ScoringToolbar 
+                  onScoreAdd={(toolName, score, interpretation) => {
+                    const scoreText = `\n${toolName}: ${score} - ${interpretation}`;
+                    setVisitSummary(prev => prev + scoreText);
+                    toast({ title: `${toolName} נוסף לסיכום` });
+                  }}
+                />
+
+                {/* Chief Complaint */}
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">תלונה עיקרית</Label>
+                  <Textarea
+                    value={chiefComplaint}
+                    onChange={(e) => setChiefComplaint(e.target.value)}
+                    placeholder="תלונה עיקרית של המטופל בביקור זה..."
+                    rows={2}
+                    className="resize-none"
+                  />
+                </div>
+
+                {/* Current Illness with Voice Recording */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="flex items-center gap-2">מחלה נוכחית</Label>
+                    <VoiceRecorder 
+                      onTranscription={(text) => setCurrentIllness(prev => prev ? prev + '\n' + text : text)}
+                    />
+                  </div>
+                  <Textarea
+                    value={currentIllness}
+                    onChange={(e) => setCurrentIllness(e.target.value)}
+                    placeholder="תיאור המחלה הנוכחית, אנמנזה..."
+                    rows={5}
+                    className="resize-none"
+                  />
+                </div>
+
+                {/* Asthma Checkbox */}
+                <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
+                  <Checkbox 
+                    id="hasAsthma" 
+                    checked={hasAsthma} 
+                    onCheckedChange={(checked) => setHasAsthma(checked === true)}
+                  />
+                  <Label htmlFor="hasAsthma" className="cursor-pointer">אסתמה</Label>
+                </div>
+
+                {/* Medical Background from Intake */}
+                {appointment?.patients && (
+                  <div className="space-y-2">
+                    <Label>רקע רפואי (מטופס קליטה)</Label>
+                    <div className="p-3 bg-muted/30 rounded-lg text-sm space-y-1">
+                      {appointment.patients.chronic_conditions?.length ? (
+                        <p><strong>מחלות כרוניות:</strong> {appointment.patients.chronic_conditions.join(', ')}</p>
+                      ) : null}
+                      {appointment.patients.previous_surgeries && (
+                        <p><strong>ניתוחים קודמים:</strong> {appointment.patients.previous_surgeries}</p>
+                      )}
+                      {appointment.patients.current_medications && (
+                        <p><strong>תרופות נוכחיות:</strong> {appointment.patients.current_medications}</p>
+                      )}
+                      {appointment.patients.allergies?.length ? (
+                        <p><strong>אלרגיות:</strong> {appointment.patients.allergies.join(', ')}</p>
+                      ) : null}
+                      {!appointment.patients.chronic_conditions?.length && !appointment.patients.previous_surgeries && !appointment.patients.current_medications && !appointment.patients.allergies?.length && (
+                        <p className="text-muted-foreground">אין מידע רפואי מטופס הקליטה</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Family History from Intake */}
+                {appointment?.patients?.family_medical_history && (
+                  <div className="space-y-2">
+                    <Label>רקע משפחתי (מטופס קליטה)</Label>
+                    <div className="p-3 bg-muted/30 rounded-lg text-sm">
+                      {appointment.patients.family_medical_history}
+                    </div>
+                  </div>
+                )}
+
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2">
                     <FileText className="h-4 w-4" />
