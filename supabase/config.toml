@@ -26,3 +26,7 @@ verify_jwt = false
 
 [functions.submit-intake]
 verify_jwt = false
+
+# Transcription function - requires authentication
+[functions.transcribe-audio]
+verify_jwt = true
