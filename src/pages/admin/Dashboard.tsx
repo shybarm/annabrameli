@@ -96,6 +96,8 @@ export default function AdminDashboard() {
     scheduled: 'bg-blue-100 text-blue-700',
     confirmed: 'bg-blue-100 text-blue-700',
     arrived: 'bg-orange-100 text-orange-700',
+    waiting_room: 'bg-yellow-100 text-yellow-700',
+    with_doctor: 'bg-purple-100 text-purple-700',
     in_progress: 'bg-orange-100 text-orange-700',
     completed: 'bg-green-100 text-green-700',
     cancelled: 'bg-gray-100 text-gray-500',
@@ -106,6 +108,8 @@ export default function AdminDashboard() {
     scheduled: 'מתוכנן',
     confirmed: 'מאושר',
     arrived: 'הגיע',
+    waiting_room: 'בחדר המתנה',
+    with_doctor: 'אצל הרופא',
     in_progress: 'בטיפול',
     completed: 'הושלם',
     cancelled: 'בוטל',
@@ -186,11 +190,11 @@ export default function AdminDashboard() {
           </div>
           <div className="flex gap-2">
             <PageHelpButton tutorial={pageTutorials['/admin']} />
-            <Button onClick={() => navigate('/admin/patients/new')} variant="outline">
+            <Button onClick={() => navigate('/admin/patients/new')} variant="outline" data-tutorial="new-patient-btn">
               <Plus className="h-4 w-4 ml-2" />
               מטופל חדש
             </Button>
-            <Button onClick={() => navigate('/admin/appointments/new')} className="bg-primary text-primary-foreground hover:bg-primary/90">
+            <Button onClick={() => navigate('/admin/appointments/new')} className="bg-primary text-primary-foreground hover:bg-primary/90" data-tutorial="new-appointment-btn">
               <Plus className="h-4 w-4 ml-2" />
               תור חדש
             </Button>
@@ -198,7 +202,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Quick Stats */}
-        <div className="grid gap-4 grid-cols-3">
+        <div className="grid gap-4 grid-cols-3" data-tutorial="stats-cards">
           <Card className="bg-blue-50 border-blue-200">
             <CardContent className="py-4 text-center">
               <div className="text-3xl font-bold text-blue-700">
@@ -226,12 +230,12 @@ export default function AdminDashboard() {
         </div>
 
         {/* Today's Patients - Main View */}
-        <Card>
+        <Card data-tutorial="todays-patients">
           <CardHeader className="flex flex-row items-center justify-between pb-4">
             <div>
               <CardTitle className="text-xl">מטופלים להיום</CardTitle>
             </div>
-            <Button variant="ghost" size="sm" onClick={() => navigate('/admin/appointments')}>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/admin/appointments')} data-tutorial="all-appointments-link">
               כל התורים
             </Button>
           </CardHeader>

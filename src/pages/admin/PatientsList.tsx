@@ -37,7 +37,7 @@ export default function PatientsList() {
           </div>
           <div className="flex gap-2">
             <PageHelpButton tutorial={pageTutorials['/admin/patients']} />
-            <Button onClick={() => navigate('/admin/patients/new')} className="bg-primary text-primary-foreground hover:bg-primary/90">
+            <Button onClick={() => navigate('/admin/patients/new')} className="bg-primary text-primary-foreground hover:bg-primary/90" data-tutorial="new-patient-btn">
               <Plus className="h-4 w-4 ml-2" />
               מטופל חדש
             </Button>
@@ -45,7 +45,7 @@ export default function PatientsList() {
         </div>
 
         {/* Search */}
-        <div className="relative max-w-md">
+        <div className="relative max-w-md" data-tutorial="search-patients">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="חיפוש לפי שם, טלפון או ת.ז..."
@@ -61,7 +61,7 @@ export default function PatientsList() {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-medical-600" />
           </div>
         ) : filteredPatients.length > 0 ? (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3" data-tutorial="patients-list">
             {filteredPatients.map((patient) => (
               <Card 
                 key={patient.id} 

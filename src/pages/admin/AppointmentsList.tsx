@@ -52,17 +52,19 @@ export default function AppointmentsList() {
     scheduled: 'bg-blue-100 text-blue-700 border-blue-200',
     confirmed: 'bg-cyan-100 text-cyan-700 border-cyan-200',
     arrived: 'bg-amber-100 text-amber-700 border-amber-200',
+    waiting_room: 'bg-yellow-100 text-yellow-700 border-yellow-200',
     with_doctor: 'bg-purple-100 text-purple-700 border-purple-200',
-    in_progress: 'bg-yellow-100 text-yellow-700 border-yellow-200',
+    in_progress: 'bg-orange-100 text-orange-700 border-orange-200',
     completed: 'bg-green-100 text-green-700 border-green-200',
     cancelled: 'bg-red-100 text-red-700 border-red-200',
-    no_show: 'bg-orange-100 text-orange-700 border-orange-200',
+    no_show: 'bg-gray-100 text-gray-700 border-gray-200',
   };
 
   const statusLabels: Record<string, string> = {
     scheduled: 'מתוכנן',
     confirmed: 'מאושר',
     arrived: 'הגיע',
+    waiting_room: 'בחדר המתנה',
     with_doctor: 'אצל הרופא',
     in_progress: 'בטיפול',
     completed: 'הושלם',
@@ -222,6 +224,16 @@ export default function AppointmentsList() {
                       {/* Quick status buttons */}
                       <div className="flex gap-1 mt-1" onClick={(e) => e.stopPropagation()}>
                         {(apt.status === 'scheduled' || apt.status === 'confirmed' || apt.status === 'arrived') && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 px-2 text-xs bg-yellow-50 hover:bg-yellow-100 text-yellow-700 border-yellow-200"
+                            onClick={(e) => handleStatusChange(apt.id, 'waiting_room', e)}
+                          >
+                            בחדר המתנה
+                          </Button>
+                        )}
+                        {apt.status === 'waiting_room' && (
                           <Button
                             size="sm"
                             variant="outline"
