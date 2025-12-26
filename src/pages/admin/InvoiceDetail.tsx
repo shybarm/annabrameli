@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { useInvoice, useUpdateInvoiceStatus, useUpdateInvoice } from '@/hooks/useInvoices';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { ArrowRight, Printer, Mail, CheckCircle, Edit, Save, X, Plus, Trash2 } from 'lucide-react';
+import { ArrowRight, Printer, Mail, CheckCircle, Edit, Save, X, Plus, Trash2, Link2, Copy, MessageCircle, ExternalLink } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface EditableItem {
@@ -31,6 +31,7 @@ export default function InvoiceDetail() {
   const [editItems, setEditItems] = useState<EditableItem[]>([]);
   const [editNotes, setEditNotes] = useState('');
   const [editDueDate, setEditDueDate] = useState('');
+  const [editPaymentLink, setEditPaymentLink] = useState('');
 
   useEffect(() => {
     if (invoice) {
@@ -42,6 +43,7 @@ export default function InvoiceDetail() {
       })) || []);
       setEditNotes(invoice.notes || '');
       setEditDueDate(invoice.due_date || '');
+      setEditPaymentLink(invoice.payment_link || '');
     }
   }, [invoice]);
 
@@ -113,6 +115,7 @@ export default function InvoiceDetail() {
       })) || []);
       setEditNotes(invoice.notes || '');
       setEditDueDate(invoice.due_date || '');
+      setEditPaymentLink(invoice.payment_link || '');
     }
     setIsEditing(false);
   };
@@ -135,11 +138,33 @@ export default function InvoiceDetail() {
       input: {
         notes: editNotes || undefined,
         due_date: editDueDate || null,
+        payment_link: editPaymentLink || null,
         items: editItems,
       },
     });
 
     setIsEditing(false);
+  };
+
+  const handleCopyPaymentLink = () => {
+    if (invoice?.payment_link) {
+      navigator.clipboard.writeText(invoice.payment_link);
+      toast({ title: 'הקישור הועתק' });
+    }
+  };
+
+  const handleShareWhatsApp = () => {
+    const patientData = invoice?.patients as any;
+    if (!patientData?.phone) {
+      toast({ title: 'אין מספר טלפון למטופל', variant: 'destructive' });
+      return;
+    }
+    
+    const phone = patientData.phone.replace(/\D/g, '').replace(/^0/, '972');
+    const message = encodeURIComponent(
+      `שלום ${patientData.first_name},\n\nמצורף קישור לתשלום עבור חשבונית מספר ${invoice?.invoice_number} בסך ₪${Number(invoice?.total).toLocaleString()}:\n\n${invoice?.payment_link || ''}\n\nתודה,\nד״ר אנה ברמלי`
+    );
+    window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
   };
 
   const handleItemChange = (index: number, field: keyof EditableItem, value: string | number) => {
@@ -209,39 +234,39 @@ export default function InvoiceDetail() {
               </Badge>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {isEditing ? (
               <>
-                <Button variant="outline" onClick={handleCancelEdit}>
-                  <X className="h-4 w-4 ml-2" />
-                  ביטול
+                <Button variant="outline" size="sm" onClick={handleCancelEdit}>
+                  <X className="h-4 w-4 ml-1" />
+                  <span className="hidden sm:inline">ביטול</span>
                 </Button>
-                <Button onClick={handleSaveEdit} disabled={updateInvoice.isPending}>
-                  <Save className="h-4 w-4 ml-2" />
-                  {updateInvoice.isPending ? 'שומר...' : 'שמור'}
+                <Button size="sm" onClick={handleSaveEdit} disabled={updateInvoice.isPending}>
+                  <Save className="h-4 w-4 ml-1" />
+                  <span className="hidden sm:inline">{updateInvoice.isPending ? 'שומר...' : 'שמור'}</span>
                 </Button>
               </>
             ) : (
               <>
-                <Button variant="outline" onClick={handlePrint}>
-                  <Printer className="h-4 w-4 ml-2" />
-                  הדפסה
+                <Button variant="outline" size="sm" onClick={handlePrint}>
+                  <Printer className="h-4 w-4 sm:ml-1" />
+                  <span className="hidden sm:inline">הדפסה</span>
                 </Button>
                 {canEdit && (
-                  <Button variant="outline" onClick={handleStartEdit}>
-                    <Edit className="h-4 w-4 ml-2" />
-                    ערוך
+                  <Button variant="outline" size="sm" onClick={handleStartEdit}>
+                    <Edit className="h-4 w-4 sm:ml-1" />
+                    <span className="hidden sm:inline">ערוך</span>
                   </Button>
                 )}
                 {invoice.status !== 'paid' && (
                   <>
-                    <Button variant="outline" onClick={handleSendReminder}>
-                      <Mail className="h-4 w-4 ml-2" />
-                      שלח תזכורת
+                    <Button variant="outline" size="sm" onClick={handleSendReminder}>
+                      <Mail className="h-4 w-4 sm:ml-1" />
+                      <span className="hidden sm:inline">תזכורת</span>
                     </Button>
-                    <Button onClick={handleMarkAsPaid}>
-                      <CheckCircle className="h-4 w-4 ml-2" />
-                      סמן כשולם
+                    <Button size="sm" onClick={handleMarkAsPaid}>
+                      <CheckCircle className="h-4 w-4 sm:ml-1" />
+                      <span className="hidden sm:inline">שולם</span>
                     </Button>
                   </>
                 )}
@@ -309,48 +334,54 @@ export default function InvoiceDetail() {
               {isEditing ? (
                 <div className="space-y-3">
                   {editItems.map((item, index) => (
-                    <div key={index} className="flex gap-2 items-start p-3 border rounded-lg">
-                      <div className="flex-1">
-                        <Label className="text-xs">תיאור</Label>
-                        <Input
-                          value={item.description}
-                          onChange={(e) => handleItemChange(index, 'description', e.target.value)}
-                          placeholder="תיאור השירות"
-                        />
+                    <div key={index} className="p-3 border rounded-lg space-y-3 sm:space-y-0">
+                      <div className="flex flex-col sm:flex-row gap-2 sm:items-start">
+                        <div className="flex-1">
+                          <Label className="text-xs">תיאור</Label>
+                          <Input
+                            value={item.description}
+                            onChange={(e) => handleItemChange(index, 'description', e.target.value)}
+                            placeholder="תיאור השירות"
+                          />
+                        </div>
+                        <div className="flex gap-2 sm:contents">
+                          <div className="flex-1 sm:flex-none sm:w-20">
+                            <Label className="text-xs">כמות</Label>
+                            <Input
+                              type="number"
+                              min="1"
+                              value={item.quantity}
+                              onChange={(e) => handleItemChange(index, 'quantity', parseInt(e.target.value) || 1)}
+                              dir="ltr"
+                            />
+                          </div>
+                          <div className="flex-1 sm:flex-none sm:w-28">
+                            <Label className="text-xs">מחיר</Label>
+                            <Input
+                              type="number"
+                              min="0"
+                              value={item.unit_price}
+                              onChange={(e) => handleItemChange(index, 'unit_price', parseFloat(e.target.value) || 0)}
+                              dir="ltr"
+                            />
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between sm:contents">
+                          <div className="sm:w-24 text-left sm:pt-6">
+                            <span className="font-medium text-lg sm:text-base">₪{(item.quantity * item.unit_price).toLocaleString()}</span>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="sm:mt-5 text-destructive hover:text-destructive"
+                            onClick={() => handleRemoveItem(index)}
+                            disabled={editItems.length === 1}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
-                      <div className="w-20">
-                        <Label className="text-xs">כמות</Label>
-                        <Input
-                          type="number"
-                          min="1"
-                          value={item.quantity}
-                          onChange={(e) => handleItemChange(index, 'quantity', parseInt(e.target.value) || 1)}
-                          dir="ltr"
-                        />
-                      </div>
-                      <div className="w-28">
-                        <Label className="text-xs">מחיר</Label>
-                        <Input
-                          type="number"
-                          min="0"
-                          value={item.unit_price}
-                          onChange={(e) => handleItemChange(index, 'unit_price', parseFloat(e.target.value) || 0)}
-                          dir="ltr"
-                        />
-                      </div>
-                      <div className="w-24 text-left pt-6">
-                        <span className="font-medium">₪{(item.quantity * item.unit_price).toLocaleString()}</span>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="mt-5 text-destructive hover:text-destructive"
-                        onClick={() => handleRemoveItem(index)}
-                        disabled={editItems.length === 1}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
                     </div>
                   ))}
                 </div>
@@ -418,6 +449,51 @@ export default function InvoiceDetail() {
                 </div>
               </div>
             </div>
+
+            {/* Payment Link */}
+            {isEditing ? (
+              <div className="border-t pt-4 space-y-2">
+                <Label className="flex items-center gap-2">
+                  <Link2 className="h-4 w-4" />
+                  קישור לתשלום (bit/paybox)
+                </Label>
+                <Input
+                  value={editPaymentLink}
+                  onChange={(e) => setEditPaymentLink(e.target.value)}
+                  placeholder="https://..."
+                  dir="ltr"
+                  type="url"
+                />
+              </div>
+            ) : (
+              invoice.payment_link && (
+                <div className="border-t pt-4">
+                  <h3 className="font-semibold mb-3 flex items-center gap-2">
+                    <Link2 className="h-4 w-4" />
+                    קישור לתשלום
+                  </h3>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <div className="flex-1 p-3 bg-muted rounded-lg text-sm font-mono truncate" dir="ltr">
+                      {invoice.payment_link}
+                    </div>
+                    <div className="flex gap-2 flex-wrap">
+                      <Button variant="outline" size="sm" onClick={handleCopyPaymentLink}>
+                        <Copy className="h-4 w-4 ml-1" />
+                        העתק
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => window.open(invoice.payment_link!, '_blank')}>
+                        <ExternalLink className="h-4 w-4 ml-1" />
+                        פתח
+                      </Button>
+                      <Button variant="default" size="sm" onClick={handleShareWhatsApp} className="bg-green-600 hover:bg-green-700">
+                        <MessageCircle className="h-4 w-4 ml-1" />
+                        וואטסאפ
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )
+            )}
 
             {/* Notes */}
             {isEditing ? (

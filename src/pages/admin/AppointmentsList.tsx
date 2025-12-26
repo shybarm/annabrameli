@@ -84,49 +84,51 @@ export default function AppointmentsList() {
             </div>
           </CardHeader>
           <CardContent>
-            {/* Week View */}
-            <div className="grid grid-cols-7 gap-2">
-              {weekDays.map((day) => {
-                const dayAppointments = getAppointmentsForDay(day);
-                const isToday = isSameDay(day, new Date());
-                
-                return (
-                  <div
-                    key={day.toISOString()}
-                    className={`min-h-[120px] p-2 rounded-lg border ${
-                      isToday ? 'border-medical-500 bg-medical-50' : 'border-gray-200'
-                    }`}
-                  >
-                    <div className="text-center mb-2">
-                      <p className="text-xs text-muted-foreground">
-                        {format(day, 'EEEE', { locale: he })}
-                      </p>
-                      <p className={`text-lg font-semibold ${isToday ? 'text-medical-700' : ''}`}>
-                        {format(day, 'd')}
-                      </p>
-                    </div>
-                    <div className="space-y-1">
-                      {dayAppointments.slice(0, 3).map((apt) => (
-                        <div
-                          key={apt.id}
-                          className={`text-xs p-1.5 rounded cursor-pointer hover:opacity-80 ${statusColors[apt.status]}`}
-                          onClick={() => navigate(`/admin/appointments/${apt.id}`)}
-                        >
-                          <p className="font-medium truncate">
-                            {apt.patients?.first_name} {apt.patients?.last_name}
-                          </p>
-                          <p>{format(new Date(apt.scheduled_at), 'HH:mm')}</p>
-                        </div>
-                      ))}
-                      {dayAppointments.length > 3 && (
-                        <p className="text-xs text-center text-muted-foreground">
-                          +{dayAppointments.length - 3} נוספים
+            {/* Week View - Scrollable on mobile */}
+            <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+              <div className="grid grid-cols-7 gap-2 min-w-[600px] sm:min-w-0">
+                {weekDays.map((day) => {
+                  const dayAppointments = getAppointmentsForDay(day);
+                  const isToday = isSameDay(day, new Date());
+                  
+                  return (
+                    <div
+                      key={day.toISOString()}
+                      className={`min-h-[120px] p-2 rounded-lg border ${
+                        isToday ? 'border-medical-500 bg-medical-50' : 'border-gray-200'
+                      }`}
+                    >
+                      <div className="text-center mb-2">
+                        <p className="text-xs text-muted-foreground">
+                          {format(day, 'EEEE', { locale: he })}
                         </p>
-                      )}
+                        <p className={`text-lg font-semibold ${isToday ? 'text-medical-700' : ''}`}>
+                          {format(day, 'd')}
+                        </p>
+                      </div>
+                      <div className="space-y-1">
+                        {dayAppointments.slice(0, 3).map((apt) => (
+                          <div
+                            key={apt.id}
+                            className={`text-xs p-1.5 rounded cursor-pointer hover:opacity-80 ${statusColors[apt.status]}`}
+                            onClick={() => navigate(`/admin/appointments/${apt.id}`)}
+                          >
+                            <p className="font-medium truncate">
+                              {apt.patients?.first_name} {apt.patients?.last_name}
+                            </p>
+                            <p>{format(new Date(apt.scheduled_at), 'HH:mm')}</p>
+                          </div>
+                        ))}
+                        {dayAppointments.length > 3 && (
+                          <p className="text-xs text-center text-muted-foreground">
+                            +{dayAppointments.length - 3} נוספים
+                          </p>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           </CardContent>
         </Card>
