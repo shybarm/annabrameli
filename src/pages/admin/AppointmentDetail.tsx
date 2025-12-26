@@ -350,6 +350,7 @@ export default function AppointmentDetail() {
   const statusColors: Record<string, string> = {
     scheduled: 'bg-blue-100 text-blue-700',
     confirmed: 'bg-green-100 text-green-700',
+    arrived: 'bg-emerald-100 text-emerald-700',
     in_progress: 'bg-yellow-100 text-yellow-700',
     completed: 'bg-gray-100 text-gray-700',
     cancelled: 'bg-red-100 text-red-700',
@@ -359,6 +360,7 @@ export default function AppointmentDetail() {
   const statusLabels: Record<string, string> = {
     scheduled: 'מתוכנן',
     confirmed: 'מאושר',
+    arrived: 'הגיע',
     in_progress: 'בטיפול',
     completed: 'הושלם',
     cancelled: 'בוטל',
@@ -744,6 +746,7 @@ export default function AppointmentDetail() {
                     <SelectContent>
                       <SelectItem value="scheduled">מתוכנן</SelectItem>
                       <SelectItem value="confirmed">מאושר</SelectItem>
+                      <SelectItem value="arrived">הגיע</SelectItem>
                       <SelectItem value="in_progress">בטיפול</SelectItem>
                       <SelectItem value="completed">הושלם</SelectItem>
                       <SelectItem value="no_show">לא הגיע</SelectItem>
