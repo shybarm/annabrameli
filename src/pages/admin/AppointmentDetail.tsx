@@ -394,26 +394,23 @@ export default function AppointmentDetail() {
 
   const statusColors: Record<string, string> = {
     scheduled: 'bg-blue-100 text-blue-700',
-    confirmed: 'bg-cyan-100 text-cyan-700',
-    arrived: 'bg-amber-100 text-amber-700',
     waiting_room: 'bg-yellow-100 text-yellow-700',
-    with_doctor: 'bg-purple-100 text-purple-700',
-    in_progress: 'bg-orange-100 text-orange-700',
+    in_treatment: 'bg-purple-100 text-purple-700',
     completed: 'bg-green-100 text-green-700',
     cancelled: 'bg-red-100 text-red-700',
-    no_show: 'bg-gray-100 text-gray-700',
   };
 
   const statusLabels: Record<string, string> = {
     scheduled: 'מתוכנן',
-    confirmed: 'מאושר',
-    arrived: 'הגיע',
     waiting_room: 'בחדר המתנה',
-    with_doctor: 'אצל הרופא',
-    in_progress: 'בטיפול',
+    in_treatment: 'בטיפול',
     completed: 'הושלם',
     cancelled: 'בוטל',
-    no_show: 'לא הגיע',
+  };
+
+  const handleStatusChange = (newStatus: string) => {
+    setStatus(newStatus);
+    updateAppointment.mutate({ status: newStatus });
   };
 
   if (isLoading) {
@@ -457,9 +454,18 @@ export default function AppointmentDetail() {
           </div>
           <div className="flex items-center gap-2">
             <PageHelpButton tutorial={appointmentDetailTutorial} />
-            <Badge className={statusColors[appointment.status] + ' text-lg px-4 py-2'}>
-              {statusLabels[appointment.status]}
-            </Badge>
+            <Select value={status} onValueChange={handleStatusChange}>
+              <SelectTrigger className={`w-36 text-base font-medium ${statusColors[status] || 'bg-gray-100'}`}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="scheduled">מתוכנן</SelectItem>
+                <SelectItem value="waiting_room">בחדר המתנה</SelectItem>
+                <SelectItem value="in_treatment">בטיפול</SelectItem>
+                <SelectItem value="completed">הושלם</SelectItem>
+                <SelectItem value="cancelled">בוטל</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
