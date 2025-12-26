@@ -28,8 +28,53 @@ interface DaySchedule {
   defaultClosed: boolean;
 }
 
+// Custom 24-hour time picker component
+function TimeSelect({ value, onChange, className }: { value: string; onChange: (value: string) => void; className?: string }) {
+  const [hours, minutes] = value.split(':').map(Number);
+  
+  const handleHoursChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newHours = e.target.value.padStart(2, '0');
+    onChange(`${newHours}:${minutes.toString().padStart(2, '0')}`);
+  };
+  
+  const handleMinutesChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newMinutes = e.target.value.padStart(2, '0');
+    onChange(`${hours.toString().padStart(2, '0')}:${newMinutes}`);
+  };
+  
+  return (
+    <div className={`flex items-center gap-1 ${className}`} dir="ltr">
+      <select 
+        value={hours.toString().padStart(2, '0')}
+        onChange={handleHoursChange}
+        className="h-10 w-14 rounded-md border border-input bg-background px-2 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+      >
+        {Array.from({ length: 24 }, (_, i) => (
+          <option key={i} value={i.toString().padStart(2, '0')}>
+            {i.toString().padStart(2, '0')}
+          </option>
+        ))}
+      </select>
+      <span className="text-lg font-bold">:</span>
+      <select 
+        value={minutes.toString().padStart(2, '0')}
+        onChange={handleMinutesChange}
+        className="h-10 w-14 rounded-md border border-input bg-background px-2 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+      >
+        {[0, 15, 30, 45].map((m) => (
+          <option key={m} value={m.toString().padStart(2, '0')}>
+            {m.toString().padStart(2, '0')}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
 function DayScheduleRow({ day, defaultOpen, defaultClose, defaultClosed }: DaySchedule) {
   const [isClosed, setIsClosed] = useState(defaultClosed);
+  const [openTime, setOpenTime] = useState(defaultOpen);
+  const [closeTime, setCloseTime] = useState(defaultClose);
   
   return (
     <div className="flex items-center gap-4">
@@ -43,19 +88,9 @@ function DayScheduleRow({ day, defaultOpen, defaultClose, defaultClosed }: DaySc
       </label>
       {!isClosed && (
         <>
-          <Input 
-            type="time" 
-            defaultValue={defaultOpen} 
-            className="w-32" 
-            dir="ltr" 
-          />
+          <TimeSelect value={openTime} onChange={setOpenTime} />
           <span>עד</span>
-          <Input 
-            type="time" 
-            defaultValue={defaultClose} 
-            className="w-32" 
-            dir="ltr" 
-          />
+          <TimeSelect value={closeTime} onChange={setCloseTime} />
         </>
       )}
     </div>
