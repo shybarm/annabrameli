@@ -345,13 +345,13 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              <DayScheduleRow day="ראשון" defaultOpen="08:00" defaultClose="18:00" defaultClosed={false} />
-              <DayScheduleRow day="שני" defaultOpen="08:00" defaultClose="18:00" defaultClosed={false} />
-              <DayScheduleRow day="שלישי" defaultOpen="08:00" defaultClose="18:00" defaultClosed={false} />
-              <DayScheduleRow day="רביעי" defaultOpen="08:00" defaultClose="18:00" defaultClosed={false} />
-              <DayScheduleRow day="חמישי" defaultOpen="08:00" defaultClose="14:00" defaultClosed={false} />
-              <DayScheduleRow day="שישי" defaultOpen="08:00" defaultClose="13:00" defaultClosed={true} />
-              <DayScheduleRow day="שבת" defaultOpen="08:00" defaultClose="18:00" defaultClosed={true} />
+              <DayScheduleRow key="sunday" day="ראשון" defaultOpen="08:00" defaultClose="18:00" defaultClosed={false} />
+              <DayScheduleRow key="monday" day="שני" defaultOpen="08:00" defaultClose="18:00" defaultClosed={false} />
+              <DayScheduleRow key="tuesday" day="שלישי" defaultOpen="08:00" defaultClose="18:00" defaultClosed={false} />
+              <DayScheduleRow key="wednesday" day="רביעי" defaultOpen="08:00" defaultClose="18:00" defaultClosed={false} />
+              <DayScheduleRow key="thursday" day="חמישי" defaultOpen="08:00" defaultClose="14:00" defaultClosed={false} />
+              <DayScheduleRow key="friday" day="שישי" defaultOpen="08:00" defaultClose="13:00" defaultClosed={true} />
+              <DayScheduleRow key="saturday" day="שבת" defaultOpen="08:00" defaultClose="18:00" defaultClosed={true} />
             </div>
             <Separator className="my-4" />
             <Button className="bg-primary text-primary-foreground hover:bg-primary/90">שמור שינויים</Button>
