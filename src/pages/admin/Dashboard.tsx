@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { usePatients } from '@/hooks/usePatients';
-import { useTodaysAppointments, useAppointmentsRealtime } from '@/hooks/useAppointments';
+import { useTodaysAppointments, useAppointmentsRealtime, useUpdateAppointment } from '@/hooks/useAppointments';
 import { useInvoiceStats } from '@/hooks/useInvoices';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -15,6 +15,9 @@ import {
   AlertCircle,
   Plus,
   ChevronLeft,
+  UserCheck,
+  CheckCircle,
+  XCircle,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
@@ -24,6 +27,7 @@ export default function AdminDashboard() {
   const { data: patients, isLoading: patientsLoading } = usePatients();
   const { data: todaysAppointments, isLoading: appointmentsLoading } = useTodaysAppointments();
   const { data: invoiceStats, isLoading: statsLoading } = useInvoiceStats();
+  const updateAppointment = useUpdateAppointment();
   
   // Enable realtime updates
   useAppointmentsRealtime();
@@ -34,20 +38,31 @@ export default function AdminDashboard() {
 
   const statusColors: Record<string, string> = {
     scheduled: 'bg-blue-100 text-blue-700',
-    confirmed: 'bg-green-100 text-green-700',
-    in_progress: 'bg-yellow-100 text-yellow-700',
-    completed: 'bg-gray-100 text-gray-700',
-    cancelled: 'bg-red-100 text-red-700',
-    no_show: 'bg-orange-100 text-orange-700',
+    confirmed: 'bg-blue-100 text-blue-700',
+    arrived: 'bg-orange-100 text-orange-700',
+    in_progress: 'bg-orange-100 text-orange-700',
+    completed: 'bg-green-100 text-green-700',
+    cancelled: 'bg-gray-100 text-gray-500',
+    no_show: 'bg-red-100 text-red-700',
   };
 
   const statusLabels: Record<string, string> = {
     scheduled: 'מתוכנן',
     confirmed: 'מאושר',
+    arrived: 'הגיע',
     in_progress: 'בטיפול',
     completed: 'הושלם',
     cancelled: 'בוטל',
     no_show: 'לא הגיע',
+  };
+
+  const handleStatusChange = (e: React.MouseEvent, appointmentId: string, newStatus: string) => {
+    e.stopPropagation();
+    updateAppointment.mutate({ 
+      id: appointmentId, 
+      status: newStatus,
+      ...(newStatus === 'completed' ? { visit_completed_at: new Date().toISOString() } : {})
+    });
   };
 
   return (
@@ -161,14 +176,30 @@ export default function AdminDashboard() {
                 <div className="text-center py-8 text-muted-foreground">טוען...</div>
               ) : todaysAppointments && todaysAppointments.length > 0 ? (
                 <div className="space-y-3">
-                  {todaysAppointments.slice(0, 5).map((apt) => (
+                  {todaysAppointments.slice(0, 8).map((apt) => (
                     <div
                       key={apt.id}
-                      className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer"
+                      className={`flex items-center justify-between p-3 rounded-lg transition-colors cursor-pointer border-r-4 ${
+                        apt.status === 'arrived' || apt.status === 'in_progress' 
+                          ? 'bg-orange-50 border-r-orange-500' 
+                          : apt.status === 'completed' 
+                            ? 'bg-green-50 border-r-green-500' 
+                            : apt.status === 'no_show' 
+                              ? 'bg-red-50 border-r-red-500' 
+                              : 'bg-gray-50 border-r-blue-500 hover:bg-gray-100'
+                      }`}
                       onClick={() => navigate(`/admin/appointments/${apt.id}`)}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-medical-100 text-medical-700">
+                        <div className={`flex items-center justify-center w-12 h-12 rounded-lg ${
+                          apt.status === 'arrived' || apt.status === 'in_progress'
+                            ? 'bg-orange-100 text-orange-700'
+                            : apt.status === 'completed'
+                              ? 'bg-green-100 text-green-700'
+                              : apt.status === 'no_show'
+                                ? 'bg-red-100 text-red-700'
+                                : 'bg-medical-100 text-medical-700'
+                        }`}>
                           <Clock className="h-5 w-5" />
                         </div>
                         <div>
@@ -180,13 +211,53 @@ export default function AdminDashboard() {
                           </p>
                         </div>
                       </div>
-                      <div className="text-left">
-                        <p className="font-medium">
-                          {format(new Date(apt.scheduled_at), 'HH:mm')}
-                        </p>
-                        <Badge className={statusColors[apt.status]}>
-                          {statusLabels[apt.status]}
-                        </Badge>
+                      <div className="flex items-center gap-2">
+                        <div className="text-left ml-3">
+                          <p className="font-medium">
+                            {format(new Date(apt.scheduled_at), 'HH:mm')}
+                          </p>
+                          <Badge className={statusColors[apt.status] || statusColors.scheduled}>
+                            {statusLabels[apt.status] || apt.status}
+                          </Badge>
+                        </div>
+                        {/* Status action buttons */}
+                        {apt.status !== 'cancelled' && apt.status !== 'completed' && apt.status !== 'no_show' && (
+                          <div className="flex gap-1">
+                            {(apt.status === 'scheduled' || apt.status === 'confirmed') && (
+                              <>
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-8 w-8 text-orange-600 hover:bg-orange-100 hover:text-orange-700"
+                                  onClick={(e) => handleStatusChange(e, apt.id, 'arrived')}
+                                  title="הגיע"
+                                >
+                                  <UserCheck className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-8 w-8 text-red-600 hover:bg-red-100 hover:text-red-700"
+                                  onClick={(e) => handleStatusChange(e, apt.id, 'no_show')}
+                                  title="לא הגיע"
+                                >
+                                  <XCircle className="h-4 w-4" />
+                                </Button>
+                              </>
+                            )}
+                            {(apt.status === 'arrived' || apt.status === 'in_progress') && (
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-8 w-8 text-green-600 hover:bg-green-100 hover:text-green-700"
+                                onClick={(e) => handleStatusChange(e, apt.id, 'completed')}
+                                title="סיים טיפול"
+                              >
+                                <CheckCircle className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
