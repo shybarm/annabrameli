@@ -24,6 +24,14 @@ const initialMessages: Message[] = [
   },
 ];
 
+const quickReplies = [
+  { label: "פריחה בעור", value: "יש לי פריחה בעור, האם זה יכול להיות אלרגיה?" },
+  { label: "שיעול כרוני", value: "אני סובל/ת משיעול שלא עובר, האם זה קשור לאלרגיה?" },
+  { label: "נפיחות", value: "יש לי נפיחות אחרי אכילה, האם זה יכול להיות אלרגיה למזון?" },
+  { label: "עיניים דומעות", value: "העיניים שלי דומעות ומגרדות, מה הסיבה?" },
+  { label: "תגובה לתרופה", value: "חשבתי שהייתה לי תגובה אלרגית לתרופה, מה לעשות?" },
+];
+
 export const ChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>(initialMessages);
@@ -167,6 +175,28 @@ export const ChatWidget = () => {
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {/* Quick Reply Buttons - show only at start */}
+              {messages.length === 1 && !isLoading && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="flex flex-wrap gap-2 mb-2"
+                >
+                  {quickReplies.map((reply) => (
+                    <button
+                      key={reply.label}
+                      onClick={() => {
+                        setInputValue(reply.value);
+                      }}
+                      className="px-3 py-1.5 text-xs bg-accent text-primary rounded-full border border-primary/20 hover:bg-primary hover:text-primary-foreground transition-colors"
+                    >
+                      {reply.label}
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+
               {messages.map((message) => (
                 <motion.div
                   key={message.id}
