@@ -1,7 +1,7 @@
 import { 
   LayoutDashboard, Users, Calendar, Receipt, FileText, 
   MessageSquare, Settings, Stethoscope, History, UserPlus,
-  ClipboardList, Wallet, PenTool
+  ClipboardList, Wallet, PenTool, Calculator, Share2, File
 } from 'lucide-react';
 
 export interface TutorialStepData {
@@ -218,22 +218,38 @@ export const appointmentDetailTutorial: PageTutorial = {
     {
       title: 'פרטי התור',
       description: 'כאן תראה את כל המידע על התור - פרטי המטופל, תאריך, שעה וסוג התור.',
-      icon: Calendar
+      icon: Calendar,
+      highlightSelector: '[data-tutorial="appointment-info"]'
+    },
+    {
+      title: 'כלי מדידה ⭐',
+      description: 'השתמש בכלי המדידה לחישוב ציונים רפואיים כמו ACT, SCORAD, SNOT-22. לחץ על הכפתור הרלוונטי, מלא את השאלון והציון יתווסף אוטומטית לסיכום. תוכל גם להוסיף כלי מדידה מותאם אישית!',
+      icon: Calculator,
+      highlightSelector: '[data-tutorial="scoring-toolbar"]'
     },
     {
       title: 'סיכום הביקור',
-      description: 'בלשונית "סיכום ביקור" תוכל לכתוב את ממצאי הביקור, תוכנית טיפול ותרופות.',
-      icon: FileText
+      description: 'בלשונית "סיכום ביקור" תוכל לכתוב את ממצאי הביקור - תלונה עיקרית, בדיקה גופנית, תוכנית טיפול ותרופות.',
+      icon: Stethoscope,
+      highlightSelector: '[data-tutorial="visit-summary-form"]'
     },
     {
       title: 'חתימה דיגיטלית',
       description: 'אחרי שכתבת סיכום, לחץ על "חתום דיגיטלית" כדי לאשר את הסיכום. זה חשוב לתיעוד רפואי!',
-      icon: PenTool
+      icon: PenTool,
+      highlightSelector: '[data-tutorial="signature-section"]'
     },
     {
       title: 'שליחה למטופל',
       description: 'תוכל לשלוח את הסיכום למטופל באימייל או WhatsApp, או להדפיס אותו.',
-      icon: MessageSquare
+      icon: Share2,
+      highlightSelector: '[data-tutorial="share-buttons"]'
+    },
+    {
+      title: 'מסמכים',
+      description: 'בלשונית "מסמכים" תוכל להעלות ולצפות במסמכים של המטופל - הפניות, בדיקות, תמונות ועוד.',
+      icon: File,
+      highlightSelector: '[data-tutorial="documents-tab"]'
     }
   ]
 };
