@@ -16,7 +16,10 @@ import {
   UserPlus,
   RotateCcw,
   MessageCircle,
+  FileWarning,
+  Send,
 } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 
@@ -118,6 +121,50 @@ export default function AdminDashboard() {
   const isNewPatient = (patientId: string) => {
     const count = patientAppointmentCounts?.[patientId] || 0;
     return count <= 1;
+  };
+
+  const handleSendIntakeReminder = async (e: React.MouseEvent, patientData: any, patientId: string) => {
+    e.stopPropagation();
+    
+    if (!patientData?.phone) {
+      toast({ title: 'אין מספר טלפון למטופל', variant: 'destructive' });
+      return;
+    }
+
+    // Get or create intake token
+    let intakeToken = patientData.intake_token_id;
+    
+    if (!intakeToken) {
+      // Create new intake token
+      const { data: tokenData, error: tokenError } = await supabase
+        .from('intake_tokens')
+        .insert({ patient_id: patientId })
+        .select('token')
+        .single();
+      
+      if (tokenError) {
+        toast({ title: 'שגיאה ביצירת קישור', variant: 'destructive' });
+        return;
+      }
+      intakeToken = tokenData.token;
+    } else {
+      // Get existing token
+      const { data: existingToken } = await supabase
+        .from('intake_tokens')
+        .select('token')
+        .eq('id', intakeToken)
+        .single();
+      intakeToken = existingToken?.token;
+    }
+
+    const intakeUrl = `${window.location.origin}/intake?token=${intakeToken}`;
+    const phone = patientData.phone.replace(/\D/g, '').replace(/^0/, '972');
+    const message = encodeURIComponent(
+      `שלום ${patientData.first_name},\n\nהתור שלך יגיע בעוד כמה דק על מנת לייעל את הטיפול בך השלם את טופס קליטה למרפאה:\n\n${intakeUrl}\n\nתודה,\nד״ר אנה ברמלי`
+    );
+    
+    window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+    toast({ title: 'נפתח WhatsApp לשליחת תזכורת' });
   };
 
   return (
@@ -256,6 +303,25 @@ export default function AdminDashboard() {
                                 <MessageCircle className="h-3 w-3 flex-shrink-0" />
                                 <span className="truncate">{lastMessage}</span>
                               </p>
+                            )}
+                            
+                            {/* Intake Status */}
+                            {!patientData?.intake_completed_at && (
+                              <div className="flex items-center gap-2 mt-2">
+                                <Badge className="bg-yellow-100 text-yellow-700 text-xs">
+                                  <FileWarning className="h-3 w-3 ml-1" />
+                                  לא השלים קליטה
+                                </Badge>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="h-6 text-xs px-2 text-green-600 border-green-300 hover:bg-green-50"
+                                  onClick={(e) => handleSendIntakeReminder(e, patientData, apt.patient_id)}
+                                >
+                                  <Send className="h-3 w-3 ml-1" />
+                                  שלח תזכורת
+                                </Button>
+                              </div>
                             )}
                           </div>
                         </div>

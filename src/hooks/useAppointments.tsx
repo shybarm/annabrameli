@@ -77,7 +77,7 @@ export function useAppointments(startDate?: string, endDate?: string) {
         .from('appointments')
         .select(`
           *,
-          patients!inner(id, first_name, last_name, phone, main_complaint),
+          patients!inner(id, first_name, last_name, phone, main_complaint, intake_completed_at, intake_token_id),
           appointment_types(*)
         `)
         .order('scheduled_at', { ascending: true });
