@@ -19,6 +19,7 @@ import {
   ChevronLeft,
   Wallet,
   UsersRound,
+  History,
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -36,6 +37,7 @@ const navItems = [
   { href: '/admin/expenses', icon: Wallet, label: 'הוצאות' },
   { href: '/admin/messages', icon: MessageSquare, label: 'הודעות' },
   { href: '/admin/team', icon: UsersRound, label: 'צוות' },
+  { href: '/admin/audit-log', icon: History, label: 'יומן ביקורת' },
   { href: '/admin/settings', icon: Settings, label: 'הגדרות' },
 ];
 

@@ -9,16 +9,20 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { DocumentViewer } from '@/components/admin/DocumentViewer';
 import { VoiceRecorder } from '@/components/admin/VoiceRecorder';
 import { ScoringToolbar } from '@/components/admin/scoring/ScoringToolbar';
+import { SignaturePad } from '@/components/admin/SignaturePad';
+import { useElectronicSignatures, useCreateElectronicSignature } from '@/hooks/useElectronicSignatures';
+import { useAuth } from '@/hooks/useAuth';
 import { 
   ArrowRight, User, Clock, Calendar, FileText, Save, 
   Upload, MessageCircle, CreditCard, File, Printer, Mail, Pill, Stethoscope, Eye, ClipboardList,
-  Activity, FlaskConical, ScanLine
+  Activity, FlaskConical, ScanLine, PenTool, CheckCircle
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
@@ -44,6 +48,11 @@ export default function AppointmentDetail() {
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [viewerOpen, setViewerOpen] = useState(false);
   const [viewerIndex, setViewerIndex] = useState(0);
+  const [showSignaturePad, setShowSignaturePad] = useState(false);
+  
+  const { user } = useAuth();
+  const { data: signatures } = useElectronicSignatures('appointment', id || '');
+  const createSignature = useCreateElectronicSignature();
 
   // Fetch appointment
   const { data: appointment, isLoading } = useQuery({
@@ -790,7 +799,83 @@ export default function AppointmentDetail() {
                     <Printer className="h-4 w-4 ml-2" />
                     הדפס
                   </Button>
+
+                  <Dialog open={showSignaturePad} onOpenChange={setShowSignaturePad}>
+                    <DialogTrigger asChild>
+                      <Button 
+                        variant={signatures?.length ? "outline" : "default"}
+                        disabled={!visitSummary.trim() && !treatmentPlan.trim()}
+                        className={signatures?.length ? "" : "bg-green-600 hover:bg-green-700 text-white"}
+                      >
+                        {signatures?.length ? (
+                          <>
+                            <CheckCircle className="h-4 w-4 ml-2 text-green-600" />
+                            נחתם ({signatures.length})
+                          </>
+                        ) : (
+                          <>
+                            <PenTool className="h-4 w-4 ml-2" />
+                            חתום דיגיטלית
+                          </>
+                        )}
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>חתימה דיגיטלית על סיכום הביקור</DialogTitle>
+                      </DialogHeader>
+                      <SignaturePad 
+                        defaultName={user?.email?.split('@')[0] || ''}
+                        defaultRole="doctor"
+                        onSign={async (signatureData, signerName, signerRole, signatureMeaning) => {
+                          await createSignature.mutateAsync({
+                            record_type: 'appointment',
+                            record_id: id!,
+                            signature_data: signatureData,
+                            signer_name: signerName,
+                            signer_role: signerRole,
+                            signature_meaning: signatureMeaning
+                          });
+                          setShowSignaturePad(false);
+                        }}
+                        onCancel={() => setShowSignaturePad(false)}
+                      />
+                    </DialogContent>
+                  </Dialog>
                 </div>
+
+                {/* Existing Signatures Display */}
+                {signatures && signatures.length > 0 && (
+                  <div className="pt-4 border-t space-y-3">
+                    <Label className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      חתימות דיגיטליות
+                    </Label>
+                    <div className="grid gap-3">
+                      {signatures.map((sig) => (
+                        <div 
+                          key={sig.id} 
+                          className="flex items-start gap-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800"
+                        >
+                          <img 
+                            src={sig.signature_data} 
+                            alt="חתימה" 
+                            className="h-12 w-24 object-contain bg-white rounded border"
+                          />
+                          <div className="flex-1 text-sm">
+                            <p className="font-medium">{sig.signer_name}</p>
+                            <p className="text-muted-foreground">
+                              {sig.signer_role === 'doctor' ? 'רופא' : sig.signer_role === 'admin' ? 'מנהל' : 'מזכירה'} - {sig.signature_meaning === 'approval' ? 'אישור' : sig.signature_meaning === 'review' ? 'סקירה' : 'כותב'}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {format(new Date(sig.signed_at), 'dd/MM/yyyy HH:mm:ss', { locale: he })}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {(appointment.visit_shared_whatsapp_at || appointment.visit_shared_email_at) && (
                   <div className="text-sm text-muted-foreground pt-2 border-t">
