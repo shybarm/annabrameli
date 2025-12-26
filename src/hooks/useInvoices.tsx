@@ -27,6 +27,7 @@ export interface Invoice {
   due_date: string | null;
   paid_at: string | null;
   notes: string | null;
+  payment_link: string | null;
   insurance_claim_status: string | null;
   insurance_claim_amount: number | null;
   created_at: string;
@@ -44,6 +45,7 @@ export interface InvoiceInput {
   appointment_id?: string;
   due_date?: string;
   notes?: string;
+  payment_link?: string;
   items: {
     description: string;
     quantity: number;
@@ -144,6 +146,7 @@ export function useCreateInvoice() {
           appointment_id: input.appointment_id,
           due_date: input.due_date,
           notes: input.notes,
+          payment_link: input.payment_link,
           subtotal,
           tax_rate,
           tax_amount,
@@ -184,6 +187,7 @@ export function useCreateInvoice() {
 export interface InvoiceUpdateInput {
   notes?: string;
   due_date?: string | null;
+  payment_link?: string | null;
   items: {
     id?: string;
     description: string;
@@ -209,6 +213,7 @@ export function useUpdateInvoice() {
         .update({
           notes: input.notes,
           due_date: input.due_date,
+          payment_link: input.payment_link,
           subtotal,
           tax_rate,
           tax_amount,

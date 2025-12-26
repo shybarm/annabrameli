@@ -406,6 +406,7 @@ export type Database = {
           notes: string | null
           paid_at: string | null
           patient_id: string | null
+          payment_link: string | null
           status: string | null
           subtotal: number
           tax_amount: number | null
@@ -428,6 +429,7 @@ export type Database = {
           notes?: string | null
           paid_at?: string | null
           patient_id?: string | null
+          payment_link?: string | null
           status?: string | null
           subtotal?: number
           tax_amount?: number | null
@@ -450,6 +452,7 @@ export type Database = {
           notes?: string | null
           paid_at?: string | null
           patient_id?: string | null
+          payment_link?: string | null
           status?: string | null
           subtotal?: number
           tax_amount?: number | null

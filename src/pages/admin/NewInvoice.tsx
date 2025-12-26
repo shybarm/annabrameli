@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { usePatients } from '@/hooks/usePatients';
 import { useCreateInvoice } from '@/hooks/useInvoices';
-import { ArrowRight, Save, Search, Plus, X } from 'lucide-react';
+import { ArrowRight, Save, Search, Plus, X, Link2 } from 'lucide-react';
 
 interface InvoiceItem {
   description: string;
@@ -31,6 +31,7 @@ export default function NewInvoice() {
     { description: '', quantity: 1, unit_price: 0, total: 0 }
   ]);
   const [notes, setNotes] = useState('');
+  const [paymentLink, setPaymentLink] = useState('');
 
   useEffect(() => {
     if (preselectedPatientId) {
@@ -88,6 +89,7 @@ export default function NewInvoice() {
         total: i.total,
       })),
       notes: notes || undefined,
+      payment_link: paymentLink || undefined,
     });
 
     navigate('/admin/billing');
@@ -254,6 +256,23 @@ export default function NewInvoice() {
                   <span>סה״כ לתשלום</span>
                   <span>₪{total.toLocaleString()}</span>
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <Link2 className="h-4 w-4" />
+                  קישור לתשלום (bit/paybox)
+                </Label>
+                <Input
+                  value={paymentLink}
+                  onChange={(e) => setPaymentLink(e.target.value)}
+                  placeholder="https://..."
+                  dir="ltr"
+                  type="url"
+                />
+                <p className="text-xs text-muted-foreground">
+                  הכנס קישור לתשלום ידני כגון bit, paybox או אחר
+                </p>
               </div>
 
               <div className="space-y-2">
