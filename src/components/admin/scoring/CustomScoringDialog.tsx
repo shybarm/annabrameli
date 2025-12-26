@@ -37,7 +37,7 @@ export function CustomScoringDialog({ onScoreComplete }: CustomScoringDialogProp
   const queryClient = useQueryClient();
 
   // Fetch saved scoring tools
-  const { data: savedTools, isLoading } = useQuery({
+  const { data: savedTools, isLoading, refetch } = useQuery({
     queryKey: ['custom-scoring-tools'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -47,6 +47,8 @@ export function CustomScoringDialog({ onScoreComplete }: CustomScoringDialogProp
       if (error) throw error;
       return data as CustomScoringTool[];
     },
+    refetchOnMount: true,
+    staleTime: 0,
   });
 
   // Create new tool mutation
@@ -137,16 +139,18 @@ export function CustomScoringDialog({ onScoreComplete }: CustomScoringDialogProp
     setOpen(false);
   };
 
-  // Reset when dialog closes
+  // Refetch when dialog opens
   useEffect(() => {
-    if (!open) {
+    if (open) {
+      refetch();
+    } else {
       setSelectedTool(null);
       setScore('');
       setInterpretation('');
       setToolName('');
       setDescription('');
     }
-  }, [open]);
+  }, [open, refetch]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
