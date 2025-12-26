@@ -8,6 +8,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  rolesLoading: boolean;
   roles: AppRole[];
   isStaff: boolean;
   isAdmin: boolean;
@@ -24,6 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [rolesLoading, setRolesLoading] = useState(true);
   const [roles, setRoles] = useState<AppRole[]>([]);
 
   useEffect(() => {
@@ -35,11 +37,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         // Defer role fetching with setTimeout
         if (session?.user) {
+          setRolesLoading(true);
           setTimeout(() => {
             fetchUserRoles(session.user.id);
           }, 0);
         } else {
           setRoles([]);
+          setRolesLoading(false);
         }
       }
     );
@@ -50,6 +54,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchUserRoles(session.user.id);
+      } else {
+        setRolesLoading(false);
       }
       setLoading(false);
     });
@@ -59,6 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function fetchUserRoles(userId: string) {
     try {
+      setRolesLoading(true);
       const { data, error } = await supabase
         .from('user_roles')
         .select('role')
@@ -66,6 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       if (error) {
         console.error('Error fetching roles:', error);
+        setRolesLoading(false);
         return;
       }
       
@@ -73,6 +81,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setRoles(userRoles);
     } catch (err) {
       console.error('Failed to fetch roles:', err);
+    } finally {
+      setRolesLoading(false);
     }
   }
 
@@ -112,6 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       session,
       loading,
+      rolesLoading,
       roles,
       isStaff,
       isAdmin,

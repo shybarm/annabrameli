@@ -15,25 +15,26 @@ import PatientProfileTab from '@/components/patient/PatientProfileTab';
 
 export default function PatientPortal() {
   const navigate = useNavigate();
-  const { user, loading, signOut, isPatient, isStaff } = useAuth();
+  const { user, loading, rolesLoading, signOut, isPatient, isStaff } = useAuth();
   const { data: patient, isLoading: patientLoading } = usePatientRecord();
 
   useEffect(() => {
     if (!loading && !user) {
       navigate('/auth');
     }
-    // Redirect staff to admin
-    if (!loading && user && isStaff) {
+    // Redirect staff to admin after roles are loaded
+    if (!loading && !rolesLoading && user && isStaff) {
       navigate('/admin');
     }
-  }, [loading, user, isStaff, navigate]);
+  }, [loading, rolesLoading, user, isStaff, navigate]);
 
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
   };
 
-  if (loading || patientLoading) {
+  // Wait for both auth and roles to load before showing content
+  if (loading || rolesLoading || patientLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-medical-50 to-white p-4" dir="rtl">
         <div className="max-w-4xl mx-auto space-y-4">
