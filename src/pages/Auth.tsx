@@ -12,18 +12,18 @@ import { toast } from '@/hooks/use-toast';
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { signIn, signUp, user, loading, isStaff, isPatient } = useAuth();
+  const { signIn, signUp, user, loading, rolesLoading, isStaff, isPatient } = useAuth();
 
-  // Redirect authenticated users
+  // Redirect authenticated users after roles are loaded
   useEffect(() => {
-    if (!loading && user) {
+    if (!loading && !rolesLoading && user) {
       if (isStaff) {
         navigate('/admin');
       } else {
         navigate('/portal');
       }
     }
-  }, [loading, user, isStaff, isPatient, navigate]);
+  }, [loading, rolesLoading, user, isStaff, isPatient, navigate]);
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
