@@ -1,4 +1,4 @@
-import { useState, createElement } from 'react';
+import { useState, useEffect, createElement } from 'react';
 import { Button } from '@/components/ui/button';
 import { HelpCircle } from 'lucide-react';
 import { TutorialStep } from './TutorialStep';
@@ -17,6 +17,27 @@ export function PageHelpButton({ tutorial }: PageHelpButtonProps) {
   const [show, setShow] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
 
+  // Handle element highlighting
+  useEffect(() => {
+    if (!show) return;
+    
+    const step = tutorial.steps[currentStep];
+    if (!step?.highlightSelector) return;
+    
+    const element = document.querySelector(step.highlightSelector);
+    if (element) {
+      element.classList.add('tutorial-highlight');
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    
+    return () => {
+      // Clean up previous highlight
+      document.querySelectorAll('.tutorial-highlight').forEach(el => {
+        el.classList.remove('tutorial-highlight');
+      });
+    };
+  }, [show, currentStep, tutorial.steps]);
+
   const handleOpen = () => {
     setCurrentStep(0);
     setShow(true);
@@ -24,6 +45,10 @@ export function PageHelpButton({ tutorial }: PageHelpButtonProps) {
 
   const handleClose = () => {
     setShow(false);
+    // Clean up highlights
+    document.querySelectorAll('.tutorial-highlight').forEach(el => {
+      el.classList.remove('tutorial-highlight');
+    });
   };
 
   const handleNext = () => {

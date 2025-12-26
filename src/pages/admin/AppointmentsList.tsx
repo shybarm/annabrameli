@@ -3,10 +3,12 @@ import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
 import { useAppointments, useAppointmentsRealtime, useAppointmentTypes } from '@/hooks/useAppointments';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Calendar, Clock, ChevronRight, ChevronLeft } from 'lucide-react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
+import { Plus, Calendar, Clock, ChevronRight, ChevronLeft, Stethoscope, CheckCircle } from 'lucide-react';
 import { format, addDays, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { PageHelpButton } from '@/components/tutorial/PageHelpButton';
@@ -14,6 +16,7 @@ import { pageTutorials } from '@/components/tutorial/tutorialData';
 
 export default function AppointmentsList() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const weekStart = startOfWeek(selectedDate, { weekStartsOn: 0 });
   const weekEnd = endOfWeek(selectedDate, { weekStartsOn: 0 });
@@ -27,11 +30,31 @@ export default function AppointmentsList() {
 
   useAppointmentsRealtime();
 
+  // Update status mutation
+  const updateStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      const { error } = await supabase
+        .from('appointments')
+        .update({ status })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['appointments'] });
+      toast({ title: 'סטטוס עודכן' });
+    },
+    onError: (error: any) => {
+      toast({ title: 'שגיאה', description: error.message, variant: 'destructive' });
+    },
+  });
+
   const statusColors: Record<string, string> = {
     scheduled: 'bg-blue-100 text-blue-700 border-blue-200',
-    confirmed: 'bg-green-100 text-green-700 border-green-200',
+    confirmed: 'bg-cyan-100 text-cyan-700 border-cyan-200',
+    arrived: 'bg-amber-100 text-amber-700 border-amber-200',
+    with_doctor: 'bg-purple-100 text-purple-700 border-purple-200',
     in_progress: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-    completed: 'bg-gray-100 text-gray-700 border-gray-200',
+    completed: 'bg-green-100 text-green-700 border-green-200',
     cancelled: 'bg-red-100 text-red-700 border-red-200',
     no_show: 'bg-orange-100 text-orange-700 border-orange-200',
   };
@@ -39,6 +62,8 @@ export default function AppointmentsList() {
   const statusLabels: Record<string, string> = {
     scheduled: 'מתוכנן',
     confirmed: 'מאושר',
+    arrived: 'הגיע',
+    with_doctor: 'אצל הרופא',
     in_progress: 'בטיפול',
     completed: 'הושלם',
     cancelled: 'בוטל',
@@ -55,6 +80,11 @@ export default function AppointmentsList() {
     setSelectedDate(prev => addDays(prev, direction === 'next' ? 7 : -7));
   };
 
+  const handleStatusChange = (id: string, newStatus: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    updateStatus.mutate({ id, status: newStatus });
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -66,7 +96,11 @@ export default function AppointmentsList() {
           </div>
           <div className="flex gap-2">
             <PageHelpButton tutorial={pageTutorials['/admin/appointments']} />
-            <Button onClick={() => navigate('/admin/appointments/new')} className="bg-primary text-primary-foreground hover:bg-primary/90">
+            <Button 
+              data-tutorial="new-appointment-btn"
+              onClick={() => navigate('/admin/appointments/new')} 
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
               <Plus className="h-4 w-4 ml-2" />
               תור חדש
             </Button>
@@ -74,7 +108,7 @@ export default function AppointmentsList() {
         </div>
 
         {/* Week Navigation */}
-        <Card>
+        <Card data-tutorial="calendar-view">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <Button variant="ghost" size="icon" onClick={() => navigateWeek('prev')}>
@@ -139,7 +173,7 @@ export default function AppointmentsList() {
         </Card>
 
         {/* Today's Appointments List */}
-        <Card>
+        <Card data-tutorial="appointments-list">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Calendar className="h-5 w-5 text-medical-600" />
@@ -177,13 +211,39 @@ export default function AppointmentsList() {
                         )}
                       </div>
                     </div>
-                    <div className="text-left">
+                    <div className="flex flex-col items-end gap-2">
                       <p className="text-xl font-bold text-medical-700">
                         {format(new Date(apt.scheduled_at), 'HH:mm')}
                       </p>
-                      <Badge className={statusColors[apt.status]}>
+                      <Badge className={statusColors[apt.status]} data-tutorial="appointment-status">
                         {statusLabels[apt.status]}
                       </Badge>
+                      
+                      {/* Quick status buttons */}
+                      <div className="flex gap-1 mt-1" onClick={(e) => e.stopPropagation()}>
+                        {(apt.status === 'scheduled' || apt.status === 'confirmed' || apt.status === 'arrived') && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 px-2 text-xs bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200"
+                            onClick={(e) => handleStatusChange(apt.id, 'with_doctor', e)}
+                          >
+                            <Stethoscope className="h-3 w-3 ml-1" />
+                            אצל הרופא
+                          </Button>
+                        )}
+                        {(apt.status === 'with_doctor' || apt.status === 'in_progress') && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 px-2 text-xs bg-green-50 hover:bg-green-100 text-green-700 border-green-200"
+                            onClick={(e) => handleStatusChange(apt.id, 'completed', e)}
+                          >
+                            <CheckCircle className="h-3 w-3 ml-1" />
+                            סיים ביקור
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
