@@ -273,6 +273,39 @@ export type Database = {
         }
         Relationships: []
       }
+      custom_scoring_tools: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string
+          id: string
+          is_global: boolean | null
+          name: string
+          specialty: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description: string
+          id?: string
+          is_global?: boolean | null
+          name: string
+          specialty?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: string
+          is_global?: boolean | null
+          name?: string
+          specialty?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       electronic_signatures: {
         Row: {
           created_at: string
