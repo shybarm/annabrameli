@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -96,6 +97,7 @@ export default function TeamPage() {
   const [selectedClinicIds, setSelectedClinicIds] = useState<string[]>(selectedClinicId ? [selectedClinicId] : []);
   const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
   const [editingPermissions, setEditingPermissions] = useState<Record<string, boolean>>(defaultPermissions);
+  const [editingClinicIds, setEditingClinicIds] = useState<string[]>([]);
 
   // Fetch team members for current clinic
   const { data: teamMembers, isLoading } = useQuery({
@@ -187,22 +189,63 @@ export default function TeamPage() {
     },
   });
 
-  // Update member permissions
-  const updatePermissions = useMutation({
-    mutationFn: async ({ id, permissions }: { id: string; permissions: Record<string, boolean> }) => {
-      const { error } = await supabase
+  // Update member permissions and clinics
+  const updateMember = useMutation({
+    mutationFn: async ({ id, permissions, clinicIds }: { id: string; permissions: Record<string, boolean>; clinicIds: string[] }) => {
+      // Get current member info
+      const member = teamMembers?.find(m => m.id === id);
+      if (!member) throw new Error('Member not found');
+      
+      // Update the current role with first clinic (or null)
+      const { error: updateError } = await supabase
         .from('user_roles')
-        .update({ permissions })
+        .update({ 
+          permissions,
+          clinic_id: clinicIds.length > 0 ? clinicIds[0] : null
+        })
         .eq('id', id);
-      if (error) throw error;
+      if (updateError) throw updateError;
+      
+      // Handle additional clinics: create new roles for each additional clinic
+      if (clinicIds.length > 1) {
+        for (let i = 1; i < clinicIds.length; i++) {
+          // Check if role already exists
+          const { data: existing } = await supabase
+            .from('user_roles')
+            .select('id')
+            .eq('user_id', member.user_id)
+            .eq('clinic_id', clinicIds[i])
+            .single();
+          
+          if (!existing) {
+            const { error: insertError } = await supabase
+              .from('user_roles')
+              .insert({
+                user_id: member.user_id,
+                role: member.role,
+                permissions,
+                clinic_id: clinicIds[i]
+              });
+            if (insertError && !insertError.message.includes('duplicate')) throw insertError;
+          }
+        }
+      }
+      
+      // Remove roles for clinics not in the list anymore (except current one being edited)
+      const existingRoles = teamMembers?.filter(m => m.user_id === member.user_id && m.id !== id) || [];
+      for (const role of existingRoles) {
+        if (role.clinic_id && !clinicIds.includes(role.clinic_id)) {
+          await supabase.from('user_roles').delete().eq('id', role.id);
+        }
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['team-members', selectedClinicId] });
       setEditingMemberId(null);
-      toast({ title: 'ההרשאות עודכנו בהצלחה' });
+      toast({ title: 'חבר הצוות עודכן בהצלחה' });
     },
     onError: (error: any) => {
-      toast({ title: 'שגיאה בעדכון ההרשאות', description: error.message, variant: 'destructive' });
+      toast({ title: 'שגיאה בעדכון', description: error.message, variant: 'destructive' });
     },
   });
 
@@ -264,9 +307,14 @@ export default function TeamPage() {
     toast({ title: 'הקישור הועתק!' });
   };
 
-  const handleEditPermissions = (member: TeamMember) => {
+  const handleEditMember = (member: TeamMember) => {
     setEditingMemberId(member.id);
     setEditingPermissions(member.permissions || defaultPermissions);
+    // Get all clinic IDs for this user
+    const userClinicIds = teamMembers
+      ?.filter(m => m.user_id === member.user_id && m.clinic_id)
+      .map(m => m.clinic_id as string) || [];
+    setEditingClinicIds(userClinicIds.length > 0 ? userClinicIds : (member.clinic_id ? [member.clinic_id] : []));
   };
 
   return (
@@ -323,27 +371,32 @@ export default function TeamPage() {
                 </div>
                 {/* Clinic selection */}
                 <div className="space-y-3">
-                  <Label>מרפאות להוספה</Label>
-                  <div className="space-y-2 max-h-32 overflow-y-auto border rounded-md p-2">
-                    {allClinics?.map((clinic) => (
-                      <div key={clinic.id} className="flex items-center gap-2">
-                        <Checkbox
-                          id={`clinic-${clinic.id}`}
-                          checked={selectedClinicIds.includes(clinic.id)}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              setSelectedClinicIds(prev => [...prev, clinic.id]);
-                            } else {
-                              setSelectedClinicIds(prev => prev.filter(id => id !== clinic.id));
-                            }
-                          }}
-                        />
-                        <Label htmlFor={`clinic-${clinic.id}`} className="text-sm cursor-pointer">
-                          {clinic.name}
-                        </Label>
-                      </div>
-                    ))}
-                  </div>
+                  <Label className="flex items-center gap-1">
+                    <MapPin className="h-4 w-4" />
+                    מרפאות להוספה
+                  </Label>
+                  <ScrollArea className="h-32 border rounded-md p-2">
+                    <div className="space-y-2">
+                      {allClinics?.map((clinic) => (
+                        <div key={clinic.id} className="flex items-center gap-2">
+                          <Checkbox
+                            id={`clinic-${clinic.id}`}
+                            checked={selectedClinicIds.includes(clinic.id)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSelectedClinicIds(prev => [...prev, clinic.id]);
+                              } else {
+                                setSelectedClinicIds(prev => prev.filter(id => id !== clinic.id));
+                              }
+                            }}
+                          />
+                          <Label htmlFor={`clinic-${clinic.id}`} className="text-sm cursor-pointer">
+                            {clinic.name}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
                   <p className="text-xs text-muted-foreground">בחר מרפאה אחת או יותר</p>
                 </div>
                 <div className="space-y-3">
@@ -420,37 +473,72 @@ export default function TeamPage() {
                         <div className="flex items-center gap-2">
                           <Dialog open={editingMemberId === member.id} onOpenChange={(open) => !open && setEditingMemberId(null)}>
                             <DialogTrigger asChild>
-                              <Button variant="ghost" size="sm" onClick={() => handleEditPermissions(member)}>
+                              <Button variant="ghost" size="sm" onClick={() => handleEditMember(member)}>
                                 <Settings className="h-4 w-4" />
                               </Button>
                             </DialogTrigger>
-                            <DialogContent dir="rtl">
+                            <DialogContent dir="rtl" className="max-w-md">
                               <DialogHeader>
-                                <DialogTitle>עריכת הרשאות - {getMemberName(member)}</DialogTitle>
+                                <DialogTitle>עריכת חבר צוות - {getMemberName(member)}</DialogTitle>
                               </DialogHeader>
                               <div className="space-y-4 pt-4">
-                                <div className="grid grid-cols-2 gap-3">
-                                  {Object.entries(permissionLabels).map(([key, label]) => (
-                                    <div key={key} className="flex items-center gap-2">
-                                      <Checkbox
-                                        id={`edit-${key}`}
-                                        checked={editingPermissions[key] || false}
-                                        onCheckedChange={(checked) => 
-                                          setEditingPermissions(prev => ({ ...prev, [key]: !!checked }))
-                                        }
-                                      />
-                                      <Label htmlFor={`edit-${key}`} className="text-sm cursor-pointer">
-                                        {label}
-                                      </Label>
+                                {/* Clinic Selection */}
+                                <div className="space-y-3">
+                                  <Label className="flex items-center gap-1">
+                                    <MapPin className="h-4 w-4" />
+                                    מרפאות
+                                  </Label>
+                                  <ScrollArea className="h-32 border rounded-md p-2">
+                                    <div className="space-y-2">
+                                      {allClinics?.map((clinic) => (
+                                        <div key={clinic.id} className="flex items-center gap-2">
+                                          <Checkbox
+                                            id={`edit-clinic-${clinic.id}`}
+                                            checked={editingClinicIds.includes(clinic.id)}
+                                            onCheckedChange={(checked) => {
+                                              if (checked) {
+                                                setEditingClinicIds(prev => [...prev, clinic.id]);
+                                              } else {
+                                                setEditingClinicIds(prev => prev.filter(id => id !== clinic.id));
+                                              }
+                                            }}
+                                          />
+                                          <Label htmlFor={`edit-clinic-${clinic.id}`} className="text-sm cursor-pointer">
+                                            {clinic.name}
+                                          </Label>
+                                        </div>
+                                      ))}
                                     </div>
-                                  ))}
+                                  </ScrollArea>
                                 </div>
+                                
+                                {/* Permissions */}
+                                <div className="space-y-3">
+                                  <Label>הרשאות</Label>
+                                  <div className="grid grid-cols-2 gap-3">
+                                    {Object.entries(permissionLabels).map(([key, label]) => (
+                                      <div key={key} className="flex items-center gap-2">
+                                        <Checkbox
+                                          id={`edit-${key}`}
+                                          checked={editingPermissions[key] || false}
+                                          onCheckedChange={(checked) => 
+                                            setEditingPermissions(prev => ({ ...prev, [key]: !!checked }))
+                                          }
+                                        />
+                                        <Label htmlFor={`edit-${key}`} className="text-sm cursor-pointer">
+                                          {label}
+                                        </Label>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                                
                                 <Button 
                                   className="w-full" 
-                                  onClick={() => updatePermissions.mutate({ id: member.id, permissions: editingPermissions })}
-                                  disabled={updatePermissions.isPending}
+                                  onClick={() => updateMember.mutate({ id: member.id, permissions: editingPermissions, clinicIds: editingClinicIds })}
+                                  disabled={updateMember.isPending}
                                 >
-                                  {updatePermissions.isPending ? 'שומר...' : 'שמור הרשאות'}
+                                  {updateMember.isPending ? 'שומר...' : 'שמור שינויים'}
                                 </Button>
                               </div>
                             </DialogContent>
