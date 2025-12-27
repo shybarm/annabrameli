@@ -90,7 +90,7 @@ export function ClinicSelector() {
           )}>
             <SelectValue placeholder="בחר מרפאה" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="z-[100] bg-popover">
             {clinics?.map((clinic) => (
               <SelectItem key={clinic.id} value={clinic.id}>
                 {clinic.name}
