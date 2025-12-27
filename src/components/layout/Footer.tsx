@@ -33,6 +33,8 @@ export const Footer = () => {
                 { href: "/services", label: "שירותים" },
                 { href: "/faq", label: "שאלות ותשובות" },
                 { href: "/contact", label: "יצירת קשר" },
+                { href: "/portal", label: "פורטל מטופלים" },
+                { href: "/book", label: "קביעת תור" },
               ].map((link) => (
                 <li key={link.href}>
                   <Link

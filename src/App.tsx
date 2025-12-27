@@ -35,6 +35,7 @@ import AuditLogPage from "./pages/admin/AuditLogPage";
 import PatientPortal from "./pages/patient/PatientPortal";
 import GuestBooking from "./pages/GuestBooking";
 import JoinTeam from "./pages/JoinTeam";
+import PatientInviteAccept from "./pages/PatientInviteAccept";
 import NotFound from "./pages/NotFound";
 
 // Layout for public pages
@@ -83,6 +84,9 @@ const App = () => (
             
             {/* Team Join (public) */}
             <Route path="/join/:code" element={<JoinTeam />} />
+            
+            {/* Patient Invite (public) */}
+            <Route path="/patient-invite/:code" element={<PatientInviteAccept />} />
             
             {/* Patient Portal */}
             <Route path="/portal" element={<PatientPortal />} />

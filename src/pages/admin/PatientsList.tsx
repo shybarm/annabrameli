@@ -6,10 +6,11 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { usePatients } from '@/hooks/usePatients';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Phone, Mail, User } from 'lucide-react';
+import { Plus, Search, Phone, Mail, User, UserPlus } from 'lucide-react';
 import { format } from 'date-fns';
 import { PageHelpButton } from '@/components/tutorial/PageHelpButton';
 import { pageTutorials } from '@/components/tutorial/tutorialData';
+import { PatientInviteDialog } from '@/components/admin/PatientInviteDialog';
 
 export default function PatientsList() {
   const navigate = useNavigate();
@@ -37,6 +38,14 @@ export default function PatientsList() {
           </div>
           <div className="flex gap-2">
             <PageHelpButton tutorial={pageTutorials['/admin/patients']} />
+            <PatientInviteDialog 
+              trigger={
+                <Button variant="outline">
+                  <UserPlus className="h-4 w-4 ml-2" />
+                  הזמן מטופל
+                </Button>
+              }
+            />
             <Button onClick={() => navigate('/admin/patients/new')} className="bg-primary text-primary-foreground hover:bg-primary/90" data-tutorial="new-patient-btn">
               <Plus className="h-4 w-4 ml-2" />
               מטופל חדש
