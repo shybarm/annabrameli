@@ -7,34 +7,63 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Stethoscope, Mail, Lock, User, ArrowRight } from 'lucide-react';
+import { Stethoscope, Mail, Lock, User, ArrowRight, ShieldAlert } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { MFAVerify } from '@/components/auth/MFAVerify';
+import { MFAEnroll } from '@/components/auth/MFAEnroll';
 
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
   const [showMFAVerify, setShowMFAVerify] = useState(false);
+  const [showMFAEnroll, setShowMFAEnroll] = useState(false);
   const navigate = useNavigate();
-  const { signIn, signUp, user, loading, rolesLoading, isStaff, isPatient } = useAuth();
-  const { needsMFAVerification, isLoading: mfaLoading, refreshMFAStatus } = useMFA();
+  const { signIn, signUp, user, loading, rolesLoading, isStaff, isPatient, isAdmin, isDoctor } = useAuth();
+  const { needsMFAVerification, hasMFAEnabled, isLoading: mfaLoading, refreshMFAStatus } = useMFA();
+
+  // Determine if user requires mandatory MFA (admin or doctor)
+  const requiresMandatoryMFA = isAdmin || isDoctor;
 
   // Check if MFA verification is needed after login
   useEffect(() => {
-    if (!loading && !mfaLoading && user && needsMFAVerification) {
-      setShowMFAVerify(true);
+    if (!loading && !rolesLoading && !mfaLoading && user) {
+      if (requiresMandatoryMFA) {
+        // Staff with mandatory MFA requirement
+        if (!hasMFAEnabled) {
+          // Need to enroll in MFA first
+          setShowMFAEnroll(true);
+          setShowMFAVerify(false);
+        } else if (needsMFAVerification) {
+          // MFA enabled but needs verification
+          setShowMFAVerify(true);
+          setShowMFAEnroll(false);
+        }
+      } else if (needsMFAVerification) {
+        // Optional MFA users who have it enabled
+        setShowMFAVerify(true);
+      }
     }
-  }, [loading, mfaLoading, user, needsMFAVerification]);
+  }, [loading, rolesLoading, mfaLoading, user, needsMFAVerification, hasMFAEnabled, requiresMandatoryMFA]);
 
-  // Redirect authenticated users after roles are loaded and MFA is verified
+  // Redirect authenticated users after roles are loaded and MFA requirements met
   useEffect(() => {
-    if (!loading && !rolesLoading && !mfaLoading && user && !needsMFAVerification && !showMFAVerify) {
+    if (!loading && !rolesLoading && !mfaLoading && user && !showMFAVerify && !showMFAEnroll) {
+      // Check if staff user meets MFA requirements
+      if (requiresMandatoryMFA && !hasMFAEnabled) {
+        // Still needs to enroll, don't redirect
+        return;
+      }
+      if (needsMFAVerification) {
+        // Still needs verification, don't redirect
+        return;
+      }
+      
       if (isStaff) {
         navigate('/admin');
       } else {
         navigate('/portal');
       }
     }
-  }, [loading, rolesLoading, mfaLoading, user, isStaff, isPatient, needsMFAVerification, showMFAVerify, navigate]);
+  }, [loading, rolesLoading, mfaLoading, user, isStaff, isPatient, needsMFAVerification, hasMFAEnabled, requiresMandatoryMFA, showMFAVerify, showMFAEnroll, navigate]);
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -109,6 +138,63 @@ export default function Auth() {
     await refreshMFAStatus();
     // Navigation will be handled by useEffect
   };
+
+  const handleMFAEnrolled = async () => {
+    setShowMFAEnroll(false);
+    await refreshMFAStatus();
+    toast({
+      title: 'אימות דו-שלבי הופעל',
+      description: 'החשבון שלך מאובטח כעת',
+    });
+    // Navigation will be handled by useEffect
+  };
+
+  // Show mandatory MFA enrollment screen for admin/doctor
+  if (showMFAEnroll && user && requiresMandatoryMFA) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-medical-50 to-white flex items-center justify-center p-4" dir="rtl">
+        <div className="w-full max-w-md space-y-6">
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <Stethoscope className="h-10 w-10 text-medical-600" />
+              <h1 className="text-2xl font-bold text-medical-800">מערכת ניהול מרפאה</h1>
+            </div>
+            <p className="text-muted-foreground">ד״ר אנה ברמלי</p>
+          </div>
+          
+          {/* Mandatory MFA Warning */}
+          <Card className="border-amber-200 bg-amber-50 dark:bg-amber-900/20">
+            <CardContent className="pt-6">
+              <div className="flex items-start gap-3">
+                <ShieldAlert className="h-6 w-6 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h3 className="font-semibold text-amber-800 dark:text-amber-200">
+                    אימות דו-שלבי נדרש
+                  </h3>
+                  <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
+                    לצורך אבטחת המידע הרפואי, כל צוות המרפאה נדרש להפעיל אימות דו-שלבי לפני הכניסה למערכת.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <MFAEnroll
+            onEnrolled={handleMFAEnrolled}
+            onCancelled={() => {
+              // Can't cancel - it's mandatory
+              toast({
+                title: 'אימות דו-שלבי נדרש',
+                description: 'יש להפעיל אימות דו-שלבי כדי להמשיך',
+                variant: 'destructive',
+              });
+            }}
+            hideCancelButton={true}
+          />
+        </div>
+      </div>
+    );
+  }
 
   // Show MFA verification screen
   if (showMFAVerify && user) {
