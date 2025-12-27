@@ -17,11 +17,14 @@ export default function Auth() {
   const [showMFAVerify, setShowMFAVerify] = useState(false);
   const [showMFAEnroll, setShowMFAEnroll] = useState(false);
   const navigate = useNavigate();
-  const { signIn, signUp, user, loading, rolesLoading, isStaff, isPatient, isAdmin, isDoctor } = useAuth();
+  const { signIn, signUp, user, loading, rolesLoading, isStaff, isPatient, isAdmin, isDoctor, roles } = useAuth();
   const { needsMFAVerification, hasMFAEnabled, isLoading: mfaLoading, refreshMFAStatus } = useMFA();
 
-  // Determine if user requires mandatory MFA (admin or doctor)
-  const requiresMandatoryMFA = isAdmin || isDoctor;
+  // Check if user has secretary role
+  const isSecretary = roles.includes('secretary');
+
+  // Determine if user requires mandatory MFA (admin, doctor, or secretary)
+  const requiresMandatoryMFA = isAdmin || isDoctor || isSecretary;
 
   // Check if MFA verification is needed after login
   useEffect(() => {
