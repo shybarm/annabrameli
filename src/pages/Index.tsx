@@ -126,7 +126,7 @@ const Index = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button size="lg" className="shadow-teal text-base" asChild>
-                  <Link to="/guest-booking">
+                  <Link to="/book">
                     <Phone className="w-5 h-5 ml-2" />
                     קביעת תור
                   </Link>
@@ -315,7 +315,7 @@ const Index = () => {
                 אל תחכו – קבעו תור לאבחון מקצועי. אבחון מוקדם ומדויק יכול לשנות את ההתנהלות היומיומית ולהעניק שקט נפשי.
               </p>
               <Button size="lg" variant="secondary" className="shadow-lg text-base" asChild>
-                <Link to="/guest-booking">
+                <Link to="/book">
                   <Phone className="w-5 h-5 ml-2" />
                   קביעת תור לאבחון
                 </Link>
