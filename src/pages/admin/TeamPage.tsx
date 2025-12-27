@@ -23,9 +23,11 @@ import {
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { Users, UserPlus, Shield, Trash2, UserCircle, Mail, Copy, Clock, CheckCircle, Settings } from 'lucide-react';
+import { Users, UserPlus, Shield, Trash2, UserCircle, Mail, Copy, Clock, CheckCircle, Settings, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
+import { useClinicContext } from '@/contexts/ClinicContext';
+import { useClinic, useClinics } from '@/hooks/useClinics';
 
 interface TeamMember {
   id: string;
@@ -33,10 +35,15 @@ interface TeamMember {
   role: 'admin' | 'doctor' | 'secretary' | 'patient';
   permissions: Record<string, boolean> | null;
   created_at: string;
+  clinic_id: string | null;
   profile?: {
     first_name: string | null;
     last_name: string | null;
   };
+  clinic?: {
+    id: string;
+    name: string;
+  } | null;
 }
 
 interface Invitation {
@@ -48,6 +55,11 @@ interface Invitation {
   expires_at: string;
   accepted_at: string | null;
   created_at: string;
+  clinic_id: string | null;
+  clinic?: {
+    id: string;
+    name: string;
+  } | null;
 }
 
 const defaultPermissions = {
@@ -74,6 +86,9 @@ const permissionLabels: Record<string, string> = {
 
 export default function TeamPage() {
   const queryClient = useQueryClient();
+  const { selectedClinicId } = useClinicContext();
+  const { data: currentClinic } = useClinic(selectedClinicId);
+  const { data: allClinics } = useClinics();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [selectedRole, setSelectedRole] = useState('secretary');
@@ -81,15 +96,22 @@ export default function TeamPage() {
   const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
   const [editingPermissions, setEditingPermissions] = useState<Record<string, boolean>>(defaultPermissions);
 
-  // Fetch team members
+  // Fetch team members for current clinic
   const { data: teamMembers, isLoading } = useQuery({
-    queryKey: ['team-members'],
+    queryKey: ['team-members', selectedClinicId],
     queryFn: async () => {
-      const { data: roles, error: rolesError } = await supabase
+      let query = supabase
         .from('user_roles')
-        .select('*')
+        .select('*, clinic:clinics(id, name)')
         .in('role', ['admin', 'doctor', 'secretary'])
         .order('created_at', { ascending: false });
+      
+      if (selectedClinicId) {
+        // Show members assigned to this clinic OR admins (who can see all)
+        query = query.or(`clinic_id.eq.${selectedClinicId},role.eq.admin`);
+      }
+      
+      const { data: roles, error: rolesError } = await query;
       
       if (rolesError) throw rolesError;
       if (!roles || roles.length === 0) return [];
@@ -110,16 +132,22 @@ export default function TeamPage() {
     },
   });
 
-  // Fetch pending invitations
+  // Fetch pending invitations for current clinic
   const { data: invitations } = useQuery({
-    queryKey: ['team-invitations'],
+    queryKey: ['team-invitations', selectedClinicId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('team_invitations')
-        .select('*')
+        .select('*, clinic:clinics(id, name)')
         .is('accepted_at', null)
         .gt('expires_at', new Date().toISOString())
         .order('created_at', { ascending: false });
+      
+      if (selectedClinicId) {
+        query = query.eq('clinic_id', selectedClinicId);
+      }
+      
+      const { data, error } = await query;
       
       if (error) throw error;
       return data as Invitation[];
@@ -130,14 +158,14 @@ export default function TeamPage() {
   const sendInvite = useMutation({
     mutationFn: async () => {
       const { data, error } = await supabase.functions.invoke('send-team-invite', {
-        body: { email: inviteEmail, role: selectedRole, permissions },
+        body: { email: inviteEmail, role: selectedRole, permissions, clinic_id: selectedClinicId },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       return data;
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['team-invitations'] });
+      queryClient.invalidateQueries({ queryKey: ['team-invitations', selectedClinicId] });
       setIsDialogOpen(false);
       setInviteEmail('');
       setSelectedRole('secretary');
@@ -166,7 +194,7 @@ export default function TeamPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['team-members'] });
+      queryClient.invalidateQueries({ queryKey: ['team-members', selectedClinicId] });
       setEditingMemberId(null);
       toast({ title: 'ההרשאות עודכנו בהצלחה' });
     },
@@ -185,7 +213,7 @@ export default function TeamPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['team-members'] });
+      queryClient.invalidateQueries({ queryKey: ['team-members', selectedClinicId] });
       toast({ title: 'חבר הצוות הוסר בהצלחה' });
     },
     onError: (error: any) => {
@@ -203,7 +231,7 @@ export default function TeamPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['team-invitations'] });
+      queryClient.invalidateQueries({ queryKey: ['team-invitations', selectedClinicId] });
       toast({ title: 'ההזמנה בוטלה' });
     },
   });
@@ -245,7 +273,15 @@ export default function TeamPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-foreground">צוות המרפאה</h1>
-            <p className="text-muted-foreground">ניהול חברי הצוות והרשאות</p>
+            <p className="text-muted-foreground flex items-center gap-2">
+              ניהול חברי הצוות והרשאות
+              {currentClinic && (
+                <span className="inline-flex items-center gap-1 text-primary">
+                  <MapPin className="h-4 w-4" />
+                  {currentClinic.name}
+                </span>
+              )}
+            </p>
           </div>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>

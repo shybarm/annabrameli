@@ -1054,6 +1054,7 @@ export type Database = {
       team_invitations: {
         Row: {
           accepted_at: string | null
+          clinic_id: string | null
           created_at: string
           email: string
           expires_at: string
@@ -1065,6 +1066,7 @@ export type Database = {
         }
         Insert: {
           accepted_at?: string | null
+          clinic_id?: string | null
           created_at?: string
           email: string
           expires_at?: string
@@ -1076,6 +1078,7 @@ export type Database = {
         }
         Update: {
           accepted_at?: string | null
+          clinic_id?: string | null
           created_at?: string
           email?: string
           expires_at?: string
@@ -1085,7 +1088,15 @@ export type Database = {
           permissions?: Json | null
           role?: Database["public"]["Enums"]["app_role"]
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "team_invitations_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       upload_tokens: {
         Row: {
