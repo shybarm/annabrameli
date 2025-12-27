@@ -1,9 +1,10 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { z } from 'zod';
 import { useAppointmentTypes } from '@/hooks/useAppointments';
+import { useClinics, getClinicHoursForDay, getAvailableTimeSlots } from '@/hooks/useClinics';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,7 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Stethoscope, Calendar as CalendarIcon, Clock, ArrowRight, CheckCircle, Upload, X, FileText } from 'lucide-react';
+import { Stethoscope, Calendar as CalendarIcon, Clock, ArrowRight, CheckCircle, Upload, X, FileText, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
 
@@ -24,22 +25,17 @@ const guestSchema = z.object({
   email: z.string().trim().email('כתובת אימייל לא תקינה').optional().or(z.literal('')),
 });
 
-const timeSlots = [
-  '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
-  '12:00', '12:30', '14:00', '14:30', '15:00', '15:30',
-  '16:00', '16:30', '17:00', '17:30'
-];
-
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_FILE_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
 
 export default function GuestBooking() {
   const navigate = useNavigate();
-  const [step, setStep] = useState<'info' | 'appointment' | 'success'>('info');
+  const [step, setStep] = useState<'clinic' | 'info' | 'appointment' | 'success'>('clinic');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Form state
+  const [selectedClinicId, setSelectedClinicId] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
@@ -50,8 +46,33 @@ export default function GuestBooking() {
   const [notes, setNotes] = useState('');
   const [documents, setDocuments] = useState<File[]>([]);
 
+  const { data: clinics, isLoading: loadingClinics } = useClinics();
   const { data: appointmentTypes } = useAppointmentTypes();
   const selectedType = appointmentTypes?.find(t => t.id === appointmentTypeId);
+  const selectedClinic = clinics?.find(c => c.id === selectedClinicId);
+
+  // Get available time slots based on selected clinic and date
+  const availableTimeSlots = useMemo(() => {
+    if (!selectedClinic || !date) return [];
+    return getAvailableTimeSlots(selectedClinic, date, 30);
+  }, [selectedClinic, date]);
+
+  // Get open days for calendar disabled dates
+  const isDateDisabled = (date: Date) => {
+    if (date < new Date()) return true;
+    if (!selectedClinic) return false;
+    const hours = getClinicHoursForDay(selectedClinic, date);
+    return !hours;
+  };
+
+  // Format working days for display
+  const formatWorkingDays = (clinic: typeof selectedClinic) => {
+    if (!clinic?.working_hours) return 'לא הוגדרו שעות';
+    const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const;
+    const dayLabels = ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ש׳'];
+    const openDays = days.map((day, i) => clinic.working_hours?.[day] ? dayLabels[i] : null).filter(Boolean);
+    return openDays.join(', ');
+  };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -113,6 +134,14 @@ export default function GuestBooking() {
     }
   };
 
+  const handleSelectClinic = () => {
+    if (!selectedClinicId) {
+      toast({ title: 'נא לבחור מרפאה', variant: 'destructive' });
+      return;
+    }
+    setStep('info');
+  };
+
   const handleContinue = () => {
     try {
       guestSchema.parse({ firstName, lastName, phone, email });
@@ -155,13 +184,12 @@ export default function GuestBooking() {
 
       if (patientError) throw patientError;
 
-      // Upload documents if any - using patient ID for validation
-      // The edge function validates that the patient was recently created
+      // Upload documents if any
       if (documents.length > 0) {
         await uploadDocuments(patient.id);
       }
 
-      // Create appointment
+      // Create appointment with clinic
       const scheduledAt = new Date(date);
       const [hours, minutes] = time.split(':').map(Number);
       scheduledAt.setHours(hours, minutes, 0, 0);
@@ -174,7 +202,7 @@ export default function GuestBooking() {
           scheduled_at: scheduledAt.toISOString(),
           duration_minutes: selectedType?.duration_minutes || 30,
           notes: notes.trim() || null,
-          // Let the database default status apply ("scheduled") to satisfy constraints
+          clinic_id: selectedClinicId,
         });
 
       if (appointmentError) throw appointmentError;
@@ -206,6 +234,7 @@ export default function GuestBooking() {
             </p>
             <div className="bg-muted p-4 rounded-lg mb-6 text-right">
               <p className="text-sm text-muted-foreground">פרטי הבקשה:</p>
+              <p className="font-medium">{selectedClinic?.name}</p>
               <p className="font-medium">{selectedType?.name_he}</p>
               <p className="text-sm text-muted-foreground">
                 {date && format(date, 'EEEE, d בMMMM yyyy', { locale: he })} בשעה {time}
@@ -240,25 +269,100 @@ export default function GuestBooking() {
         <div className="flex items-center justify-center gap-2 mb-6">
           <div className={cn(
             'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium',
-            step === 'info' ? 'bg-medical-600 text-white' : 'bg-medical-100 text-medical-600'
+            step === 'clinic' ? 'bg-medical-600 text-white' : 'bg-medical-100 text-medical-600'
           )}>
             1
           </div>
           <div className="w-8 h-0.5 bg-medical-200" />
           <div className={cn(
             'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium',
-            step === 'appointment' ? 'bg-medical-600 text-white' : 'bg-medical-100 text-medical-600'
+            step === 'info' ? 'bg-medical-600 text-white' : 'bg-medical-100 text-medical-600'
           )}>
             2
+          </div>
+          <div className="w-8 h-0.5 bg-medical-200" />
+          <div className={cn(
+            'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium',
+            step === 'appointment' ? 'bg-medical-600 text-white' : 'bg-medical-100 text-medical-600'
+          )}>
+            3
           </div>
         </div>
 
         <Card className="border-medical-200 shadow-lg">
+          {step === 'clinic' && (
+            <>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MapPin className="h-5 w-5" />
+                  בחירת מרפאה
+                </CardTitle>
+                <CardDescription>בחר את המרפאה הנוחה לך</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {loadingClinics ? (
+                  <div className="flex justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-medical-600" />
+                  </div>
+                ) : clinics && clinics.length > 0 ? (
+                  <div className="space-y-3">
+                    {clinics.map((clinic) => (
+                      <div
+                        key={clinic.id}
+                        onClick={() => setSelectedClinicId(clinic.id)}
+                        className={cn(
+                          'p-4 border rounded-lg cursor-pointer transition-all',
+                          selectedClinicId === clinic.id
+                            ? 'border-medical-600 bg-medical-50 ring-2 ring-medical-600'
+                            : 'border-border hover:border-medical-300'
+                        )}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h3 className="font-medium text-foreground">{clinic.name}</h3>
+                            {clinic.address && (
+                              <p className="text-sm text-muted-foreground mt-1">{clinic.address}</p>
+                            )}
+                            {clinic.city && (
+                              <p className="text-sm text-muted-foreground">{clinic.city}</p>
+                            )}
+                          </div>
+                          <div className="text-left">
+                            <p className="text-xs text-muted-foreground">ימי קבלה:</p>
+                            <p className="text-sm font-medium">{formatWorkingDays(clinic)}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-center text-muted-foreground py-8">
+                    אין מרפאות זמינות כרגע
+                  </p>
+                )}
+                <Button
+                  onClick={handleSelectClinic}
+                  className="w-full"
+                  disabled={!selectedClinicId}
+                >
+                  המשך
+                </Button>
+              </CardContent>
+            </>
+          )}
+
           {step === 'info' && (
             <>
               <CardHeader>
-                <CardTitle>פרטים אישיים</CardTitle>
-                <CardDescription>נא למלא את הפרטים הבאים</CardDescription>
+                <div className="flex items-center gap-2">
+                  <Button variant="ghost" size="sm" onClick={() => setStep('clinic')}>
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                  <div>
+                    <CardTitle>פרטים אישיים</CardTitle>
+                    <CardDescription>נא למלא את הפרטים הבאים</CardDescription>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
@@ -332,7 +436,9 @@ export default function GuestBooking() {
                   </Button>
                   <div>
                     <CardTitle>בחירת תור</CardTitle>
-                    <CardDescription>בחר את סוג התור והזמן המבוקש</CardDescription>
+                    <CardDescription>
+                      {selectedClinic?.name} - בחר את סוג התור והזמן המבוקש
+                    </CardDescription>
                   </div>
                 </div>
               </CardHeader>
@@ -380,8 +486,11 @@ export default function GuestBooking() {
                       <Calendar
                         mode="single"
                         selected={date}
-                        onSelect={setDate}
-                        disabled={(date) => date < new Date() || date.getDay() === 6}
+                        onSelect={(d) => {
+                          setDate(d);
+                          setTime(''); // Reset time when date changes
+                        }}
+                        disabled={isDateDisabled}
                         initialFocus
                       />
                     </PopoverContent>
@@ -391,9 +500,9 @@ export default function GuestBooking() {
                 {/* Time */}
                 <div className="space-y-2">
                   <Label>שעה מבוקשת *</Label>
-                  <Select value={time} onValueChange={setTime}>
+                  <Select value={time} onValueChange={setTime} disabled={!date}>
                     <SelectTrigger>
-                      <SelectValue placeholder="בחר שעה">
+                      <SelectValue placeholder={date ? 'בחר שעה' : 'נא לבחור תאריך קודם'}>
                         {time && (
                           <div className="flex items-center gap-2">
                             <Clock className="h-4 w-4" />
@@ -403,11 +512,17 @@ export default function GuestBooking() {
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
-                      {timeSlots.map((slot) => (
-                        <SelectItem key={slot} value={slot}>
-                          {slot}
-                        </SelectItem>
-                      ))}
+                      {availableTimeSlots.length > 0 ? (
+                        availableTimeSlots.map((slot) => (
+                          <SelectItem key={slot} value={slot}>
+                            {slot}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <div className="p-2 text-sm text-muted-foreground text-center">
+                          אין שעות פנויות ביום זה
+                        </div>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
@@ -449,6 +564,7 @@ export default function GuestBooking() {
                             variant="ghost"
                             size="sm"
                             onClick={() => removeDocument(index)}
+                            className="h-6 w-6 p-0"
                           >
                             <X className="h-4 w-4" />
                           </Button>
@@ -460,19 +576,20 @@ export default function GuestBooking() {
 
                 {/* Notes */}
                 <div className="space-y-2">
-                  <Label>הערות (אופציונלי)</Label>
+                  <Label htmlFor="notes">הערות (אופציונלי)</Label>
                   <Textarea
+                    id="notes"
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    placeholder="פרט על הסיבה לתור או הערות נוספות..."
+                    placeholder="ספר/י לנו בקצרה על סיבת הפנייה..."
                     rows={3}
                   />
                 </div>
 
                 <Button
                   onClick={handleSubmit}
-                  disabled={isSubmitting || !appointmentTypeId || !date || !time}
                   className="w-full"
+                  disabled={isSubmitting || !appointmentTypeId || !date || !time}
                 >
                   {isSubmitting ? 'שולח בקשה...' : 'שלח בקשה לתור'}
                 </Button>
