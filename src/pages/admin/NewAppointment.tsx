@@ -9,7 +9,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCreateAppointment, useAppointmentTypes } from '@/hooks/useAppointments';
 import { usePatients } from '@/hooks/usePatients';
-import { ArrowRight, Save, Search } from 'lucide-react';
+import { useClinics } from '@/hooks/useClinics';
+import { ArrowRight, Save, Search, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
 import { useClinicContext } from '@/contexts/ClinicContext';
 
@@ -18,6 +19,8 @@ export default function NewAppointment() {
   const { selectedClinicId } = useClinicContext();
   const createAppointment = useCreateAppointment();
   const { data: appointmentTypes } = useAppointmentTypes();
+  const { data: clinics } = useClinics();
+  const [appointmentClinicId, setAppointmentClinicId] = useState<string | undefined>(selectedClinicId || undefined);
   const { data: patients } = usePatients(selectedClinicId);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPatientId, setSelectedPatientId] = useState('');
@@ -49,7 +52,7 @@ export default function NewAppointment() {
     await createAppointment.mutateAsync({
       patient_id: selectedPatientId,
       appointment_type_id: formData.appointment_type_id || undefined,
-      clinic_id: selectedClinicId || undefined,
+      clinic_id: appointmentClinicId || undefined,
       scheduled_at,
       duration_minutes: formData.duration_minutes,
       notes: formData.notes || undefined,
@@ -223,6 +226,30 @@ export default function NewAppointment() {
                     <SelectItem value="60">60 דקות</SelectItem>
                     <SelectItem value="90">90 דקות</SelectItem>
                     <SelectItem value="120">120 דקות</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Clinic Selection */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-1">
+                  <MapPin className="h-4 w-4" />
+                  מרפאה
+                </Label>
+                <Select 
+                  value={appointmentClinicId || 'unassigned'}
+                  onValueChange={(v) => setAppointmentClinicId(v === 'unassigned' ? undefined : v)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="בחר מרפאה" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="unassigned">לא משויך</SelectItem>
+                    {clinics?.map((clinic) => (
+                      <SelectItem key={clinic.id} value={clinic.id}>
+                        {clinic.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
