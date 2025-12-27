@@ -10,9 +10,10 @@ import { Shield, Smartphone, Copy, Check, Loader2 } from 'lucide-react';
 interface MFAEnrollProps {
   onEnrolled: () => void;
   onCancelled: () => void;
+  hideCancelButton?: boolean;
 }
 
-export function MFAEnroll({ onEnrolled, onCancelled }: MFAEnrollProps) {
+export function MFAEnroll({ onEnrolled, onCancelled, hideCancelButton = false }: MFAEnrollProps) {
   const [factorId, setFactorId] = useState('');
   const [qrCode, setQrCode] = useState('');
   const [secret, setSecret] = useState('');
@@ -239,18 +240,20 @@ export function MFAEnroll({ onEnrolled, onCancelled }: MFAEnrollProps) {
         </div>
 
         {/* Actions */}
-        <div className="flex gap-3">
-          <Button
-            variant="outline"
-            onClick={onCancelled}
-            className="flex-1"
-            disabled={isLoading}
-          >
-            ביטול
-          </Button>
+        <div className={hideCancelButton ? '' : 'flex gap-3'}>
+          {!hideCancelButton && (
+            <Button
+              variant="outline"
+              onClick={onCancelled}
+              className="flex-1"
+              disabled={isLoading}
+            >
+              ביטול
+            </Button>
+          )}
           <Button
             onClick={verifyAndEnable}
-            className="flex-1"
+            className={hideCancelButton ? 'w-full' : 'flex-1'}
             disabled={isLoading || verifyCode.length !== 6}
           >
             {isLoading ? (
