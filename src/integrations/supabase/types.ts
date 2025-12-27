@@ -1228,8 +1228,20 @@ export type Database = {
         Args: { _invite_code: string; _user_id: string }
         Returns: boolean
       }
+      can_edit_appointments: { Args: { _user_id: string }; Returns: boolean }
+      can_edit_billing: { Args: { _user_id: string }; Returns: boolean }
+      can_edit_documents: { Args: { _user_id: string }; Returns: boolean }
+      can_edit_patients: { Args: { _user_id: string }; Returns: boolean }
+      can_view_appointments: { Args: { _user_id: string }; Returns: boolean }
+      can_view_billing: { Args: { _user_id: string }; Returns: boolean }
+      can_view_documents: { Args: { _user_id: string }; Returns: boolean }
+      can_view_patients: { Args: { _user_id: string }; Returns: boolean }
       check_patient_invite_code: { Args: { _code: string }; Returns: boolean }
       check_team_invite_code: { Args: { _code: string }; Returns: boolean }
+      has_permission: {
+        Args: { _permission: string; _user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
