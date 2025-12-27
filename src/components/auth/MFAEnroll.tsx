@@ -55,10 +55,11 @@ export function MFAEnroll({ onEnrolled, onCancelled, hideCancelButton = false }:
         friendlyName = `${baseFriendlyName} (${i})`;
       }
 
-      // Now enroll a new factor
+      // Now enroll a new factor with custom issuer for white-label
       const { data, error } = await supabase.auth.mfa.enroll({
         factorType: 'totp',
         friendlyName,
+        issuer: 'Dr. Brameli Clinic',
       });
 
       if (error) {
