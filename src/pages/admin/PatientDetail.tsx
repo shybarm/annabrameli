@@ -8,9 +8,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { usePatient, useUpdatePatient, useDeletePatient } from '@/hooks/usePatients';
 import { usePatientAppointments } from '@/hooks/useAppointments';
 import { usePatientInvoices } from '@/hooks/useInvoices';
+import { useClinics } from '@/hooks/useClinics';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -29,7 +31,7 @@ import {
 import { 
   ArrowRight, User, Phone, Mail, Calendar, CreditCard, 
   FileText, Edit, Save, X, MessageCircle, Upload, File, Pill, Stethoscope, Eye, Sparkles,
-  ClipboardList, Link, CheckCircle, Trash2, Tag, Loader2, Copy, UserPlus
+  ClipboardList, Link, CheckCircle, Trash2, Tag, Loader2, Copy, UserPlus, MapPin
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
@@ -44,6 +46,7 @@ export default function PatientDetail() {
   const { data: patient, isLoading } = usePatient(id);
   const { data: appointments } = usePatientAppointments(id);
   const { data: invoices } = usePatientInvoices(id);
+  const { data: clinics } = useClinics();
   const updatePatient = useUpdatePatient();
   const deletePatient = useDeletePatient();
   
@@ -531,11 +534,39 @@ export default function PatientDetail() {
                 <h1 className="text-2xl font-bold text-foreground">
                   {patient.first_name} {patient.last_name}
                 </h1>
-                <div className="flex items-center gap-2 text-muted-foreground">
+                <div className="flex items-center gap-2 text-muted-foreground flex-wrap">
                   {patient.id_number && <span>ת.ז: {patient.id_number}</span>}
                   <Badge variant={patient.status === 'active' ? 'default' : 'secondary'}>
                     {patient.status === 'active' ? 'פעיל' : 'לא פעיל'}
                   </Badge>
+                  {/* Clinic assignment */}
+                  <div className="flex items-center gap-1">
+                    <MapPin className="h-3 w-3" />
+                    <Select
+                      value={patient.clinic_id || 'unassigned'}
+                      onValueChange={(value) => {
+                        if (!id) return;
+                        updatePatient.mutate({
+                          id,
+                          first_name: patient.first_name,
+                          last_name: patient.last_name,
+                          clinic_id: value === 'unassigned' ? undefined : value,
+                        });
+                      }}
+                    >
+                      <SelectTrigger className="h-6 w-auto min-w-[120px] text-xs border-dashed">
+                        <SelectValue placeholder="בחר מרפאה" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="unassigned">לא משויך</SelectItem>
+                        {clinics?.map((clinic) => (
+                          <SelectItem key={clinic.id} value={clinic.id}>
+                            {clinic.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </div>
             </div>
