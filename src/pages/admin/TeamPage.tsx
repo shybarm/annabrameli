@@ -24,7 +24,7 @@ import {
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { Users, UserPlus, Shield, Trash2, UserCircle, Mail, Copy, Clock, CheckCircle, Settings, MapPin } from 'lucide-react';
+import { Users, UserPlus, Shield, ShieldOff, Trash2, UserCircle, Mail, Copy, Clock, CheckCircle, Settings, MapPin, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { useClinicContext } from '@/contexts/ClinicContext';
@@ -282,6 +282,27 @@ export default function TeamPage() {
     },
   });
 
+  // Reset MFA for a staff member (admin only)
+  const resetMFA = useMutation({
+    mutationFn: async (targetUserId: string) => {
+      const { data, error } = await supabase.functions.invoke('reset-staff-mfa', {
+        body: { targetUserId },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: (data) => {
+      toast({ 
+        title: 'אימות דו-שלבי אופס בהצלחה',
+        description: `המשתמש יידרש להגדיר אימות דו-שלבי מחדש בכניסה הבאה`,
+      });
+    },
+    onError: (error: any) => {
+      toast({ title: 'שגיאה באיפוס אימות דו-שלבי', description: error.message, variant: 'destructive' });
+    },
+  });
+
   const roleLabels: Record<string, string> = {
     admin: 'מנהל',
     doctor: 'רופא',
@@ -531,6 +552,45 @@ export default function TeamPage() {
                                       </div>
                                     ))}
                                   </div>
+                                </div>
+
+                                {/* Reset MFA Button */}
+                                <div className="border-t pt-4">
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <Button 
+                                        variant="outline" 
+                                        className="w-full text-amber-600 border-amber-300 hover:bg-amber-50"
+                                        disabled={resetMFA.isPending}
+                                      >
+                                        {resetMFA.isPending ? (
+                                          <Loader2 className="h-4 w-4 ml-2 animate-spin" />
+                                        ) : (
+                                          <ShieldOff className="h-4 w-4 ml-2" />
+                                        )}
+                                        איפוס אימות דו-שלבי
+                                      </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent dir="rtl">
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>איפוס אימות דו-שלבי</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          האם אתה בטוח שברצונך לאפס את האימות הדו-שלבי של {getMemberName(member)}?
+                                          <br /><br />
+                                          המשתמש יידרש להגדיר אימות דו-שלבי מחדש בכניסה הבאה למערכת.
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>ביטול</AlertDialogCancel>
+                                        <AlertDialogAction
+                                          onClick={() => resetMFA.mutate(member.user_id)}
+                                          className="bg-amber-600 text-white hover:bg-amber-700"
+                                        >
+                                          אפס אימות דו-שלבי
+                                        </AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
                                 </div>
                                 
                                 <Button 
