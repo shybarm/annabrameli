@@ -12,16 +12,22 @@ import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { Plus, Calendar, Clock, ChevronRight, ChevronLeft, CalendarDays } from 'lucide-react';
+import { Plus, Calendar, Clock, ChevronRight, ChevronLeft, CalendarDays, MapPin } from 'lucide-react';
 import { format, addDays, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, isWeekend, addWeeks } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { PageHelpButton } from '@/components/tutorial/PageHelpButton';
 import { pageTutorials } from '@/components/tutorial/tutorialData';
+import { useClinicContext } from '@/contexts/ClinicContext';
+import { useClinic } from '@/hooks/useClinics';
 
 export default function AppointmentsList() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const today = new Date();
+  
+  // Get current clinic
+  const { selectedClinicId } = useClinicContext();
+  const { data: currentClinic } = useClinic(selectedClinicId);
   
   // Determine if today is weekend (Friday evening or Saturday in Israel context)
   const isCurrentlyWeekend = isWeekend(today);
@@ -254,6 +260,12 @@ export default function AppointmentsList() {
                   {' - '}
                   {format(weekStart, 'd', { locale: he })} עד {format(weekEnd, 'd בMMMM yyyy', { locale: he })}
                 </CardTitle>
+                {currentClinic && (
+                  <p className="text-sm font-medium text-primary mt-1 flex items-center justify-center gap-1">
+                    <MapPin className="h-4 w-4" />
+                    {currentClinic.name}
+                  </p>
+                )}
                 {isCurrentlyWeekend && isNextWeek && (
                   <p className="text-xs text-muted-foreground mt-1">מוצג שבוע הבא (היום סוף שבוע)</p>
                 )}
