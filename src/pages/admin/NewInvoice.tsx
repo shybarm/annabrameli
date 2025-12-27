@@ -206,8 +206,9 @@ export default function NewInvoice() {
                     <Input
                       type="number"
                       min="0"
-                      value={item.unit_price}
+                      value={item.unit_price || ''}
                       onChange={(e) => updateItem(index, 'unit_price', Number(e.target.value))}
+                      placeholder="0"
                       dir="ltr"
                     />
                   </div>

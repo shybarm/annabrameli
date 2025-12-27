@@ -578,7 +578,7 @@ export default function PatientDetail() {
           </div>
         </div>
 
-        {/* Intake Form Card */}
+        {/* Intake Form Card - Only show if NOT completed */}
         {!(patient as any).intake_completed_at && (
           <Card className="border-primary/50 bg-primary/5">
             <CardContent className="flex items-center justify-between py-4">
@@ -618,20 +618,6 @@ export default function PatientDetail() {
                     {isGeneratingIntake ? 'יוצר...' : 'צור קישור'}
                   </Button>
                 )}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {(patient as any).intake_completed_at && (
-          <Card className="border-green-500/50 bg-green-50/50">
-            <CardContent className="flex items-center gap-3 py-4">
-              <CheckCircle className="h-5 w-5 text-green-600" />
-              <div>
-                <p className="font-medium text-green-700">טופס קליטה מולא</p>
-                <p className="text-sm text-muted-foreground">
-                  בתאריך {format(new Date((patient as any).intake_completed_at), 'dd/MM/yyyy', { locale: he })}
-                </p>
               </div>
             </CardContent>
           </Card>
@@ -689,15 +675,12 @@ export default function PatientDetail() {
 
         {/* Show badge if patient has portal access */}
         {patient.user_id && (
-          <Card className="border-green-500/50 bg-green-50/50 dark:bg-green-950/20">
-            <CardContent className="flex items-center gap-3 py-4">
-              <CheckCircle className="h-5 w-5 text-green-600" />
-              <div>
-                <p className="font-medium text-green-700">למטופל יש גישה לפורטל</p>
-                <p className="text-sm text-muted-foreground">המטופל יכול להתחבר ולצפות בתורים, מסמכים והודעות</p>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="flex items-center gap-2">
+            <Badge className="bg-green-500 text-white animate-pulse">
+              <span className="w-2 h-2 bg-white rounded-full mr-2" />
+              פעיל בפורטל
+            </Badge>
+          </div>
         )}
 
         <Tabs defaultValue="info" className="space-y-4">
