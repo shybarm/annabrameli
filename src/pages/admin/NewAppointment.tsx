@@ -8,16 +8,17 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCreateAppointment, useAppointmentTypes } from '@/hooks/useAppointments';
-import { usePatients, useSearchPatients } from '@/hooks/usePatients';
+import { usePatients } from '@/hooks/usePatients';
 import { ArrowRight, Save, Search } from 'lucide-react';
 import { format } from 'date-fns';
+import { useClinicContext } from '@/contexts/ClinicContext';
 
 export default function NewAppointment() {
   const navigate = useNavigate();
+  const { selectedClinicId } = useClinicContext();
   const createAppointment = useCreateAppointment();
   const { data: appointmentTypes } = useAppointmentTypes();
-  const { data: patients } = usePatients();
-  
+  const { data: patients } = usePatients(selectedClinicId);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPatientId, setSelectedPatientId] = useState('');
   const [formData, setFormData] = useState({
@@ -48,6 +49,7 @@ export default function NewAppointment() {
     await createAppointment.mutateAsync({
       patient_id: selectedPatientId,
       appointment_type_id: formData.appointment_type_id || undefined,
+      clinic_id: selectedClinicId || undefined,
       scheduled_at,
       duration_minutes: formData.duration_minutes,
       notes: formData.notes || undefined,
