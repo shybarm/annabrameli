@@ -12,6 +12,7 @@ import PatientVisitSummariesTab from '@/components/patient/PatientVisitSummaries
 import PatientMessagesTab from '@/components/patient/PatientMessagesTab';
 import PatientAppointmentRequest from '@/components/patient/PatientAppointmentRequest';
 import PatientProfileTab from '@/components/patient/PatientProfileTab';
+import { PatientOnboardingTutorial } from '@/components/tutorial/PatientOnboardingTutorial';
 
 export default function PatientPortal() {
   const navigate = useNavigate();
@@ -71,6 +72,9 @@ export default function PatientPortal() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-medical-50 to-white" dir="rtl">
+      {/* First-time Tutorial */}
+      <PatientOnboardingTutorial />
+      
       {/* Header */}
       <header className="bg-white border-b border-border shadow-sm">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
