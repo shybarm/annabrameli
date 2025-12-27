@@ -674,6 +674,56 @@ export type Database = {
           },
         ]
       }
+      patient_invitations: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          first_name: string
+          id: string
+          invite_code: string
+          invited_by: string | null
+          last_name: string
+          patient_id: string | null
+          phone: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          email: string
+          expires_at?: string
+          first_name: string
+          id?: string
+          invite_code?: string
+          invited_by?: string | null
+          last_name: string
+          patient_id?: string | null
+          phone?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          first_name?: string
+          id?: string
+          invite_code?: string
+          invited_by?: string | null
+          last_name?: string
+          patient_id?: string | null
+          phone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_invitations_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       patients: {
         Row: {
           address: string | null
