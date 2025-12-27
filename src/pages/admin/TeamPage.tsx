@@ -93,6 +93,7 @@ export default function TeamPage() {
   const [inviteEmail, setInviteEmail] = useState('');
   const [selectedRole, setSelectedRole] = useState('secretary');
   const [permissions, setPermissions] = useState<Record<string, boolean>>(defaultPermissions);
+  const [selectedClinicIds, setSelectedClinicIds] = useState<string[]>(selectedClinicId ? [selectedClinicId] : []);
   const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
   const [editingPermissions, setEditingPermissions] = useState<Record<string, boolean>>(defaultPermissions);
 
@@ -157,8 +158,9 @@ export default function TeamPage() {
   // Send invitation
   const sendInvite = useMutation({
     mutationFn: async () => {
+      const clinicIdsToUse = selectedClinicIds.length > 0 ? selectedClinicIds : (selectedClinicId ? [selectedClinicId] : []);
       const { data, error } = await supabase.functions.invoke('send-team-invite', {
-        body: { email: inviteEmail, role: selectedRole, permissions, clinic_id: selectedClinicId },
+        body: { email: inviteEmail, role: selectedRole, permissions, clinic_ids: clinicIdsToUse },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
@@ -170,6 +172,7 @@ export default function TeamPage() {
       setInviteEmail('');
       setSelectedRole('secretary');
       setPermissions(defaultPermissions);
+      setSelectedClinicIds(selectedClinicId ? [selectedClinicId] : []);
       
       // Copy invite link
       if (data?.inviteLink) {
@@ -317,6 +320,31 @@ export default function TeamPage() {
                       <SelectItem value="admin">מנהל</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+                {/* Clinic selection */}
+                <div className="space-y-3">
+                  <Label>מרפאות להוספה</Label>
+                  <div className="space-y-2 max-h-32 overflow-y-auto border rounded-md p-2">
+                    {allClinics?.map((clinic) => (
+                      <div key={clinic.id} className="flex items-center gap-2">
+                        <Checkbox
+                          id={`clinic-${clinic.id}`}
+                          checked={selectedClinicIds.includes(clinic.id)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedClinicIds(prev => [...prev, clinic.id]);
+                            } else {
+                              setSelectedClinicIds(prev => prev.filter(id => id !== clinic.id));
+                            }
+                          }}
+                        />
+                        <Label htmlFor={`clinic-${clinic.id}`} className="text-sm cursor-pointer">
+                          {clinic.name}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground">בחר מרפאה אחת או יותר</p>
                 </div>
                 <div className="space-y-3">
                   <Label>הרשאות</Label>
