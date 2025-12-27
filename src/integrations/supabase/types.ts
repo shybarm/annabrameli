@@ -239,6 +239,9 @@ export type Database = {
           address: string | null
           city: string | null
           created_at: string
+          doctor_license: string | null
+          doctor_name: string | null
+          doctor_specialty: string | null
           email: string | null
           id: string
           is_active: boolean | null
@@ -251,6 +254,9 @@ export type Database = {
           address?: string | null
           city?: string | null
           created_at?: string
+          doctor_license?: string | null
+          doctor_name?: string | null
+          doctor_specialty?: string | null
           email?: string | null
           id?: string
           is_active?: boolean | null
@@ -263,6 +269,9 @@ export type Database = {
           address?: string | null
           city?: string | null
           created_at?: string
+          doctor_license?: string | null
+          doctor_name?: string | null
+          doctor_specialty?: string | null
           email?: string | null
           id?: string
           is_active?: boolean | null

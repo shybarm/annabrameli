@@ -21,6 +21,9 @@ export interface Clinic {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  doctor_name: string | null;
+  doctor_license: string | null;
+  doctor_specialty: string | null;
 }
 
 export function useClinics() {

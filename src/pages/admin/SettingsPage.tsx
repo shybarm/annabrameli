@@ -7,13 +7,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
-import { Settings, Building, Clock, Users, Bell, Plus, Trash2, Play, HelpCircle, RotateCcw, CreditCard, Edit, Save, X } from 'lucide-react';
+import { Settings, Building, Clock, Users, Bell, Plus, Trash2, Play, HelpCircle, RotateCcw, CreditCard, Edit, Save, X, MapPin } from 'lucide-react';
 import { useOnboarding } from '@/components/tutorial/OnboardingTutorial';
 import { FullAppTour } from '@/components/tutorial/FullAppTour';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useAppointmentTypes } from '@/hooks/useAppointments';
+import { useClinicContext } from '@/contexts/ClinicContext';
+import { useClinic, useUpdateClinic, Clinic } from '@/hooks/useClinics';
 
 interface ReminderSchedule {
   id: string;
@@ -23,12 +25,27 @@ interface ReminderSchedule {
   is_active: boolean;
 }
 
-interface DaySchedule {
-  day: string;
-  defaultOpen: string;
-  defaultClose: string;
-  defaultClosed: boolean;
+type DayName = 'sunday' | 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday';
+
+interface WorkingHours {
+  sunday?: { open: string; close: string } | null;
+  monday?: { open: string; close: string } | null;
+  tuesday?: { open: string; close: string } | null;
+  wednesday?: { open: string; close: string } | null;
+  thursday?: { open: string; close: string } | null;
+  friday?: { open: string; close: string } | null;
+  saturday?: { open: string; close: string } | null;
 }
+
+const dayLabels: Record<DayName, string> = {
+  sunday: 'ראשון',
+  monday: 'שני',
+  tuesday: 'שלישי',
+  wednesday: 'רביעי',
+  thursday: 'חמישי',
+  friday: 'שישי',
+  saturday: 'שבת',
+};
 
 // Custom 24-hour time picker component
 function TimeSelect({ value, onChange, className }: { value: string; onChange: (value: string) => void; className?: string }) {
@@ -73,32 +90,6 @@ function TimeSelect({ value, onChange, className }: { value: string; onChange: (
   );
 }
 
-function DayScheduleRow({ day, defaultOpen, defaultClose, defaultClosed }: DaySchedule) {
-  const [isClosed, setIsClosed] = useState(defaultClosed);
-  const [openTime, setOpenTime] = useState(defaultOpen);
-  const [closeTime, setCloseTime] = useState(defaultClose);
-  
-  return (
-    <div className="flex items-center gap-4">
-      <span className="w-20 font-medium">{day}</span>
-      <label className="flex items-center gap-2 min-w-[80px]">
-        <Switch
-          checked={!isClosed}
-          onCheckedChange={(checked) => setIsClosed(!checked)}
-        />
-        <span className="text-sm">{isClosed ? 'סגור' : 'פתוח'}</span>
-      </label>
-      {!isClosed && (
-        <>
-          <TimeSelect value={openTime} onChange={setOpenTime} />
-          <span>עד</span>
-          <TimeSelect value={closeTime} onChange={setCloseTime} />
-        </>
-      )}
-    </div>
-  );
-}
-
 export default function SettingsPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -107,6 +98,51 @@ export default function SettingsPage() {
   const [showTutorial, setShowTutorial] = useState(false);
   const [editingPriceId, setEditingPriceId] = useState<string | null>(null);
   const [editingPrice, setEditingPrice] = useState<number>(0);
+  
+  // Get current clinic context
+  const { selectedClinicId } = useClinicContext();
+  const { data: currentClinic, isLoading: loadingClinic } = useClinic(selectedClinicId);
+  const updateClinic = useUpdateClinic();
+  
+  // Form state for clinic settings
+  const [clinicForm, setClinicForm] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    address: '',
+    doctor_name: '',
+    doctor_license: '',
+    doctor_specialty: '',
+  });
+  
+  // Working hours state
+  const [workingHours, setWorkingHours] = useState<WorkingHours>({
+    sunday: { open: '09:00', close: '18:00' },
+    monday: { open: '09:00', close: '18:00' },
+    tuesday: { open: '09:00', close: '18:00' },
+    wednesday: { open: '09:00', close: '18:00' },
+    thursday: { open: '09:00', close: '18:00' },
+    friday: { open: '09:00', close: '13:00' },
+    saturday: null,
+  });
+
+  // Update form when clinic data loads
+  useEffect(() => {
+    if (currentClinic) {
+      setClinicForm({
+        name: currentClinic.name || '',
+        phone: currentClinic.phone || '',
+        email: currentClinic.email || '',
+        address: currentClinic.address || '',
+        doctor_name: currentClinic.doctor_name || '',
+        doctor_license: currentClinic.doctor_license || '',
+        doctor_specialty: currentClinic.doctor_specialty || '',
+      });
+      if (currentClinic.working_hours) {
+        setWorkingHours(currentClinic.working_hours as WorkingHours);
+      }
+    }
+  }, [currentClinic]);
   
   const { data: appointmentTypes, isLoading: loadingTypes } = useAppointmentTypes();
 
@@ -237,12 +273,64 @@ export default function SettingsPage() {
     return `${Math.floor(hours / 24)} ימים`;
   };
 
+  // Save clinic info
+  const handleSaveClinicInfo = () => {
+    if (!selectedClinicId) return;
+    updateClinic.mutate({
+      id: selectedClinicId,
+      name: clinicForm.name,
+      phone: clinicForm.phone || null,
+      email: clinicForm.email || null,
+      address: clinicForm.address || null,
+      doctor_name: clinicForm.doctor_name || null,
+      doctor_license: clinicForm.doctor_license || null,
+      doctor_specialty: clinicForm.doctor_specialty || null,
+    });
+  };
+
+  // Save working hours
+  const handleSaveWorkingHours = () => {
+    if (!selectedClinicId) return;
+    updateClinic.mutate({
+      id: selectedClinicId,
+      working_hours: workingHours,
+    });
+  };
+
+  // Toggle day open/closed
+  const toggleDayOpen = (day: DayName) => {
+    setWorkingHours(prev => ({
+      ...prev,
+      [day]: prev[day] ? null : { open: '09:00', close: '18:00' },
+    }));
+  };
+
+  // Update day hours
+  const updateDayHours = (day: DayName, field: 'open' | 'close', value: string) => {
+    setWorkingHours(prev => ({
+      ...prev,
+      [day]: prev[day] ? { ...prev[day], [field]: value } : { open: '09:00', close: '18:00', [field]: value },
+    }));
+  };
+
+  if (loadingClinic) {
+    return (
+      <AdminLayout>
+        <div className="flex justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+        </div>
+      </AdminLayout>
+    );
+  }
+
   return (
     <AdminLayout>
       <div className="space-y-6 max-w-3xl">
         <div>
           <h1 className="text-2xl font-bold text-foreground">הגדרות</h1>
-          <p className="text-muted-foreground">הגדרות המרפאה והמערכת</p>
+          <p className="text-muted-foreground">
+            הגדרות עבור: <span className="font-medium text-foreground">{currentClinic?.name || 'המרפאה'}</span>
+          </p>
         </div>
 
         {/* Reminder Settings */}
@@ -379,25 +467,46 @@ export default function SettingsPage() {
               <Building className="h-5 w-5" />
               פרטי המרפאה והרופא
             </CardTitle>
-            <CardDescription>מידע בסיסי על המרפאה והרופא (ישמש בסיכומי ביקור להדפסה)</CardDescription>
+            <CardDescription>
+              מידע בסיסי על המרפאה והרופא (ישמש בסיכומי ביקור להדפסה)
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="clinic_name">שם המרפאה</Label>
-                <Input id="clinic_name" defaultValue="מרפאת ד״ר אנה ברמלי" />
+                <Input 
+                  id="clinic_name" 
+                  value={clinicForm.name}
+                  onChange={(e) => setClinicForm(prev => ({ ...prev, name: e.target.value }))}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="clinic_phone">טלפון</Label>
-                <Input id="clinic_phone" defaultValue="+972-XXX-XXXXXX" dir="ltr" />
+                <Input 
+                  id="clinic_phone" 
+                  value={clinicForm.phone}
+                  onChange={(e) => setClinicForm(prev => ({ ...prev, phone: e.target.value }))}
+                  dir="ltr" 
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="clinic_email">אימייל</Label>
-                <Input id="clinic_email" type="email" defaultValue="clinic@example.com" dir="ltr" />
+                <Input 
+                  id="clinic_email" 
+                  type="email" 
+                  value={clinicForm.email}
+                  onChange={(e) => setClinicForm(prev => ({ ...prev, email: e.target.value }))}
+                  dir="ltr" 
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="clinic_address">כתובת</Label>
-                <Input id="clinic_address" defaultValue="רחוב הרופאים 1, תל אביב" />
+                <Input 
+                  id="clinic_address" 
+                  value={clinicForm.address}
+                  onChange={(e) => setClinicForm(prev => ({ ...prev, address: e.target.value }))}
+                />
               </div>
             </div>
             <Separator className="my-4" />
@@ -405,18 +514,38 @@ export default function SettingsPage() {
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="doctor_name">שם הרופא</Label>
-                <Input id="doctor_name" defaultValue="ד״ר אנה ברמלי" />
+                <Input 
+                  id="doctor_name" 
+                  value={clinicForm.doctor_name}
+                  onChange={(e) => setClinicForm(prev => ({ ...prev, doctor_name: e.target.value }))}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="doctor_license">מספר רישיון</Label>
-                <Input id="doctor_license" defaultValue="" placeholder="לדוגמא: 123456" dir="ltr" />
+                <Input 
+                  id="doctor_license" 
+                  value={clinicForm.doctor_license}
+                  onChange={(e) => setClinicForm(prev => ({ ...prev, doctor_license: e.target.value }))}
+                  placeholder="לדוגמא: 123456" 
+                  dir="ltr" 
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="doctor_specialty">התמחות</Label>
-                <Input id="doctor_specialty" defaultValue="רפואה משלימה" />
+                <Input 
+                  id="doctor_specialty" 
+                  value={clinicForm.doctor_specialty}
+                  onChange={(e) => setClinicForm(prev => ({ ...prev, doctor_specialty: e.target.value }))}
+                />
               </div>
             </div>
-            <Button className="bg-primary text-primary-foreground hover:bg-primary/90">שמור שינויים</Button>
+            <Button 
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+              onClick={handleSaveClinicInfo}
+              disabled={updateClinic.isPending}
+            >
+              {updateClinic.isPending ? 'שומר...' : 'שמור שינויים'}
+            </Button>
           </CardContent>
         </Card>
 
@@ -431,16 +560,45 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              <DayScheduleRow key="sunday" day="ראשון" defaultOpen="08:00" defaultClose="18:00" defaultClosed={false} />
-              <DayScheduleRow key="monday" day="שני" defaultOpen="08:00" defaultClose="18:00" defaultClosed={false} />
-              <DayScheduleRow key="tuesday" day="שלישי" defaultOpen="08:00" defaultClose="18:00" defaultClosed={false} />
-              <DayScheduleRow key="wednesday" day="רביעי" defaultOpen="08:00" defaultClose="18:00" defaultClosed={false} />
-              <DayScheduleRow key="thursday" day="חמישי" defaultOpen="08:00" defaultClose="14:00" defaultClosed={false} />
-              <DayScheduleRow key="friday" day="שישי" defaultOpen="08:00" defaultClose="13:00" defaultClosed={true} />
-              <DayScheduleRow key="saturday" day="שבת" defaultOpen="08:00" defaultClose="18:00" defaultClosed={true} />
+              {(Object.keys(dayLabels) as DayName[]).map((day) => {
+                const dayHours = workingHours[day];
+                const isOpen = dayHours !== null && dayHours !== undefined;
+                
+                return (
+                  <div key={day} className="flex items-center gap-4">
+                    <span className="w-20 font-medium">{dayLabels[day]}</span>
+                    <label className="flex items-center gap-2 min-w-[80px]">
+                      <Switch
+                        checked={isOpen}
+                        onCheckedChange={() => toggleDayOpen(day)}
+                      />
+                      <span className="text-sm">{isOpen ? 'פתוח' : 'סגור'}</span>
+                    </label>
+                    {isOpen && dayHours && (
+                      <>
+                        <TimeSelect 
+                          value={dayHours.open} 
+                          onChange={(val) => updateDayHours(day, 'open', val)} 
+                        />
+                        <span>עד</span>
+                        <TimeSelect 
+                          value={dayHours.close} 
+                          onChange={(val) => updateDayHours(day, 'close', val)} 
+                        />
+                      </>
+                    )}
+                  </div>
+                );
+              })}
             </div>
             <Separator className="my-4" />
-            <Button className="bg-primary text-primary-foreground hover:bg-primary/90">שמור שינויים</Button>
+            <Button 
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+              onClick={handleSaveWorkingHours}
+              disabled={updateClinic.isPending}
+            >
+              {updateClinic.isPending ? 'שומר...' : 'שמור שינויים'}
+            </Button>
           </CardContent>
         </Card>
 
