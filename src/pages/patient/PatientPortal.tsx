@@ -31,7 +31,7 @@ export default function PatientPortal() {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/');
+    navigate('/auth');
   };
 
   // Wait for both auth and roles to load before showing content
