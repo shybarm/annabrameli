@@ -377,9 +377,9 @@ export default function SettingsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Building className="h-5 w-5" />
-              פרטי המרפאה
+              פרטי המרפאה והרופא
             </CardTitle>
-            <CardDescription>מידע בסיסי על המרפאה</CardDescription>
+            <CardDescription>מידע בסיסי על המרפאה והרופא (ישמש בסיכומי ביקור להדפסה)</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
@@ -398,6 +398,22 @@ export default function SettingsPage() {
               <div className="space-y-2">
                 <Label htmlFor="clinic_address">כתובת</Label>
                 <Input id="clinic_address" defaultValue="רחוב הרופאים 1, תל אביב" />
+              </div>
+            </div>
+            <Separator className="my-4" />
+            <p className="text-sm font-medium">פרטי הרופא (לסיכומי ביקור)</p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="doctor_name">שם הרופא</Label>
+                <Input id="doctor_name" defaultValue="ד״ר אנה ברמלי" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="doctor_license">מספר רישיון</Label>
+                <Input id="doctor_license" defaultValue="" placeholder="לדוגמא: 123456" dir="ltr" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="doctor_specialty">התמחות</Label>
+                <Input id="doctor_specialty" defaultValue="רפואה משלימה" />
               </div>
             </div>
             <Button className="bg-primary text-primary-foreground hover:bg-primary/90">שמור שינויים</Button>
