@@ -15,6 +15,7 @@ interface InviteRequest {
   email: string;
   role: string;
   permissions: Record<string, boolean>;
+  clinic_id?: string;
 }
 
 serve(async (req) => {
@@ -49,7 +50,7 @@ serve(async (req) => {
       });
     }
 
-    const { email, role, permissions }: InviteRequest = await req.json();
+    const { email, role, permissions, clinic_id }: InviteRequest = await req.json();
 
     if (!email || !role) {
       return new Response(JSON.stringify({ error: "Email and role are required" }), {
@@ -58,7 +59,7 @@ serve(async (req) => {
       });
     }
 
-    console.log(`Creating invitation for ${email} with role ${role}`);
+    console.log(`Creating invitation for ${email} with role ${role} for clinic ${clinic_id || 'all'}`);
 
     // Create invitation record
     const { data: invitation, error: inviteError } = await supabase
@@ -68,6 +69,7 @@ serve(async (req) => {
         role,
         permissions,
         invited_by: user.id,
+        clinic_id: clinic_id || null,
       })
       .select()
       .single();
