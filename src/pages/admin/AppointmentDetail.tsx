@@ -647,9 +647,6 @@ export default function AppointmentDetail() {
                   />
                   <div>
                     <p className="font-medium">{appointment.appointment_types.name_he}</p>
-                    {appointment.appointment_types.price && (
-                      <p className="text-sm text-muted-foreground">₪{appointment.appointment_types.price}</p>
-                    )}
                   </div>
                 </div>
               )}
@@ -729,15 +726,6 @@ export default function AppointmentDetail() {
                   />
                 </div>
 
-                {/* Asthma Checkbox */}
-                <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
-                  <Checkbox 
-                    id="hasAsthma" 
-                    checked={hasAsthma} 
-                    onCheckedChange={(checked) => setHasAsthma(checked === true)}
-                  />
-                  <Label htmlFor="hasAsthma" className="cursor-pointer">אסתמה</Label>
-                </div>
 
                 {/* Medical Background from Intake */}
                 {appointment?.patients && (

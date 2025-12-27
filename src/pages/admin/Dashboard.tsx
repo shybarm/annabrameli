@@ -3,7 +3,7 @@ import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useTodaysAppointments, useAppointmentsRealtime, useUpdateAppointment } from '@/hooks/useAppointments';
+import { useTodaysAppointments, useAppointmentsRealtime, useUpdateAppointment, useAppointments } from '@/hooks/useAppointments';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
@@ -22,9 +22,11 @@ import {
   AlertTriangle,
   Stethoscope,
   Armchair,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { format, differenceInMinutes } from 'date-fns';
+import { format, differenceInMinutes, startOfWeek, endOfWeek, addDays, isSameDay } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { OnboardingTutorial } from '@/components/tutorial/OnboardingTutorial';
 import { PageHelpButton } from '@/components/tutorial/PageHelpButton';
@@ -37,6 +39,15 @@ export default function AdminDashboard() {
   
   // Enable realtime updates
   useAppointmentsRealtime();
+
+  // Get week appointments (Sun-Fri)
+  const weekStart = startOfWeek(new Date(), { weekStartsOn: 0 }); // Sunday
+  const weekEnd = addDays(weekStart, 5); // Friday
+  
+  const { data: weekAppointments } = useAppointments(
+    format(weekStart, 'yyyy-MM-dd'),
+    format(weekEnd, 'yyyy-MM-dd')
+  );
 
   // Fetch patient appointment counts to determine new vs returning
   const patientIds = todaysAppointments?.map(apt => apt.patient_id) || [];
@@ -255,6 +266,27 @@ export default function AdminDashboard() {
     toast({ title: 'נפתח WhatsApp לשליחת תזכורת' });
   };
 
+  // Get appointments grouped by day for weekly calendar
+  const getAppointmentsByDay = () => {
+    if (!weekAppointments) return {};
+    
+    const byDay: Record<string, typeof weekAppointments> = {};
+    const daysOfWeek = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי'];
+    
+    for (let i = 0; i < 6; i++) {
+      const day = addDays(weekStart, i);
+      const dayKey = format(day, 'yyyy-MM-dd');
+      byDay[dayKey] = weekAppointments.filter(apt => 
+        isSameDay(new Date(apt.scheduled_at), day) && apt.status !== 'cancelled'
+      );
+    }
+    
+    return byDay;
+  };
+
+  const appointmentsByDay = getAppointmentsByDay();
+  const daysOfWeek = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי'];
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -309,6 +341,52 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Weekly Mini Calendar */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-primary" />
+              השבוע הזה
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-6 gap-2">
+              {daysOfWeek.map((dayName, index) => {
+                const day = addDays(weekStart, index);
+                const dayKey = format(day, 'yyyy-MM-dd');
+                const dayAppts = appointmentsByDay[dayKey] || [];
+                const isToday = isSameDay(day, new Date());
+                
+                return (
+                  <div 
+                    key={dayKey}
+                    className={`p-2 rounded-lg border text-center cursor-pointer transition-colors hover:bg-accent/50 ${
+                      isToday ? 'border-primary bg-primary/5' : 'border-muted'
+                    }`}
+                    onClick={() => navigate(`/admin/appointments?date=${dayKey}`)}
+                  >
+                    <p className={`text-xs font-medium ${isToday ? 'text-primary' : 'text-muted-foreground'}`}>
+                      {dayName}
+                    </p>
+                    <p className={`text-lg font-bold ${isToday ? 'text-primary' : ''}`}>
+                      {format(day, 'd')}
+                    </p>
+                    <div className="mt-1">
+                      {dayAppts.length > 0 ? (
+                        <Badge variant="secondary" className="text-xs">
+                          {dayAppts.length} תורים
+                        </Badge>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">-</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Today's Patients - Main View */}
         <Card data-tutorial="todays-patients">
@@ -396,7 +474,7 @@ export default function AdminDashboard() {
                               )}
                             </div>
                             
-                            {/* Reason/Appointment Type */}
+                            {/* Reason/Appointment Type - WITHOUT price */}
                             <p className="text-sm font-medium text-primary mt-1">
                               {apt.appointment_types?.name_he || 'ייעוץ'}
                             </p>
