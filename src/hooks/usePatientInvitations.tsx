@@ -133,7 +133,34 @@ export function useAcceptPatientInvitation() {
         throw new Error('הזמנה לא נמצאה או שפג תוקפה');
       }
 
-      // Create patient record
+      // Check if there's an existing patient to link
+      if (invitation.patient_id) {
+        // Link existing patient record to user
+        const { error: updatePatientError } = await supabase
+          .from('patients')
+          .update({ user_id: userId })
+          .eq('id', invitation.patient_id);
+
+        if (updatePatientError) throw updatePatientError;
+
+        // Assign patient role
+        await supabase
+          .from('user_roles')
+          .upsert({
+            user_id: userId,
+            role: 'patient',
+          }, { onConflict: 'user_id,role' });
+
+        // Mark invitation as accepted
+        await supabase
+          .from('patient_invitations')
+          .update({ accepted_at: new Date().toISOString() })
+          .eq('id', invitation.id);
+
+        return { id: invitation.patient_id };
+      }
+
+      // Create new patient record
       const { data: patient, error: patientError } = await supabase
         .from('patients')
         .insert({
@@ -181,5 +208,76 @@ export function useAcceptPatientInvitation() {
         variant: 'destructive' 
       });
     },
+  });
+}
+
+// Invite existing patient to portal
+export function useInviteExistingPatient() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (patientId: string) => {
+      // Get patient details
+      const { data: patient, error: patientError } = await supabase
+        .from('patients')
+        .select('id, first_name, last_name, email, phone, user_id')
+        .eq('id', patientId)
+        .single();
+
+      if (patientError) throw patientError;
+      if (!patient) throw new Error('מטופל לא נמצא');
+      if (patient.user_id) throw new Error('למטופל זה כבר יש חשבון בפורטל');
+      if (!patient.email) throw new Error('לא ניתן לשלוח הזמנה ללא כתובת אימייל');
+
+      const { data: { user } } = await supabase.auth.getUser();
+
+      // Create invitation linked to existing patient
+      const { data, error } = await supabase
+        .from('patient_invitations')
+        .insert({
+          email: patient.email,
+          first_name: patient.first_name,
+          last_name: patient.last_name,
+          phone: patient.phone || null,
+          invited_by: user?.id,
+          patient_id: patientId,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data as PatientInvitation;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['patient-invitations'] });
+      toast({ title: 'הזמנה לפורטל נוצרה בהצלחה' });
+    },
+    onError: (error) => {
+      toast({ 
+        title: 'שגיאה ביצירת הזמנה', 
+        description: error.message, 
+        variant: 'destructive' 
+      });
+    },
+  });
+}
+
+// Get portal invitation for a specific patient
+export function usePatientPortalInvitation(patientId: string | undefined) {
+  return useQuery({
+    queryKey: ['patient-portal-invitation', patientId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('patient_invitations')
+        .select('*')
+        .eq('patient_id', patientId!)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data as PatientInvitation | null;
+    },
+    enabled: !!patientId,
   });
 }
