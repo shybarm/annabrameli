@@ -21,11 +21,12 @@ import {
   Wallet,
   UsersRound,
   History,
-  Lock,
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { ClinicSelector } from './ClinicSelector';
+import { useClinicContext } from '@/contexts/ClinicContext';
+import { useClinics } from '@/hooks/useClinics';
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -55,6 +56,9 @@ const navItems: NavItem[] = [
 export function AdminLayout({ children }: AdminLayoutProps) {
   const { user, loading, isStaff, isAdmin, signOut, roles, hasPermission } = useAuth();
   const { data: unreadCount } = useUnreadMessageCount();
+  const { clinicTheme } = useClinicContext();
+  const { data: clinics } = useClinics();
+  const hasMultipleClinics = clinics && clinics.length > 1;
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -112,7 +116,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50" dir="rtl">
+    <div className={cn(
+      "min-h-screen transition-colors duration-300",
+      hasMultipleClinics ? clinicTheme.bg : "bg-gray-50"
+    )} dir="rtl">
       {/* Clinic Selector */}
       <div className="lg:mr-64">
         <ClinicSelector />
@@ -133,8 +140,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed top-0 right-0 z-40 h-screen w-64 bg-white border-l transition-transform lg:translate-x-0',
-          sidebarOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'
+          'fixed top-0 right-0 z-40 h-screen w-64 bg-white border-l transition-all duration-300 lg:translate-x-0',
+          sidebarOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0',
+          hasMultipleClinics && clinicTheme.border
         )}
       >
         <div className="flex flex-col h-full">
