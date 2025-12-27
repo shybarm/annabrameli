@@ -101,7 +101,7 @@ export default function SettingsPage() {
   
   // Get current clinic context
   const { selectedClinicId } = useClinicContext();
-  const { data: currentClinic, isLoading: loadingClinic } = useClinic(selectedClinicId);
+  const { data: currentClinic, isLoading: loadingClinic } = useClinic(selectedClinicId ?? undefined);
   const updateClinic = useUpdateClinic();
   
   // Form state for clinic settings
