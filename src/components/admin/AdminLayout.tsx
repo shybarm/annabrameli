@@ -1,6 +1,6 @@
 import { ReactNode, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth, UserPermissions } from '@/hooks/useAuth';
 import { useUnreadMessageCount } from '@/hooks/useAdminMessages';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -21,6 +21,7 @@ import {
   Wallet,
   UsersRound,
   History,
+  Lock,
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -30,20 +31,29 @@ interface AdminLayoutProps {
   children: ReactNode;
 }
 
-const navItems = [
+interface NavItem {
+  href: string;
+  icon: any;
+  label: string;
+  exact?: boolean;
+  requiredPermission?: keyof UserPermissions;
+  adminOnly?: boolean;
+}
+
+const navItems: NavItem[] = [
   { href: '/admin', icon: LayoutDashboard, label: 'לוח בקרה', exact: true },
-  { href: '/admin/patients', icon: Users, label: 'מטופלים' },
-  { href: '/admin/appointments', icon: Calendar, label: 'תורים' },
-  { href: '/admin/billing', icon: Receipt, label: 'חיוב וחשבוניות' },
-  { href: '/admin/expenses', icon: Wallet, label: 'הוצאות' },
+  { href: '/admin/patients', icon: Users, label: 'מטופלים', requiredPermission: 'canViewPatients' },
+  { href: '/admin/appointments', icon: Calendar, label: 'תורים', requiredPermission: 'canViewAppointments' },
+  { href: '/admin/billing', icon: Receipt, label: 'חיוב וחשבוניות', requiredPermission: 'canViewBilling' },
+  { href: '/admin/expenses', icon: Wallet, label: 'הוצאות', requiredPermission: 'canViewBilling' },
   { href: '/admin/messages', icon: MessageSquare, label: 'הודעות' },
-  { href: '/admin/team', icon: UsersRound, label: 'צוות' },
-  { href: '/admin/audit-log', icon: History, label: 'יומן ביקורת' },
-  { href: '/admin/settings', icon: Settings, label: 'הגדרות' },
+  { href: '/admin/team', icon: UsersRound, label: 'צוות', adminOnly: true },
+  { href: '/admin/audit-log', icon: History, label: 'יומן ביקורת', adminOnly: true },
+  { href: '/admin/settings', icon: Settings, label: 'הגדרות', adminOnly: true },
 ];
 
 export function AdminLayout({ children }: AdminLayoutProps) {
-  const { user, loading, isStaff, signOut, roles } = useAuth();
+  const { user, loading, isStaff, isAdmin, signOut, roles, hasPermission } = useAuth();
   const { data: unreadCount } = useUnreadMessageCount();
   const navigate = useNavigate();
   const location = useLocation();
@@ -92,6 +102,15 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     navigate('/auth');
   };
 
+  // Filter nav items based on permissions
+  const filteredNavItems = navItems.filter(item => {
+    // Admin-only items
+    if (item.adminOnly && !isAdmin) return false;
+    // Permission-based items
+    if (item.requiredPermission && !hasPermission(item.requiredPermission)) return false;
+    return true;
+  });
+
   return (
     <div className="min-h-screen bg-gray-50" dir="rtl">
       {/* Clinic Selector */}
@@ -131,7 +150,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           {/* Navigation */}
           <ScrollArea className="flex-1 px-3 py-4">
             <nav className="space-y-1">
-              {navItems.map((item) => {
+              {filteredNavItems.map((item) => {
                 const isActive = item.exact
                   ? location.pathname === item.href
                   : location.pathname.startsWith(item.href);

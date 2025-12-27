@@ -5,16 +5,52 @@ import { QueryClient } from '@tanstack/react-query';
 
 type AppRole = 'admin' | 'doctor' | 'secretary' | 'patient';
 
+export interface UserPermissions {
+  canViewPatients: boolean;
+  canEditPatients: boolean;
+  canViewAppointments: boolean;
+  canEditAppointments: boolean;
+  canViewBilling: boolean;
+  canEditBilling: boolean;
+  canViewDocuments: boolean;
+  canEditDocuments: boolean;
+}
+
+const defaultPermissions: UserPermissions = {
+  canViewPatients: false,
+  canEditPatients: false,
+  canViewAppointments: false,
+  canEditAppointments: false,
+  canViewBilling: false,
+  canEditBilling: false,
+  canViewDocuments: false,
+  canEditDocuments: false,
+};
+
+// Admin and Doctor get full permissions
+const fullPermissions: UserPermissions = {
+  canViewPatients: true,
+  canEditPatients: true,
+  canViewAppointments: true,
+  canEditAppointments: true,
+  canViewBilling: true,
+  canEditBilling: true,
+  canViewDocuments: true,
+  canEditDocuments: true,
+};
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
   rolesLoading: boolean;
   roles: AppRole[];
+  permissions: UserPermissions;
   isStaff: boolean;
   isAdmin: boolean;
   isDoctor: boolean;
   isPatient: boolean;
+  hasPermission: (permission: keyof UserPermissions) => boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, firstName?: string, lastName?: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -35,6 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [rolesLoading, setRolesLoading] = useState(true);
   const [roles, setRoles] = useState<AppRole[]>([]);
+  const [permissions, setPermissions] = useState<UserPermissions>(defaultPermissions);
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -51,6 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }, 0);
         } else {
           setRoles([]);
+          setPermissions(defaultPermissions);
           setRolesLoading(false);
         }
       }
@@ -76,7 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setRolesLoading(true);
       const { data, error } = await supabase
         .from('user_roles')
-        .select('role')
+        .select('role, permissions')
         .eq('user_id', userId);
       
       if (error) {
@@ -87,6 +125,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       const userRoles = data?.map(r => r.role as AppRole) || [];
       setRoles(userRoles);
+
+      // Determine permissions based on role
+      // Admin and Doctor get full permissions
+      if (userRoles.includes('admin') || userRoles.includes('doctor')) {
+        setPermissions(fullPermissions);
+      } else {
+        // Secretary and others use stored permissions
+        const staffRole = data?.find(r => r.role === 'secretary');
+        if (staffRole?.permissions && typeof staffRole.permissions === 'object') {
+          const storedPerms = staffRole.permissions as Record<string, boolean>;
+          setPermissions({
+            canViewPatients: storedPerms.canViewPatients ?? false,
+            canEditPatients: storedPerms.canEditPatients ?? false,
+            canViewAppointments: storedPerms.canViewAppointments ?? false,
+            canEditAppointments: storedPerms.canEditAppointments ?? false,
+            canViewBilling: storedPerms.canViewBilling ?? false,
+            canEditBilling: storedPerms.canEditBilling ?? false,
+            canViewDocuments: storedPerms.canViewDocuments ?? false,
+            canEditDocuments: storedPerms.canEditDocuments ?? false,
+          });
+        } else {
+          setPermissions(defaultPermissions);
+        }
+      }
     } catch (err) {
       console.error('Failed to fetch roles:', err);
     } finally {
@@ -98,6 +160,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isAdmin = roles.includes('admin');
   const isDoctor = roles.includes('doctor');
   const isPatient = roles.includes('patient');
+
+  const hasPermission = useCallback((permission: keyof UserPermissions): boolean => {
+    // Admins and doctors always have all permissions
+    if (isAdmin || isDoctor) return true;
+    return permissions[permission] || false;
+  }, [isAdmin, isDoctor, permissions]);
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -125,6 +193,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setSession(null);
     setRoles([]);
+    setPermissions(defaultPermissions);
     
     // Clear React Query cache
     if (queryClientRef) {
@@ -146,10 +215,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loading,
       rolesLoading,
       roles,
+      permissions,
       isStaff,
       isAdmin,
       isDoctor,
       isPatient,
+      hasPermission,
       signIn,
       signUp,
       signOut,
