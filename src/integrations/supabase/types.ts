@@ -742,6 +742,7 @@ export type Database = {
           allergy_severity: string | null
           chronic_conditions: string[] | null
           city: string | null
+          clinic_id: string | null
           consent_signed: boolean | null
           consent_signed_at: string | null
           created_at: string
@@ -794,6 +795,7 @@ export type Database = {
           allergy_severity?: string | null
           chronic_conditions?: string[] | null
           city?: string | null
+          clinic_id?: string | null
           consent_signed?: boolean | null
           consent_signed_at?: string | null
           created_at?: string
@@ -846,6 +848,7 @@ export type Database = {
           allergy_severity?: string | null
           chronic_conditions?: string[] | null
           city?: string | null
+          clinic_id?: string | null
           consent_signed?: boolean | null
           consent_signed_at?: string | null
           created_at?: string
@@ -891,6 +894,13 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "patients_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "patients_intake_token_id_fkey"
             columns: ["intake_token_id"]

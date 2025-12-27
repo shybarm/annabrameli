@@ -27,6 +27,8 @@ export interface Patient {
   status: string;
   created_at: string;
   updated_at: string;
+  clinic_id: string | null;
+  clinic?: { id: string; name: string } | null;
 }
 
 export interface PatientInput {
@@ -45,16 +47,23 @@ export interface PatientInput {
   emergency_contact_phone?: string;
   medical_notes?: string;
   allergies?: string[];
+  clinic_id?: string;
 }
 
-export function usePatients() {
+export function usePatients(clinicId?: string | null) {
   return useQuery({
-    queryKey: ['patients'],
+    queryKey: ['patients', clinicId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('patients')
-        .select('*')
+        .select('*, clinic:clinics(id, name)')
         .order('created_at', { ascending: false });
+      
+      if (clinicId) {
+        query = query.eq('clinic_id', clinicId);
+      }
+      
+      const { data, error } = await query;
       
       if (error) throw error;
       return data as Patient[];
@@ -160,7 +169,7 @@ export function useSearchPatients(query: string) {
       
       const { data, error } = await supabase
         .from('patients')
-        .select('*')
+        .select('*, clinic:clinics(id, name)')
         .or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,phone.ilike.%${query}%,id_number.ilike.%${query}%`)
         .limit(20);
       

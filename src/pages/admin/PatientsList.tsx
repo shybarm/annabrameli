@@ -8,11 +8,12 @@ import { Badge } from '@/components/ui/badge';
 import { usePatients } from '@/hooks/usePatients';
 import { useUnreadMessageCount } from '@/hooks/useAdminMessages';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Phone, Mail, User, UserPlus, MessageCircle } from 'lucide-react';
+import { Plus, Search, Phone, Mail, User, UserPlus, MessageCircle, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
 import { PageHelpButton } from '@/components/tutorial/PageHelpButton';
 import { pageTutorials } from '@/components/tutorial/tutorialData';
 import { PatientInviteDialog } from '@/components/admin/PatientInviteDialog';
+import { useClinicContext } from '@/contexts/ClinicContext';
 
 export default function PatientsList() {
   return (
@@ -26,11 +27,16 @@ export default function PatientsList() {
 
 function PatientsListContent() {
   const navigate = useNavigate();
-  const { data: patients, isLoading } = usePatients();
-  const { data: unreadCount } = useUnreadMessageCount();
+  const { selectedClinicId } = useClinicContext();
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // When searching, show all patients; otherwise filter by clinic
+  const isSearching = searchQuery.length >= 2;
+  const { data: patients, isLoading } = usePatients(isSearching ? null : selectedClinicId);
+  const { data: unreadCount } = useUnreadMessageCount();
 
   const filteredPatients = patients?.filter(patient => {
+    if (!isSearching) return true;
     const query = searchQuery.toLowerCase();
     return (
       patient.first_name.toLowerCase().includes(query) ||
@@ -137,8 +143,14 @@ function PatientsListContent() {
                       <span>{patient.email}</span>
                     </div>
                   )}
-                  <div className="text-xs text-muted-foreground pt-2 border-t">
-                    נוסף: {format(new Date(patient.created_at), 'd/M/yyyy')}
+                  <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t">
+                    <span>נוסף: {format(new Date(patient.created_at), 'd/M/yyyy')}</span>
+                    {patient.clinic && (
+                      <span className="flex items-center gap-1 text-primary">
+                        <MapPin className="h-3 w-3" />
+                        {patient.clinic.name}
+                      </span>
+                    )}
                   </div>
                 </CardContent>
               </Card>

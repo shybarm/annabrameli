@@ -10,9 +10,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { useCreatePatient } from '@/hooks/usePatients';
 import { ArrowRight, Save } from 'lucide-react';
+import { useClinicContext } from '@/contexts/ClinicContext';
 
 export default function NewPatient() {
   const navigate = useNavigate();
+  const { selectedClinicId } = useClinicContext();
   const createPatient = useCreatePatient();
   const [formData, setFormData] = useState({
     first_name: '',
@@ -57,6 +59,7 @@ export default function NewPatient() {
       emergency_contact_phone: formData.emergency_contact_phone || undefined,
       medical_notes: formData.medical_notes || undefined,
       allergies: allergiesArray,
+      clinic_id: selectedClinicId || undefined,
     });
 
     navigate('/admin/patients');
