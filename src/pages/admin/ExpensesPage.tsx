@@ -6,8 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { useExpenses, useExpenseStats, useCreateExpense, useDeleteExpense, EXPENSE_CATEGORIES } from '@/hooks/useExpenses';
-import { Plus, Trash2, Receipt, TrendingDown } from 'lucide-react';
+import { useExpenses, useExpenseStats, useCreateExpense, useUpdateExpense, useDeleteExpense, EXPENSE_CATEGORIES, Expense } from '@/hooks/useExpenses';
+import { Plus, Trash2, Receipt, TrendingDown, Edit } from 'lucide-react';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { PageHelpButton } from '@/components/tutorial/PageHelpButton';
@@ -15,6 +15,7 @@ import { pageTutorials } from '@/components/tutorial/tutorialData';
 
 export default function ExpensesPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [newExpense, setNewExpense] = useState({
     category: '',
     description: '',
@@ -30,18 +31,37 @@ export default function ExpensesPage() {
   const { data: expenses, isLoading } = useExpenses(startDate, endDate);
   const { data: stats } = useExpenseStats(startDate, endDate);
   const createExpense = useCreateExpense();
+  const updateExpense = useUpdateExpense();
   const deleteExpense = useDeleteExpense();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await createExpense.mutateAsync({
-      category: newExpense.category,
-      description: newExpense.description || null,
-      amount: Number(newExpense.amount),
-      expense_date: newExpense.expense_date,
-      recurring: newExpense.recurring,
-      recurring_interval: newExpense.recurring_interval || null,
-    });
+    
+    if (editingExpense) {
+      await updateExpense.mutateAsync({
+        id: editingExpense.id,
+        category: newExpense.category,
+        description: newExpense.description || null,
+        amount: Number(newExpense.amount),
+        expense_date: newExpense.expense_date,
+        recurring: newExpense.recurring,
+        recurring_interval: newExpense.recurring_interval || null,
+      });
+    } else {
+      await createExpense.mutateAsync({
+        category: newExpense.category,
+        description: newExpense.description || null,
+        amount: Number(newExpense.amount),
+        expense_date: newExpense.expense_date,
+        recurring: newExpense.recurring,
+        recurring_interval: newExpense.recurring_interval || null,
+      });
+    }
+    
+    resetForm();
+  };
+
+  const resetForm = () => {
     setNewExpense({
       category: '',
       description: '',
@@ -50,7 +70,21 @@ export default function ExpensesPage() {
       recurring: false,
       recurring_interval: '',
     });
+    setEditingExpense(null);
     setIsDialogOpen(false);
+  };
+
+  const handleEdit = (expense: Expense) => {
+    setEditingExpense(expense);
+    setNewExpense({
+      category: expense.category,
+      description: expense.description || '',
+      amount: expense.amount.toString(),
+      expense_date: expense.expense_date,
+      recurring: expense.recurring,
+      recurring_interval: expense.recurring_interval || '',
+    });
+    setIsDialogOpen(true);
   };
 
   const getCategoryLabel = (value: string) => {
@@ -68,16 +102,16 @@ export default function ExpensesPage() {
           </div>
           <div className="flex gap-2">
             <PageHelpButton tutorial={pageTutorials['/admin/expenses']} />
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) resetForm(); }}>
               <DialogTrigger asChild>
-                <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+                <Button className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => setEditingExpense(null)}>
                   <Plus className="h-4 w-4 ml-2" />
                   הוצאה חדשה
                 </Button>
               </DialogTrigger>
             <DialogContent dir="rtl">
               <DialogHeader>
-                <DialogTitle>הוספת הוצאה</DialogTitle>
+                <DialogTitle>{editingExpense ? 'עריכת הוצאה' : 'הוספת הוצאה'}</DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
@@ -148,7 +182,7 @@ export default function ExpensesPage() {
                   </Select>
                 </div>
                 <Button type="submit" className="w-full" disabled={!newExpense.category || !newExpense.amount}>
-                  הוסף הוצאה
+                  {editingExpense ? 'עדכן הוצאה' : 'הוסף הוצאה'}
                 </Button>
               </form>
             </DialogContent>
@@ -212,13 +246,22 @@ export default function ExpensesPage() {
                         <td className="py-3 text-muted-foreground">{expense.description || '-'}</td>
                         <td className="py-3 font-semibold">₪{Number(expense.amount).toLocaleString()}</td>
                         <td className="py-3">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => deleteExpense.mutate(expense.id)}
-                          >
-                            <Trash2 className="h-4 w-4 text-red-500" />
-                          </Button>
+                          <div className="flex gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEdit(expense)}
+                            >
+                              <Edit className="h-4 w-4 text-muted-foreground" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => deleteExpense.mutate(expense.id)}
+                            >
+                              <Trash2 className="h-4 w-4 text-red-500" />
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     ))}

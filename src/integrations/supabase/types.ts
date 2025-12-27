@@ -742,6 +742,9 @@ export type Database = {
           emergency_contact_name: string | null
           emergency_contact_phone: string | null
           exercise_frequency: string | null
+          family_history_father: string | null
+          family_history_mother: string | null
+          family_history_other: string | null
           family_medical_history: string | null
           first_name: string
           gdpr_consent: boolean | null
@@ -791,6 +794,9 @@ export type Database = {
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
           exercise_frequency?: string | null
+          family_history_father?: string | null
+          family_history_mother?: string | null
+          family_history_other?: string | null
           family_medical_history?: string | null
           first_name: string
           gdpr_consent?: boolean | null
@@ -840,6 +846,9 @@ export type Database = {
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
           exercise_frequency?: string | null
+          family_history_father?: string | null
+          family_history_mother?: string | null
+          family_history_other?: string | null
           family_medical_history?: string | null
           first_name?: string
           gdpr_consent?: boolean | null
