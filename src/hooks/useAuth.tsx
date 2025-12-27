@@ -1,6 +1,7 @@
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import { useState, useEffect, createContext, useContext, ReactNode, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { QueryClient } from '@tanstack/react-query';
 
 type AppRole = 'admin' | 'doctor' | 'secretary' | 'patient';
 
@@ -20,6 +21,13 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// Store a reference to the query client for signOut
+let queryClientRef: QueryClient | null = null;
+
+export function setQueryClientRef(client: QueryClient) {
+  queryClientRef = client;
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -112,10 +120,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: error as Error | null };
   };
 
-  const signOut = async () => {
-    await supabase.auth.signOut();
+  const signOut = useCallback(async () => {
+    // Clear all state first
+    setUser(null);
+    setSession(null);
     setRoles([]);
-  };
+    
+    // Clear React Query cache
+    if (queryClientRef) {
+      queryClientRef.clear();
+    }
+    
+    // Then sign out from Supabase (ignore errors if session already expired)
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.log('Sign out completed');
+    }
+  }, []);
 
   return (
     <AuthContext.Provider value={{
