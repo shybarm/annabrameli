@@ -43,16 +43,18 @@ export default function AppointmentsList() {
   const [cancellingAppointmentId, setCancellingAppointmentId] = useState<string | null>(null);
   const [cancellationReason, setCancellationReason] = useState('');
 
-  // Fetch today's appointments
+  // Fetch today's appointments for current clinic
   const { data: todayAppointments, isLoading: todayLoading } = useAppointments(
     format(today, 'yyyy-MM-dd'),
-    format(addDays(today, 1), 'yyyy-MM-dd')
+    format(addDays(today, 1), 'yyyy-MM-dd'),
+    selectedClinicId
   );
 
-  // Fetch week appointments
+  // Fetch week appointments for current clinic
   const { data: weekAppointments, isLoading: weekLoading } = useAppointments(
     format(weekStart, 'yyyy-MM-dd'),
-    format(addDays(weekEnd, 1), 'yyyy-MM-dd')
+    format(addDays(weekEnd, 1), 'yyyy-MM-dd'),
+    selectedClinicId
   );
 
   useAppointmentsRealtime();

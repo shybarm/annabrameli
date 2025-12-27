@@ -69,15 +69,15 @@ export function useAppointmentTypes() {
   });
 }
 
-export function useAppointments(startDate?: string, endDate?: string) {
+export function useAppointments(startDate?: string, endDate?: string, clinicId?: string | null) {
   return useQuery({
-    queryKey: ['appointments', startDate, endDate],
+    queryKey: ['appointments', startDate, endDate, clinicId],
     queryFn: async () => {
       let query = supabase
         .from('appointments')
         .select(`
           *,
-          patients!inner(id, first_name, last_name, phone, main_complaint, intake_completed_at, intake_token_id),
+          patients!inner(id, first_name, last_name, phone, main_complaint, intake_completed_at, intake_token_id, clinic_id),
           appointment_types(*)
         `)
         .order('scheduled_at', { ascending: true });
@@ -87,6 +87,10 @@ export function useAppointments(startDate?: string, endDate?: string) {
       }
       if (endDate) {
         query = query.lte('scheduled_at', endDate);
+      }
+      if (clinicId) {
+        // Filter by clinic_id on the appointment itself, OR by patient's clinic if appointment doesn't have one
+        query = query.or(`clinic_id.eq.${clinicId},patients.clinic_id.eq.${clinicId}`);
       }
       
       const { data, error } = await query;
