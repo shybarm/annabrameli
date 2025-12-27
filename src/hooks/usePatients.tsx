@@ -60,7 +60,8 @@ export function usePatients(clinicId?: string | null) {
         .order('created_at', { ascending: false });
       
       if (clinicId) {
-        query = query.eq('clinic_id', clinicId);
+        // Show patients assigned to this clinic OR patients without a clinic (legacy)
+        query = query.or(`clinic_id.eq.${clinicId},clinic_id.is.null`);
       }
       
       const { data, error } = await query;
