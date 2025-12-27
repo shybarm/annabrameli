@@ -39,11 +39,16 @@ export function MFAEnroll({ onEnrolled, onCancelled, hideCancelButton = false }:
         }
       }
 
+      // Re-fetch factors after unenrolling to get accurate list of remaining (verified) factors
+      const { data: remainingFactors } = await supabase.auth.mfa.listFactors();
+      const verifiedTotp = remainingFactors?.totp ?? [];
+
       // Supabase requires the factor friendly name to be unique per user.
-      // Generate a stable, user-friendly unique name.
-      const baseFriendlyName = 'Google Authenticator';
+      // Generate a unique name based on verified factors only.
+      const baseFriendlyName = 'Dr. Brameli Clinic';
       const takenNames = new Set(
-        existingTotp
+        verifiedTotp
+          .filter((f) => f.status === 'verified')
           .map((f) => f.friendly_name)
           .filter((n): n is string => Boolean(n))
       );
