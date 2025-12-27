@@ -15,7 +15,8 @@ interface InviteRequest {
   email: string;
   role: string;
   permissions: Record<string, boolean>;
-  clinic_id?: string;
+  clinic_ids?: string[];
+  clinic_id?: string; // legacy support
 }
 
 serve(async (req) => {
@@ -50,7 +51,7 @@ serve(async (req) => {
       });
     }
 
-    const { email, role, permissions, clinic_id }: InviteRequest = await req.json();
+    const { email, role, permissions, clinic_ids, clinic_id }: InviteRequest = await req.json();
 
     if (!email || !role) {
       return new Response(JSON.stringify({ error: "Email and role are required" }), {
@@ -59,43 +60,62 @@ serve(async (req) => {
       });
     }
 
-    console.log(`Creating invitation for ${email} with role ${role} for clinic ${clinic_id || 'all'}`);
+    // Determine which clinic IDs to use - support both new array and legacy single ID
+    const clinicIdsToUse = clinic_ids && clinic_ids.length > 0 
+      ? clinic_ids 
+      : (clinic_id ? [clinic_id] : []);
 
-    // Create invitation record
-    const { data: invitation, error: inviteError } = await supabase
-      .from("team_invitations")
-      .insert({
-        email: email.toLowerCase().trim(),
-        role,
-        permissions,
-        invited_by: user.id,
-        clinic_id: clinic_id || null,
-      })
-      .select()
-      .single();
+    console.log(`Creating invitation for ${email} with role ${role} for clinics: ${clinicIdsToUse.join(', ') || 'none'}`);
 
-    if (inviteError) {
-      console.error("Invite error:", inviteError);
-      return new Response(JSON.stringify({ error: inviteError.message }), {
+    if (clinicIdsToUse.length === 0) {
+      return new Response(JSON.stringify({ error: "At least one clinic must be selected" }), {
         status: 400,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
 
-    console.log("Invitation created:", invitation.id);
+    // Create invitation records for each clinic
+    const invitations = [];
+    for (const cid of clinicIdsToUse) {
+      const { data: invitation, error: inviteError } = await supabase
+        .from("team_invitations")
+        .insert({
+          email: email.toLowerCase().trim(),
+          role,
+          permissions,
+          invited_by: user.id,
+          clinic_id: cid,
+        })
+        .select()
+        .single();
 
-    // Get clinic name
-    const { data: clinicSetting } = await supabase
-      .from("clinic_settings")
-      .select("value")
-      .eq("key", "clinic_name")
-      .maybeSingle();
+      if (inviteError) {
+        console.error("Invite error:", inviteError);
+        return new Response(JSON.stringify({ error: inviteError.message }), {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        });
+      }
 
-    const clinicName = clinicSetting?.value || "המרפאה";
+      invitations.push(invitation);
+    }
+
+    console.log(`Created ${invitations.length} invitation(s)`);
+
+    // Use first invitation for the link
+    const primaryInvitation = invitations[0];
+
+    // Get clinic names for email
+    const { data: clinics } = await supabase
+      .from("clinics")
+      .select("name")
+      .in("id", clinicIdsToUse);
+
+    const clinicNames = clinics?.map(c => c.name).join(", ") || "המרפאה";
 
     // Build invitation link
     const origin = req.headers.get("origin") || "https://lovable.app";
-    const inviteLink = `${origin}/join/${invitation.invite_code}`;
+    const inviteLink = `${origin}/join/${primaryInvitation.invite_code}`;
 
     const roleLabels: Record<string, string> = {
       admin: "מנהל",
@@ -111,18 +131,18 @@ serve(async (req) => {
       const emailResponse = await resendClient.emails.send({
         from: "המרפאה <onboarding@resend.dev>",
         to: [email],
-        subject: `הזמנה להצטרף לצוות ${clinicName}`,
+        subject: `הזמנה להצטרף לצוות ${clinicNames}`,
         html: `
           <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h1 style="color: #7c3aed;">הוזמנת להצטרף לצוות!</h1>
             <p>שלום,</p>
-            <p>הוזמנת להצטרף לצוות של <strong>${clinicName}</strong> בתפקיד <strong>${roleLabels[role] || role}</strong>.</p>
+            <p>הוזמנת להצטרף לצוות של <strong>${clinicNames}</strong> בתפקיד <strong>${roleLabels[role] || role}</strong>.</p>
             <p>לחץ על הכפתור למטה כדי להשלים את ההרשמה:</p>
             <a href="${inviteLink}" style="display: inline-block; background-color: #7c3aed; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; margin: 20px 0;">
               הצטרף לצוות
             </a>
             <p style="margin-top: 20px; color: #666;">
-              <strong>קוד ההזמנה שלך:</strong> ${invitation.invite_code}
+              <strong>קוד ההזמנה שלך:</strong> ${primaryInvitation.invite_code}
             </p>
             <p style="color: #999; font-size: 12px;">
               הזמנה זו תקפה ל-7 ימים.
@@ -139,8 +159,9 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true, 
-        inviteCode: invitation.invite_code,
-        inviteLink 
+        inviteCode: primaryInvitation.invite_code,
+        inviteLink,
+        invitationsCreated: invitations.length
       }),
       {
         status: 200,
