@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
-import { Settings, Building, Clock, Users, Bell, Plus, Trash2, Play, HelpCircle, RotateCcw, CreditCard, Edit, Save, X, MapPin } from 'lucide-react';
+import { Settings, Building, Clock, Users, Bell, Plus, Trash2, Play, HelpCircle, RotateCcw, CreditCard, Edit, Save, X, MapPin, Shield } from 'lucide-react';
+import { MFASettings } from '@/components/auth/MFASettings';
 import { useOnboarding } from '@/components/tutorial/OnboardingTutorial';
 import { FullAppTour } from '@/components/tutorial/FullAppTour';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -699,6 +700,9 @@ export default function SettingsPage() {
             )}
           </CardContent>
         </Card>
+
+        {/* Security - 2FA */}
+        <MFASettings />
 
         {/* Team */}
         <Card>
