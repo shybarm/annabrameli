@@ -102,14 +102,27 @@ export function usePatientInvitationByCode(code: string | undefined) {
   return useQuery({
     queryKey: ['patient-invitation', code],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('patient_invitations')
-        .select('*')
-        .eq('invite_code', code!)
-        .single();
+      // Use edge function to verify invite code securely
+      const { data, error } = await supabase.functions.invoke('verify-patient-invite', {
+        body: { invite_code: code }
+      });
 
       if (error) throw error;
-      return data as PatientInvitation;
+      
+      if (!data.valid) {
+        // Return special object to indicate status
+        return {
+          valid: false,
+          accepted: data.accepted || false,
+          expired: data.expired || false,
+          error: data.error,
+        } as any;
+      }
+
+      return {
+        valid: true,
+        ...data.invitation
+      } as PatientInvitation & { valid: boolean };
     },
     enabled: !!code,
   });
@@ -119,83 +132,19 @@ export function useAcceptPatientInvitation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ code, userId }: { code: string; userId: string }) => {
-      // Get the invitation
-      const { data: invitation, error: invError } = await supabase
-        .from('patient_invitations')
-        .select('*')
-        .eq('invite_code', code)
-        .is('accepted_at', null)
-        .gt('expires_at', new Date().toISOString())
-        .single();
+    mutationFn: async ({ code }: { code: string; userId?: string }) => {
+      // Use edge function to accept invitation securely
+      const { data, error } = await supabase.functions.invoke('accept-patient-invite', {
+        body: { invite_code: code }
+      });
 
-      if (invError || !invitation) {
-        throw new Error('הזמנה לא נמצאה או שפג תוקפה');
+      if (error) throw error;
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to accept invitation');
       }
 
-      // Check if there's an existing patient to link
-      if (invitation.patient_id) {
-        // Link existing patient record to user
-        const { error: updatePatientError } = await supabase
-          .from('patients')
-          .update({ user_id: userId })
-          .eq('id', invitation.patient_id);
-
-        if (updatePatientError) throw updatePatientError;
-
-        // Assign patient role
-        await supabase
-          .from('user_roles')
-          .upsert({
-            user_id: userId,
-            role: 'patient',
-          }, { onConflict: 'user_id,role' });
-
-        // Mark invitation as accepted
-        await supabase
-          .from('patient_invitations')
-          .update({ accepted_at: new Date().toISOString() })
-          .eq('id', invitation.id);
-
-        return { id: invitation.patient_id };
-      }
-
-      // Create new patient record
-      const { data: patient, error: patientError } = await supabase
-        .from('patients')
-        .insert({
-          user_id: userId,
-          first_name: invitation.first_name,
-          last_name: invitation.last_name,
-          email: invitation.email,
-          phone: invitation.phone,
-        })
-        .select()
-        .single();
-
-      if (patientError) throw patientError;
-
-      // Assign patient role
-      await supabase
-        .from('user_roles')
-        .insert({
-          user_id: userId,
-          role: 'patient',
-        })
-        .select();
-
-      // Mark invitation as accepted
-      const { error: updateError } = await supabase
-        .from('patient_invitations')
-        .update({ 
-          accepted_at: new Date().toISOString(),
-          patient_id: patient.id,
-        })
-        .eq('id', invitation.id);
-
-      if (updateError) throw updateError;
-
-      return patient;
+      return { id: data.patient_id };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['patient-invitations'] });

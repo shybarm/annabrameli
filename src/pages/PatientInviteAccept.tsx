@@ -33,7 +33,7 @@ export default function PatientInviteAccept() {
 
     setIsSubmitting(true);
     try {
-      await acceptInvitation.mutateAsync({ code, userId: user.id });
+      await acceptInvitation.mutateAsync({ code });
       navigate('/portal');
     } catch {
       // Error handled by mutation
@@ -129,7 +129,8 @@ export default function PatientInviteAccept() {
     );
   }
 
-  if (error || !invitation) {
+  // Handle invalid invitation (not found)
+  if (error || !invitation || (invitation && !invitation.valid && !invitation.accepted && !invitation.expired)) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-medical-50 to-white flex items-center justify-center p-4" dir="rtl">
         <Card className="w-full max-w-md border-destructive">
@@ -150,7 +151,7 @@ export default function PatientInviteAccept() {
     );
   }
 
-  if (invitation.accepted_at) {
+  if (invitation.accepted_at || invitation.accepted) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-medical-50 to-white flex items-center justify-center p-4" dir="rtl">
         <Card className="w-full max-w-md">
@@ -171,7 +172,7 @@ export default function PatientInviteAccept() {
     );
   }
 
-  const isExpired = new Date(invitation.expires_at) < new Date();
+  const isExpired = invitation.expired || (invitation.expires_at && new Date(invitation.expires_at) < new Date());
   if (isExpired) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-medical-50 to-white flex items-center justify-center p-4" dir="rtl">

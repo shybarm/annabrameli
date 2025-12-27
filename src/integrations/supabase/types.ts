@@ -1228,6 +1228,8 @@ export type Database = {
         Args: { _invite_code: string; _user_id: string }
         Returns: boolean
       }
+      check_patient_invite_code: { Args: { _code: string }; Returns: boolean }
+      check_team_invite_code: { Args: { _code: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

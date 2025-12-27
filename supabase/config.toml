@@ -38,3 +38,14 @@ verify_jwt = false
 # Team invite - handles auth internally
 [functions.send-team-invite]
 verify_jwt = false
+
+# Invite verification functions - public endpoints for invite acceptance flow
+[functions.verify-team-invite]
+verify_jwt = false
+
+[functions.verify-patient-invite]
+verify_jwt = false
+
+# Patient invite acceptance - requires auth
+[functions.accept-patient-invite]
+verify_jwt = true
