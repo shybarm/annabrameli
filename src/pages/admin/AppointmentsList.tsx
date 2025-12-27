@@ -27,7 +27,7 @@ export default function AppointmentsList() {
   
   // Get current clinic
   const { selectedClinicId } = useClinicContext();
-  const { data: currentClinic } = useClinic(selectedClinicId);
+  const { data: currentClinic } = useClinic(selectedClinicId ?? undefined);
   
   // Determine if today is weekend (Friday evening or Saturday in Israel context)
   const isCurrentlyWeekend = isWeekend(today);

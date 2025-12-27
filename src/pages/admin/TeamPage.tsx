@@ -87,7 +87,7 @@ const permissionLabels: Record<string, string> = {
 export default function TeamPage() {
   const queryClient = useQueryClient();
   const { selectedClinicId } = useClinicContext();
-  const { data: currentClinic } = useClinic(selectedClinicId);
+  const { data: currentClinic } = useClinic(selectedClinicId ?? undefined);
   const { data: allClinics } = useClinics();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');

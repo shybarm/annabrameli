@@ -20,8 +20,12 @@ export function ClinicSelector() {
   const [isCreating, setIsCreating] = useState(false);
   const [newClinic, setNewClinic] = useState({ name: '', city: '', address: '', phone: '' });
 
-  const handleClinicChange = (clinicId: string) => {
-    setSelectedClinicId(clinicId);
+  const handleClinicChange = (value: string) => {
+    if (value === 'all') {
+      setSelectedClinicId(null);
+      return;
+    }
+    setSelectedClinicId(value);
   };
 
   const handleCreateClinic = async () => {
@@ -49,7 +53,7 @@ export function ClinicSelector() {
       toast({ title: 'המרפאה נוספה בהצלחה' });
       setIsDialogOpen(false);
       setNewClinic({ name: '', city: '', address: '', phone: '' });
-      
+
       // Switch to new clinic
       if (data) {
         handleClinicChange(data.id);
@@ -72,25 +76,28 @@ export function ClinicSelector() {
     );
   }
 
-  const selectedClinic = clinics?.find(c => c.id === selectedClinicId);
+  const selectedClinic = clinics?.find((c) => c.id === selectedClinicId);
   const hasMultipleClinics = clinics && clinics.length > 1;
+  const selectValue = selectedClinicId ?? 'all';
 
   return (
-    <div className={cn(
-      "border-b px-4 py-2 transition-colors duration-300",
-      hasMultipleClinics ? clinicTheme.headerBg : "bg-muted/50"
-    )}>
+    <div
+      className={cn(
+        'border-b px-4 py-2 transition-colors duration-300',
+        hasMultipleClinics && selectedClinicId ? clinicTheme.headerBg : 'bg-muted/50'
+      )}
+    >
       <div className="max-w-7xl mx-auto flex items-center gap-3">
         <Building2 className="h-4 w-4 text-muted-foreground" />
         <span className="text-sm text-muted-foreground">מרפאה:</span>
-        <Select value={selectedClinicId} onValueChange={handleClinicChange}>
-          <SelectTrigger className={cn(
-            "w-48 h-8 text-sm",
-            hasMultipleClinics && clinicTheme.border
-          )}>
+        <Select value={selectValue} onValueChange={handleClinicChange}>
+          <SelectTrigger
+            className={cn('w-48 h-8 text-sm', hasMultipleClinics && selectedClinicId && clinicTheme.border)}
+          >
             <SelectValue placeholder="בחר מרפאה" />
           </SelectTrigger>
           <SelectContent className="z-[100] bg-popover">
+            <SelectItem value="all">כל המרפאות</SelectItem>
             {clinics?.map((clinic) => (
               <SelectItem key={clinic.id} value={clinic.id}>
                 {clinic.name}
@@ -98,18 +105,16 @@ export function ClinicSelector() {
             ))}
           </SelectContent>
         </Select>
-        {selectedClinic?.city && (
-          <span className="text-xs text-muted-foreground">({selectedClinic.city})</span>
-        )}
-        {hasMultipleClinics && (
-          <span className="text-xs font-medium px-2 py-0.5 rounded" style={{ 
-            backgroundColor: clinicTheme.accent,
-            color: 'white'
-          }}>
+        {selectedClinic?.city && <span className="text-xs text-muted-foreground">({selectedClinic.city})</span>}
+        {hasMultipleClinics && selectedClinicId && (
+          <span
+            className="text-xs font-medium px-2 py-0.5 rounded"
+            style={{ backgroundColor: clinicTheme.accent, color: 'white' }}
+          >
             מרפאה {clinicIndex + 1}
           </span>
         )}
-        
+
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button variant="outline" size="sm" className="h-8 mr-2">
@@ -126,7 +131,7 @@ export function ClinicSelector() {
                 <Label>שם המרפאה *</Label>
                 <Input
                   value={newClinic.name}
-                  onChange={(e) => setNewClinic(prev => ({ ...prev, name: e.target.value }))}
+                  onChange={(e) => setNewClinic((prev) => ({ ...prev, name: e.target.value }))}
                   placeholder="למשל: מרפאת הרצליה"
                 />
               </div>
@@ -135,7 +140,7 @@ export function ClinicSelector() {
                   <Label>עיר</Label>
                   <Input
                     value={newClinic.city}
-                    onChange={(e) => setNewClinic(prev => ({ ...prev, city: e.target.value }))}
+                    onChange={(e) => setNewClinic((prev) => ({ ...prev, city: e.target.value }))}
                     placeholder="תל אביב"
                   />
                 </div>
@@ -143,7 +148,7 @@ export function ClinicSelector() {
                   <Label>טלפון</Label>
                   <Input
                     value={newClinic.phone}
-                    onChange={(e) => setNewClinic(prev => ({ ...prev, phone: e.target.value }))}
+                    onChange={(e) => setNewClinic((prev) => ({ ...prev, phone: e.target.value }))}
                     placeholder="03-1234567"
                     dir="ltr"
                   />
@@ -153,15 +158,11 @@ export function ClinicSelector() {
                 <Label>כתובת</Label>
                 <Input
                   value={newClinic.address}
-                  onChange={(e) => setNewClinic(prev => ({ ...prev, address: e.target.value }))}
+                  onChange={(e) => setNewClinic((prev) => ({ ...prev, address: e.target.value }))}
                   placeholder="רחוב הרופא 1"
                 />
               </div>
-              <Button 
-                className="w-full" 
-                onClick={handleCreateClinic}
-                disabled={isCreating || !newClinic.name.trim()}
-              >
+              <Button className="w-full" onClick={handleCreateClinic} disabled={isCreating || !newClinic.name.trim()}>
                 {isCreating ? 'מוסיף...' : 'הוסף מרפאה'}
               </Button>
             </div>

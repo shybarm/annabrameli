@@ -11,8 +11,8 @@ const clinicThemes = [
 ];
 
 interface ClinicContextType {
-  selectedClinicId: string;
-  setSelectedClinicId: (id: string) => void;
+  selectedClinicId: string | null;
+  setSelectedClinicId: (id: string | null) => void;
   clinicTheme: typeof clinicThemes[0];
   clinicIndex: number;
 }
@@ -21,11 +21,17 @@ const ClinicContext = createContext<ClinicContextType | undefined>(undefined);
 
 export function ClinicProvider({ children }: { children: ReactNode }) {
   const { data: clinics } = useClinics();
-  const [selectedClinicId, setSelectedClinicId] = useState<string>('');
+  const [selectedClinicId, setSelectedClinicId] = useState<string | null>(null);
 
   useEffect(() => {
     const savedClinicId = localStorage.getItem('selectedClinicId');
-    if (savedClinicId && clinics?.find(c => c.id === savedClinicId)) {
+
+    if (savedClinicId === 'all') {
+      setSelectedClinicId(null);
+      return;
+    }
+
+    if (savedClinicId && clinics?.find((c) => c.id === savedClinicId)) {
       setSelectedClinicId(savedClinicId);
     } else if (clinics && clinics.length > 0) {
       setSelectedClinicId(clinics[0].id);
@@ -33,23 +39,27 @@ export function ClinicProvider({ children }: { children: ReactNode }) {
     }
   }, [clinics]);
 
-  const handleSetSelectedClinicId = (id: string) => {
+  const handleSetSelectedClinicId = (id: string | null) => {
     setSelectedClinicId(id);
-    localStorage.setItem('selectedClinicId', id);
+    localStorage.setItem('selectedClinicId', id ?? 'all');
   };
 
   // Get clinic index based on order in the list
-  const foundIndex = clinics?.findIndex(c => c.id === selectedClinicId) ?? -1;
+  const foundIndex = selectedClinicId
+    ? clinics?.findIndex((c) => c.id === selectedClinicId) ?? -1
+    : -1;
   const clinicIndex = foundIndex >= 0 ? foundIndex : 0;
   const clinicTheme = clinicThemes[clinicIndex % clinicThemes.length];
 
   return (
-    <ClinicContext.Provider value={{ 
-      selectedClinicId, 
-      setSelectedClinicId: handleSetSelectedClinicId,
-      clinicTheme,
-      clinicIndex
-    }}>
+    <ClinicContext.Provider
+      value={{
+        selectedClinicId,
+        setSelectedClinicId: handleSetSelectedClinicId,
+        clinicTheme,
+        clinicIndex,
+      }}
+    >
       {children}
     </ClinicContext.Provider>
   );
