@@ -318,8 +318,21 @@ export default function AppointmentDetail() {
       .replace(/'/g, "&#039;");
   };
 
+  // Fetch clinic settings for doctor info
+  const { data: clinicSettings } = useQuery({
+    queryKey: ['clinic-settings'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('clinic_settings')
+        .select('key, value');
+      if (error) throw error;
+      const settings: Record<string, any> = {};
+      data?.forEach(s => settings[s.key] = s.value);
+      return settings;
+    }
+  });
+
   const handlePrint = () => {
-    const printContent = buildVisitSummaryText();
     const printWindow = window.open('', '_blank');
     if (printWindow) {
       // Escape all user-provided data to prevent XSS
@@ -333,6 +346,16 @@ export default function AppointmentDetail() {
       const safeTreatmentPlan = escapeHtml(treatmentPlan).replace(/\n/g, '<br>');
       const safeMedications = escapeHtml(medications).replace(/\n/g, '<br>');
 
+      // Get doctor info from clinic settings
+      const doctorName = clinicSettings?.doctor_name || 'ד״ר אנה ברמלי';
+      const doctorLicense = clinicSettings?.doctor_license || '';
+      const doctorSpecialty = clinicSettings?.doctor_specialty || 'רפואה משלימה';
+      const clinicAddress = clinicSettings?.clinic_address || '';
+      const clinicPhone = clinicSettings?.clinic_phone || '';
+
+      // Get signature if exists
+      const latestSignature = signatures?.[0];
+
       printWindow.document.write(`
         <html dir="rtl">
           <head>
@@ -345,21 +368,79 @@ export default function AppointmentDetail() {
                 margin: 0 auto;
                 line-height: 1.8;
               }
-              h1 { font-size: 24px; margin-bottom: 20px; }
+              .header {
+                text-align: center;
+                margin-bottom: 30px;
+                padding-bottom: 20px;
+                border-bottom: 2px solid #0066cc;
+              }
+              .header h1 {
+                color: #0066cc;
+                margin-bottom: 5px;
+              }
+              .header p {
+                margin: 3px 0;
+                color: #666;
+                font-size: 14px;
+              }
+              h2 { font-size: 20px; margin-bottom: 15px; color: #333; }
+              .patient-info {
+                background: #f5f5f5;
+                padding: 15px;
+                border-radius: 8px;
+                margin-bottom: 20px;
+              }
               .section { margin-bottom: 24px; }
-              .section-title { font-weight: bold; margin-bottom: 8px; }
+              .section-title { font-weight: bold; margin-bottom: 8px; color: #0066cc; }
               .content { white-space: pre-wrap; }
+              .signature-section {
+                margin-top: 40px;
+                padding-top: 20px;
+                border-top: 1px solid #ddd;
+              }
+              .signature-box {
+                display: flex;
+                align-items: flex-start;
+                gap: 20px;
+              }
+              .signature-img {
+                max-width: 200px;
+                max-height: 80px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+              }
+              .signature-details {
+                font-size: 14px;
+              }
+              .footer {
+                margin-top: 40px;
+                padding-top: 20px;
+                border-top: 2px solid #0066cc;
+                text-align: center;
+                font-size: 12px;
+                color: #666;
+              }
               @media print {
                 body { padding: 20px; }
               }
             </style>
           </head>
           <body>
-            <h1>סיכום ביקור</h1>
-            <p><strong>מטופל:</strong> ${safeFirstName} ${safeLastName}</p>
-            <p><strong>תאריך:</strong> ${appointment?.scheduled_at ? format(new Date(appointment.scheduled_at), 'dd/MM/yyyy', { locale: he }) : ''}</p>
-            ${safeIdNumber ? `<p><strong>ת.ז:</strong> ${safeIdNumber}</p>` : ''}
-            <hr style="margin: 20px 0;" />
+            <div class="header">
+              <h1>${escapeHtml(doctorName)}</h1>
+              <p>${escapeHtml(doctorSpecialty)}</p>
+              ${doctorLicense ? `<p>מספר רישיון: ${escapeHtml(doctorLicense)}</p>` : ''}
+              ${clinicAddress ? `<p>${escapeHtml(clinicAddress)}</p>` : ''}
+              ${clinicPhone ? `<p>טלפון: ${escapeHtml(clinicPhone)}</p>` : ''}
+            </div>
+            
+            <h2>סיכום ביקור</h2>
+            
+            <div class="patient-info">
+              <p><strong>מטופל:</strong> ${safeFirstName} ${safeLastName}</p>
+              <p><strong>תאריך:</strong> ${appointment?.scheduled_at ? format(new Date(appointment.scheduled_at), 'dd/MM/yyyy', { locale: he }) : ''}</p>
+              ${safeIdNumber ? `<p><strong>ת.ז:</strong> ${safeIdNumber}</p>` : ''}
+            </div>
             
             ${physicalExam.trim() ? `
               <div class="section">
@@ -403,8 +484,24 @@ export default function AppointmentDetail() {
               </div>
             ` : ''}
             
-            <hr style="margin: 30px 0;" />
-            <p style="font-size: 12px; color: #666;">ד"ר אנה ברמלי - מרפאה לרפואה משלימה</p>
+            ${latestSignature ? `
+              <div class="signature-section">
+                <div class="signature-box">
+                  <img src="${latestSignature.signature_data}" alt="חתימה" class="signature-img" />
+                  <div class="signature-details">
+                    <p><strong>${escapeHtml(latestSignature.signer_name)}</strong></p>
+                    <p>${latestSignature.signer_role === 'doctor' ? 'רופא' : latestSignature.signer_role === 'admin' ? 'מנהל' : 'מזכירה'}</p>
+                    <p>נחתם: ${format(new Date(latestSignature.signed_at), 'dd/MM/yyyy HH:mm', { locale: he })}</p>
+                  </div>
+                </div>
+              </div>
+            ` : ''}
+            
+            <div class="footer">
+              <p>${escapeHtml(doctorName)} | ${escapeHtml(doctorSpecialty)}</p>
+              ${clinicAddress ? `<p>${escapeHtml(clinicAddress)}</p>` : ''}
+              ${clinicPhone ? `<p>${escapeHtml(clinicPhone)}</p>` : ''}
+            </div>
           </body>
         </html>
       `);
