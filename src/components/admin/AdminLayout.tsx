@@ -1,6 +1,7 @@
 import { ReactNode, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useUnreadMessageCount } from '@/hooks/useAdminMessages';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -43,6 +44,7 @@ const navItems = [
 
 export function AdminLayout({ children }: AdminLayoutProps) {
   const { user, loading, isStaff, signOut, roles } = useAuth();
+  const { data: unreadCount } = useUnreadMessageCount();
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -133,20 +135,29 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                 const isActive = item.exact
                   ? location.pathname === item.href
                   : location.pathname.startsWith(item.href);
+                const isMessages = item.href === '/admin/messages';
+                const badgeCount = isMessages ? unreadCount?.total || 0 : 0;
                 return (
                   <Link
                     key={item.href}
                     to={item.href}
                     onClick={() => setSidebarOpen(false)}
                     className={cn(
-                      'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
+                      'flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
                       isActive
                         ? 'bg-medical-100 text-medical-700'
                         : 'text-gray-600 hover:bg-gray-100'
                     )}
                   >
-                    <item.icon className="h-5 w-5" />
-                    {item.label}
+                    <div className="flex items-center gap-3">
+                      <item.icon className="h-5 w-5" />
+                      {item.label}
+                    </div>
+                    {badgeCount > 0 && (
+                      <span className="flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-primary text-primary-foreground text-xs rounded-full">
+                        {badgeCount}
+                      </span>
+                    )}
                   </Link>
                 );
               })}

@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { usePatients } from '@/hooks/usePatients';
+import { useUnreadMessageCount } from '@/hooks/useAdminMessages';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Phone, Mail, User, UserPlus } from 'lucide-react';
+import { Plus, Search, Phone, Mail, User, UserPlus, MessageCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { PageHelpButton } from '@/components/tutorial/PageHelpButton';
 import { pageTutorials } from '@/components/tutorial/tutorialData';
@@ -15,6 +16,7 @@ import { PatientInviteDialog } from '@/components/admin/PatientInviteDialog';
 export default function PatientsList() {
   const navigate = useNavigate();
   const { data: patients, isLoading } = usePatients();
+  const { data: unreadCount } = useUnreadMessageCount();
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredPatients = patients?.filter(patient => {
@@ -71,51 +73,67 @@ export default function PatientsList() {
           </div>
         ) : filteredPatients.length > 0 ? (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3" data-tutorial="patients-list">
-            {filteredPatients.map((patient) => (
-              <Card 
-                key={patient.id} 
-                className="cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => navigate(`/admin/patients/${patient.id}`)}
-              >
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center justify-center w-12 h-12 rounded-full bg-medical-100 text-medical-700 font-medium text-lg">
-                        {patient.first_name.charAt(0)}{patient.last_name.charAt(0)}
+            {filteredPatients.map((patient) => {
+              const patientUnreadCount = unreadCount?.byPatient[patient.id] || 0;
+              return (
+                <Card 
+                  key={patient.id} 
+                  className="cursor-pointer hover:shadow-md transition-shadow"
+                  onClick={() => navigate(`/admin/patients/${patient.id}`)}
+                >
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="relative flex items-center justify-center w-12 h-12 rounded-full bg-medical-100 text-medical-700 font-medium text-lg">
+                          {patient.first_name.charAt(0)}{patient.last_name.charAt(0)}
+                          {patientUnreadCount > 0 && (
+                            <span className="absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 bg-primary text-primary-foreground text-xs rounded-full">
+                              {patientUnreadCount}
+                            </span>
+                          )}
+                        </div>
+                        <div>
+                          <CardTitle className="text-lg">
+                            {patient.first_name} {patient.last_name}
+                          </CardTitle>
+                          {patient.id_number && (
+                            <p className="text-sm text-muted-foreground">ת.ז: {patient.id_number}</p>
+                          )}
+                        </div>
                       </div>
-                      <div>
-                        <CardTitle className="text-lg">
-                          {patient.first_name} {patient.last_name}
-                        </CardTitle>
-                        {patient.id_number && (
-                          <p className="text-sm text-muted-foreground">ת.ז: {patient.id_number}</p>
+                      <div className="flex flex-col items-end gap-1">
+                        <Badge variant={patient.status === 'active' ? 'default' : 'secondary'}>
+                          {patient.status === 'active' ? 'פעיל' : 'לא פעיל'}
+                        </Badge>
+                        {patientUnreadCount > 0 && (
+                          <Badge className="bg-primary text-primary-foreground text-xs">
+                            <MessageCircle className="h-3 w-3 ml-1" />
+                            הודעה חדשה
+                          </Badge>
                         )}
                       </div>
                     </div>
-                    <Badge variant={patient.status === 'active' ? 'default' : 'secondary'}>
-                      {patient.status === 'active' ? 'פעיל' : 'לא פעיל'}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {patient.phone && (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Phone className="h-4 w-4" />
-                      <span dir="ltr">{patient.phone}</span>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {patient.phone && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Phone className="h-4 w-4" />
+                        <span dir="ltr">{patient.phone}</span>
+                      </div>
+                    )}
+                    {patient.email && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Mail className="h-4 w-4" />
+                        <span>{patient.email}</span>
+                      </div>
+                    )}
+                    <div className="text-xs text-muted-foreground pt-2 border-t">
+                      נוסף: {format(new Date(patient.created_at), 'd/M/yyyy')}
                     </div>
-                  )}
-                  {patient.email && (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Mail className="h-4 w-4" />
-                      <span>{patient.email}</span>
-                    </div>
-                  )}
-                  <div className="text-xs text-muted-foreground pt-2 border-t">
-                    נוסף: {format(new Date(patient.created_at), 'd/M/yyyy')}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         ) : (
           <Card className="py-12">
