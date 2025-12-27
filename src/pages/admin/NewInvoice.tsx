@@ -6,8 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { usePatients } from '@/hooks/usePatients';
 import { useCreateInvoice } from '@/hooks/useInvoices';
+import { useAppointmentTypes } from '@/hooks/useAppointments';
 import { ArrowRight, Save, Search, Plus, X, Link2 } from 'lucide-react';
 
 interface InvoiceItem {
@@ -23,6 +25,7 @@ export default function NewInvoice() {
   const preselectedPatientId = searchParams.get('patient');
   
   const { data: patients } = usePatients();
+  const { data: appointmentTypes } = useAppointmentTypes();
   const createInvoice = useCreateInvoice();
   
   const [searchQuery, setSearchQuery] = useState('');
@@ -62,6 +65,20 @@ export default function NewInvoice() {
 
   const addItem = () => {
     setItems([...items, { description: '', quantity: 1, unit_price: 0, total: 0 }]);
+  };
+
+  const handleTreatmentSelect = (index: number, typeId: string) => {
+    const selectedType = appointmentTypes?.find(t => t.id === typeId);
+    if (selectedType) {
+      const newItems = [...items];
+      newItems[index] = {
+        ...newItems[index],
+        description: selectedType.name_he,
+        unit_price: selectedType.price || 0,
+        total: (selectedType.price || 0) * newItems[index].quantity,
+      };
+      setItems(newItems);
+    }
   };
 
   const removeItem = (index: number) => {
@@ -183,13 +200,28 @@ export default function NewInvoice() {
               {items.map((item, index) => (
                 <div key={index} className="grid gap-4 sm:grid-cols-12 items-end p-4 border rounded-lg">
                   <div className="sm:col-span-5 space-y-2">
-                    <Label>תיאור</Label>
-                    <Input
-                      value={item.description}
-                      onChange={(e) => updateItem(index, 'description', e.target.value)}
-                      placeholder="תיאור השירות"
-                      required
-                    />
+                    <Label>תיאור / בחר טיפול</Label>
+                    <div className="flex gap-2">
+                      <Select onValueChange={(v) => handleTreatmentSelect(index, v)}>
+                        <SelectTrigger className="w-[140px]">
+                          <SelectValue placeholder="בחר טיפול" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {appointmentTypes?.map((type) => (
+                            <SelectItem key={type.id} value={type.id}>
+                              {type.name_he} - ₪{type.price || 0}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Input
+                        value={item.description}
+                        onChange={(e) => updateItem(index, 'description', e.target.value)}
+                        placeholder="או הכנס תיאור ידני"
+                        className="flex-1"
+                        required
+                      />
+                    </div>
                   </div>
                   <div className="sm:col-span-2 space-y-2">
                     <Label>כמות</Label>

@@ -52,7 +52,9 @@ export default function PatientIntake() {
     chronic_conditions: '',
     current_medications: '',
     previous_surgeries: '',
-    family_medical_history: '',
+    family_history_father: '',
+    family_history_mother: '',
+    family_history_other: '',
     
     // Lifestyle
     smoking_status: '',
@@ -498,13 +500,35 @@ export default function PatientIntake() {
                   rows={2}
                 />
               </div>
+              <Separator className="my-4" />
+              <p className="text-sm font-medium text-muted-foreground mb-3">היסטוריה משפחתית</p>
               <div className="space-y-2">
-                <Label htmlFor="family_medical_history">היסטוריה משפחתית</Label>
+                <Label htmlFor="family_history_father">אב - מחלות/מצבים רפואיים</Label>
                 <Textarea
-                  id="family_medical_history"
-                  value={formData.family_medical_history}
-                  onChange={(e) => handleChange('family_medical_history', e.target.value)}
-                  placeholder="מחלות משמעותיות במשפחה (סוכרת, לב, סרטן...)"
+                  id="family_history_father"
+                  value={formData.family_history_father}
+                  onChange={(e) => handleChange('family_history_father', e.target.value)}
+                  placeholder="סוכרת, לחץ דם, מחלות לב..."
+                  rows={2}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="family_history_mother">אם - מחלות/מצבים רפואיים</Label>
+                <Textarea
+                  id="family_history_mother"
+                  value={formData.family_history_mother}
+                  onChange={(e) => handleChange('family_history_mother', e.target.value)}
+                  placeholder="סוכרת, לחץ דם, מחלות לב..."
+                  rows={2}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="family_history_other">בני משפחה אחרים - מחלות/מצבים רפואיים</Label>
+                <Textarea
+                  id="family_history_other"
+                  value={formData.family_history_other}
+                  onChange={(e) => handleChange('family_history_other', e.target.value)}
+                  placeholder="אחים, סבים, דודים..."
                   rows={2}
                 />
               </div>

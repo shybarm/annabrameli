@@ -692,6 +692,7 @@ export default function PatientDetail() {
             <TabsTrigger value="billing">חיוב ({invoices?.length || 0})</TabsTrigger>
             <TabsTrigger value="documents">מסמכים ({documents?.length || 0})</TabsTrigger>
             <TabsTrigger value="notes">הערות ותרופות</TabsTrigger>
+            <TabsTrigger value="internal">הערות פנימיות</TabsTrigger>
           </TabsList>
 
           <TabsContent value="info">
@@ -976,7 +977,9 @@ export default function PatientDetail() {
                         </div>
                         <div className="text-left">
                           <p className="font-bold">₪{Number(inv.total).toLocaleString()}</p>
-                          <Badge>{inv.status}</Badge>
+                          <Badge variant={inv.status === 'pending' || inv.status === 'overdue' ? 'destructive' : 'default'}>
+                            {inv.status}
+                          </Badge>
                         </div>
                       </div>
                     ))}
@@ -1259,6 +1262,47 @@ export default function PatientDetail() {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          {/* Internal Notes Tab */}
+          <TabsContent value="internal">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-primary" />
+                  הערות פנימיות
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {appointments && appointments.filter(a => a.internal_notes).length > 0 ? (
+                  <div className="space-y-4">
+                    {appointments
+                      .filter(apt => apt.internal_notes)
+                      .map((apt) => (
+                        <div 
+                          key={apt.id}
+                          className="p-4 rounded-lg border bg-muted/30 cursor-pointer hover:bg-muted/50"
+                          onClick={() => navigate(`/admin/appointments/${apt.id}`)}
+                        >
+                          <div className="flex items-center gap-2 mb-2">
+                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-sm font-medium">
+                              {format(new Date(apt.scheduled_at), 'EEEE, d בMMMM yyyy', { locale: he })}
+                            </span>
+                          </div>
+                          <p className="text-sm whitespace-pre-wrap">{apt.internal_notes}</p>
+                        </div>
+                      ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <FileText className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
+                    <p className="text-muted-foreground">אין הערות פנימיות</p>
+                    <p className="text-sm text-muted-foreground">הערות פנימיות יופיעו כאן לאחר שיתווספו בדף התור</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>

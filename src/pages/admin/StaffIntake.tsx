@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { ArrowRight, User, Heart, FileText, Save, Loader2 } from 'lucide-react';
@@ -54,7 +55,9 @@ export default function StaffIntake() {
     chronic_conditions: '',
     current_medications: '',
     previous_surgeries: '',
-    family_medical_history: '',
+    family_history_father: '',
+    family_history_mother: '',
+    family_history_other: '',
     
     // Lifestyle
     smoking_status: '',
@@ -120,7 +123,9 @@ export default function StaffIntake() {
           chronic_conditions: data.chronic_conditions?.join(', ') || '',
           current_medications: data.current_medications || '',
           previous_surgeries: data.previous_surgeries || '',
-          family_medical_history: data.family_medical_history || '',
+          family_history_father: (data as any).family_history_father || '',
+          family_history_mother: (data as any).family_history_mother || '',
+          family_history_other: (data as any).family_history_other || '',
           smoking_status: data.smoking_status || '',
           alcohol_consumption: data.alcohol_consumption || '',
           exercise_frequency: data.exercise_frequency || '',
@@ -191,7 +196,9 @@ export default function StaffIntake() {
         chronic_conditions: chronicArray,
         current_medications: formData.current_medications || null,
         previous_surgeries: formData.previous_surgeries || null,
-        family_medical_history: formData.family_medical_history || null,
+        family_history_father: formData.family_history_father || null,
+        family_history_mother: formData.family_history_mother || null,
+        family_history_other: formData.family_history_other || null,
         smoking_status: formData.smoking_status || null,
         alcohol_consumption: formData.alcohol_consumption || null,
         exercise_frequency: formData.exercise_frequency || null,
@@ -542,12 +549,34 @@ export default function StaffIntake() {
                   rows={2}
                 />
               </div>
+              <Separator className="my-4" />
+              <p className="text-sm font-medium text-muted-foreground mb-3">היסטוריה משפחתית</p>
               <div className="space-y-2">
-                <Label htmlFor="family_medical_history">היסטוריה רפואית משפחתית</Label>
+                <Label htmlFor="family_history_father">אב - מחלות/מצבים רפואיים</Label>
                 <Textarea
-                  id="family_medical_history"
-                  value={formData.family_medical_history}
-                  onChange={(e) => handleChange('family_medical_history', e.target.value)}
+                  id="family_history_father"
+                  value={formData.family_history_father}
+                  onChange={(e) => handleChange('family_history_father', e.target.value)}
+                  placeholder="סוכרת, לחץ דם, מחלות לב..."
+                  rows={2}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="family_history_mother">אם - מחלות/מצבים רפואיים</Label>
+                <Textarea
+                  id="family_history_mother"
+                  value={formData.family_history_mother}
+                  onChange={(e) => handleChange('family_history_mother', e.target.value)}
+                  placeholder="סוכרת, לחץ דם, מחלות לב..."
+                  rows={2}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="family_history_other">בני משפחה אחרים - מחלות/מצבים רפואיים</Label>
+                <Textarea
+                  id="family_history_other"
+                  value={formData.family_history_other}
+                  onChange={(e) => handleChange('family_history_other', e.target.value)}
                   rows={2}
                 />
               </div>
