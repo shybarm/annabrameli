@@ -40,8 +40,13 @@ export default function AdminDashboard() {
   // Enable realtime updates
   useAppointmentsRealtime();
 
-  // Get week appointments (Sun-Fri)
-  const weekStart = startOfWeek(new Date(), { weekStartsOn: 0 }); // Sunday
+  // Get week appointments (Sun-Fri) - show next week if Friday/Saturday
+  const today = new Date();
+  const dayOfWeek = today.getDay(); // 0=Sun, 5=Fri, 6=Sat
+  const isWeekend = dayOfWeek === 5 || dayOfWeek === 6; // Friday or Saturday
+  
+  const currentWeekStart = startOfWeek(today, { weekStartsOn: 0 }); // Sunday
+  const weekStart = isWeekend ? addDays(currentWeekStart, 7) : currentWeekStart; // Next week if weekend
   const weekEnd = addDays(weekStart, 5); // Friday
   
   const { data: weekAppointments } = useAppointments(
@@ -342,53 +347,7 @@ export default function AdminDashboard() {
           </Card>
         </div>
 
-        {/* Weekly Mini Calendar */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-primary" />
-              השבוע הזה
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-6 gap-2">
-              {daysOfWeek.map((dayName, index) => {
-                const day = addDays(weekStart, index);
-                const dayKey = format(day, 'yyyy-MM-dd');
-                const dayAppts = appointmentsByDay[dayKey] || [];
-                const isToday = isSameDay(day, new Date());
-                
-                return (
-                  <div 
-                    key={dayKey}
-                    className={`p-2 rounded-lg border text-center cursor-pointer transition-colors hover:bg-accent/50 ${
-                      isToday ? 'border-primary bg-primary/5' : 'border-muted'
-                    }`}
-                    onClick={() => navigate(`/admin/appointments?date=${dayKey}`)}
-                  >
-                    <p className={`text-xs font-medium ${isToday ? 'text-primary' : 'text-muted-foreground'}`}>
-                      {dayName}
-                    </p>
-                    <p className={`text-lg font-bold ${isToday ? 'text-primary' : ''}`}>
-                      {format(day, 'd')}
-                    </p>
-                    <div className="mt-1">
-                      {dayAppts.length > 0 ? (
-                        <Badge variant="secondary" className="text-xs">
-                          {dayAppts.length} תורים
-                        </Badge>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">-</span>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Today's Patients - Main View */}
+        {/* Today's Patients - Main View (FIRST) */}
         <Card data-tutorial="todays-patients">
           <CardHeader className="flex flex-row items-center justify-between pb-4">
             <div>
@@ -621,6 +580,52 @@ export default function AdminDashboard() {
                 </Button>
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Weekly Mini Calendar (SECOND) */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-primary" />
+              {isWeekend ? 'השבוע הבא' : 'השבוע הזה'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-6 gap-2">
+              {daysOfWeek.map((dayName, index) => {
+                const day = addDays(weekStart, index);
+                const dayKey = format(day, 'yyyy-MM-dd');
+                const dayAppts = appointmentsByDay[dayKey] || [];
+                const isToday = isSameDay(day, new Date());
+                
+                return (
+                  <div 
+                    key={dayKey}
+                    className={`p-2 rounded-lg border text-center cursor-pointer transition-colors hover:bg-accent/50 ${
+                      isToday ? 'border-primary bg-primary/5' : 'border-muted'
+                    }`}
+                    onClick={() => navigate(`/admin/appointments?date=${dayKey}`)}
+                  >
+                    <p className={`text-xs font-medium ${isToday ? 'text-primary' : 'text-muted-foreground'}`}>
+                      {dayName}
+                    </p>
+                    <p className={`text-lg font-bold ${isToday ? 'text-primary' : ''}`}>
+                      {format(day, 'd')}
+                    </p>
+                    <div className="mt-1">
+                      {dayAppts.length > 0 ? (
+                        <Badge variant="secondary" className="text-xs">
+                          {dayAppts.length} תורים
+                        </Badge>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">-</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </CardContent>
         </Card>
       </div>
