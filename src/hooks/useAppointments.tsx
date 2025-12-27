@@ -89,12 +89,26 @@ export function useAppointments(startDate?: string, endDate?: string, clinicId?:
         query = query.lte('scheduled_at', endDate);
       }
       if (clinicId) {
-        // Filter by clinic_id on the appointment itself, OR by patient's clinic if appointment doesn't have one
-        query = query.or(`clinic_id.eq.${clinicId},patients.clinic_id.eq.${clinicId}`);
+        // Filter by appointment's clinic_id OR patient's clinic_id (using inner join filter)
+        query = query.or(`clinic_id.eq.${clinicId},clinic_id.is.null`);
       }
       
       const { data, error } = await query;
       if (error) throw error;
+      
+      // If filtering by clinic, also filter results where appointment has no clinic_id but patient does
+      if (clinicId && data) {
+        return data.filter(apt => {
+          // Include if appointment is for this clinic
+          if (apt.clinic_id === clinicId) return true;
+          // Include if appointment has no clinic but patient belongs to this clinic
+          if (!apt.clinic_id && apt.patients?.clinic_id === clinicId) return true;
+          // Include if neither has a clinic_id (legacy data)
+          if (!apt.clinic_id && !apt.patients?.clinic_id) return true;
+          return false;
+        }) as Appointment[];
+      }
+      
       return data as Appointment[];
     },
   });

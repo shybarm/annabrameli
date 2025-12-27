@@ -3,7 +3,9 @@ import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useTodaysAppointments, useAppointmentsRealtime, useUpdateAppointment, useAppointments } from '@/hooks/useAppointments';
+import { useAppointmentsRealtime, useUpdateAppointment, useAppointments } from '@/hooks/useAppointments';
+import { useClinicContext } from '@/contexts/ClinicContext';
+import { format, differenceInMinutes, startOfWeek, addDays, isSameDay } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
@@ -26,7 +28,6 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { format, differenceInMinutes, startOfWeek, endOfWeek, addDays, isSameDay } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { OnboardingTutorial } from '@/components/tutorial/OnboardingTutorial';
 import { PageHelpButton } from '@/components/tutorial/PageHelpButton';
@@ -34,14 +35,21 @@ import { pageTutorials } from '@/components/tutorial/tutorialData';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const { data: todaysAppointments, isLoading: appointmentsLoading } = useTodaysAppointments();
+  const { selectedClinicId } = useClinicContext();
+  
+  // Get today's appointments for current clinic
+  const today = new Date();
+  const { data: todaysAppointments, isLoading: appointmentsLoading } = useAppointments(
+    format(today, 'yyyy-MM-dd'),
+    format(addDays(today, 1), 'yyyy-MM-dd'),
+    selectedClinicId
+  );
   const updateAppointment = useUpdateAppointment();
   
   // Enable realtime updates
   useAppointmentsRealtime();
 
   // Get week appointments (Sun-Fri) - show next week if Friday/Saturday
-  const today = new Date();
   const dayOfWeek = today.getDay(); // 0=Sun, 5=Fri, 6=Sat
   const isWeekend = dayOfWeek === 5 || dayOfWeek === 6; // Friday or Saturday
   
@@ -51,7 +59,8 @@ export default function AdminDashboard() {
   
   const { data: weekAppointments } = useAppointments(
     format(weekStart, 'yyyy-MM-dd'),
-    format(weekEnd, 'yyyy-MM-dd')
+    format(weekEnd, 'yyyy-MM-dd'),
+    selectedClinicId
   );
 
   // Fetch patient appointment counts to determine new vs returning
