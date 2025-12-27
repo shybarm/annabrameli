@@ -29,10 +29,11 @@ import {
 import { 
   ArrowRight, User, Phone, Mail, Calendar, CreditCard, 
   FileText, Edit, Save, X, MessageCircle, Upload, File, Pill, Stethoscope, Eye, Sparkles,
-  ClipboardList, Link, CheckCircle, Trash2, Tag, Loader2, Copy
+  ClipboardList, Link, CheckCircle, Trash2, Tag, Loader2, Copy, UserPlus
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
+import { useInviteExistingPatient, usePatientPortalInvitation } from '@/hooks/usePatientInvitations';
 
 export default function PatientDetail() {
   const { id } = useParams();
@@ -61,6 +62,11 @@ export default function PatientDetail() {
   const [isDragging, setIsDragging] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<{ total: number; completed: number } | null>(null);
   const [taggingDocs, setTaggingDocs] = useState<Set<string>>(new Set());
+  const [portalInviteLink, setPortalInviteLink] = useState<string | null>(null);
+  
+  const inviteExistingPatient = useInviteExistingPatient();
+  const { data: portalInvitation, refetch: refetchPortalInvitation } = usePatientPortalInvitation(id);
+  
   // Delete document mutation
   const deleteDocument = useMutation({
     mutationFn: async (doc: { id: string; file_path: string }) => {
@@ -443,6 +449,48 @@ export default function PatientDetail() {
     toast({ title: 'הקישור הועתק!' });
   };
 
+  const buildPortalInviteLink = (code?: string | null) => {
+    if (!code) return null;
+    return `${getPublicAppOrigin()}/patient-invite/${code}`;
+  };
+
+  const handleGeneratePortalInvite = async () => {
+    if (!id) return;
+    try {
+      const invitation = await inviteExistingPatient.mutateAsync(id);
+      const link = buildPortalInviteLink(invitation.invite_code);
+      setPortalInviteLink(link);
+      refetchPortalInvitation();
+    } catch (error) {
+      // Error handled in mutation
+    }
+  };
+
+  const handleCopyPortalLink = () => {
+    const link = portalInviteLink || buildPortalInviteLink(portalInvitation?.invite_code);
+    if (!link) return;
+    navigator.clipboard.writeText(link);
+    toast({ title: 'הקישור הועתק!' });
+  };
+
+  const handleSendPortalWhatsApp = () => {
+    if (!patient?.phone) return;
+    const link = portalInviteLink || buildPortalInviteLink(portalInvitation?.invite_code);
+    if (!link) return;
+
+    const phone = patient.phone.replace(/\D/g, '');
+    const message = encodeURIComponent(
+      `שלום ${patient.first_name}! 👋\n\n` +
+        `הוזמנת להצטרף לפורטל המטופלים שלנו. עם הפורטל תוכל/י:\n` +
+        `✅ לראות ולנהל תורים\n` +
+        `✅ לצפות בסיכומי ביקור\n` +
+        `✅ לשלוח הודעות לצוות\n\n` +
+        `להרשמה:\n${link}\n\n` +
+        `תודה,\nמרפאת ד"ר אנה ברמלי`
+    );
+    window.open(`https://wa.me/972${phone.slice(-9)}?text=${message}`, '_blank');
+  };
+
   if (isLoading) {
     return (
       <AdminLayout>
@@ -584,6 +632,69 @@ export default function PatientDetail() {
                 <p className="text-sm text-muted-foreground">
                   בתאריך {format(new Date((patient as any).intake_completed_at), 'dd/MM/yyyy', { locale: he })}
                 </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Portal Access Card - Show only if patient doesn't have a linked user account */}
+        {!patient.user_id && (
+          <Card className="border-blue-500/50 bg-blue-50/50 dark:bg-blue-950/20">
+            <CardContent className="flex items-center justify-between py-4">
+              <div className="flex items-center gap-3">
+                <UserPlus className="h-5 w-5 text-blue-600" />
+                <div>
+                  <p className="font-medium">גישה לפורטל מטופלים</p>
+                  <p className="text-sm text-muted-foreground">
+                    {portalInvitation && !portalInvitation.accepted_at && new Date(portalInvitation.expires_at) > new Date()
+                      ? 'קישור הזמנה נוצר - ממתין להרשמה'
+                      : 'שלח הזמנה למטופל להירשם לפורטל'}
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                {portalInvitation && !portalInvitation.accepted_at && new Date(portalInvitation.expires_at) > new Date() ? (
+                  <>
+                    <Button variant="outline" size="sm" onClick={handleCopyPortalLink}>
+                      <Link className="h-4 w-4 ml-1" />
+                      העתק קישור
+                    </Button>
+                    {patient.phone && (
+                      <Button variant="outline" size="sm" onClick={handleSendPortalWhatsApp}>
+                        <MessageCircle className="h-4 w-4 ml-1" />
+                        שלח בוואטסאפ
+                      </Button>
+                    )}
+                  </>
+                ) : (
+                  <Button 
+                    size="sm" 
+                    onClick={handleGeneratePortalInvite}
+                    disabled={inviteExistingPatient.isPending || !patient.email}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    <UserPlus className="h-4 w-4 ml-1" />
+                    {inviteExistingPatient.isPending ? 'יוצר...' : 'הזמן לפורטל'}
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+            {!patient.email && (
+              <div className="px-6 pb-4">
+                <p className="text-xs text-amber-600">⚠️ נדרש אימייל כדי לשלוח הזמנה לפורטל</p>
+              </div>
+            )}
+          </Card>
+        )}
+
+        {/* Show badge if patient has portal access */}
+        {patient.user_id && (
+          <Card className="border-green-500/50 bg-green-50/50 dark:bg-green-950/20">
+            <CardContent className="flex items-center gap-3 py-4">
+              <CheckCircle className="h-5 w-5 text-green-600" />
+              <div>
+                <p className="font-medium text-green-700">למטופל יש גישה לפורטל</p>
+                <p className="text-sm text-muted-foreground">המטופל יכול להתחבר ולצפות בתורים, מסמכים והודעות</p>
               </div>
             </CardContent>
           </Card>
