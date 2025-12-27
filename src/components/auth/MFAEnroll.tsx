@@ -30,18 +30,34 @@ export function MFAEnroll({ onEnrolled, onCancelled }: MFAEnrollProps) {
     try {
       // First, check for and remove any existing unverified factors
       const { data: existingFactors } = await supabase.auth.mfa.listFactors();
-      if (existingFactors?.totp) {
-        for (const factor of existingFactors.totp) {
-          if (factor.status !== 'verified') {
-            await supabase.auth.mfa.unenroll({ factorId: factor.id });
-          }
+
+      const existingTotp = existingFactors?.totp ?? [];
+      for (const factor of existingTotp) {
+        if (factor.status !== 'verified') {
+          await supabase.auth.mfa.unenroll({ factorId: factor.id });
         }
+      }
+
+      // Supabase requires the factor friendly name to be unique per user.
+      // Generate a stable, user-friendly unique name.
+      const baseFriendlyName = 'Google Authenticator';
+      const takenNames = new Set(
+        existingTotp
+          .map((f) => f.friendly_name)
+          .filter((n): n is string => Boolean(n))
+      );
+
+      let friendlyName = baseFriendlyName;
+      if (takenNames.has(baseFriendlyName)) {
+        let i = 2;
+        while (takenNames.has(`${baseFriendlyName} (${i})`)) i++;
+        friendlyName = `${baseFriendlyName} (${i})`;
       }
 
       // Now enroll a new factor
       const { data, error } = await supabase.auth.mfa.enroll({
         factorType: 'totp',
-        friendlyName: 'Google Authenticator',
+        friendlyName,
       });
 
       if (error) {
