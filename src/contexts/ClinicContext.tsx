@@ -39,7 +39,8 @@ export function ClinicProvider({ children }: { children: ReactNode }) {
   };
 
   // Get clinic index based on order in the list
-  const clinicIndex = clinics?.findIndex(c => c.id === selectedClinicId) ?? 0;
+  const foundIndex = clinics?.findIndex(c => c.id === selectedClinicId) ?? -1;
+  const clinicIndex = foundIndex >= 0 ? foundIndex : 0;
   const clinicTheme = clinicThemes[clinicIndex % clinicThemes.length];
 
   return (
