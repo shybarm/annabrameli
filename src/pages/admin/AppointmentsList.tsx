@@ -12,8 +12,8 @@ import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { Plus, Calendar, Clock, ChevronRight, ChevronLeft } from 'lucide-react';
-import { format, addDays, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay } from 'date-fns';
+import { Plus, Calendar, Clock, ChevronRight, ChevronLeft, CalendarDays } from 'lucide-react';
+import { format, addDays, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, isWeekend, addWeeks } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { PageHelpButton } from '@/components/tutorial/PageHelpButton';
 import { pageTutorials } from '@/components/tutorial/tutorialData';
@@ -21,19 +21,33 @@ import { pageTutorials } from '@/components/tutorial/tutorialData';
 export default function AppointmentsList() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const today = new Date();
+  
+  // Determine if today is weekend (Friday evening or Saturday in Israel context)
+  const isCurrentlyWeekend = isWeekend(today);
+  
+  // For the week view: show current week, or next week if it's weekend
+  const [weekOffset, setWeekOffset] = useState(isCurrentlyWeekend ? 1 : 0);
+  const viewDate = addWeeks(today, weekOffset);
+  const weekStart = startOfWeek(viewDate, { weekStartsOn: 0 });
+  const weekEnd = endOfWeek(viewDate, { weekStartsOn: 0 });
+  const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
+  
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [cancellingAppointmentId, setCancellingAppointmentId] = useState<string | null>(null);
   const [cancellationReason, setCancellationReason] = useState('');
-  const weekStart = startOfWeek(selectedDate, { weekStartsOn: 0 });
-  const weekEnd = endOfWeek(selectedDate, { weekStartsOn: 0 });
-  const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
 
-  const { data: appointments, isLoading } = useAppointments(
+  // Fetch today's appointments
+  const { data: todayAppointments, isLoading: todayLoading } = useAppointments(
+    format(today, 'yyyy-MM-dd'),
+    format(addDays(today, 1), 'yyyy-MM-dd')
+  );
+
+  // Fetch week appointments
+  const { data: weekAppointments, isLoading: weekLoading } = useAppointments(
     format(weekStart, 'yyyy-MM-dd'),
     format(addDays(weekEnd, 1), 'yyyy-MM-dd')
   );
-  const { data: appointmentTypes } = useAppointmentTypes();
 
   useAppointmentsRealtime();
 
@@ -76,14 +90,18 @@ export default function AppointmentsList() {
     cancelled: 'בוטל',
   };
 
+  const getTodayAppointments = () => {
+    return todayAppointments?.filter(apt => apt.status !== 'cancelled') || [];
+  };
+
   const getAppointmentsForDay = (date: Date) => {
-    return appointments?.filter(apt => 
+    return weekAppointments?.filter(apt => 
       isSameDay(new Date(apt.scheduled_at), date) && apt.status !== 'cancelled'
     ) || [];
   };
 
   const navigateWeek = (direction: 'prev' | 'next') => {
-    setSelectedDate(prev => addDays(prev, direction === 'next' ? 7 : -7));
+    setWeekOffset(prev => prev + (direction === 'next' ? 1 : -1));
   };
 
   const handleStatusChange = (id: string, newStatus: string, e: React.MouseEvent) => {
@@ -110,6 +128,9 @@ export default function AppointmentsList() {
     }
   };
 
+  const isThisWeek = weekOffset === 0;
+  const isNextWeek = weekOffset === 1;
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -132,90 +153,27 @@ export default function AppointmentsList() {
           </div>
         </div>
 
-        {/* Week Navigation */}
-        <Card data-tutorial="calendar-view">
+        {/* Today's Appointments - FIRST */}
+        <Card data-tutorial="appointments-list" className="border-2 border-medical-200 bg-medical-50/30">
           <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <Button variant="ghost" size="icon" onClick={() => navigateWeek('prev')}>
-                <ChevronRight className="h-5 w-5" />
-              </Button>
-              <CardTitle className="text-center">
-                {format(weekStart, 'd בMMMM', { locale: he })} - {format(weekEnd, 'd בMMMM yyyy', { locale: he })}
-              </CardTitle>
-              <Button variant="ghost" size="icon" onClick={() => navigateWeek('next')}>
-                <ChevronLeft className="h-5 w-5" />
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {/* Week View - Scrollable on mobile */}
-            <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-              <div className="grid grid-cols-7 gap-2 min-w-[600px] sm:min-w-0">
-                {weekDays.map((day) => {
-                  const dayAppointments = getAppointmentsForDay(day);
-                  const isToday = isSameDay(day, new Date());
-                  
-                  return (
-                    <div
-                      key={day.toISOString()}
-                      className={`min-h-[120px] p-2 rounded-lg border ${
-                        isToday ? 'border-medical-500 bg-medical-50' : 'border-gray-200'
-                      }`}
-                    >
-                      <div className="text-center mb-2">
-                        <p className="text-xs text-muted-foreground">
-                          {format(day, 'EEEE', { locale: he })}
-                        </p>
-                        <p className={`text-lg font-semibold ${isToday ? 'text-medical-700' : ''}`}>
-                          {format(day, 'd')}
-                        </p>
-                      </div>
-                      <div className="space-y-1">
-                        {dayAppointments.slice(0, 3).map((apt) => (
-                          <div
-                            key={apt.id}
-                            className={`text-xs p-1.5 rounded cursor-pointer hover:opacity-80 ${statusColors[apt.status]}`}
-                            onClick={() => navigate(`/admin/appointments/${apt.id}`)}
-                          >
-                            <p className="font-medium truncate">
-                              {apt.patients?.first_name} {apt.patients?.last_name}
-                            </p>
-                            <p>{format(new Date(apt.scheduled_at), 'HH:mm')}</p>
-                          </div>
-                        ))}
-                        {dayAppointments.length > 3 && (
-                          <p className="text-xs text-center text-muted-foreground">
-                            +{dayAppointments.length - 3} נוספים
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Today's Appointments List */}
-        <Card data-tutorial="appointments-list">
-          <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Calendar className="h-5 w-5 text-medical-600" />
-              תורים ל{format(selectedDate, 'EEEE, d בMMMM', { locale: he })}
+              תורים להיום - {format(today, 'EEEE, d בMMMM', { locale: he })}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {isLoading ? (
+            {todayLoading ? (
               <div className="flex items-center justify-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-medical-600" />
               </div>
-            ) : getAppointmentsForDay(selectedDate).length > 0 ? (
+            ) : getTodayAppointments().length > 0 ? (
               <div className="space-y-3">
-                {getAppointmentsForDay(selectedDate).map((apt) => (
+                {getTodayAppointments()
+                  .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime())
+                  .map((apt) => (
                   <div
                     key={apt.id}
-                    className="flex items-center justify-between p-4 rounded-lg border hover:shadow-md transition-shadow cursor-pointer"
+                    className="flex items-center justify-between p-4 rounded-lg border bg-white hover:shadow-md transition-shadow cursor-pointer"
                     onClick={() => navigate(`/admin/appointments/${apt.id}`)}
                   >
                     <div className="flex items-center gap-4">
@@ -269,7 +227,7 @@ export default function AppointmentsList() {
             ) : (
               <div className="text-center py-8">
                 <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                <p className="text-muted-foreground">אין תורים מתוכננים ליום זה</p>
+                <p className="text-muted-foreground">אין תורים מתוכננים להיום</p>
                 <Button 
                   variant="link" 
                   className="mt-2"
@@ -277,6 +235,84 @@ export default function AppointmentsList() {
                 >
                   קבע תור חדש
                 </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Week View - SECOND */}
+        <Card data-tutorial="calendar-view">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <Button variant="ghost" size="icon" onClick={() => navigateWeek('prev')}>
+                <ChevronRight className="h-5 w-5" />
+              </Button>
+              <div className="text-center">
+                <CardTitle className="flex items-center justify-center gap-2">
+                  <CalendarDays className="h-5 w-5 text-muted-foreground" />
+                  {isThisWeek ? 'השבוע' : isNextWeek ? 'שבוע הבא' : format(weekStart, 'd בMMMM', { locale: he })} 
+                  {' - '}
+                  {format(weekStart, 'd', { locale: he })} עד {format(weekEnd, 'd בMMMM yyyy', { locale: he })}
+                </CardTitle>
+                {isCurrentlyWeekend && isNextWeek && (
+                  <p className="text-xs text-muted-foreground mt-1">מוצג שבוע הבא (היום סוף שבוע)</p>
+                )}
+              </div>
+              <Button variant="ghost" size="icon" onClick={() => navigateWeek('next')}>
+                <ChevronLeft className="h-5 w-5" />
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {weekLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-medical-600" />
+              </div>
+            ) : (
+              <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+                <div className="grid grid-cols-7 gap-2 min-w-[600px] sm:min-w-0">
+                  {weekDays.map((day) => {
+                    const dayAppointments = getAppointmentsForDay(day);
+                    const isToday = isSameDay(day, today);
+                    
+                    return (
+                      <div
+                        key={day.toISOString()}
+                        className={`min-h-[120px] p-2 rounded-lg border ${
+                          isToday ? 'border-medical-500 bg-medical-50' : 'border-gray-200'
+                        }`}
+                      >
+                        <div className="text-center mb-2">
+                          <p className="text-xs text-muted-foreground">
+                            {format(day, 'EEEE', { locale: he })}
+                          </p>
+                          <p className={`text-lg font-semibold ${isToday ? 'text-medical-700' : ''}`}>
+                            {format(day, 'd')}
+                          </p>
+                        </div>
+                        <div className="space-y-1">
+                          {dayAppointments.slice(0, 3).map((apt) => (
+                            <div
+                              key={apt.id}
+                              className={`text-xs p-1.5 rounded cursor-pointer hover:opacity-80 ${statusColors[apt.status]}`}
+                              onClick={() => navigate(`/admin/appointments/${apt.id}`)}
+                            >
+                              <p className="font-medium truncate">
+                                {apt.patients?.first_name} {apt.patients?.last_name}
+                              </p>
+                              <p>{format(new Date(apt.scheduled_at), 'HH:mm')}</p>
+                            </div>
+                          ))}
+                          {dayAppointments.length > 3 && (
+                            <p className="text-xs text-center text-muted-foreground">
+                              +{dayAppointments.length - 3} נוספים
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </CardContent>
