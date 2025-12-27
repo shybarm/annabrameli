@@ -32,21 +32,18 @@ export default function JoinTeam() {
     }
 
     try {
-      const { data, error: fetchError } = await supabase
-        .from('team_invitations')
-        .select('*')
-        .eq('invite_code', code)
-        .is('accepted_at', null)
-        .gt('expires_at', new Date().toISOString())
-        .maybeSingle();
+      // Use edge function to verify invite code securely
+      const { data, error: fetchError } = await supabase.functions.invoke('verify-team-invite', {
+        body: { invite_code: code }
+      });
 
       if (fetchError) throw fetchError;
 
-      if (!data) {
-        setError('הזמנה לא נמצאה או שפג תוקפה');
+      if (!data.valid) {
+        setError(data.error || 'הזמנה לא נמצאה או שפג תוקפה');
       } else {
-        setInvitation(data);
-        setEmail(data.email);
+        setInvitation(data.invitation);
+        setEmail(data.invitation.email);
       }
     } catch (err: any) {
       setError(err.message);
