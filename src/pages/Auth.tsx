@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useMFA } from '@/hooks/useMFA';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,22 +9,32 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Stethoscope, Mail, Lock, User, ArrowRight } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { MFAVerify } from '@/components/auth/MFAVerify';
 
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
+  const [showMFAVerify, setShowMFAVerify] = useState(false);
   const navigate = useNavigate();
   const { signIn, signUp, user, loading, rolesLoading, isStaff, isPatient } = useAuth();
+  const { needsMFAVerification, isLoading: mfaLoading, refreshMFAStatus } = useMFA();
 
-  // Redirect authenticated users after roles are loaded
+  // Check if MFA verification is needed after login
   useEffect(() => {
-    if (!loading && !rolesLoading && user) {
+    if (!loading && !mfaLoading && user && needsMFAVerification) {
+      setShowMFAVerify(true);
+    }
+  }, [loading, mfaLoading, user, needsMFAVerification]);
+
+  // Redirect authenticated users after roles are loaded and MFA is verified
+  useEffect(() => {
+    if (!loading && !rolesLoading && !mfaLoading && user && !needsMFAVerification && !showMFAVerify) {
       if (isStaff) {
         navigate('/admin');
       } else {
         navigate('/portal');
       }
     }
-  }, [loading, rolesLoading, user, isStaff, isPatient, navigate]);
+  }, [loading, rolesLoading, mfaLoading, user, isStaff, isPatient, needsMFAVerification, showMFAVerify, navigate]);
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -46,7 +57,9 @@ export default function Auth() {
       setIsLoading(false);
     } else {
       toast({ title: 'התחברת בהצלחה' });
-      // Navigation handled by useEffect after roles are fetched
+      // Refresh MFA status to check if verification is needed
+      await refreshMFAStatus();
+      setIsLoading(false);
     }
   };
 
@@ -90,6 +103,30 @@ export default function Auth() {
       // Navigation handled by useEffect after roles are fetched
     }
   };
+
+  const handleMFAVerified = async () => {
+    setShowMFAVerify(false);
+    await refreshMFAStatus();
+    // Navigation will be handled by useEffect
+  };
+
+  // Show MFA verification screen
+  if (showMFAVerify && user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-medical-50 to-white flex items-center justify-center p-4" dir="rtl">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <Stethoscope className="h-10 w-10 text-medical-600" />
+              <h1 className="text-2xl font-bold text-medical-800">מערכת ניהול מרפאה</h1>
+            </div>
+            <p className="text-muted-foreground">ד״ר אנה ברמלי</p>
+          </div>
+          <MFAVerify onVerified={handleMFAVerified} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-medical-50 to-white flex items-center justify-center p-4" dir="rtl">
