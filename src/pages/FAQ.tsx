@@ -179,6 +179,27 @@ const faqCategories = [
       },
     ]
   },
+  {
+    title: "מימוש זכויות מול חברות הביטוח",
+    items: [
+      {
+        question: "האם אני זכאי להחזר על הביקור?",
+        answer: "מטופלים המבוטחים בביטוחים פרטיים עשויים להיות זכאים להחזר חלקי או מלא על הביקור אצל ד״ר אנה ברמלי, בהתאם לתנאי הפוליסה שלהם."
+      },
+      {
+        question: "מתי כדאי לבדוק את הזכאות?",
+        answer: "ניתן לבדוק את הזכאות מול חברת הביטוח לפני או לאחר קבלת השירות. מומלץ לבדוק מראש כדי לדעת למה לצפות."
+      },
+      {
+        question: "מי אחראי על גובה ההחזר?",
+        answer: "חשוב לדעת: ההחזרים נקבעים על ידי חברות הביטוח בלבד, וד״ר אנה ברמלי או המרפאה אינם אחראים לגובה ההחזר או לאישורו."
+      },
+      {
+        question: "אילו מסמכים אני צריך לקבלת החזר?",
+        answer: "בדרך כלל תזדקקו לקבלה מקורית ולסיכום הביקור. ניתן לבקש מסמכים אלו במרפאה לאחר הביקור."
+      },
+    ]
+  },
 ];
 
 const FAQ = () => {
@@ -292,6 +313,31 @@ const FAQ = () => {
             <p className="text-muted-foreground leading-relaxed">
               החשש שלכם מובן וטבעי — ודווקא בגלל זה חשוב לבדוק את הדברים בצורה מסודרת. פגישה קצרה עם מומחית אלרגיה יכולה לשנות מהיסוד את הביטחון וההתנהלות היומיומית בבית.
             </p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Contact CTA Section */}
+      <section className="py-12 md:py-16">
+        <div className="container-medical">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="max-w-2xl mx-auto text-center bg-primary/5 border border-primary/20 rounded-2xl p-8"
+          >
+            <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4">
+              יש לכם שאלות נוספות?
+            </h2>
+            <p className="text-muted-foreground leading-relaxed mb-6">
+              לא מצאתם תשובה לשאלה שלכם? אנחנו כאן לעזור. אתם מוזמנים לפנות אלינו ונשמח לענות על כל שאלה.
+            </p>
+            <a
+              href="/contact"
+              className="inline-flex items-center justify-center px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors"
+            >
+              צרו קשר
+            </a>
           </motion.div>
         </div>
       </section>
