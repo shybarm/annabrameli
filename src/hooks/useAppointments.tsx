@@ -18,6 +18,7 @@ export interface Appointment {
   id: string;
   patient_id: string;
   appointment_type_id: string | null;
+  clinic_id: string | null;
   scheduled_at: string;
   duration_minutes: number;
   status: string;
@@ -40,6 +41,7 @@ export interface Appointment {
     last_name: string;
     phone: string | null;
     id_number?: string | null;
+    clinic_id?: string | null;
   };
   appointment_types?: AppointmentType;
 }
@@ -47,6 +49,7 @@ export interface Appointment {
 export interface AppointmentInput {
   patient_id: string;
   appointment_type_id?: string;
+  clinic_id?: string;
   scheduled_at: string;
   duration_minutes?: number;
   notes?: string;
@@ -96,15 +99,13 @@ export function useAppointments(startDate?: string, endDate?: string, clinicId?:
       const { data, error } = await query;
       if (error) throw error;
       
-      // If filtering by clinic, also filter results where appointment has no clinic_id but patient does
+      // If filtering by clinic, keep ONLY appointments that belong to this clinic
+      // - appointment.clinic_id === clinicId (preferred)
+      // - OR (legacy) appointment has no clinic_id but patient.clinic_id matches
       if (clinicId && data) {
-        return data.filter(apt => {
-          // Include if appointment is for this clinic
+        return data.filter((apt) => {
           if (apt.clinic_id === clinicId) return true;
-          // Include if appointment has no clinic but patient belongs to this clinic
           if (!apt.clinic_id && apt.patients?.clinic_id === clinicId) return true;
-          // Include if neither has a clinic_id (legacy data)
-          if (!apt.clinic_id && !apt.patients?.clinic_id) return true;
           return false;
         }) as Appointment[];
       }

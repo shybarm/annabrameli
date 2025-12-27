@@ -178,6 +178,7 @@ export default function GuestBooking() {
           phone: phone.trim(),
           email: email.trim() || null,
           status: 'active',
+          clinic_id: selectedClinicId,
         })
         .select()
         .single();
