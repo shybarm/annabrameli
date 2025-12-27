@@ -5,7 +5,7 @@ project_id = "ftatmcyrmeyhghgckvbj"
 verify_jwt = true
 
 [functions.summarize-documents]
-verify_jwt = true
+verify_jwt = false
 
 [functions.tag-document]
 verify_jwt = true
