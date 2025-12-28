@@ -1244,6 +1244,24 @@ export type Database = {
       can_view_patients: { Args: { _user_id: string }; Returns: boolean }
       check_patient_invite_code: { Args: { _code: string }; Returns: boolean }
       check_team_invite_code: { Args: { _code: string }; Returns: boolean }
+      get_public_clinic: {
+        Args: { clinic_id: string }
+        Returns: {
+          city: string
+          id: string
+          is_active: boolean
+          name: string
+        }[]
+      }
+      get_public_clinics: {
+        Args: never
+        Returns: {
+          city: string
+          id: string
+          is_active: boolean
+          name: string
+        }[]
+      }
       has_permission: {
         Args: { _permission: string; _user_id: string }
         Returns: boolean
