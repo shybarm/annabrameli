@@ -778,6 +778,8 @@ export type Database = {
           previous_surgeries: string | null
           previous_treatments: string | null
           referral_source: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
           sleep_hours: number | null
           smoking_status: string | null
           status: string | null
@@ -831,6 +833,8 @@ export type Database = {
           previous_surgeries?: string | null
           previous_treatments?: string | null
           referral_source?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           sleep_hours?: number | null
           smoking_status?: string | null
           status?: string | null
@@ -884,6 +888,8 @@ export type Database = {
           previous_surgeries?: string | null
           previous_treatments?: string | null
           referral_source?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           sleep_hours?: number | null
           smoking_status?: string | null
           status?: string | null

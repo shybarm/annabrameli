@@ -7,13 +7,15 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { usePatients } from '@/hooks/usePatients';
 import { useUnreadMessageCount } from '@/hooks/useAdminMessages';
+import { useMarkPatientReviewed } from '@/hooks/useUnreviewedPatients';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Phone, Mail, User, UserPlus, MessageCircle, MapPin } from 'lucide-react';
+import { Plus, Search, Phone, Mail, User, UserPlus, MessageCircle, MapPin, Sparkles } from 'lucide-react';
 import { format } from 'date-fns';
 import { PageHelpButton } from '@/components/tutorial/PageHelpButton';
 import { pageTutorials } from '@/components/tutorial/tutorialData';
 import { PatientInviteDialog } from '@/components/admin/PatientInviteDialog';
 import { useClinicContext } from '@/contexts/ClinicContext';
+import { cn } from '@/lib/utils';
 
 export default function PatientsList() {
   return (
@@ -34,6 +36,7 @@ function PatientsListContent() {
   const isSearching = searchQuery.length >= 2;
   const { data: patients, isLoading } = usePatients(isSearching ? null : selectedClinicId);
   const { data: unreadCount } = useUnreadMessageCount();
+  const markReviewed = useMarkPatientReviewed();
 
   const filteredPatients = patients?.filter(patient => {
     if (!isSearching) return true;
@@ -91,11 +94,25 @@ function PatientsListContent() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3" data-tutorial="patients-list">
           {filteredPatients.map((patient) => {
             const patientUnreadCount = unreadCount?.byPatient[patient.id] || 0;
+            // Check if patient is new (completed intake but not reviewed)
+            const isNewPatient = patient.intake_completed_at && !patient.reviewed_at;
+            
+            const handlePatientClick = () => {
+              // Mark as reviewed if it's a new patient
+              if (isNewPatient) {
+                markReviewed.mutate(patient.id);
+              }
+              navigate(`/admin/patients/${patient.id}`);
+            };
+            
             return (
               <Card 
                 key={patient.id} 
-                className="cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => navigate(`/admin/patients/${patient.id}`)}
+                className={cn(
+                  "cursor-pointer hover:shadow-md transition-all",
+                  isNewPatient && "ring-2 ring-amber-400 bg-amber-50/50 shadow-amber-100"
+                )}
+                onClick={handlePatientClick}
               >
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
@@ -118,6 +135,12 @@ function PatientsListContent() {
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-1">
+                      {isNewPatient && (
+                        <Badge className="bg-amber-500 text-white text-xs animate-pulse">
+                          <Sparkles className="h-3 w-3 ml-1" />
+                          מטופל חדש
+                        </Badge>
+                      )}
                       <Badge variant={patient.status === 'active' ? 'default' : 'secondary'}>
                         {patient.status === 'active' ? 'פעיל' : 'לא פעיל'}
                       </Badge>

@@ -2,6 +2,7 @@ import { ReactNode, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth, UserPermissions } from '@/hooks/useAuth';
 import { useUnreadMessageCount } from '@/hooks/useAdminMessages';
+import { useUnreviewedPatientsCount } from '@/hooks/useUnreviewedPatients';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -56,6 +57,7 @@ const navItems: NavItem[] = [
 export function AdminLayout({ children }: AdminLayoutProps) {
   const { user, loading, isStaff, isAdmin, signOut, roles, hasPermission } = useAuth();
   const { data: unreadCount } = useUnreadMessageCount();
+  const { data: unreviewedPatientsCount } = useUnreviewedPatientsCount();
   const { clinicTheme } = useClinicContext();
   const { data: clinics } = useClinics();
   const hasMultipleClinics = clinics && clinics.length > 1;
@@ -163,7 +165,12 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                   ? location.pathname === item.href
                   : location.pathname.startsWith(item.href);
                 const isMessages = item.href === '/admin/messages';
-                const badgeCount = isMessages ? unreadCount?.total || 0 : 0;
+                const isPatients = item.href === '/admin/patients';
+                const badgeCount = isMessages 
+                  ? unreadCount?.total || 0 
+                  : isPatients 
+                    ? unreviewedPatientsCount || 0 
+                    : 0;
                 return (
                   <Link
                     key={item.href}

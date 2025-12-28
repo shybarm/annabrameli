@@ -29,6 +29,9 @@ export interface Patient {
   updated_at: string;
   clinic_id: string | null;
   clinic?: { id: string; name: string } | null;
+  intake_completed_at: string | null;
+  reviewed_at: string | null;
+  reviewed_by: string | null;
 }
 
 export interface PatientInput {
