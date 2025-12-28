@@ -22,6 +22,7 @@ import {
   Wallet,
   UsersRound,
   History,
+  BookOpen,
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -46,6 +47,7 @@ const navItems: NavItem[] = [
   { href: '/admin', icon: LayoutDashboard, label: 'לוח בקרה', exact: true },
   { href: '/admin/patients', icon: Users, label: 'מטופלים', requiredPermission: 'canViewPatients' },
   { href: '/admin/appointments', icon: Calendar, label: 'תורים', requiredPermission: 'canViewAppointments' },
+  { href: '/admin/doctor-diary', icon: BookOpen, label: 'יומן רופא', requiredPermission: 'canViewAppointments' },
   { href: '/admin/billing', icon: Receipt, label: 'חיוב וחשבוניות', requiredPermission: 'canViewBilling' },
   { href: '/admin/expenses', icon: Wallet, label: 'הוצאות', requiredPermission: 'canViewBilling' },
   { href: '/admin/messages', icon: MessageSquare, label: 'הודעות' },

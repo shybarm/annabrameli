@@ -58,9 +58,12 @@ export type Database = {
           clinic_id: string | null
           created_at: string
           created_by: string | null
+          deleted_at: string | null
+          deleted_by: string | null
           duration_minutes: number
           id: string
           internal_notes: string | null
+          is_deleted: boolean | null
           medications: string | null
           notes: string | null
           patient_id: string
@@ -91,9 +94,12 @@ export type Database = {
           clinic_id?: string | null
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           duration_minutes?: number
           id?: string
           internal_notes?: string | null
+          is_deleted?: boolean | null
           medications?: string | null
           notes?: string | null
           patient_id: string
@@ -124,9 +130,12 @@ export type Database = {
           clinic_id?: string | null
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           duration_minutes?: number
           id?: string
           internal_notes?: string | null
+          is_deleted?: boolean | null
           medications?: string | null
           notes?: string | null
           patient_id?: string

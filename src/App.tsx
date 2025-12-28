@@ -33,6 +33,7 @@ import TeamPage from "./pages/admin/TeamPage";
 import ReferralDashboard from "./pages/admin/ReferralDashboard";
 import StaffIntake from "./pages/admin/StaffIntake";
 import AuditLogPage from "./pages/admin/AuditLogPage";
+import DoctorDiaryPage from "./pages/admin/DoctorDiaryPage";
 import PatientPortal from "./pages/patient/PatientPortal";
 import GuestBooking from "./pages/GuestBooking";
 import JoinTeam from "./pages/JoinTeam";
@@ -114,6 +115,7 @@ const App = () => (
               <Route path="/admin/intake" element={<StaffIntake />} />
               <Route path="/admin/settings" element={<SettingsPage />} />
               <Route path="/admin/audit-log" element={<AuditLogPage />} />
+              <Route path="/admin/doctor-diary" element={<DoctorDiaryPage />} />
               
               <Route path="*" element={<NotFound />} />
             </Routes>
