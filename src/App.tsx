@@ -8,6 +8,7 @@ import { ClinicProvider } from "@/contexts/ClinicContext";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ChatWidget } from "@/components/chat/ChatWidget";
+import { AccessibilityMenu } from "@/components/AccessibilityMenu";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Services from "./pages/Services";
@@ -69,6 +70,7 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
+          <AccessibilityMenu />
           <BrowserRouter>
             <Routes>
               {/* Public routes */}
