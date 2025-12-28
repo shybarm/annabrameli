@@ -102,8 +102,28 @@ export const Footer = () => {
           </div>
         </div>
 
-        {/* Bottom Bar */}
+        {/* Legal Links */}
         <div className="mt-12 pt-8 border-t border-primary-foreground/20">
+          <div className="flex flex-wrap justify-center gap-6 mb-6">
+            <Link
+              to="/privacy"
+              className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors"
+            >
+              מדיניות פרטיות
+            </Link>
+            <Link
+              to="/accessibility"
+              className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors"
+            >
+              הצהרת נגישות
+            </Link>
+            <Link
+              to="/security"
+              className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors"
+            >
+              אבטחת מידע
+            </Link>
+          </div>
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-primary-foreground/60">
               © {currentYear} ד״ר אנה ברמלי. כל הזכויות שמורות.

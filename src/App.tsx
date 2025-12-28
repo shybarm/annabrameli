@@ -40,6 +40,9 @@ import GuestBooking from "./pages/GuestBooking";
 import JoinTeam from "./pages/JoinTeam";
 import PatientInviteAccept from "./pages/PatientInviteAccept";
 import NotFound from "./pages/NotFound";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import AccessibilityStatement from "./pages/AccessibilityStatement";
+import SecurityPolicy from "./pages/SecurityPolicy";
 
 // Layout for public pages
 const PublicLayout = ({ children }: { children: React.ReactNode }) => (
@@ -80,6 +83,9 @@ const App = () => (
               <Route path="/updates" element={<PublicLayout><Updates /></PublicLayout>} />
               <Route path="/faq" element={<PublicLayout><FAQ /></PublicLayout>} />
               <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
+              <Route path="/privacy" element={<PublicLayout><PrivacyPolicy /></PublicLayout>} />
+              <Route path="/accessibility" element={<PublicLayout><AccessibilityStatement /></PublicLayout>} />
+              <Route path="/security" element={<PublicLayout><SecurityPolicy /></PublicLayout>} />
               
               {/* Auth */}
               <Route path="/auth" element={<Auth />} />
