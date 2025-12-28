@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { usePatients } from '@/hooks/usePatients';
 import { useUnreadMessageCount } from '@/hooks/useAdminMessages';
-import { useMarkPatientReviewed } from '@/hooks/useUnreviewedPatients';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Phone, Mail, User, UserPlus, MessageCircle, MapPin, Sparkles } from 'lucide-react';
 import { format } from 'date-fns';
@@ -36,24 +35,36 @@ function PatientsListContent() {
   const isSearching = searchQuery.length >= 2;
   const { data: patients, isLoading } = usePatients(isSearching ? null : selectedClinicId);
   const { data: unreadCount } = useUnreadMessageCount();
-  const markReviewed = useMarkPatientReviewed();
 
-  const filteredPatients = patients?.filter(patient => {
-    // Filter by new patients if toggle is on
-    if (showOnlyNew) {
-      const isNew = patient.intake_completed_at && !patient.reviewed_at;
-      if (!isNew) return false;
-    }
-    
-    if (!isSearching) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      patient.first_name.toLowerCase().includes(query) ||
-      patient.last_name.toLowerCase().includes(query) ||
-      patient.phone?.toLowerCase().includes(query) ||
-      patient.id_number?.toLowerCase().includes(query)
-    );
-  }) || [];
+  // Sort and filter patients - new patients always at top
+  const sortedAndFilteredPatients = patients
+    ?.filter(patient => {
+      // Filter by new patients if toggle is on
+      if (showOnlyNew) {
+        const isNew = patient.intake_completed_at && !patient.reviewed_at;
+        if (!isNew) return false;
+      }
+      
+      if (!isSearching) return true;
+      const query = searchQuery.toLowerCase();
+      return (
+        patient.first_name.toLowerCase().includes(query) ||
+        patient.last_name.toLowerCase().includes(query) ||
+        patient.phone?.toLowerCase().includes(query) ||
+        patient.id_number?.toLowerCase().includes(query)
+      );
+    })
+    ?.sort((a, b) => {
+      // New patients (completed intake but not reviewed) always at top
+      const aIsNew = a.intake_completed_at && !a.reviewed_at;
+      const bIsNew = b.intake_completed_at && !b.reviewed_at;
+      
+      if (aIsNew && !bIsNew) return -1;
+      if (!aIsNew && bIsNew) return 1;
+      
+      // Then sort by created_at descending
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    }) || [];
 
   return (
     <div className="space-y-6">
@@ -109,20 +120,12 @@ function PatientsListContent() {
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-medical-600" />
         </div>
-      ) : filteredPatients.length > 0 ? (
+      ) : sortedAndFilteredPatients.length > 0 ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3" data-tutorial="patients-list">
-          {filteredPatients.map((patient) => {
+          {sortedAndFilteredPatients.map((patient) => {
             const patientUnreadCount = unreadCount?.byPatient[patient.id] || 0;
             // Check if patient is new (completed intake but not reviewed)
             const isNewPatient = patient.intake_completed_at && !patient.reviewed_at;
-            
-            const handlePatientClick = () => {
-              // Mark as reviewed if it's a new patient
-              if (isNewPatient) {
-                markReviewed.mutate(patient.id);
-              }
-              navigate(`/admin/patients/${patient.id}`);
-            };
             
             return (
               <Card 
@@ -131,7 +134,7 @@ function PatientsListContent() {
                   "cursor-pointer hover:shadow-md transition-all",
                   isNewPatient && "ring-2 ring-amber-400 bg-amber-50/50 shadow-amber-100"
                 )}
-                onClick={handlePatientClick}
+                onClick={() => navigate(`/admin/patients/${patient.id}`)}
               >
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">

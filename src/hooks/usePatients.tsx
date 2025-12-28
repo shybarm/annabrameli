@@ -51,6 +51,7 @@ export interface PatientInput {
   medical_notes?: string;
   allergies?: string[];
   clinic_id?: string;
+  status?: string;
 }
 
 export function usePatients(clinicId?: string | null) {

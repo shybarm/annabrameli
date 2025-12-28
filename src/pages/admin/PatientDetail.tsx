@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { usePatient, useUpdatePatient, useDeletePatient } from '@/hooks/usePatients';
+import { useMarkPatientReviewed, useIsPatientUnreviewed } from '@/hooks/useUnreviewedPatients';
 import { usePatientAppointments } from '@/hooks/useAppointments';
 import { usePatientInvoices } from '@/hooks/useInvoices';
 import { useClinics } from '@/hooks/useClinics';
@@ -49,6 +50,8 @@ export default function PatientDetail() {
   const { data: clinics } = useClinics();
   const updatePatient = useUpdatePatient();
   const deletePatient = useDeletePatient();
+  const markReviewed = useMarkPatientReviewed();
+  const { data: isUnreviewed } = useIsPatientUnreviewed(id);
   
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<any>(null);
@@ -536,9 +539,43 @@ export default function PatientDetail() {
                 </h1>
                 <div className="flex items-center gap-2 text-muted-foreground flex-wrap">
                   {patient.id_number && <span>ת.ז: {patient.id_number}</span>}
-                  <Badge variant={patient.status === 'active' ? 'default' : 'secondary'}>
-                    {patient.status === 'active' ? 'פעיל' : 'לא פעיל'}
-                  </Badge>
+                  {/* Status selector - marks as reviewed when changed to scheduled */}
+                  <Select
+                    value={patient.status || 'active'}
+                    onValueChange={(newStatus) => {
+                      if (!id) return;
+                      // Mark as reviewed when status changes to scheduled
+                      if (newStatus === 'scheduled' && isUnreviewed) {
+                        markReviewed.mutate(id);
+                      }
+                      updatePatient.mutate({
+                        id,
+                        first_name: patient.first_name,
+                        last_name: patient.last_name,
+                        status: newStatus,
+                      });
+                    }}
+                  >
+                    <SelectTrigger className={`h-6 w-auto min-w-[100px] text-xs ${
+                      patient.status === 'scheduled' ? 'bg-blue-100 text-blue-700 border-blue-300' :
+                      patient.status === 'active' ? 'bg-green-100 text-green-700 border-green-300' :
+                      'bg-gray-100 text-gray-700 border-gray-300'
+                    }`}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">פעיל</SelectItem>
+                      <SelectItem value="scheduled">מתוכנן</SelectItem>
+                      <SelectItem value="inactive">לא פעיל</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {/* New patient badge */}
+                  {isUnreviewed && (
+                    <Badge className="bg-amber-500 text-white text-xs animate-pulse">
+                      <Sparkles className="h-3 w-3 ml-1" />
+                      מטופל חדש
+                    </Badge>
+                  )}
                   {/* Clinic assignment */}
                   <div className="flex items-center gap-1">
                     <MapPin className="h-3 w-3" />
