@@ -188,7 +188,12 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                       {item.label}
                     </div>
                     {badgeCount > 0 && (
-                      <span className="flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-primary text-primary-foreground text-xs rounded-full">
+                      <span className={cn(
+                        "flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs rounded-full",
+                        isPatients 
+                          ? "bg-amber-500 text-white animate-pulse" 
+                          : "bg-primary text-primary-foreground"
+                      )}>
                         {badgeCount}
                       </span>
                     )}
