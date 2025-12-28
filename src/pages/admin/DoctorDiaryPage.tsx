@@ -9,7 +9,13 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Calendar, Clock, Search, Shield, User, FileText, RefreshCw, Eye, Trash2 } from 'lucide-react';
+import { Calendar, Clock, Search, Shield, User, FileText, RefreshCw, Eye, Trash2, Download } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
@@ -182,6 +188,122 @@ export default function DoctorDiaryPage() {
     setEndDate('');
   };
 
+  const exportToCSV = () => {
+    if (!entries || entries.length === 0) {
+      toast.error('אין נתונים לייצוא');
+      return;
+    }
+
+    const headers = ['תאריך', 'שעה', 'שם מטופל', 'ת.ז', 'סוג טיפול', 'סטטוס', 'סטטוס תשלום', 'סכום'];
+    const rows = entries.map(entry => {
+      const paymentStatus = getPaymentStatus(entry.invoices);
+      const appointmentStatus = getStatusBadge(entry.status);
+      const amount = entry.invoices?.[0]?.total || entry.appointment_type?.price || 0;
+      
+      return [
+        format(new Date(entry.scheduled_at), 'dd/MM/yyyy'),
+        format(new Date(entry.scheduled_at), 'HH:mm'),
+        `${entry.patient.first_name} ${entry.patient.last_name}`,
+        entry.patient.id_number || '',
+        entry.appointment_type?.name_he || 'ביקור',
+        appointmentStatus.label,
+        paymentStatus.label,
+        amount.toString()
+      ];
+    });
+
+    const csvContent = '\uFEFF' + [headers, ...rows].map(row => row.join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `יומן_רופא_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    toast.success('הקובץ יוצא בהצלחה');
+  };
+
+  const exportToPDF = () => {
+    if (!entries || entries.length === 0) {
+      toast.error('אין נתונים לייצוא');
+      return;
+    }
+
+    const printContent = `
+      <!DOCTYPE html>
+      <html dir="rtl" lang="he">
+      <head>
+        <meta charset="UTF-8">
+        <title>יומן רופא</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; direction: rtl; }
+          h1 { text-align: center; color: #2A9D8F; }
+          .header { text-align: center; margin-bottom: 20px; }
+          .date { color: #666; font-size: 14px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          th, td { border: 1px solid #ddd; padding: 10px; text-align: right; }
+          th { background-color: #2A9D8F; color: white; }
+          tr:nth-child(even) { background-color: #f9f9f9; }
+          .total { margin-top: 20px; text-align: left; font-weight: bold; }
+          .footer { margin-top: 30px; text-align: center; color: #666; font-size: 12px; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>יומן רופא</h1>
+          <p class="date">תאריך הפקה: ${format(new Date(), 'dd/MM/yyyy HH:mm')}</p>
+          ${startDate || endDate ? `<p class="date">תקופה: ${startDate || 'התחלה'} - ${endDate || 'סוף'}</p>` : ''}
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>תאריך</th>
+              <th>שעה</th>
+              <th>מטופל</th>
+              <th>ת.ז</th>
+              <th>סוג טיפול</th>
+              <th>סטטוס</th>
+              <th>תשלום</th>
+              <th>סכום</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${entries.map(entry => {
+              const paymentStatus = getPaymentStatus(entry.invoices);
+              const appointmentStatus = getStatusBadge(entry.status);
+              const amount = entry.invoices?.[0]?.total || entry.appointment_type?.price || 0;
+              return `
+                <tr>
+                  <td>${format(new Date(entry.scheduled_at), 'dd/MM/yyyy')}</td>
+                  <td>${format(new Date(entry.scheduled_at), 'HH:mm')}</td>
+                  <td>${entry.patient.first_name} ${entry.patient.last_name}</td>
+                  <td>${entry.patient.id_number || '-'}</td>
+                  <td>${entry.appointment_type?.name_he || 'ביקור'}</td>
+                  <td>${appointmentStatus.label}</td>
+                  <td>${paymentStatus.label}</td>
+                  <td>₪${amount.toLocaleString()}</td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+        <p class="total">סה״כ: ₪${entries.reduce((sum, e) => sum + (e.invoices?.[0]?.total || e.appointment_type?.price || 0), 0).toLocaleString()}</p>
+        <p class="footer">מסמך זה הופק מיומן הרופא ועומד בתקנות מס הכנסה</p>
+      </body>
+      </html>
+    `;
+
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+      printWindow.onload = () => {
+        printWindow.print();
+      };
+    }
+    toast.success('המסמך נפתח להדפסה');
+  };
+
   return (
     <AdminLayout>
       <PermissionGuard permission="canViewAppointments">
@@ -205,6 +327,24 @@ export default function DoctorDiaryPage() {
               <Button variant="outline" size="icon" onClick={() => refetch()}>
                 <RefreshCw className="h-4 w-4" />
               </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline">
+                    <Download className="h-4 w-4 ml-2" />
+                    ייצוא
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={exportToPDF}>
+                    <FileText className="h-4 w-4 ml-2" />
+                    ייצוא כ-PDF
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={exportToCSV}>
+                    <FileText className="h-4 w-4 ml-2" />
+                    ייצוא כ-CSV
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Button onClick={() => navigate('/admin/appointments/new')}>
                 רשומה חדשה
               </Button>
