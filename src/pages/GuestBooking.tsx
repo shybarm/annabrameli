@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { z } from 'zod';
 import { useAppointmentTypes } from '@/hooks/useAppointments';
-import { useClinics, getClinicHoursForDay, getAvailableTimeSlots } from '@/hooks/useClinics';
+import { usePublicClinics, getClinicHoursForDay, getAvailableTimeSlots, type PublicClinic } from '@/hooks/useClinics';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -46,27 +46,28 @@ export default function GuestBooking() {
   const [notes, setNotes] = useState('');
   const [documents, setDocuments] = useState<File[]>([]);
 
-  const { data: clinics, isLoading: loadingClinics } = useClinics();
+  const { data: clinics, isLoading: loadingClinics } = usePublicClinics();
   const { data: appointmentTypes } = useAppointmentTypes();
   const selectedType = appointmentTypes?.find(t => t.id === appointmentTypeId);
-  const selectedClinic = clinics?.find(c => c.id === selectedClinicId);
+  const selectedClinic = clinics?.find(c => c.id === selectedClinicId) as PublicClinic | undefined;
 
   // Get available time slots based on selected clinic and date
   const availableTimeSlots = useMemo(() => {
     if (!selectedClinic || !date) return [];
-    return getAvailableTimeSlots(selectedClinic, date, 30);
+    // Cast to Clinic for getAvailableTimeSlots (only uses working_hours)
+    return getAvailableTimeSlots(selectedClinic as any, date, 30);
   }, [selectedClinic, date]);
 
   // Get open days for calendar disabled dates
   const isDateDisabled = (date: Date) => {
     if (date < new Date()) return true;
     if (!selectedClinic) return false;
-    const hours = getClinicHoursForDay(selectedClinic, date);
+    const hours = getClinicHoursForDay(selectedClinic as any, date);
     return !hours;
   };
 
   // Format working days for display
-  const formatWorkingDays = (clinic: typeof selectedClinic) => {
+  const formatWorkingDays = (clinic: PublicClinic | undefined) => {
     if (!clinic?.working_hours) return 'לא הוגדרו שעות';
     const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const;
     const dayLabels = ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ש׳'];
@@ -321,9 +322,6 @@ export default function GuestBooking() {
                         <div className="flex justify-between items-start">
                           <div>
                             <h3 className="font-medium text-foreground">{clinic.name}</h3>
-                            {clinic.address && (
-                              <p className="text-sm text-muted-foreground mt-1">{clinic.address}</p>
-                            )}
                             {clinic.city && (
                               <p className="text-sm text-muted-foreground">{clinic.city}</p>
                             )}
