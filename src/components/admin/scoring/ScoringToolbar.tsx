@@ -1,6 +1,7 @@
 import { ACTScoreDialog } from './ACTScoreDialog';
 import { SCORADScoreDialog } from './SCORADScoreDialog';
 import { SNOT22ScoreDialog } from './SNOT22ScoreDialog';
+import { PUCAIScoreDialog } from './PUCAIScoreDialog';
 import { CustomScoringDialog } from './CustomScoringDialog';
 import { CustomToolButton } from './CustomToolButton';
 import { Calculator } from 'lucide-react';
@@ -43,6 +44,9 @@ export function ScoringToolbar({ onScoreAdd }: ScoringToolbarProps) {
       />
       <SNOT22ScoreDialog 
         onScoreComplete={(score, interpretation) => onScoreAdd('SNOT-22', score, interpretation)} 
+      />
+      <PUCAIScoreDialog 
+        onScoreComplete={(score, interpretation) => onScoreAdd('PUCAI', score, interpretation)} 
       />
       {customTools && customTools.length > 0 && (
         <>
