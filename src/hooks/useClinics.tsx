@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 export interface Clinic {
   id: string;
@@ -26,33 +27,88 @@ export interface Clinic {
   doctor_specialty: string | null;
 }
 
+// Public clinic info (limited fields for unauthenticated users)
+export interface PublicClinic {
+  id: string;
+  name: string;
+  city: string | null;
+  working_hours: {
+    sunday?: { open: string; close: string } | null;
+    monday?: { open: string; close: string } | null;
+    tuesday?: { open: string; close: string } | null;
+    wednesday?: { open: string; close: string } | null;
+    thursday?: { open: string; close: string } | null;
+    friday?: { open: string; close: string } | null;
+    saturday?: { open: string; close: string } | null;
+  } | null;
+  is_active: boolean;
+}
+
+// Hook for authenticated staff to get full clinic details
 export function useClinics() {
+  const { user } = useAuth();
+  
   return useQuery({
-    queryKey: ['clinics'],
+    queryKey: ['clinics', user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('clinics')
-        .select('*')
-        .eq('is_active', true)
-        .order('name');
+      // If authenticated, try to get full details
+      if (user) {
+        const { data, error } = await supabase
+          .from('clinics')
+          .select('*')
+          .eq('is_active', true)
+          .order('name');
+        
+        if (!error && data) {
+          return data as Clinic[];
+        }
+      }
+      
+      // Fall back to public function for limited data
+      const { data, error } = await supabase.rpc('get_public_clinics');
       if (error) throw error;
-      return data as Clinic[];
+      return (data || []) as PublicClinic[] as Clinic[];
+    },
+  });
+}
+
+// Hook for public/guest access - only returns safe fields
+export function usePublicClinics() {
+  return useQuery({
+    queryKey: ['public-clinics'],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_public_clinics');
+      if (error) throw error;
+      return (data || []) as PublicClinic[];
     },
   });
 }
 
 export function useClinic(id: string | undefined) {
+  const { user } = useAuth();
+  
   return useQuery({
-    queryKey: ['clinic', id],
+    queryKey: ['clinic', id, user?.id],
     queryFn: async () => {
       if (!id) return null;
-      const { data, error } = await supabase
-        .from('clinics')
-        .select('*')
-        .eq('id', id)
-        .single();
+      
+      // If authenticated, try to get full details
+      if (user) {
+        const { data, error } = await supabase
+          .from('clinics')
+          .select('*')
+          .eq('id', id)
+          .single();
+        
+        if (!error && data) {
+          return data as Clinic;
+        }
+      }
+      
+      // Fall back to public function
+      const { data, error } = await supabase.rpc('get_public_clinic', { clinic_id: id });
       if (error) throw error;
-      return data as Clinic;
+      return data?.[0] as PublicClinic as Clinic || null;
     },
     enabled: !!id,
   });

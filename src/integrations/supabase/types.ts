@@ -1251,6 +1251,7 @@ export type Database = {
           id: string
           is_active: boolean
           name: string
+          working_hours: Json
         }[]
       }
       get_public_clinics: {
@@ -1260,6 +1261,7 @@ export type Database = {
           id: string
           is_active: boolean
           name: string
+          working_hours: Json
         }[]
       }
       has_permission: {
