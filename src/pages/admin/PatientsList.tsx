@@ -31,7 +31,7 @@ function PatientsListContent() {
   const navigate = useNavigate();
   const { selectedClinicId } = useClinicContext();
   const [searchQuery, setSearchQuery] = useState('');
-  
+  const [showOnlyNew, setShowOnlyNew] = useState(false);
   // When searching, show all patients; otherwise filter by clinic
   const isSearching = searchQuery.length >= 2;
   const { data: patients, isLoading } = usePatients(isSearching ? null : selectedClinicId);
@@ -39,6 +39,12 @@ function PatientsListContent() {
   const markReviewed = useMarkPatientReviewed();
 
   const filteredPatients = patients?.filter(patient => {
+    // Filter by new patients if toggle is on
+    if (showOnlyNew) {
+      const isNew = patient.intake_completed_at && !patient.reviewed_at;
+      if (!isNew) return false;
+    }
+    
     if (!isSearching) return true;
     const query = searchQuery.toLowerCase();
     return (
@@ -74,15 +80,28 @@ function PatientsListContent() {
         </div>
       </div>
 
-      {/* Search */}
-      <div className="relative max-w-md" data-tutorial="search-patients">
-        <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="חיפוש לפי שם, טלפון או ת.ז..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pr-10"
-        />
+      {/* Search and Filter */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1 max-w-md" data-tutorial="search-patients">
+          <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="חיפוש לפי שם, טלפון או ת.ז..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pr-10"
+          />
+        </div>
+        <Button
+          variant={showOnlyNew ? "default" : "outline"}
+          onClick={() => setShowOnlyNew(!showOnlyNew)}
+          className={cn(
+            "gap-2",
+            showOnlyNew && "bg-amber-500 hover:bg-amber-600 text-white"
+          )}
+        >
+          <Sparkles className="h-4 w-4" />
+          מטופלים חדשים בלבד
+        </Button>
       </div>
 
       {/* Patients List */}
