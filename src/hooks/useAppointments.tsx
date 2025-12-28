@@ -42,6 +42,8 @@ export interface Appointment {
     phone: string | null;
     id_number?: string | null;
     clinic_id?: string | null;
+    intake_completed_at?: string | null;
+    reviewed_at?: string | null;
   };
   appointment_types?: AppointmentType;
 }
@@ -80,7 +82,7 @@ export function useAppointments(startDate?: string, endDate?: string, clinicId?:
         .from('appointments')
         .select(`
           *,
-          patients!inner(id, first_name, last_name, phone, main_complaint, intake_completed_at, intake_token_id, clinic_id),
+          patients!inner(id, first_name, last_name, phone, main_complaint, intake_completed_at, intake_token_id, clinic_id, reviewed_at),
           appointment_types(*)
         `)
         .order('scheduled_at', { ascending: true });

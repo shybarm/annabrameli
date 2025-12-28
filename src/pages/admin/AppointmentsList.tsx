@@ -12,7 +12,8 @@ import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { Plus, Calendar, Clock, ChevronRight, ChevronLeft, CalendarDays, MapPin } from 'lucide-react';
+import { Plus, Calendar, Clock, ChevronRight, ChevronLeft, CalendarDays, MapPin, Sparkles } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { format, addDays, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, isWeekend, addWeeks } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { PageHelpButton } from '@/components/tutorial/PageHelpButton';
@@ -178,20 +179,36 @@ export default function AppointmentsList() {
               <div className="space-y-3">
                 {getTodayAppointments()
                   .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime())
-                  .map((apt) => (
+                  .map((apt) => {
+                    const isNewPatient = apt.patients?.intake_completed_at && !apt.patients?.reviewed_at;
+                    return (
                   <div
                     key={apt.id}
-                    className="flex items-center justify-between p-4 rounded-lg border bg-white hover:shadow-md transition-shadow cursor-pointer"
+                    className={cn(
+                      "flex items-center justify-between p-4 rounded-lg border hover:shadow-md transition-shadow cursor-pointer",
+                      isNewPatient ? "bg-amber-50 border-amber-300 ring-2 ring-amber-400" : "bg-white"
+                    )}
                     onClick={() => navigate(`/admin/appointments/${apt.id}`)}
                   >
                     <div className="flex items-center gap-4">
-                      <div className="flex items-center justify-center w-14 h-14 rounded-lg bg-medical-100 text-medical-700">
+                      <div className={cn(
+                        "flex items-center justify-center w-14 h-14 rounded-lg",
+                        isNewPatient ? "bg-amber-200 text-amber-700" : "bg-medical-100 text-medical-700"
+                      )}>
                         <Clock className="h-6 w-6" />
                       </div>
                       <div>
-                        <p className="font-semibold text-lg">
-                          {apt.patients?.first_name} {apt.patients?.last_name}
-                        </p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-semibold text-lg">
+                            {apt.patients?.first_name} {apt.patients?.last_name}
+                          </p>
+                          {isNewPatient && (
+                            <Badge className="bg-amber-500 text-white text-xs animate-pulse">
+                              <Sparkles className="h-3 w-3 ml-1" />
+                              מטופל חדש
+                            </Badge>
+                          )}
+                        </div>
                         <p className="text-sm text-muted-foreground">
                           {apt.appointment_types?.name_he || 'ייעוץ'} | {apt.duration_minutes} דקות
                         </p>
@@ -230,7 +247,8 @@ export default function AppointmentsList() {
                       </div>
                     </div>
                   </div>
-                ))}
+                    );
+                  })}
               </div>
             ) : (
               <div className="text-center py-8">
@@ -305,18 +323,27 @@ export default function AppointmentsList() {
                           </p>
                         </div>
                         <div className="space-y-1">
-                          {dayAppointments.slice(0, 3).map((apt) => (
+                          {dayAppointments.slice(0, 3).map((apt) => {
+                            const isNewPatient = apt.patients?.intake_completed_at && !apt.patients?.reviewed_at;
+                            return (
                             <div
                               key={apt.id}
-                              className={`text-xs p-1.5 rounded cursor-pointer hover:opacity-80 ${statusColors[apt.status]}`}
+                              className={cn(
+                                "text-xs p-1.5 rounded cursor-pointer hover:opacity-80",
+                                isNewPatient ? "bg-amber-200 text-amber-800 ring-1 ring-amber-400" : statusColors[apt.status]
+                              )}
                               onClick={() => navigate(`/admin/appointments/${apt.id}`)}
                             >
-                              <p className="font-medium truncate">
-                                {apt.patients?.first_name} {apt.patients?.last_name}
-                              </p>
+                              <div className="flex items-center gap-1">
+                                {isNewPatient && <Sparkles className="h-3 w-3" />}
+                                <p className="font-medium truncate">
+                                  {apt.patients?.first_name} {apt.patients?.last_name}
+                                </p>
+                              </div>
                               <p>{format(new Date(apt.scheduled_at), 'HH:mm')}</p>
                             </div>
-                          ))}
+                            );
+                          })}
                           {dayAppointments.length > 3 && (
                             <p className="text-xs text-center text-muted-foreground">
                               +{dayAppointments.length - 3} נוספים
