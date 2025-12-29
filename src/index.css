@@ -59,12 +59,13 @@
     --gradient-card: linear-gradient(180deg, hsl(var(--card)) 0%, hsl(var(--sand-50)) 100%);
     --gradient-teal: linear-gradient(135deg, hsl(var(--teal-500)) 0%, hsl(var(--teal-600)) 100%);
 
-    /* Shadows */
-    --shadow-sm: 0 1px 2px 0 hsl(var(--foreground) / 0.05);
-    --shadow-md: 0 4px 6px -1px hsl(var(--foreground) / 0.08), 0 2px 4px -1px hsl(var(--foreground) / 0.04);
-    --shadow-lg: 0 10px 15px -3px hsl(var(--foreground) / 0.08), 0 4px 6px -2px hsl(var(--foreground) / 0.04);
-    --shadow-xl: 0 20px 25px -5px hsl(var(--foreground) / 0.1), 0 10px 10px -5px hsl(var(--foreground) / 0.04);
-    --shadow-teal: 0 8px 24px -4px hsl(var(--teal-500) / 0.25);
+    /* Shadows - Apple-like subtle shadows */
+    --shadow-sm: 0 1px 2px 0 hsl(var(--foreground) / 0.04);
+    --shadow-md: 0 4px 12px -2px hsl(var(--foreground) / 0.06), 0 2px 6px -2px hsl(var(--foreground) / 0.03);
+    --shadow-lg: 0 12px 24px -4px hsl(var(--foreground) / 0.08), 0 4px 8px -2px hsl(var(--foreground) / 0.03);
+    --shadow-xl: 0 24px 48px -8px hsl(var(--foreground) / 0.1), 0 12px 16px -6px hsl(var(--foreground) / 0.04);
+    --shadow-teal: 0 8px 24px -4px hsl(var(--teal-500) / 0.2);
+    --shadow-glass: 0 8px 32px -4px hsl(var(--foreground) / 0.08);
 
     /* Sidebar */
     --sidebar-background: 0 0% 98%;
@@ -133,18 +134,34 @@
 @layer base {
   * {
     @apply border-border;
+    /* Smooth scrolling on iOS */
+    -webkit-overflow-scrolling: touch;
   }
 
   html {
     direction: rtl;
+    /* Prevent pull-to-refresh on mobile */
+    overscroll-behavior: none;
   }
 
   body {
     @apply bg-background text-foreground font-heebo antialiased;
+    /* Safe area padding for iOS */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
   }
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-heebo font-bold tracking-tight;
+  }
+
+  /* iOS safe area utilities */
+  .safe-area-inset-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .safe-area-inset-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
   }
 }
 
@@ -180,19 +197,69 @@
 
 @layer utilities {
   .animate-fade-up {
-    animation: fadeUp 0.6s ease-out forwards;
+    animation: fadeUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   }
 
   .animate-fade-in {
-    animation: fadeIn 0.5s ease-out forwards;
+    animation: fadeIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   }
 
   .animate-scale-in {
-    animation: scaleIn 0.4s ease-out forwards;
+    animation: scaleIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   }
 
   .animate-slide-right {
-    animation: slideRight 0.5s ease-out forwards;
+    animation: slideRight 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  .animate-slide-in-right {
+    animation: slideInRight 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  .animate-slide-out-right {
+    animation: slideOutRight 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  /* Apple-style spring animation for mobile interactions */
+  .spring-bounce {
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .spring-bounce:active {
+    transform: scale(0.97);
+  }
+
+  /* Glass morphism effect */
+  .glass {
+    background: hsl(var(--background) / 0.8);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+  }
+
+  .glass-light {
+    background: hsl(0 0% 100% / 0.7);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+  }
+
+  .glass-dark {
+    background: hsl(var(--foreground) / 0.05);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  /* Smooth transitions for mobile */
+  .transition-smooth {
+    transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .transition-spring {
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  /* Touch-friendly tap highlight */
+  .tap-highlight {
+    -webkit-tap-highlight-color: hsl(var(--primary) / 0.1);
   }
 
   @keyframes fadeUp {
@@ -234,6 +301,46 @@
     to {
       opacity: 1;
       transform: translateX(0);
+    }
+  }
+
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(100%);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes slideOutRight {
+    from {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateX(100%);
+    }
+  }
+
+  @keyframes overlayFadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes overlayFadeOut {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
     }
   }
 
