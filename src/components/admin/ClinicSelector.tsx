@@ -96,7 +96,7 @@ export function ClinicSelector() {
           >
             <SelectValue placeholder="בחר מרפאה" />
           </SelectTrigger>
-          <SelectContent className="z-[100] bg-popover">
+          <SelectContent className="z-[100] bg-popover max-h-[300px]">
             <SelectItem value="all">כל המרפאות</SelectItem>
             {clinics?.map((clinic) => (
               <SelectItem key={clinic.id} value={clinic.id}>
@@ -105,19 +105,9 @@ export function ClinicSelector() {
             ))}
           </SelectContent>
         </Select>
-        {selectedClinic?.city && <span className="text-xs text-muted-foreground">({selectedClinic.city})</span>}
-        {hasMultipleClinics && selectedClinicId && (
-          <span
-            className="text-xs font-medium px-2 py-0.5 rounded"
-            style={{ backgroundColor: clinicTheme.accent, color: 'white' }}
-          >
-            מרפאה {clinicIndex + 1}
-          </span>
-        )}
-
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button variant="outline" size="sm" className="h-8 mr-2">
+            <Button variant="outline" size="sm" className="h-8 shrink-0">
               <Plus className="h-4 w-4 ml-1" />
               מרפאה חדשה
             </Button>
@@ -168,6 +158,16 @@ export function ClinicSelector() {
             </div>
           </DialogContent>
         </Dialog>
+        {selectedClinic?.city && <span className="text-xs text-muted-foreground">({selectedClinic.city})</span>}
+        {hasMultipleClinics && selectedClinicId && (
+          <span
+            className="text-xs font-medium px-2 py-0.5 rounded"
+            style={{ backgroundColor: clinicTheme.accent, color: 'white' }}
+          >
+            מרפאה {clinicIndex + 1}
+          </span>
+        )}
+
       </div>
     </div>
   );
