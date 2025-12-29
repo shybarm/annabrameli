@@ -23,6 +23,7 @@ import {
   UsersRound,
   History,
   BookOpen,
+  Clock,
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -52,6 +53,7 @@ const navItems: NavItem[] = [
   { href: '/admin/expenses', icon: Wallet, label: 'הוצאות', requiredPermission: 'canViewBilling' },
   { href: '/admin/messages', icon: MessageSquare, label: 'הודעות' },
   { href: '/admin/team', icon: UsersRound, label: 'צוות', adminOnly: true },
+  { href: '/admin/work-hours', icon: Clock, label: 'שעות עבודה' },
   { href: '/admin/audit-log', icon: History, label: 'יומן ביקורת', adminOnly: true },
   { href: '/admin/settings', icon: Settings, label: 'הגדרות', adminOnly: true },
 ];
