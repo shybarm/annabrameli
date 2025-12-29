@@ -19,8 +19,8 @@ import { Stethoscope, Calendar as CalendarIcon, Clock, ArrowRight, CheckCircle, 
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
 
-// hCaptcha site key (publishable) - test key for development
-const HCAPTCHA_SITE_KEY = '10000000-ffff-ffff-ffff-000000000001';
+// hCaptcha site key (publishable)
+const HCAPTCHA_SITE_KEY = 'adb26884-e244-4402-8ece-5242822cc324';
 
 const guestSchema = z.object({
   firstName: z.string().trim().min(2, 'שם פרטי חייב להכיל לפחות 2 תווים').max(100),
