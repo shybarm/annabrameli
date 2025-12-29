@@ -188,7 +188,7 @@ function PatientsListContent() {
                           disabled={markReviewed.isPending}
                         >
                           <CheckCircle className="h-3 w-3 ml-1" />
-                          סמן כמתוכנן
+                          קבל למרפאה
                         </Button>
                       )}
                     </div>
