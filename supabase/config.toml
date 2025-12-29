@@ -44,3 +44,6 @@ verify_jwt = false
 
 [functions.accept-patient-invite]
 verify_jwt = true
+
+[functions.scan-file]
+verify_jwt = true
