@@ -3,7 +3,6 @@ import { useNavigate, Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { z } from 'zod';
-import HCaptcha from '@hcaptcha/react-hcaptcha';
 import { useAppointmentTypes } from '@/hooks/useAppointments';
 import { usePublicClinics, getClinicHoursForDay, getAvailableTimeSlots, type PublicClinic } from '@/hooks/useClinics';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,12 +14,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Stethoscope, Calendar as CalendarIcon, Clock, ArrowRight, CheckCircle, Upload, X, FileText, MapPin, Shield } from 'lucide-react';
+import { Stethoscope, Calendar as CalendarIcon, Clock, ArrowRight, CheckCircle, Upload, X, FileText, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
-
-// hCaptcha site key (publishable)
-const HCAPTCHA_SITE_KEY = 'adb26884-e244-4402-8ece-5242822cc324';
 
 const guestSchema = z.object({
   firstName: z.string().trim().min(2, 'שם פרטי חייב להכיל לפחות 2 תווים').max(100),
@@ -37,7 +33,6 @@ export default function GuestBooking() {
   const [step, setStep] = useState<'clinic' | 'info' | 'appointment' | 'success'>('clinic');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const captchaRef = useRef<HCaptcha>(null);
 
   // Form state
   const [selectedClinicId, setSelectedClinicId] = useState('');
@@ -50,7 +45,6 @@ export default function GuestBooking() {
   const [time, setTime] = useState('');
   const [notes, setNotes] = useState('');
   const [documents, setDocuments] = useState<File[]>([]);
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
   const { data: clinics, isLoading: loadingClinics } = usePublicClinics();
   const { data: appointmentTypes } = useAppointmentTypes();
@@ -78,14 +72,6 @@ export default function GuestBooking() {
     const dayLabels = ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ש׳'];
     const openDays = days.map((day, i) => clinic.working_hours?.[day] ? dayLabels[i] : null).filter(Boolean);
     return openDays.join(', ');
-  };
-
-  const handleCaptchaVerify = (token: string) => {
-    setCaptchaToken(token);
-  };
-
-  const handleCaptchaExpire = () => {
-    setCaptchaToken(null);
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -180,15 +166,6 @@ export default function GuestBooking() {
       return;
     }
 
-    if (!captchaToken) {
-      toast({
-        title: 'נא לאמת שאתה לא רובוט',
-        description: 'השלם את אימות ה-CAPTCHA',
-        variant: 'destructive',
-      });
-      return;
-    }
-
     setIsSubmitting(true);
 
     try {
@@ -204,7 +181,6 @@ export default function GuestBooking() {
           date: format(date, 'yyyy-MM-dd'),
           time,
           notes: notes.trim() || null,
-          captchaToken,
         },
       });
 
@@ -222,17 +198,10 @@ export default function GuestBooking() {
       if (documents.length > 0 && data.bookingId) {
         await uploadDocuments(data.bookingId);
       }
-      // Reset CAPTCHA after successful submit (token can be used only once)
-      captchaRef.current?.resetCaptcha();
-      setCaptchaToken(null);
 
       setStep('success');
     } catch (error: any) {
       console.error('Booking error:', error);
-      
-      // Reset CAPTCHA on error
-      captchaRef.current?.resetCaptcha();
-      setCaptchaToken(null);
       
       toast({
         title: 'שגיאה בקביעת התור',
@@ -612,27 +581,10 @@ export default function GuestBooking() {
                   />
                 </div>
 
-                {/* CAPTCHA */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                    <Shield className="h-4 w-4" />
-                    <span>אימות אבטחה</span>
-                  </div>
-                  <div className="flex justify-center">
-                    <HCaptcha
-                      ref={captchaRef}
-                      sitekey={HCAPTCHA_SITE_KEY}
-                      onVerify={handleCaptchaVerify}
-                      onExpire={handleCaptchaExpire}
-                      languageOverride="he"
-                    />
-                  </div>
-                </div>
-
                 <Button
                   onClick={handleSubmit}
                   className="w-full"
-                  disabled={isSubmitting || !appointmentTypeId || !date || !time || !captchaToken}
+                  disabled={isSubmitting || !appointmentTypeId || !date || !time}
                 >
                   {isSubmitting ? 'שולח בקשה...' : 'שלח בקשה לתור'}
                 </Button>
