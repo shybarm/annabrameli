@@ -152,21 +152,21 @@ export function validateInput(
 }
 
 /**
- * Verify hCaptcha token
+ * Verify Google reCAPTCHA token
  */
 export async function verifyCaptcha(token: string): Promise<boolean> {
-  const HCAPTCHA_SECRET = Deno.env.get('HCAPTCHA_SECRET_KEY');
+  const RECAPTCHA_SECRET = Deno.env.get('RECAPTCHA_SECRET_KEY');
   
-  if (!HCAPTCHA_SECRET) {
-    console.warn('HCAPTCHA_SECRET_KEY not configured - skipping CAPTCHA verification');
+  if (!RECAPTCHA_SECRET) {
+    console.warn('RECAPTCHA_SECRET_KEY not configured - skipping CAPTCHA verification');
     return true; // Fail open if not configured (should be configured in production)
   }
   
   try {
-    const response = await fetch('https://hcaptcha.com/siteverify', {
+    const response = await fetch('https://www.google.com/recaptcha/api/siteverify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: `secret=${HCAPTCHA_SECRET}&response=${token}`
+      body: `secret=${RECAPTCHA_SECRET}&response=${token}`
     });
     
     const data = await response.json();
