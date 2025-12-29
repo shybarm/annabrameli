@@ -20,13 +20,7 @@ export function OnboardingTutorial({ forceShow, onComplete }: OnboardingTutorial
       setCurrentStep(0);
       return;
     }
-
-    const completed = localStorage.getItem(ONBOARDING_KEY);
-    if (!completed) {
-      // Small delay to let the page load first
-      const timer = setTimeout(() => setShow(true), 500);
-      return () => clearTimeout(timer);
-    }
+    // Auto-show disabled - only show when forceShow is true
   }, [forceShow]);
 
   const [dialogPosition, setDialogPosition] = useState<'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'>('bottom-right');
