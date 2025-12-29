@@ -14,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { ArrowRight, Printer, Mail, CheckCircle, Edit, Save, X, Plus, Trash2, Link2, Copy, MessageCircle, ExternalLink, CreditCard, Wallet } from 'lucide-react';
 import { format } from 'date-fns';
+import { openWhatsAppChat, normalizePhoneToE164 } from '@/lib/whatsapp';
 
 interface EditableItem {
   id?: string;
@@ -192,11 +193,8 @@ export default function InvoiceDetail() {
       return;
     }
     
-    const phone = patientData.phone.replace(/\D/g, '').replace(/^0/, '972');
-    const message = encodeURIComponent(
-      `שלום ${patientData.first_name},\n\nמצורף קישור לתשלום עבור חשבונית מספר ${invoice?.invoice_number} בסך ₪${Number(invoice?.total).toLocaleString()}:\n\n${invoice?.payment_link || ''}\n\nתודה,\nד״ר אנה ברמלי`
-    );
-    window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+    const message = `שלום ${patientData.first_name},\n\nמצורף קישור לתשלום עבור חשבונית מספר ${invoice?.invoice_number} בסך ₪${Number(invoice?.total).toLocaleString()}:\n\n${invoice?.payment_link || ''}\n\nתודה,\nד״ר אנה ברמלי`;
+    openWhatsAppChat(patientData.phone, message);
   };
 
   const handleItemChange = (index: number, field: keyof EditableItem, value: string | number) => {

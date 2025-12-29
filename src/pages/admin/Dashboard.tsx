@@ -8,6 +8,7 @@ import { useClinicContext } from '@/contexts/ClinicContext';
 import { format, differenceInMinutes, startOfWeek, addDays, isSameDay } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { openWhatsAppChat } from '@/lib/whatsapp';
 import { useQuery } from '@tanstack/react-query';
 import { 
   Calendar, 
@@ -271,12 +272,9 @@ export default function AdminDashboard() {
     }
 
     const intakeUrl = `${window.location.origin}/intake?token=${intakeToken}`;
-    const phone = patientData.phone.replace(/\D/g, '').replace(/^0/, '972');
-    const message = encodeURIComponent(
-      `שלום ${patientData.first_name},\n\nהתור שלך יגיע בעוד כמה דק על מנת לייעל את הטיפול בך השלם את טופס קליטה למרפאה:\n\n${intakeUrl}\n\nתודה,\nד״ר אנה ברמלי`
-    );
+    const message = `שלום ${patientData.first_name},\n\nהתור שלך יגיע בעוד כמה דק על מנת לייעל את הטיפול בך השלם את טופס קליטה למרפאה:\n\n${intakeUrl}\n\nתודה,\nד״ר אנה ברמלי`;
     
-    window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+    openWhatsAppChat(patientData.phone, message);
     toast({ title: 'נפתח WhatsApp לשליחת תזכורת' });
   };
 
