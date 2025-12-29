@@ -599,7 +599,21 @@ export default function AppointmentDetail() {
               </p>
             </div>
           </div>
-          <PageHelpButton tutorial={appointmentDetailTutorial} />
+          <div className="flex items-center gap-2">
+            {status !== 'cancelled' && (
+              <Button 
+                variant="destructive" 
+                size="sm"
+                onClick={() => {
+                  setCancellationReason('');
+                  setCancelDialogOpen(true);
+                }}
+              >
+                ביטול תור
+              </Button>
+            )}
+            <PageHelpButton tutorial={appointmentDetailTutorial} />
+          </div>
         </div>
 
         {/* Status Row */}
