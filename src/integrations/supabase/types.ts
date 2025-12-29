@@ -1513,6 +1513,10 @@ export type Database = {
         Args: { _invite_code: string; _user_id: string }
         Returns: boolean
       }
+      can_access_clinic: {
+        Args: { _clinic_id: string; _user_id: string }
+        Returns: boolean
+      }
       can_edit_appointments: { Args: { _user_id: string }; Returns: boolean }
       can_edit_billing: { Args: { _user_id: string }; Returns: boolean }
       can_edit_documents: { Args: { _user_id: string }; Returns: boolean }
@@ -1553,6 +1557,7 @@ export type Database = {
           working_hours: Json
         }[]
       }
+      get_user_clinic_id: { Args: { _user_id: string }; Returns: string }
       has_permission: {
         Args: { _permission: string; _user_id: string }
         Returns: boolean
