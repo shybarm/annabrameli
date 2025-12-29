@@ -1,10 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { corsHeaders, validateInput, verifyCaptcha, createAuditLog, hashData } from "../_shared/security-utils.ts";
+import { checkRateLimit, getClientIdentifier, createRateLimitResponse } from "../_shared/rate-limiter.ts";
 
 // File validation constants
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -24,19 +21,27 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    
     const supabase = createClient(supabaseUrl, serviceRoleKey);
+
+    // Rate limiting
+    const clientId = getClientIdentifier(req);
+    const rateLimit = await checkRateLimit(supabase, clientId, 'guest-upload-document');
+    
+    if (!rateLimit.allowed) {
+      createAuditLog('guest-upload-document', 'rate_limit_exceeded', undefined, { clientId: clientId.substring(0, 20) });
+      return createRateLimitResponse(rateLimit.resetIn);
+    }
 
     const formData = await req.formData();
     const patientId = formData.get("patient_id") as string;
     const uploadToken = formData.get("upload_token") as string;
     const file = formData.get("file") as File;
-    const title = formData.get("title") as string || file.name;
+    const title = formData.get("title") as string || file?.name || 'document';
     const documentType = formData.get("document_type") as string || "other";
 
     // Validate required fields
     if (!patientId || !file) {
-      console.log("Missing required fields:", { patientId: !!patientId, file: !!file });
+      createAuditLog('guest-upload-document', 'validation_failed', undefined, { reason: 'missing_fields' });
       return new Response(
         JSON.stringify({ error: "patient_id and file are required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -45,7 +50,7 @@ serve(async (req) => {
 
     // SECURITY: Validate file type
     if (!ALLOWED_MIME_TYPES.includes(file.type)) {
-      console.log("Invalid file type:", file.type);
+      createAuditLog('guest-upload-document', 'invalid_file_type', undefined, { fileType: file.type });
       return new Response(
         JSON.stringify({ error: "Invalid file type. Only PDF and images are allowed." }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -54,7 +59,7 @@ serve(async (req) => {
 
     // SECURITY: Validate file size
     if (file.size > MAX_FILE_SIZE) {
-      console.log("File too large:", file.size);
+      createAuditLog('guest-upload-document', 'file_too_large', undefined, { fileSize: file.size });
       return new Response(
         JSON.stringify({ error: "File too large. Maximum size is 10MB." }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -62,7 +67,6 @@ serve(async (req) => {
     }
 
     // SECURITY: Validate the patient exists and was recently created (within 30 minutes)
-    // This ensures uploads are only allowed during the booking flow
     const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
     
     const { data: patientData, error: patientError } = await supabase
@@ -73,14 +77,14 @@ serve(async (req) => {
       .single();
 
     if (patientError || !patientData) {
-      console.log("Patient validation failed - patient not found or too old:", { patientId, patientError });
+      createAuditLog('guest-upload-document', 'patient_validation_failed', undefined, { patientId: patientId.substring(0, 8) });
       return new Response(
         JSON.stringify({ error: "Invalid patient or upload session expired" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // If upload token is provided, validate it (legacy flow)
+    // If upload token is provided, validate it
     if (uploadToken) {
       const { data: tokenData, error: tokenError } = await supabase
         .from("upload_tokens")
@@ -91,10 +95,7 @@ serve(async (req) => {
         .is("used_at", null)
         .single();
 
-      if (tokenError || !tokenData) {
-        console.log("Token validation failed:", { tokenError, uploadToken: uploadToken?.substring(0, 8) + "..." });
-        // Don't fail - the patient creation time check is sufficient
-      } else {
+      if (!tokenError && tokenData) {
         // Mark token as used
         await supabase
           .from("upload_tokens")
@@ -129,7 +130,7 @@ serve(async (req) => {
       .from("patient_documents")
       .insert({
         patient_id: patientId,
-        title: title.substring(0, 255), // Limit title length
+        title: title.substring(0, 255),
         document_type: documentType,
         file_path: filePath,
         file_size: file.size,
@@ -140,7 +141,6 @@ serve(async (req) => {
 
     if (docError) {
       console.error("Document record error:", docError);
-      // Try to delete uploaded file
       await supabase.storage.from("patient-documents").remove([filePath]);
       return new Response(
         JSON.stringify({ error: "Failed to create document record" }),
@@ -148,7 +148,20 @@ serve(async (req) => {
       );
     }
 
-    console.log("Document uploaded successfully:", { documentId: document.id, patientId });
+    // SECURITY: Queue file for virus scanning
+    await supabase
+      .from("file_scan_queue")
+      .insert({
+        document_id: document.id,
+        file_path: filePath,
+        scan_status: 'pending'
+      });
+
+    createAuditLog('guest-upload-document', 'upload_success', undefined, { 
+      documentId: document.id,
+      fileType: file.type,
+      fileSize: file.size
+    });
 
     return new Response(
       JSON.stringify({ success: true, document }),

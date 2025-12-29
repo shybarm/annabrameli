@@ -1,6 +1,5 @@
 project_id = "ftatmcyrmeyhghgckvbj"
 
-# Staff-only functions - require JWT authentication
 [functions.send-visit-summary]
 verify_jwt = true
 
@@ -13,12 +12,13 @@ verify_jwt = true
 [functions.notify-intake-complete]
 verify_jwt = true
 
-# Scheduler function - should be called by cron, but we'll add internal auth check
 [functions.send-appointment-reminders]
 verify_jwt = false
 
-# Guest functions - need public access but validate tokens internally
 [functions.guest-upload-document]
+verify_jwt = false
+
+[functions.guest-booking]
 verify_jwt = false
 
 [functions.get-intake-patient]
@@ -27,25 +27,20 @@ verify_jwt = false
 [functions.submit-intake]
 verify_jwt = false
 
-# Transcription function - public endpoint (no patient data is returned)
 [functions.transcribe-audio]
 verify_jwt = false
 
-# AI Chat assistant - public endpoint for website visitors
 [functions.chat-assistant]
 verify_jwt = false
 
-# Team invite - handles auth internally
 [functions.send-team-invite]
 verify_jwt = false
 
-# Invite verification functions - public endpoints for invite acceptance flow
 [functions.verify-team-invite]
 verify_jwt = false
 
 [functions.verify-patient-invite]
 verify_jwt = false
 
-# Patient invite acceptance - requires auth
 [functions.accept-patient-invite]
 verify_jwt = true

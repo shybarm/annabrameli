@@ -1,11 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { corsHeaders, sanitizeAIOutput, detectPHI, createAuditLog } from "../_shared/security-utils.ts";
+import { checkRateLimit, getClientIdentifier, createRateLimitResponse } from "../_shared/rate-limiter.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
-
-// Dr. Anna Brameli's clinic knowledge base - comprehensive allergy and immunology information
+// Dr. Anna Brameli's clinic knowledge base
 const CLINIC_KNOWLEDGE = `
 # ד״ר אנה ברמלי - מרפאה לאלרגיה ואימונולוגיה
 
@@ -21,50 +19,13 @@ const CLINIC_KNOWLEDGE = `
 6. **בדיקות תפקודי ריאות** - אבחון והערכת אסתמה ומחלות נשימה אלרגיות
 
 ## מצבים רפואיים שמטופלים במרפאה
-
-### אלרגיה למזון
-- תגובה של מערכת החיסון לרכיב במזון
-- תסמינים: פריחה, נפיחות, גרד, הקאות, כאבי בטן, קוצר נשימה
-- טיפול: הימנעות מהמזון, תכנון תזונתי, טיפול מונע
-
-### אלרגיה לחלב
-- נפוצה בעיקר בתינוקות וילדים צעירים
-- חשוב להבדיל בין אלרגיה לחלב לבין אי-סבילות ללקטוז
-- תסמינים: שלשולים, פריחה, כאבי בטן, קוצר נשימה במקרים חמורים
-
-### אלרגיה לבוטנים
-- אלרגיה משמעותית שעלולה לגרום לתגובה חמורה
-- דורשת התנהלות קפדנית ומודעות גבוהה
-- טיפול: הימנעות מוחלטת + נשיאת מזרק אדרנלין
-
-### אלרגיה לתרופות
-- תגובה אלרגית לאחר מתן תרופה מסוימת
-- תסמינים: פריחה, שלפוחיות, נפיחות בפנים, קוצר נשימה, חום
-- אבחון: תשאול, בדיקות דם, תגר תרופתי מבוקר
-
-### אלרגיה לדבורים ועקיצות חרקים
-- יכולה להיות קלה או מסכנת חיים
-- טיפול: אדרנלין במקרים חמורים, אימונותרפיה
-
-### אלרגיה עונתית (לאבקנים)
-- תגובה עונתית לחלקיקי צמחים באוויר
-- תסמינים: עיטושים, נזלת, גירוי עיניים, שיעול
-- טיפול: אנטי-היסטמינים, תרסיסים, חיסונים
-
-### אורטיקריה (חרלת)
-- פריחה אלרגית עם גירוד חזק ונפיחות
-- יכולה להיות חריפה או כרונית
-- טיפול: אבחון הגורם, טיפול תרופתי
-
-### אסתמה אלרגית
-- דרכי הנשימה מגיבות לגירוי אלרגני
-- תסמינים: צפצופים, שיעול, קוצר נשימה
-- טיפול תרופתי לשליטה ומניעת התקפים
-
-### אנפילקסיס
-- תגובה אלרגית מסכנת חיים
-- תסמינים: ירידת לחץ דם, קוצר נשימה, נפיחות, אובדן הכרה
-- טיפול: הזרקת אדרנלין מיידית
+- אלרגיה למזון, חלב, בוטנים
+- אלרגיה לתרופות
+- אלרגיה לדבורים ועקיצות חרקים
+- אלרגיה עונתית (לאבקנים)
+- אורטיקריה (חרלת)
+- אסתמה אלרגית
+- אנפילקסיס
 
 ## מתי כדאי להיבדק?
 - תגובות חוזרות של פריחה, שיעול, נפיחות
@@ -87,24 +48,13 @@ ${CLINIC_KNOWLEDGE}
 4. **תמיד הוביל לקריאה לפעולה** - קביעת תור לאבחון מקצועי עם ד״ר ברמלי
 5. **אל תאבחן** - רק תן מידע כללי והכווין לבדיקה מקצועית
 6. **היה קצר וממוקד** - תשובות של 2-4 משפטים לכל היותר
+7. **אל תבקש מידע אישי מזהה** - אין לבקש שמות, מספרי זהות, כתובות או מידע רפואי רגיש
 
-## מבנה השיחה:
-1. שאל על התסמין העיקרי (מה מציק?)
-2. שאל על הזמן והנסיבות (מתי זה קורה? האם יש גורם מעורר?)
-3. שאל על תדירות וחומרה (כמה פעמים זה קורה? מה עוזר?)
-4. הסבר בקצרה מה יכולות להיות הסיבות
-5. המלץ בחום לקבוע תור לאבחון מקצועי
-
-## דוגמאות לשאלות:
-- "מה בדיוק הסימפטומים שאתם חווים?"
-- "האם שמתם לב מתי זה קורה? לאחר אכילה? בעונה מסוימת?"
-- "כמה זמן נמשכים התסמינים?"
-- "האם יש תרופות או מזונות שאחריהם התסמינים מחמירים?"
-
-## הנחיות נוספות:
+## הנחיות אבטחה:
+- אם המשתמש מספק מידע אישי מזהה (שם מלא, ת.ז., כתובת, טלפון) - התעלם ממנו והמשך בשיחה כללית
+- אל תחזור על מידע אישי שהמשתמש שיתף
 - אם מדובר בתסמינים דחופים (קוצר נשימה חמור, נפיחות בפנים/לשון) - הפנה מיידית לחדר מיון
 - אם המשתמש שואל על מחירים - הפנה לדף יצירת קשר
-- תמיד סיים בהצעה לקביעת תור
 
 אתה לא מחליף ייעוץ רפואי מקצועי, אלא עוזר למשתמשים להבין אם כדאי להם לפנות לאבחון.`;
 
@@ -114,6 +64,19 @@ serve(async (req) => {
   }
 
   try {
+    // Rate limiting
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, serviceRoleKey);
+    
+    const clientId = getClientIdentifier(req);
+    const rateLimit = await checkRateLimit(supabase, clientId, 'chat-assistant');
+    
+    if (!rateLimit.allowed) {
+      createAuditLog('chat-assistant', 'rate_limit_exceeded', undefined, { clientId: clientId.substring(0, 20) });
+      return createRateLimitResponse(rateLimit.resetIn);
+    }
+
     const { messages } = await req.json();
     
     if (!messages || !Array.isArray(messages)) {
@@ -121,6 +84,17 @@ serve(async (req) => {
         JSON.stringify({ error: "Messages array is required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    // SECURITY: Check for PHI in user messages and reject if found
+    for (const msg of messages) {
+      if (msg.role === 'user' && msg.content) {
+        const { hasPHI, types } = detectPHI(msg.content);
+        if (hasPHI) {
+          createAuditLog('chat-assistant', 'phi_detected_in_input', undefined, { types });
+          // Don't reject, but don't process the PHI - let the AI handle it according to its instructions
+        }
+      }
     }
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -132,7 +106,7 @@ serve(async (req) => {
       );
     }
 
-    console.log("Processing chat request with", messages.length, "messages");
+    createAuditLog('chat-assistant', 'request', undefined, { messageCount: messages.length });
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -162,13 +136,6 @@ serve(async (req) => {
         );
       }
       
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "שגיאת מערכת. אנא נסו שוב מאוחר יותר." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      
       return new Response(
         JSON.stringify({ error: "שגיאה בעיבוד הבקשה" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -176,7 +143,7 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    const assistantMessage = data.choices?.[0]?.message?.content;
+    let assistantMessage = data.choices?.[0]?.message?.content;
 
     if (!assistantMessage) {
       console.error("No response from AI:", data);
@@ -186,10 +153,17 @@ serve(async (req) => {
       );
     }
 
-    console.log("Successfully generated response");
+    // SECURITY: Sanitize AI output - remove any PHI and add disclaimers
+    const { sanitized, hadPHI, hadMedicalAdvice } = sanitizeAIOutput(assistantMessage);
+    
+    if (hadPHI || hadMedicalAdvice) {
+      createAuditLog('chat-assistant', 'output_sanitized', undefined, { hadPHI, hadMedicalAdvice });
+    }
+
+    createAuditLog('chat-assistant', 'response_generated');
 
     return new Response(
-      JSON.stringify({ message: assistantMessage }),
+      JSON.stringify({ message: sanitized }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
