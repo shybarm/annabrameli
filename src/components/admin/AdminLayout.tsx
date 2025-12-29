@@ -173,11 +173,6 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       "min-h-screen transition-colors duration-500",
       hasMultipleClinics ? clinicTheme.bg : "bg-background"
     )} dir="rtl">
-      {/* Clinic Selector */}
-      <div className="lg:mr-64">
-        <ClinicSelector />
-      </div>
-
       {/* Mobile header - Apple-style glass effect */}
       <header className="lg:hidden fixed top-0 left-0 right-0 h-14 glass-light border-b border-border/50 z-50 flex items-center justify-between px-4 safe-area-inset-top">
         <Button 
@@ -203,6 +198,12 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         </div>
         <div className="w-10" />
       </header>
+
+      {/* Clinic Selector - positioned after mobile header, before sidebar */}
+      <div className="lg:mr-64 pt-14 lg:pt-0 relative z-40">
+        <ClinicSelector />
+      </div>
+
 
       {/* Sidebar - Apple-style with smooth animations */}
       <aside
@@ -333,7 +334,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       )}
 
       {/* Main content */}
-      <main className="lg:mr-64 pt-14 lg:pt-0 min-h-screen overflow-x-hidden">
+      <main className="lg:mr-64 min-h-screen overflow-x-hidden">
         <div className="p-4 lg:p-6 w-full max-w-full">{children}</div>
       </main>
     </div>
