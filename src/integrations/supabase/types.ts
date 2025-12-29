@@ -14,6 +14,75 @@ export type Database = {
   }
   public: {
     Tables: {
+      active_sessions: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          idle_timeout_minutes: number
+          ip_address: string | null
+          last_activity: string
+          session_token: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          idle_timeout_minutes?: number
+          ip_address?: string | null
+          last_activity?: string
+          session_token: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          idle_timeout_minutes?: number
+          ip_address?: string | null
+          last_activity?: string
+          session_token?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ai_output_log: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          function_name: string
+          id: string
+          input_hash: string | null
+          output_sanitized: boolean
+          phi_detected: boolean
+          phi_removed_fields: string[] | null
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          function_name: string
+          id?: string
+          input_hash?: string | null
+          output_sanitized?: boolean
+          phi_detected?: boolean
+          phi_removed_fields?: string[] | null
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          function_name?: string
+          id?: string
+          input_hash?: string | null
+          output_sanitized?: boolean
+          phi_detected?: boolean
+          phi_removed_fields?: string[] | null
+        }
+        Relationships: []
+      }
       appointment_types: {
         Row: {
           color: string | null
@@ -415,6 +484,132 @@ export type Database = {
             columns: ["clinic_id"]
             isOneToOne: false
             referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      file_scan_queue: {
+        Row: {
+          created_at: string
+          document_id: string
+          file_path: string
+          id: string
+          scan_result: Json | null
+          scan_status: string
+          scanned_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          document_id: string
+          file_path: string
+          id?: string
+          scan_result?: Json | null
+          scan_status?: string
+          scanned_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          document_id?: string
+          file_path?: string
+          id?: string
+          scan_result?: Json | null
+          scan_status?: string
+          scanned_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "file_scan_queue_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "patient_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guest_booking_requests: {
+        Row: {
+          appointment_type_id: string | null
+          approved_at: string | null
+          approved_by: string | null
+          captcha_token: string | null
+          clinic_id: string | null
+          created_at: string
+          email: string | null
+          expires_at: string
+          fingerprint_hash: string | null
+          first_name: string
+          id: string
+          ip_address: string | null
+          last_name: string
+          notes: string | null
+          patient_id: string | null
+          phone: string
+          requested_date: string
+          requested_time: string
+          status: string
+        }
+        Insert: {
+          appointment_type_id?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          captcha_token?: string | null
+          clinic_id?: string | null
+          created_at?: string
+          email?: string | null
+          expires_at?: string
+          fingerprint_hash?: string | null
+          first_name: string
+          id?: string
+          ip_address?: string | null
+          last_name: string
+          notes?: string | null
+          patient_id?: string | null
+          phone: string
+          requested_date: string
+          requested_time: string
+          status?: string
+        }
+        Update: {
+          appointment_type_id?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          captcha_token?: string | null
+          clinic_id?: string | null
+          created_at?: string
+          email?: string | null
+          expires_at?: string
+          fingerprint_hash?: string | null
+          first_name?: string
+          id?: string
+          ip_address?: string | null
+          last_name?: string
+          notes?: string | null
+          patient_id?: string | null
+          phone?: string
+          requested_date?: string
+          requested_time?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guest_booking_requests_appointment_type_id_fkey"
+            columns: ["appointment_type_id"]
+            isOneToOne: false
+            referencedRelation: "appointment_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guest_booking_requests_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guest_booking_requests_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
             referencedColumns: ["id"]
           },
         ]
@@ -979,6 +1174,54 @@ export type Database = {
           },
         ]
       }
+      phi_access_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          actor_role: string | null
+          created_at: string
+          id: string
+          ip_address: string | null
+          new_values: Json | null
+          old_values: Json | null
+          phi_fields_accessed: string[] | null
+          record_id: string | null
+          session_id: string | null
+          table_name: string
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          actor_role?: string | null
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          new_values?: Json | null
+          old_values?: Json | null
+          phi_fields_accessed?: string[] | null
+          record_id?: string | null
+          session_id?: string | null
+          table_name: string
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          actor_role?: string | null
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          new_values?: Json | null
+          old_values?: Json | null
+          phi_fields_accessed?: string[] | null
+          record_id?: string | null
+          session_id?: string | null
+          table_name?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -1012,6 +1255,33 @@ export type Database = {
           preferred_language?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      rate_limits: {
+        Row: {
+          created_at: string
+          endpoint: string
+          id: string
+          identifier: string
+          request_count: number
+          window_start: string
+        }
+        Insert: {
+          created_at?: string
+          endpoint: string
+          id?: string
+          identifier: string
+          request_count?: number
+          window_start?: string
+        }
+        Update: {
+          created_at?: string
+          endpoint?: string
+          id?: string
+          identifier?: string
+          request_count?: number
+          window_start?: string
         }
         Relationships: []
       }
@@ -1252,7 +1522,17 @@ export type Database = {
       can_view_documents: { Args: { _user_id: string }; Returns: boolean }
       can_view_patients: { Args: { _user_id: string }; Returns: boolean }
       check_patient_invite_code: { Args: { _code: string }; Returns: boolean }
+      check_rate_limit: {
+        Args: {
+          _endpoint: string
+          _identifier: string
+          _max_requests?: number
+          _window_seconds?: number
+        }
+        Returns: boolean
+      }
       check_team_invite_code: { Args: { _code: string }; Returns: boolean }
+      cleanup_expired_data: { Args: never; Returns: undefined }
       get_public_clinic: {
         Args: { clinic_id: string }
         Returns: {
@@ -1285,6 +1565,10 @@ export type Database = {
         Returns: boolean
       }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
+      validate_session: {
+        Args: { _session_token: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "doctor" | "secretary" | "patient"

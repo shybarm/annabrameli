@@ -1,14 +1,9 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { corsHeaders, verifyStaffAuth, detectPHI, createAuditLog } from "../_shared/security-utils.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
 
 interface VisitSummaryEmailRequest {
   patientEmail: string;
@@ -20,43 +15,31 @@ interface VisitSummaryEmailRequest {
   doctorName?: string;
 }
 
-// Helper function to verify staff authentication
-async function verifyStaffAuth(req: Request): Promise<{ isStaff: boolean; error?: string }> {
-  const authHeader = req.headers.get('Authorization');
-  if (!authHeader?.startsWith('Bearer ')) {
-    return { isStaff: false, error: 'Missing authorization header' };
-  }
+// SECURITY: Validate email format
+function isValidEmail(email: string): boolean {
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  return emailRegex.test(email) && email.length <= 255;
+}
 
-  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-  
-  const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-    global: { headers: { Authorization: authHeader } }
-  });
-
-  const { data: { user }, error } = await supabase.auth.getUser();
-  if (error || !user) {
-    return { isStaff: false, error: 'Invalid or expired token' };
-  }
-
-  // Verify staff role using the is_staff function
-  const { data: staffCheck, error: rpcError } = await supabase.rpc('is_staff', { _user_id: user.id });
-  if (rpcError || !staffCheck) {
-    return { isStaff: false, error: 'Access denied - staff only' };
-  }
-
-  return { isStaff: true };
+// SECURITY: Sanitize HTML content to prevent XSS
+function sanitizeForHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+    .replace(/\n/g, '<br>');
 }
 
 const handler = async (req: Request): Promise<Response> => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // SECURITY: Verify staff authentication
-    const { isStaff, error: authError } = await verifyStaffAuth(req);
+    // SECURITY: Verify staff authentication with JWT scope
+    const { isStaff, userId, error: authError } = await verifyStaffAuth(req);
     if (!isStaff) {
       console.error("Authentication failed:", authError);
       return new Response(
@@ -64,6 +47,7 @@ const handler = async (req: Request): Promise<Response> => {
         { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
+
     const { 
       patientEmail, 
       patientName, 
@@ -74,11 +58,36 @@ const handler = async (req: Request): Promise<Response> => {
       doctorName = "ד\"ר אנה ברמלי"
     }: VisitSummaryEmailRequest = await req.json();
 
-    console.log(`Sending visit summary email to ${patientEmail} for patient ${patientName}`);
-
-    if (!patientEmail) {
-      throw new Error("Patient email is required");
+    // SECURITY: Validate email
+    if (!patientEmail || !isValidEmail(patientEmail)) {
+      createAuditLog('send-visit-summary', 'invalid_email', userId);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invalid patient email address' }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
     }
+
+    // SECURITY: Validate required fields
+    if (!patientName || !visitDate) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Patient name and visit date are required' }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    createAuditLog('send-visit-summary', 'sending_email', userId, {
+      hasVisitSummary: !!visitSummary,
+      hasTreatmentPlan: !!treatmentPlan,
+      hasMedications: !!medications
+    });
+
+    // SECURITY: Sanitize all content for HTML
+    const safePatientName = sanitizeForHtml(patientName);
+    const safeVisitDate = sanitizeForHtml(visitDate);
+    const safeDoctorName = sanitizeForHtml(doctorName);
+    const safeVisitSummary = visitSummary ? sanitizeForHtml(visitSummary) : '';
+    const safeTreatmentPlan = treatmentPlan ? sanitizeForHtml(treatmentPlan) : '';
+    const safeMedications = medications ? sanitizeForHtml(medications) : '';
 
     const emailHtml = `
       <!DOCTYPE html>
@@ -134,32 +143,32 @@ const handler = async (req: Request): Promise<Response> => {
           <h1 style="color: white; border: none; margin: 0;">סיכום ביקור</h1>
         </div>
         
-        <p><strong>מטופל/ת:</strong> ${patientName}</p>
-        <p><strong>תאריך הביקור:</strong> ${visitDate}</p>
+        <p><strong>מטופל/ת:</strong> ${safePatientName}</p>
+        <p><strong>תאריך הביקור:</strong> ${safeVisitDate}</p>
         
-        ${visitSummary ? `
+        ${safeVisitSummary ? `
           <div class="section">
             <div class="section-title">📋 סיכום הביקור</div>
-            <div class="content">${visitSummary.replace(/\n/g, '<br>')}</div>
+            <div class="content">${safeVisitSummary}</div>
           </div>
         ` : ''}
         
-        ${treatmentPlan ? `
+        ${safeTreatmentPlan ? `
           <div class="section">
             <div class="section-title">🩺 תוכנית טיפול</div>
-            <div class="content">${treatmentPlan.replace(/\n/g, '<br>')}</div>
+            <div class="content">${safeTreatmentPlan}</div>
           </div>
         ` : ''}
         
-        ${medications ? `
+        ${safeMedications ? `
           <div class="section">
             <div class="section-title">💊 תרופות ומרשמים</div>
-            <div class="content">${medications.replace(/\n/g, '<br>')}</div>
+            <div class="content">${safeMedications}</div>
           </div>
         ` : ''}
         
         <div class="footer">
-          <p>בברכה,<br>${doctorName}</p>
+          <p>בברכה,<br>${safeDoctorName}</p>
           <p>מרפאה לרפואה משלימה</p>
           <p style="font-size: 11px; color: #999;">
             הודעה זו נשלחה אוטומטית ממערכת ניהול המרפאה.
@@ -173,27 +182,22 @@ const handler = async (req: Request): Promise<Response> => {
     const emailResponse = await resend.emails.send({
       from: "מרפאת ד\"ר אנה ברמלי <onboarding@resend.dev>",
       to: [patientEmail],
-      subject: `סיכום ביקור - ${visitDate}`,
+      subject: `סיכום ביקור - ${safeVisitDate}`,
       html: emailHtml,
     });
 
-    console.log("Email sent successfully:", emailResponse);
+    createAuditLog('send-visit-summary', 'email_sent', userId);
 
     return new Response(JSON.stringify({ success: true, data: emailResponse }), {
       status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        ...corsHeaders,
-      },
+      headers: { "Content-Type": "application/json", ...corsHeaders },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in send-visit-summary function:", error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
-      JSON.stringify({ success: false, error: error.message }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      }
+      JSON.stringify({ success: false, error: errorMessage }),
+      { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   }
 };

@@ -1,32 +1,56 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { corsHeaders, validateInput, createAuditLog } from "../_shared/security-utils.ts";
+import { checkRateLimit, getClientIdentifier, createRateLimitResponse } from "../_shared/rate-limiter.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+// Input validation schema
+const INTAKE_SCHEMA = {
+  required: ['token', 'formData'],
+  maxLength: {
+    'first_name': 100,
+    'last_name': 100,
+    'phone': 20,
+    'email': 255,
+    'address': 500,
+    'city': 100,
+    'id_number': 20,
+    'medical_notes': 5000,
+    'main_complaint': 2000,
+    'treatment_goals': 2000,
+  }
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
   try {
-    const { token, formData } = await req.json();
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
 
-    if (!token || !formData) {
+    // Rate limiting
+    const clientId = getClientIdentifier(req);
+    const rateLimit = await checkRateLimit(supabaseAdmin, clientId, 'submit-intake');
+    
+    if (!rateLimit.allowed) {
+      createAuditLog('submit-intake', 'rate_limit_exceeded', undefined, { clientId: clientId.substring(0, 20) });
+      return createRateLimitResponse(rateLimit.resetIn);
+    }
+
+    const body = await req.json();
+    const { token, formData } = body;
+
+    // Validate input
+    const validation = validateInput(body, { required: ['token', 'formData'] });
+    if (!validation.valid) {
+      createAuditLog('submit-intake', 'validation_failed', undefined, { error: validation.error });
       return new Response(
-        JSON.stringify({ error: "Token and form data are required" }),
+        JSON.stringify({ error: validation.error }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-
-    // Create a Supabase client with service role (bypasses RLS)
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
 
     // Validate the token
     const { data: tokenData, error: tokenError } = await supabaseAdmin
@@ -38,6 +62,7 @@ serve(async (req) => {
       .maybeSingle();
 
     if (tokenError || !tokenData) {
+      createAuditLog('submit-intake', 'invalid_token', undefined, { tokenPrefix: token?.substring(0, 8) });
       return new Response(
         JSON.stringify({ error: "Invalid or expired token" }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -51,44 +76,56 @@ serve(async (req) => {
       );
     }
 
-    // Prepare patient update data
-    const updateData: any = {
-      first_name: formData.first_name,
-      last_name: formData.last_name,
-      id_number: formData.id_number || null,
+    // SECURITY: Sanitize and validate form data lengths
+    const sanitizeString = (val: unknown, maxLen: number): string | null => {
+      if (typeof val !== 'string') return null;
+      return val.trim().substring(0, maxLen) || null;
+    };
+
+    const sanitizeInt = (val: unknown): number | null => {
+      if (val === null || val === undefined || val === '') return null;
+      const num = parseInt(String(val), 10);
+      return isNaN(num) ? null : num;
+    };
+
+    // Prepare patient update data with sanitization
+    const updateData: Record<string, unknown> = {
+      first_name: sanitizeString(formData.first_name, 100) || 'Unknown',
+      last_name: sanitizeString(formData.last_name, 100) || 'Unknown',
+      id_number: sanitizeString(formData.id_number, 20),
       date_of_birth: formData.date_of_birth || null,
-      gender: formData.gender || null,
-      phone: formData.phone || null,
-      email: formData.email || null,
-      address: formData.address || null,
-      city: formData.city || null,
-      occupation: formData.occupation || null,
-      marital_status: formData.marital_status || null,
-      num_children: formData.num_children ? parseInt(formData.num_children) : null,
-      referral_source: formData.referral_source || null,
-      emergency_contact_name: formData.emergency_contact_name || null,
-      emergency_contact_phone: formData.emergency_contact_phone || null,
-      insurance_provider: formData.insurance_provider || null,
-      insurance_number: formData.insurance_number || null,
-      allergies: formData.allergies ? formData.allergies.split(',').map((a: string) => a.trim()).filter(Boolean) : null,
-      chronic_conditions: formData.chronic_conditions ? formData.chronic_conditions.split(',').map((c: string) => c.trim()).filter(Boolean) : null,
-      current_medications: formData.current_medications || null,
-      previous_surgeries: formData.previous_surgeries || null,
-      family_history_father: formData.family_history_father || null,
-      family_history_mother: formData.family_history_mother || null,
-      family_history_other: formData.family_history_other || null,
-      smoking_status: formData.smoking_status || null,
-      alcohol_consumption: formData.alcohol_consumption || null,
-      exercise_frequency: formData.exercise_frequency || null,
-      sleep_hours: formData.sleep_hours ? parseInt(formData.sleep_hours) : null,
-      stress_level: formData.stress_level || null,
-      main_complaint: formData.main_complaint || null,
-      symptoms_duration: formData.symptoms_duration || null,
-      previous_treatments: formData.previous_treatments || null,
-      treatment_goals: formData.treatment_goals || null,
-      preferred_contact_method: formData.preferred_contact_method || null,
-      preferred_contact_time: formData.preferred_contact_time || null,
-      medical_notes: formData.medical_notes || null,
+      gender: sanitizeString(formData.gender, 20),
+      phone: sanitizeString(formData.phone, 20),
+      email: sanitizeString(formData.email, 255),
+      address: sanitizeString(formData.address, 500),
+      city: sanitizeString(formData.city, 100),
+      occupation: sanitizeString(formData.occupation, 100),
+      marital_status: sanitizeString(formData.marital_status, 50),
+      num_children: sanitizeInt(formData.num_children),
+      referral_source: sanitizeString(formData.referral_source, 100),
+      emergency_contact_name: sanitizeString(formData.emergency_contact_name, 100),
+      emergency_contact_phone: sanitizeString(formData.emergency_contact_phone, 20),
+      insurance_provider: sanitizeString(formData.insurance_provider, 100),
+      insurance_number: sanitizeString(formData.insurance_number, 50),
+      allergies: formData.allergies ? String(formData.allergies).split(',').map((a: string) => a.trim().substring(0, 100)).filter(Boolean).slice(0, 50) : null,
+      chronic_conditions: formData.chronic_conditions ? String(formData.chronic_conditions).split(',').map((c: string) => c.trim().substring(0, 100)).filter(Boolean).slice(0, 50) : null,
+      current_medications: sanitizeString(formData.current_medications, 2000),
+      previous_surgeries: sanitizeString(formData.previous_surgeries, 2000),
+      family_history_father: sanitizeString(formData.family_history_father, 1000),
+      family_history_mother: sanitizeString(formData.family_history_mother, 1000),
+      family_history_other: sanitizeString(formData.family_history_other, 1000),
+      smoking_status: sanitizeString(formData.smoking_status, 50),
+      alcohol_consumption: sanitizeString(formData.alcohol_consumption, 50),
+      exercise_frequency: sanitizeString(formData.exercise_frequency, 50),
+      sleep_hours: sanitizeInt(formData.sleep_hours),
+      stress_level: sanitizeString(formData.stress_level, 50),
+      main_complaint: sanitizeString(formData.main_complaint, 2000),
+      symptoms_duration: sanitizeString(formData.symptoms_duration, 200),
+      previous_treatments: sanitizeString(formData.previous_treatments, 2000),
+      treatment_goals: sanitizeString(formData.treatment_goals, 2000),
+      preferred_contact_method: sanitizeString(formData.preferred_contact_method, 50),
+      preferred_contact_time: sanitizeString(formData.preferred_contact_time, 50),
+      medical_notes: sanitizeString(formData.medical_notes, 5000),
       consent_signed: true,
       consent_signed_at: new Date().toISOString(),
       gdpr_consent: true,
@@ -114,14 +151,15 @@ serve(async (req) => {
     }
 
     // Mark token as completed
-    const { error: tokenUpdateError } = await supabaseAdmin
+    await supabaseAdmin
       .from("intake_tokens")
       .update({ completed_at: new Date().toISOString() })
       .eq("id", tokenData.id);
 
-    if (tokenUpdateError) {
-      console.error("Token completion error:", tokenUpdateError);
-    }
+    createAuditLog('submit-intake', 'intake_completed', undefined, { 
+      patientId: tokenData.patient_id,
+      tokenId: tokenData.id 
+    });
 
     return new Response(
       JSON.stringify({
