@@ -163,6 +163,8 @@ export async function verifyCaptcha(token: string): Promise<boolean> {
   }
   
   try {
+    console.log('Verifying reCAPTCHA token...');
+    
     const response = await fetch('https://www.google.com/recaptcha/api/siteverify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -170,6 +172,12 @@ export async function verifyCaptcha(token: string): Promise<boolean> {
     });
     
     const data = await response.json();
+    console.log('reCAPTCHA verification response:', JSON.stringify(data));
+    
+    if (!data.success) {
+      console.error('reCAPTCHA failed. Error codes:', data['error-codes']);
+    }
+    
     return data.success === true;
   } catch (error) {
     console.error('CAPTCHA verification error:', error);
