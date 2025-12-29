@@ -49,16 +49,21 @@ export default function NewAppointment() {
 
     const scheduled_at = `${formData.date}T${formData.time}:00`;
 
-    await createAppointment.mutateAsync({
-      patient_id: selectedPatientId,
-      appointment_type_id: formData.appointment_type_id || undefined,
-      clinic_id: appointmentClinicId || undefined,
-      scheduled_at,
-      duration_minutes: formData.duration_minutes,
-      notes: formData.notes || undefined,
-    });
+    try {
+      await createAppointment.mutateAsync({
+        patient_id: selectedPatientId,
+        appointment_type_id: formData.appointment_type_id || undefined,
+        clinic_id: appointmentClinicId || undefined,
+        scheduled_at,
+        duration_minutes: formData.duration_minutes,
+        notes: formData.notes || undefined,
+      });
 
-    navigate('/admin/appointments');
+      navigate('/admin/appointments');
+    } catch (error: any) {
+      // Error handling is done in the hook, just prevent navigation
+      // The hook shows appropriate Hebrew toast messages for SLOT_TAKEN and SLOT_RACE_CONDITION
+    }
   };
 
   return (

@@ -119,8 +119,49 @@ serve(async (req) => {
 
     const durationMinutes = appointmentType?.duration_minutes || 30;
 
-    // Create appointment with patient_id and clinic_id
+    // DOUBLE-BOOKING PREVENTION: Check for overlapping appointments
     const scheduledAt = `${date}T${time}:00`;
+    const startTime = new Date(scheduledAt);
+    const endTime = new Date(startTime.getTime() + durationMinutes * 60 * 1000);
+    
+    // Get appointments on the same day for this clinic
+    const dayStart = new Date(startTime);
+    dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(startTime);
+    dayEnd.setHours(23, 59, 59, 999);
+    
+    const { data: existingAppointments } = await supabase
+      .from("appointments")
+      .select("id, scheduled_at, duration_minutes, created_at")
+      .eq("clinic_id", clinicId)
+      .neq("status", "cancelled")
+      .gte("scheduled_at", dayStart.toISOString())
+      .lte("scheduled_at", dayEnd.toISOString());
+    
+    // Check for overlaps
+    for (const apt of existingAppointments || []) {
+      const aptStart = new Date(apt.scheduled_at);
+      const aptEnd = new Date(aptStart.getTime() + (apt.duration_minutes || 30) * 60 * 1000);
+      
+      // Overlap check: existing.start < requested.end AND existing.end > requested.start
+      if (aptStart < endTime && aptEnd > startTime) {
+        createAuditLog('guest-booking', 'slot_taken', undefined, { 
+          clinicId, 
+          requestedTime: scheduledAt,
+          conflictingAppointmentId: apt.id 
+        });
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: "הזמן הזה כבר תפוס. בחרו זמן אחר.",
+            code: "SLOT_TAKEN"
+          }),
+          { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
+    // Create appointment with patient_id and clinic_id
     const { data: appointment, error: appointmentError } = await supabase
       .from("appointments")
       .insert({
@@ -132,7 +173,7 @@ serve(async (req) => {
         notes: notes?.trim().substring(0, 1000) || null,
         status: 'scheduled'
       })
-      .select("id")
+      .select("id, created_at")
       .single();
 
     if (appointmentError) {
@@ -141,6 +182,54 @@ serve(async (req) => {
         JSON.stringify({ error: "Failed to create appointment" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    // POST-CREATE VALIDATION: Handle race conditions
+    const { data: postCreateCheck } = await supabase
+      .from("appointments")
+      .select("id, scheduled_at, duration_minutes, created_at")
+      .eq("clinic_id", clinicId)
+      .neq("status", "cancelled")
+      .neq("id", appointment.id)
+      .gte("scheduled_at", dayStart.toISOString())
+      .lte("scheduled_at", dayEnd.toISOString());
+    
+    for (const apt of postCreateCheck || []) {
+      const aptStart = new Date(apt.scheduled_at || scheduledAt);
+      const aptDuration = apt.duration_minutes || 30;
+      const aptEnd = new Date(aptStart.getTime() + aptDuration * 60 * 1000);
+      
+      if (aptStart < endTime && aptEnd > startTime) {
+        // Race condition detected - compare created_at timestamps
+        const thisCreatedAt = new Date(appointment.created_at);
+        const otherCreatedAt = new Date(apt.created_at);
+        
+        if (thisCreatedAt > otherCreatedAt) {
+          // This appointment was created later - cancel it
+          await supabase
+            .from("appointments")
+            .update({
+              status: 'cancelled',
+              cancelled_at: new Date().toISOString(),
+              cancellation_reason: 'התור נתפס באותו רגע על ידי מטופל אחר',
+            })
+            .eq("id", appointment.id);
+          
+          createAuditLog('guest-booking', 'race_condition_cancelled', undefined, { 
+            cancelledAppointmentId: appointment.id,
+            winnerAppointmentId: apt.id 
+          });
+          
+          return new Response(
+            JSON.stringify({ 
+              success: false, 
+              error: "התור נתפס באותו רגע. הזמנה בוטלה. אנא בחרו זמן אחר.",
+              code: "SLOT_RACE_CONDITION"
+            }),
+            { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+      }
     }
 
     // Also insert into staging table for audit/tracking

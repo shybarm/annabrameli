@@ -151,11 +151,77 @@ export function usePatientAppointments(patientId: string | undefined) {
   });
 }
 
+// Check if a time slot overlaps with existing appointments
+export async function checkSlotAvailability(
+  clinicId: string | undefined,
+  scheduledAt: string,
+  durationMinutes: number,
+  excludeAppointmentId?: string
+): Promise<{ available: boolean; conflictingAppointment?: Appointment }> {
+  const startTime = new Date(scheduledAt);
+  const endTime = new Date(startTime.getTime() + durationMinutes * 60 * 1000);
+  
+  // Query for overlapping appointments in the same clinic
+  let query = supabase
+    .from('appointments')
+    .select('*')
+    .neq('status', 'cancelled');
+  
+  if (clinicId) {
+    query = query.eq('clinic_id', clinicId);
+  }
+  
+  if (excludeAppointmentId) {
+    query = query.neq('id', excludeAppointmentId);
+  }
+  
+  // Get appointments on the same day
+  const dayStart = new Date(startTime);
+  dayStart.setHours(0, 0, 0, 0);
+  const dayEnd = new Date(startTime);
+  dayEnd.setHours(23, 59, 59, 999);
+  
+  query = query
+    .gte('scheduled_at', dayStart.toISOString())
+    .lte('scheduled_at', dayEnd.toISOString());
+  
+  const { data: appointments, error } = await query;
+  
+  if (error) {
+    console.error('Error checking slot availability:', error);
+    throw error;
+  }
+  
+  // Check for overlaps
+  for (const apt of appointments || []) {
+    const aptStart = new Date(apt.scheduled_at);
+    const aptEnd = new Date(aptStart.getTime() + (apt.duration_minutes || 30) * 60 * 1000);
+    
+    // Check if there's an overlap: existing.start < requested.end AND existing.end > requested.start
+    if (aptStart < endTime && aptEnd > startTime) {
+      return { available: false, conflictingAppointment: apt as Appointment };
+    }
+  }
+  
+  return { available: true };
+}
+
 export function useCreateAppointment() {
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: async (input: AppointmentInput) => {
+      // Check slot availability before creating
+      const { available } = await checkSlotAvailability(
+        input.clinic_id,
+        input.scheduled_at,
+        input.duration_minutes || 30
+      );
+      
+      if (!available) {
+        throw new Error('SLOT_TAKEN');
+      }
+      
       const { data, error } = await supabase
         .from('appointments')
         .insert(input)
@@ -163,14 +229,58 @@ export function useCreateAppointment() {
         .single();
       
       if (error) throw error;
+      
+      // Post-create validation for race condition handling
+      const { available: stillAvailable, conflictingAppointment } = await checkSlotAvailability(
+        input.clinic_id,
+        input.scheduled_at,
+        input.duration_minutes || 30,
+        data.id
+      );
+      
+      if (!stillAvailable && conflictingAppointment) {
+        // Race condition: another appointment was created at the same time
+        // Keep the one created first (compare created_at timestamps)
+        const thisCreatedAt = new Date(data.created_at);
+        const otherCreatedAt = new Date(conflictingAppointment.created_at);
+        
+        if (thisCreatedAt > otherCreatedAt) {
+          // This appointment was created later - cancel it
+          await supabase
+            .from('appointments')
+            .update({
+              status: 'cancelled',
+              cancelled_at: new Date().toISOString(),
+              cancellation_reason: 'התור נתפס באותו רגע על ידי מטופל אחר',
+            })
+            .eq('id', data.id);
+          
+          throw new Error('SLOT_RACE_CONDITION');
+        }
+      }
+      
       return data as Appointment;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['appointments'] });
       toast({ title: 'תור נקבע בהצלחה' });
     },
-    onError: (error) => {
-      toast({ title: 'שגיאה', description: error.message, variant: 'destructive' });
+    onError: (error: Error) => {
+      if (error.message === 'SLOT_TAKEN') {
+        toast({ 
+          title: 'הזמן הזה כבר תפוס', 
+          description: 'בחרו זמן אחר', 
+          variant: 'destructive' 
+        });
+      } else if (error.message === 'SLOT_RACE_CONDITION') {
+        toast({ 
+          title: 'התור נתפס באותו רגע', 
+          description: 'הזמנה בוטלה. אנא בחרו זמן אחר.', 
+          variant: 'destructive' 
+        });
+      } else {
+        toast({ title: 'שגיאה', description: error.message, variant: 'destructive' });
+      }
     },
   });
 }
