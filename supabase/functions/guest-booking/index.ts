@@ -51,14 +51,106 @@ serve(async (req) => {
     
     const fingerprintHash = await hashData(clientId);
 
-    // Insert into staging table (NOT main patients table)
+    const trimmedPhone = phone.trim().substring(0, 20);
+    const trimmedEmail = email?.trim().substring(0, 255) || null;
+    const trimmedFirstName = firstName.trim().substring(0, 100);
+    const trimmedLastName = lastName.trim().substring(0, 100);
+
+    // Find existing patient by clinic_id + phone (priority) or clinic_id + email
+    let patientId: string | null = null;
+
+    // Try to find by phone first
+    const { data: existingByPhone } = await supabase
+      .from("patients")
+      .select("id")
+      .eq("clinic_id", clinicId)
+      .eq("phone", trimmedPhone)
+      .limit(1)
+      .maybeSingle();
+
+    if (existingByPhone) {
+      patientId = existingByPhone.id;
+    } else if (trimmedEmail) {
+      // Try by email
+      const { data: existingByEmail } = await supabase
+        .from("patients")
+        .select("id")
+        .eq("clinic_id", clinicId)
+        .eq("email", trimmedEmail)
+        .limit(1)
+        .maybeSingle();
+
+      if (existingByEmail) {
+        patientId = existingByEmail.id;
+      }
+    }
+
+    // If no patient found, create one
+    if (!patientId) {
+      const { data: newPatient, error: patientError } = await supabase
+        .from("patients")
+        .insert({
+          first_name: trimmedFirstName,
+          last_name: trimmedLastName,
+          phone: trimmedPhone,
+          email: trimmedEmail,
+          clinic_id: clinicId,
+          status: 'active'
+        })
+        .select("id")
+        .single();
+
+      if (patientError) {
+        console.error("Patient creation error:", patientError);
+        return new Response(
+          JSON.stringify({ error: "Failed to create patient record" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      patientId = newPatient.id;
+    }
+
+    // Get appointment type duration
+    const { data: appointmentType } = await supabase
+      .from("appointment_types")
+      .select("duration_minutes")
+      .eq("id", appointmentTypeId)
+      .single();
+
+    const durationMinutes = appointmentType?.duration_minutes || 30;
+
+    // Create appointment with patient_id and clinic_id
+    const scheduledAt = `${date}T${time}:00`;
+    const { data: appointment, error: appointmentError } = await supabase
+      .from("appointments")
+      .insert({
+        patient_id: patientId,
+        clinic_id: clinicId,
+        appointment_type_id: appointmentTypeId,
+        scheduled_at: scheduledAt,
+        duration_minutes: durationMinutes,
+        notes: notes?.trim().substring(0, 1000) || null,
+        status: 'scheduled'
+      })
+      .select("id")
+      .single();
+
+    if (appointmentError) {
+      console.error("Appointment creation error:", appointmentError);
+      return new Response(
+        JSON.stringify({ error: "Failed to create appointment" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Also insert into staging table for audit/tracking
     const { data: booking, error: bookingError } = await supabase
       .from("guest_booking_requests")
       .insert({
-        first_name: firstName.trim().substring(0, 100),
-        last_name: lastName.trim().substring(0, 100),
-        phone: phone.trim().substring(0, 20),
-        email: email?.trim().substring(0, 255) || null,
+        first_name: trimmedFirstName,
+        last_name: trimmedLastName,
+        phone: trimmedPhone,
+        email: trimmedEmail,
         clinic_id: clinicId,
         appointment_type_id: appointmentTypeId,
         requested_date: date,
@@ -67,29 +159,31 @@ serve(async (req) => {
         captcha_token: captchaToken ? await hashData(captchaToken) : null,
         ip_address: ip.substring(0, 45),
         fingerprint_hash: fingerprintHash.substring(0, 64),
-        status: 'pending'
+        status: 'approved',
+        patient_id: patientId
       })
       .select()
       .single();
 
     if (bookingError) {
-      console.error("Booking error:", bookingError);
-      return new Response(
-        JSON.stringify({ error: "Failed to create booking request" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      console.error("Booking log error:", bookingError);
+      // Don't fail - appointment was created successfully
     }
 
     createAuditLog('guest-booking', 'booking_created', undefined, { 
-      bookingId: booking.id,
+      bookingId: booking?.id,
+      patientId,
+      appointmentId: appointment.id,
       clinicId 
     });
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        bookingId: booking.id,
-        message: "Booking request submitted for review" 
+        bookingId: booking?.id || appointment.id,
+        patientId,
+        appointmentId: appointment.id,
+        message: "Appointment booked successfully" 
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
