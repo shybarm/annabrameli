@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { z } from 'zod';
-import ReCAPTCHA from 'react-google-recaptcha';
+import HCaptcha from '@hcaptcha/react-hcaptcha';
 import { useAppointmentTypes } from '@/hooks/useAppointments';
 import { usePublicClinics, getClinicHoursForDay, getAvailableTimeSlots, type PublicClinic } from '@/hooks/useClinics';
 import { supabase } from '@/integrations/supabase/client';
@@ -19,8 +19,8 @@ import { Stethoscope, Calendar as CalendarIcon, Clock, ArrowRight, CheckCircle, 
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
 
-// Google reCAPTCHA site key (publishable)
-const RECAPTCHA_SITE_KEY = '6LewNDosAAAAAC09M-rygLAGC3LzDCWOJI7wFBoU';
+// hCaptcha site key (publishable) - test key for development
+const HCAPTCHA_SITE_KEY = '10000000-ffff-ffff-ffff-000000000001';
 
 const guestSchema = z.object({
   firstName: z.string().trim().min(2, 'שם פרטי חייב להכיל לפחות 2 תווים').max(100),
@@ -37,7 +37,7 @@ export default function GuestBooking() {
   const [step, setStep] = useState<'clinic' | 'info' | 'appointment' | 'success'>('clinic');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const captchaRef = useRef<ReCAPTCHA>(null);
+  const captchaRef = useRef<HCaptcha>(null);
 
   // Form state
   const [selectedClinicId, setSelectedClinicId] = useState('');
@@ -80,8 +80,8 @@ export default function GuestBooking() {
     return openDays.join(', ');
   };
 
-  const handleCaptchaVerify = (token: string | null) => {
-    setCaptchaToken(token || null);
+  const handleCaptchaVerify = (token: string) => {
+    setCaptchaToken(token);
   };
 
   const handleCaptchaExpire = () => {
@@ -223,7 +223,7 @@ export default function GuestBooking() {
         await uploadDocuments(data.bookingId);
       }
       // Reset CAPTCHA after successful submit (token can be used only once)
-      captchaRef.current?.reset();
+      captchaRef.current?.resetCaptcha();
       setCaptchaToken(null);
 
       setStep('success');
@@ -231,7 +231,7 @@ export default function GuestBooking() {
       console.error('Booking error:', error);
       
       // Reset CAPTCHA on error
-      captchaRef.current?.reset();
+      captchaRef.current?.resetCaptcha();
       setCaptchaToken(null);
       
       toast({
@@ -619,12 +619,12 @@ export default function GuestBooking() {
                     <span>אימות אבטחה</span>
                   </div>
                   <div className="flex justify-center">
-                    <ReCAPTCHA
+                    <HCaptcha
                       ref={captchaRef}
-                      sitekey={RECAPTCHA_SITE_KEY}
-                      onChange={handleCaptchaVerify}
-                      onExpired={handleCaptchaExpire}
-                      hl="he"
+                      sitekey={HCAPTCHA_SITE_KEY}
+                      onVerify={handleCaptchaVerify}
+                      onExpire={handleCaptchaExpire}
+                      languageOverride="he"
                     />
                   </div>
                 </div>
