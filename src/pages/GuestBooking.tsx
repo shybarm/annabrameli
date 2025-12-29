@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { z } from 'zod';
+import HCaptcha from '@hcaptcha/react-hcaptcha';
 import { useAppointmentTypes } from '@/hooks/useAppointments';
 import { usePublicClinics, getClinicHoursForDay, getAvailableTimeSlots, type PublicClinic } from '@/hooks/useClinics';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,15 +15,18 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Stethoscope, Calendar as CalendarIcon, Clock, ArrowRight, CheckCircle, Upload, X, FileText, MapPin } from 'lucide-react';
+import { Stethoscope, Calendar as CalendarIcon, Clock, ArrowRight, CheckCircle, Upload, X, FileText, MapPin, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
 
+// hCaptcha site key - this is a publishable key
+const HCAPTCHA_SITE_KEY = '10000000-ffff-ffff-ffff-000000000001'; // Test key - replace with real key in production
+
 const guestSchema = z.object({
-  firstName: z.string().trim().min(2, 'שם פרטי חייב להכיל לפחות 2 תווים'),
-  lastName: z.string().trim().min(2, 'שם משפחה חייב להכיל לפחות 2 תווים'),
-  phone: z.string().trim().min(9, 'מספר טלפון לא תקין'),
-  email: z.string().trim().email('כתובת אימייל לא תקינה').optional().or(z.literal('')),
+  firstName: z.string().trim().min(2, 'שם פרטי חייב להכיל לפחות 2 תווים').max(100),
+  lastName: z.string().trim().min(2, 'שם משפחה חייב להכיל לפחות 2 תווים').max(100),
+  phone: z.string().trim().min(9, 'מספר טלפון לא תקין').max(20),
+  email: z.string().trim().email('כתובת אימייל לא תקינה').max(255).optional().or(z.literal('')),
 });
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -33,6 +37,7 @@ export default function GuestBooking() {
   const [step, setStep] = useState<'clinic' | 'info' | 'appointment' | 'success'>('clinic');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const captchaRef = useRef<HCaptcha>(null);
 
   // Form state
   const [selectedClinicId, setSelectedClinicId] = useState('');
@@ -45,6 +50,7 @@ export default function GuestBooking() {
   const [time, setTime] = useState('');
   const [notes, setNotes] = useState('');
   const [documents, setDocuments] = useState<File[]>([]);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
   const { data: clinics, isLoading: loadingClinics } = usePublicClinics();
   const { data: appointmentTypes } = useAppointmentTypes();
@@ -54,7 +60,6 @@ export default function GuestBooking() {
   // Get available time slots based on selected clinic and date
   const availableTimeSlots = useMemo(() => {
     if (!selectedClinic || !date) return [];
-    // Cast to Clinic for getAvailableTimeSlots (only uses working_hours)
     return getAvailableTimeSlots(selectedClinic as any, date, 30);
   }, [selectedClinic, date]);
 
@@ -73,6 +78,14 @@ export default function GuestBooking() {
     const dayLabels = ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ש׳'];
     const openDays = days.map((day, i) => clinic.working_hours?.[day] ? dayLabels[i] : null).filter(Boolean);
     return openDays.join(', ');
+  };
+
+  const handleCaptchaVerify = (token: string) => {
+    setCaptchaToken(token);
+  };
+
+  const handleCaptchaExpire = () => {
+    setCaptchaToken(null);
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -109,12 +122,12 @@ export default function GuestBooking() {
     setDocuments(prev => prev.filter((_, i) => i !== index));
   };
 
-  const uploadDocuments = async (patientId: string) => {
+  const uploadDocuments = async (bookingId: string) => {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     
     for (const file of documents) {
       const formData = new FormData();
-      formData.append('patient_id', patientId);
+      formData.append('booking_id', bookingId);
       formData.append('file', file);
       formData.append('title', file.name);
       formData.append('document_type', 'referral');
@@ -167,51 +180,57 @@ export default function GuestBooking() {
       return;
     }
 
+    if (!captchaToken) {
+      toast({
+        title: 'נא לאמת שאתה לא רובוט',
+        description: 'השלם את אימות ה-CAPTCHA',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      // Create patient record
-      const { data: patient, error: patientError } = await supabase
-        .from('patients')
-        .insert({
-          first_name: firstName.trim(),
-          last_name: lastName.trim(),
+      // Call the secure guest-booking edge function
+      const response = await supabase.functions.invoke('guest-booking', {
+        body: {
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
           phone: phone.trim(),
           email: email.trim() || null,
-          status: 'active',
-          clinic_id: selectedClinicId,
-        })
-        .select()
-        .single();
+          clinicId: selectedClinicId,
+          appointmentTypeId,
+          date: format(date, 'yyyy-MM-dd'),
+          time,
+          notes: notes.trim() || null,
+          captchaToken,
+        },
+      });
 
-      if (patientError) throw patientError;
-
-      // Upload documents if any
-      if (documents.length > 0) {
-        await uploadDocuments(patient.id);
+      if (response.error) {
+        throw new Error(response.error.message || 'שגיאה בשליחת הבקשה');
       }
 
-      // Create appointment with clinic
-      const scheduledAt = new Date(date);
-      const [hours, minutes] = time.split(':').map(Number);
-      scheduledAt.setHours(hours, minutes, 0, 0);
+      const data = response.data;
 
-      const { error: appointmentError } = await supabase
-        .from('appointments')
-        .insert({
-          patient_id: patient.id,
-          appointment_type_id: appointmentTypeId,
-          scheduled_at: scheduledAt.toISOString(),
-          duration_minutes: selectedType?.duration_minutes || 30,
-          notes: notes.trim() || null,
-          clinic_id: selectedClinicId,
-        });
+      if (!data.success) {
+        throw new Error(data.error || 'שגיאה בשליחת הבקשה');
+      }
 
-      if (appointmentError) throw appointmentError;
+      // Upload documents if any (using booking ID)
+      if (documents.length > 0 && data.bookingId) {
+        await uploadDocuments(data.bookingId);
+      }
 
       setStep('success');
     } catch (error: any) {
       console.error('Booking error:', error);
+      
+      // Reset CAPTCHA on error
+      captchaRef.current?.resetCaptcha();
+      setCaptchaToken(null);
+      
       toast({
         title: 'שגיאה בקביעת התור',
         description: error.message,
@@ -372,6 +391,7 @@ export default function GuestBooking() {
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
                       placeholder="שם פרטי"
+                      maxLength={100}
                       required
                     />
                   </div>
@@ -382,6 +402,7 @@ export default function GuestBooking() {
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
                       placeholder="שם משפחה"
+                      maxLength={100}
                       required
                     />
                   </div>
@@ -394,6 +415,7 @@ export default function GuestBooking() {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="050-1234567"
+                    maxLength={20}
                     dir="ltr"
                     required
                   />
@@ -406,6 +428,7 @@ export default function GuestBooking() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="email@example.com"
+                    maxLength={255}
                     dir="ltr"
                   />
                 </div>
@@ -487,7 +510,7 @@ export default function GuestBooking() {
                         selected={date}
                         onSelect={(d) => {
                           setDate(d);
-                          setTime(''); // Reset time when date changes
+                          setTime('');
                         }}
                         disabled={isDateDisabled}
                         initialFocus
@@ -582,13 +605,31 @@ export default function GuestBooking() {
                     onChange={(e) => setNotes(e.target.value)}
                     placeholder="ספר/י לנו בקצרה על סיבת הפנייה..."
                     rows={3}
+                    maxLength={1000}
                   />
+                </div>
+
+                {/* CAPTCHA */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                    <Shield className="h-4 w-4" />
+                    <span>אימות אבטחה</span>
+                  </div>
+                  <div className="flex justify-center">
+                    <HCaptcha
+                      ref={captchaRef}
+                      sitekey={HCAPTCHA_SITE_KEY}
+                      onVerify={handleCaptchaVerify}
+                      onExpire={handleCaptchaExpire}
+                      languageOverride="he"
+                    />
+                  </div>
                 </div>
 
                 <Button
                   onClick={handleSubmit}
                   className="w-full"
-                  disabled={isSubmitting || !appointmentTypeId || !date || !time}
+                  disabled={isSubmitting || !appointmentTypeId || !date || !time || !captchaToken}
                 >
                   {isSubmitting ? 'שולח בקשה...' : 'שלח בקשה לתור'}
                 </Button>
