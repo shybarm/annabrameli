@@ -152,31 +152,30 @@ export function validateInput(
 }
 
 /**
- * Verify Google reCAPTCHA token
+ * Verify hCaptcha token
  */
 export async function verifyCaptcha(token: string): Promise<boolean> {
-  const RECAPTCHA_SECRET = Deno.env.get('RECAPTCHA_SECRET_KEY');
+  const HCAPTCHA_SECRET = Deno.env.get('HCAPTCHA_SECRET_KEY');
 
-  if (!RECAPTCHA_SECRET) {
-    console.warn('RECAPTCHA_SECRET_KEY not configured - skipping CAPTCHA verification');
+  if (!HCAPTCHA_SECRET) {
+    console.warn('HCAPTCHA_SECRET_KEY not configured - skipping CAPTCHA verification');
     return true; // Fail open if not configured (should be configured in production)
   }
 
   try {
-    const tokenLen = token?.length ?? 0;
-    console.log(`Verifying reCAPTCHA token (len=${tokenLen})...`);
+    console.log(`Verifying hCaptcha token (len=${token?.length ?? 0})...`);
 
-    const response = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+    const response = await fetch('https://hcaptcha.com/siteverify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: `secret=${encodeURIComponent(RECAPTCHA_SECRET)}&response=${encodeURIComponent(token)}`
+      body: `secret=${encodeURIComponent(HCAPTCHA_SECRET)}&response=${encodeURIComponent(token)}`
     });
 
     const data = await response.json();
-    console.log('reCAPTCHA verification response:', JSON.stringify(data));
+    console.log('hCaptcha verification response:', JSON.stringify(data));
 
     if (!data.success) {
-      console.error('reCAPTCHA failed. Error codes:', data['error-codes']);
+      console.error('hCaptcha failed. Error codes:', data['error-codes']);
     }
 
     return data.success === true;
