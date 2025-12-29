@@ -61,8 +61,8 @@ const navItems: NavItem[] = [
 export function AdminLayout({ children }: AdminLayoutProps) {
   const { user, loading, isStaff, isAdmin, signOut, roles, hasPermission } = useAuth();
   const { data: unreadCount } = useUnreadMessageCount();
-  const { data: unreviewedPatientsCount } = useUnreviewedPatientsCount();
-  const { clinicTheme } = useClinicContext();
+  const { clinicTheme, selectedClinicId } = useClinicContext();
+  const { data: unreviewedPatientsCount } = useUnreviewedPatientsCount(selectedClinicId);
   const { data: clinics } = useClinics();
   const hasMultipleClinics = clinics && clinics.length > 1;
   const navigate = useNavigate();
