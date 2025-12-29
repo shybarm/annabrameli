@@ -621,7 +621,7 @@ export default function PatientDetail() {
                 disabled={markReviewed.isPending}
               >
                 <CheckCircle className="h-4 w-4 ml-2" />
-                {markReviewed.isPending ? 'מעדכן...' : 'סמן כמתוכנן'}
+                {markReviewed.isPending ? 'מעדכן...' : 'קבל למרפאה'}
               </Button>
             )}
             {patient.phone && (
