@@ -40,17 +40,54 @@ export function useCreatePatientInvitation() {
       first_name: string;
       last_name: string;
       phone?: string;
+      patient_id?: string; // Allow explicit patient_id
     }) => {
       const { data: { user } } = await supabase.auth.getUser();
+      
+      let patientId = invitation.patient_id;
+      
+      // CRITICAL: Always try to find existing patient to prevent duplicates
+      if (!patientId) {
+        // Try to find existing patient by phone first (more reliable)
+        if (invitation.phone) {
+          const { data: byPhone } = await supabase
+            .from('patients')
+            .select('id')
+            .eq('phone', invitation.phone.trim())
+            .order('created_at', { ascending: true })
+            .limit(1)
+            .maybeSingle();
+          
+          if (byPhone) {
+            patientId = byPhone.id;
+          }
+        }
+        
+        // Try email if no phone match
+        if (!patientId && invitation.email) {
+          const { data: byEmail } = await supabase
+            .from('patients')
+            .select('id')
+            .eq('email', invitation.email.trim().toLowerCase())
+            .order('created_at', { ascending: true })
+            .limit(1)
+            .maybeSingle();
+          
+          if (byEmail) {
+            patientId = byEmail.id;
+          }
+        }
+      }
       
       const { data, error } = await supabase
         .from('patient_invitations')
         .insert({
-          email: invitation.email,
-          first_name: invitation.first_name,
-          last_name: invitation.last_name,
-          phone: invitation.phone || null,
+          email: invitation.email.trim().toLowerCase(),
+          first_name: invitation.first_name.trim(),
+          last_name: invitation.last_name.trim(),
+          phone: invitation.phone?.trim() || null,
           invited_by: user?.id,
+          patient_id: patientId || null, // Link to existing patient if found
         })
         .select()
         .single();

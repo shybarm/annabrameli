@@ -111,25 +111,127 @@ serve(async (req) => {
 
     let patientId = invitation.patient_id;
 
-    // Check if there's an existing patient to link
+    // CRITICAL: Always resolve patient by ID first, never create duplicates
     if (patientId) {
-      console.log('Linking existing patient:', patientId);
-      // Link existing patient record to user
-      const { error: updatePatientError } = await adminSupabase
+      console.log('Linking existing patient by patient_id:', patientId);
+      
+      // Verify patient exists before updating
+      const { data: existingPatient, error: checkError } = await adminSupabase
         .from('patients')
-        .update({ user_id: user.id })
-        .eq('id', patientId);
-
-      if (updatePatientError) {
-        console.error('Error updating patient:', updatePatientError);
-        return new Response(
-          JSON.stringify({ ok: false, success: false, code: 'SERVER_ERROR', error: 'Failed to link patient record' }),
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }}
-        );
+        .select('id, user_id')
+        .eq('id', patientId)
+        .maybeSingle();
+      
+      if (checkError) {
+        console.error('Error checking patient:', checkError);
       }
-    } else {
-      console.log('Creating new patient record');
-      // Create new patient record
+      
+      if (existingPatient) {
+        // Check if already linked to another user
+        if (existingPatient.user_id && existingPatient.user_id !== user.id) {
+          console.log('Patient already linked to another user');
+          return new Response(
+            JSON.stringify({ ok: false, success: false, code: 'PATIENT_LINKED', error: 'Patient already linked to another account' }),
+            { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' }}
+          );
+        }
+        
+        // Link patient to user
+        const { error: updatePatientError } = await adminSupabase
+          .from('patients')
+          .update({ user_id: user.id })
+          .eq('id', patientId);
+
+        if (updatePatientError) {
+          console.error('Error updating patient:', updatePatientError);
+          return new Response(
+            JSON.stringify({ ok: false, success: false, code: 'SERVER_ERROR', error: 'Failed to link patient record' }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }}
+          );
+        }
+      } else {
+        // Patient ID was invalid, clear it so we search/create below
+        console.log('Patient not found by ID, will search by phone/email');
+        patientId = null;
+      }
+    }
+    
+    // If no patient_id or patient not found, search for existing patient
+    if (!patientId) {
+      console.log('Searching for existing patient by phone/email');
+      
+      // Try to find by phone first (most reliable)
+      if (invitation.phone) {
+        const { data: patientByPhone } = await adminSupabase
+          .from('patients')
+          .select('id, user_id, created_at')
+          .eq('phone', invitation.phone)
+          .order('created_at', { ascending: true })
+          .limit(5);
+        
+        if (patientByPhone && patientByPhone.length > 0) {
+          // Prefer patient already linked to user, else oldest record
+          const linkedPatient = patientByPhone.find(p => p.user_id === user.id);
+          const unlinkedPatient = patientByPhone.find(p => !p.user_id);
+          const chosenPatient = linkedPatient || unlinkedPatient || patientByPhone[0];
+          
+          if (chosenPatient.user_id && chosenPatient.user_id !== user.id) {
+            console.log('Found patient by phone but linked to another user');
+            // Skip this one, try email
+          } else {
+            patientId = chosenPatient.id;
+            console.log('Found existing patient by phone:', patientId);
+          }
+        }
+      }
+      
+      // Try email if still no patient
+      if (!patientId && invitation.email) {
+        const { data: patientByEmail } = await adminSupabase
+          .from('patients')
+          .select('id, user_id, created_at')
+          .eq('email', invitation.email)
+          .order('created_at', { ascending: true })
+          .limit(5);
+        
+        if (patientByEmail && patientByEmail.length > 0) {
+          const linkedPatient = patientByEmail.find(p => p.user_id === user.id);
+          const unlinkedPatient = patientByEmail.find(p => !p.user_id);
+          const chosenPatient = linkedPatient || unlinkedPatient || patientByEmail[0];
+          
+          if (chosenPatient.user_id && chosenPatient.user_id !== user.id) {
+            console.log('Patient with this email already linked to another user');
+            return new Response(
+              JSON.stringify({ ok: false, success: false, code: 'EMAIL_IN_USE', error: 'Email already linked to another account' }),
+              { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' }}
+            );
+          }
+          
+          patientId = chosenPatient.id;
+          console.log('Found existing patient by email:', patientId);
+        }
+      }
+      
+      // If we found an existing patient, link them
+      if (patientId) {
+        const { error: updatePatientError } = await adminSupabase
+          .from('patients')
+          .update({ user_id: user.id })
+          .eq('id', patientId);
+
+        if (updatePatientError) {
+          console.error('Error updating patient:', updatePatientError);
+          return new Response(
+            JSON.stringify({ ok: false, success: false, code: 'SERVER_ERROR', error: 'Failed to link patient record' }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }}
+          );
+        }
+      }
+    }
+    
+    // Only create new patient if absolutely no existing record found
+    if (!patientId) {
+      console.log('Creating new patient record (no existing match found)');
       const { data: newPatient, error: patientError } = await adminSupabase
         .from('patients')
         .insert({
