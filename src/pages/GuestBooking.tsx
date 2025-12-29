@@ -20,7 +20,7 @@ import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
 
 // Google reCAPTCHA site key (publishable)
-const RECAPTCHA_SITE_KEY = '6LdUMTosAAAAAGhQFLtmMu3-HUZLit8Z';
+const RECAPTCHA_SITE_KEY = '6LewNDosAAAAAC09M-rygLAGC3LzDCWOJI7wFBoU';
 
 const guestSchema = z.object({
   firstName: z.string().trim().min(2, 'שם פרטי חייב להכיל לפחות 2 תווים').max(100),
