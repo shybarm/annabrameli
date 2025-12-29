@@ -80,8 +80,8 @@ export default function GuestBooking() {
     return openDays.join(', ');
   };
 
-  const handleCaptchaVerify = (token: string) => {
-    setCaptchaToken(token);
+  const handleCaptchaVerify = (token: string | null) => {
+    setCaptchaToken(token || null);
   };
 
   const handleCaptchaExpire = () => {
@@ -222,6 +222,9 @@ export default function GuestBooking() {
       if (documents.length > 0 && data.bookingId) {
         await uploadDocuments(data.bookingId);
       }
+      // Reset CAPTCHA after successful submit (token can be used only once)
+      captchaRef.current?.reset();
+      setCaptchaToken(null);
 
       setStep('success');
     } catch (error: any) {
