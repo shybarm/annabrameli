@@ -34,6 +34,8 @@ import {
   FileText, Edit, Save, X, MessageCircle, Upload, File, Pill, Stethoscope, Eye, Sparkles,
   ClipboardList, Link, CheckCircle, Trash2, Tag, Loader2, Copy, UserPlus, MapPin
 } from 'lucide-react';
+import { WhatsAppButton } from '@/components/admin/WhatsAppButton';
+import { openWhatsAppChat } from '@/lib/whatsapp';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { useInviteExistingPatient, usePatientPortalInvitation } from '@/hooks/usePatientInvitations';
@@ -172,11 +174,12 @@ export default function PatientDetail() {
     toast({ title: 'הערות רפואיות נשמרו' });
   };
 
-  const handleWhatsApp = () => {
-    if (!patient?.phone) return;
-    const phone = patient.phone.replace(/\D/g, '');
-    const message = encodeURIComponent(`שלום ${patient.first_name}, זו הודעה מהמרפאה של ד"ר אנה ברמלי.`);
-    window.open(`https://wa.me/972${phone.slice(-9)}?text=${message}`, '_blank');
+  // Get clinic name for WhatsApp message
+  const patientClinic = clinics?.find(c => c.id === patient?.clinic_id);
+  const clinicName = patientClinic?.name || 'מרפאת ד"ר אנה ברמלי';
+  
+  const getWhatsAppMessage = () => {
+    return `היי ${patient?.first_name || ''}, כאן ${clinicName}. `;
   };
 
   // File validation constants
@@ -429,14 +432,13 @@ export default function PatientDetail() {
   const handleSendIntakeWhatsApp = () => {
     if (!patient?.phone || (!intakeLink && !intakeToken?.token)) return;
 
-    const phone = patient.phone.replace(/\D/g, '');
     const link = intakeLink || buildIntakeLink(intakeToken?.token) || '';
-    const message = encodeURIComponent(
+    const message = 
       `שלום ${patient.first_name}! 👋\n\n` +
-        `לפני הביקור במרפאה, נבקש למלא טופס קליטה קצר:\n${link}\n\n` +
-        `תודה,\nמרפאת ד"ר אנה ברמלי`
-    );
-    window.open(`https://wa.me/972${phone.slice(-9)}?text=${message}`, '_blank');
+      `לפני הביקור במרפאה, נבקש למלא טופס קליטה קצר:\n${link}\n\n` +
+      `תודה,\n${clinicName}`;
+    
+    openWhatsAppChat(patient.phone, message);
 
     // Mark as sent
     if (intakeToken?.id) {
@@ -484,17 +486,16 @@ export default function PatientDetail() {
     const link = portalInviteLink || buildPortalInviteLink(portalInvitation?.invite_code);
     if (!link) return;
 
-    const phone = patient.phone.replace(/\D/g, '');
-    const message = encodeURIComponent(
+    const message = 
       `שלום ${patient.first_name}! 👋\n\n` +
-        `הוזמנת להצטרף לפורטל המטופלים שלנו. עם הפורטל תוכל/י:\n` +
-        `✅ לראות ולנהל תורים\n` +
-        `✅ לצפות בסיכומי ביקור\n` +
-        `✅ לשלוח הודעות לצוות\n\n` +
-        `להרשמה:\n${link}\n\n` +
-        `תודה,\nמרפאת ד"ר אנה ברמלי`
-    );
-    window.open(`https://wa.me/972${phone.slice(-9)}?text=${message}`, '_blank');
+      `הוזמנת להצטרף לפורטל המטופלים שלנו. עם הפורטל תוכל/י:\n` +
+      `✅ לראות ולנהל תורים\n` +
+      `✅ לצפות בסיכומי ביקור\n` +
+      `✅ לשלוח הודעות לצוות\n\n` +
+      `להרשמה:\n${link}\n\n` +
+      `תודה,\n${clinicName}`;
+    
+    openWhatsAppChat(patient.phone, message);
   };
 
   if (isLoading) {
@@ -624,12 +625,11 @@ export default function PatientDetail() {
                 {markReviewed.isPending ? 'מעדכן...' : 'קבל למרפאה'}
               </Button>
             )}
-            {patient.phone && (
-              <Button variant="outline" onClick={handleWhatsApp}>
-                <MessageCircle className="h-4 w-4 ml-2" />
-                WhatsApp
-              </Button>
-            )}
+            <WhatsAppButton 
+              phone={patient.phone}
+              message={getWhatsAppMessage()}
+              variant="outline"
+            />
             <Button className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => navigate(`/admin/appointments/new?patient=${id}`)}>
               <Calendar className="h-4 w-4 ml-2" />
               קבע תור

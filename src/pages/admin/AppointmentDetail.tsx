@@ -24,6 +24,8 @@ import {
   Upload, MessageCircle, CreditCard, File, Printer, Mail, Pill, Stethoscope, Eye, ClipboardList,
   Activity, FlaskConical, ScanLine, PenTool, CheckCircle
 } from 'lucide-react';
+import { openWhatsAppChat, normalizePhoneToE164 } from '@/lib/whatsapp';
+import { WhatsAppButton } from '@/components/admin/WhatsAppButton';
 import { PageHelpButton } from '@/components/tutorial/PageHelpButton';
 import { appointmentDetailTutorial } from '@/components/tutorial/tutorialData';
 import { format } from 'date-fns';
@@ -202,11 +204,8 @@ export default function AppointmentDetail() {
     }
   };
 
-  const handleWhatsApp = () => {
-    if (!appointment?.patients?.phone) return;
-    const phone = appointment.patients.phone.replace(/\D/g, '');
-    const message = encodeURIComponent(`שלום ${appointment.patients.first_name}, תזכורת לתור שלך בתאריך ${format(new Date(appointment.scheduled_at), 'dd/MM/yyyy')} בשעה ${format(new Date(appointment.scheduled_at), 'HH:mm')}`);
-    window.open(`https://wa.me/972${phone.slice(-9)}?text=${message}`, '_blank');
+  const getReminderMessage = () => {
+    return `שלום ${appointment?.patients?.first_name || ''}, תזכורת לתור שלך בתאריך ${format(new Date(appointment!.scheduled_at), 'dd/MM/yyyy')} בשעה ${format(new Date(appointment!.scheduled_at), 'HH:mm')}`;
   };
 
   const handleSaveNotes = () => {
@@ -259,12 +258,11 @@ export default function AppointmentDetail() {
       return;
     }
     
-    const phone = appointment.patients.phone.replace(/\D/g, '');
-    const message = encodeURIComponent(buildVisitSummaryText());
-    window.open(`https://wa.me/972${phone.slice(-9)}?text=${message}`, '_blank');
-    
-    // Mark as shared via WhatsApp
-    updateAppointment.mutate({ visit_shared_whatsapp_at: new Date().toISOString() });
+    const success = openWhatsAppChat(appointment.patients.phone, buildVisitSummaryText());
+    if (success) {
+      // Mark as shared via WhatsApp
+      updateAppointment.mutate({ visit_shared_whatsapp_at: new Date().toISOString() });
+    }
   };
 
   const handleSendEmail = async () => {
@@ -693,12 +691,14 @@ export default function AppointmentDetail() {
               </div>
               
               <div className="flex flex-wrap gap-2">
-                {appointment.patients?.phone && (
-                  <Button variant="outline" className="flex-1" onClick={handleWhatsApp}>
-                    <MessageCircle className="h-4 w-4 ml-2" />
-                    WhatsApp
-                  </Button>
-                )}
+                <div className="flex-1">
+                  <WhatsAppButton 
+                    phone={appointment.patients?.phone}
+                    message={getReminderMessage()}
+                    variant="outline"
+                    className="w-full"
+                  />
+                </div>
                 <Button 
                   variant="outline" 
                   className="flex-1"
