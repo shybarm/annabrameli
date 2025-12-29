@@ -216,6 +216,12 @@ export default function GuestBooking() {
       const data = response.data;
 
       if (!data.success) {
+        // Handle slot taken errors specifically
+        if (data.code === 'SLOT_TAKEN' || data.code === 'SLOT_RACE_CONDITION') {
+          // Reset time selection so user picks a new slot
+          setTime('');
+          throw new Error(data.error || 'הזמן הזה כבר תפוס. בחרו זמן אחר.');
+        }
         throw new Error(data.error || 'שגיאה בשליחת הבקשה');
       }
 
@@ -236,9 +242,11 @@ export default function GuestBooking() {
       captchaRef.current?.resetCaptcha();
       setCaptchaToken(null);
       
+      // Show appropriate error message
+      const isSlotError = error.message?.includes('תפוס') || error.message?.includes('נתפס');
       toast({
-        title: 'שגיאה בקביעת התור',
-        description: error.message,
+        title: isSlotError ? 'הזמן הזה כבר תפוס' : 'שגיאה בקביעת התור',
+        description: isSlotError ? 'בחרו זמן אחר מהרשימה' : error.message,
         variant: 'destructive',
       });
     } finally {
