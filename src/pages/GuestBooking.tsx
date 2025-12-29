@@ -51,6 +51,7 @@ export default function GuestBooking() {
   const [notes, setNotes] = useState('');
   const [documents, setDocuments] = useState<File[]>([]);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
   const { data: clinics, isLoading: loadingClinics } = usePublicClinics();
   const { data: appointmentTypes } = useAppointmentTypes();
@@ -495,7 +496,7 @@ export default function GuestBooking() {
                 {/* Date */}
                 <div className="space-y-2">
                   <Label>תאריך מבוקש *</Label>
-                  <Popover>
+                  <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
@@ -515,9 +516,11 @@ export default function GuestBooking() {
                         onSelect={(d) => {
                           setDate(d);
                           setTime('');
+                          setCalendarOpen(false);
                         }}
                         disabled={isDateDisabled}
                         initialFocus
+                        className="pointer-events-auto"
                       />
                     </PopoverContent>
                   </Popover>
