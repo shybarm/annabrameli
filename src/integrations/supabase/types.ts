@@ -1504,6 +1504,50 @@ export type Database = {
           },
         ]
       }
+      work_sessions: {
+        Row: {
+          clinic_id: string | null
+          created_at: string
+          date: string
+          end_time: string | null
+          id: string
+          start_time: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          clinic_id?: string | null
+          created_at?: string
+          date?: string
+          end_time?: string | null
+          id?: string
+          start_time?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          clinic_id?: string | null
+          created_at?: string
+          date?: string
+          end_time?: string | null
+          id?: string
+          start_time?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_sessions_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
