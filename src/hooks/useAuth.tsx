@@ -195,6 +195,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setRoles([]);
     setPermissions(defaultPermissions);
     
+    // Clear localStorage keys used for routing/auth state
+    localStorage.removeItem('clinic_onboarding_completed');
+    localStorage.removeItem('patient_portal_onboarding_completed');
+    
     // Clear React Query cache
     if (queryClientRef) {
       queryClientRef.clear();

@@ -180,7 +180,23 @@ export function useInviteExistingPatient() {
 
       const { data: { user } } = await supabase.auth.getUser();
 
-      // Create invitation linked to existing patient
+      // Check if invitation already exists for this patient
+      const { data: existingInvite } = await supabase
+        .from('patient_invitations')
+        .select('*')
+        .eq('patient_id', patientId)
+        .is('accepted_at', null)
+        .gt('expires_at', new Date().toISOString())
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      // If valid invitation exists, return it (resend link scenario)
+      if (existingInvite) {
+        return existingInvite as PatientInvitation;
+      }
+
+      // Create new invitation linked to existing patient
       const { data, error } = await supabase
         .from('patient_invitations')
         .insert({

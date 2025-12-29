@@ -1,11 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { usePatientRecord } from '@/hooks/usePatientPortal';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Calendar, FileText, ClipboardList, LogOut, Home, User, MessageCircle, Settings } from 'lucide-react';
+import { Calendar, FileText, ClipboardList, LogOut, Home, User, MessageCircle, Settings, HelpCircle } from 'lucide-react';
 import PatientAppointmentsTab from '@/components/patient/PatientAppointmentsTab';
 import PatientDocumentsTab from '@/components/patient/PatientDocumentsTab';
 import PatientVisitSummariesTab from '@/components/patient/PatientVisitSummariesTab';
@@ -18,6 +18,7 @@ export default function PatientPortal() {
   const navigate = useNavigate();
   const { user, loading, rolesLoading, signOut, isPatient, isStaff } = useAuth();
   const { data: patient, isLoading: patientLoading } = usePatientRecord();
+  const [showTutorial, setShowTutorial] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -72,8 +73,8 @@ export default function PatientPortal() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-medical-50 to-white" dir="rtl">
-      {/* First-time Tutorial */}
-      <PatientOnboardingTutorial />
+      {/* Tutorial - only shows when triggered */}
+      <PatientOnboardingTutorial forceShow={showTutorial} onComplete={() => setShowTutorial(false)} />
       
       {/* Header */}
       <header className="bg-white border-b border-border shadow-sm">
@@ -83,6 +84,9 @@ export default function PatientPortal() {
             <p className="text-sm text-muted-foreground">הפורטל האישי שלך</p>
           </div>
           <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={() => setShowTutorial(true)} title="עזרה">
+              <HelpCircle className="h-4 w-4" />
+            </Button>
             <Button variant="ghost" size="sm" asChild>
               <Link to="/">
                 <Home className="h-4 w-4 ml-1" />

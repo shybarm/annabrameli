@@ -208,10 +208,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       <aside
         ref={sidebarRef}
         className={cn(
-          'fixed top-0 right-0 z-40 h-screen w-72 lg:w-64 glass-light lg:bg-card border-l border-border/50 shadow-glass lg:shadow-none',
+          'fixed top-0 right-0 z-40 h-screen w-72 lg:w-64 bg-card border-l border-border/50 shadow-xl lg:shadow-none overflow-hidden',
           'lg:translate-x-0 transition-transform duration-300 ease-out',
-          sidebarOpen && !isClosing ? 'translate-x-0 animate-slide-in-right lg:animate-none' : '',
-          isClosing ? 'animate-slide-out-right lg:animate-none' : '',
+          sidebarOpen && !isClosing ? 'translate-x-0' : '',
+          isClosing ? '' : '',
           !sidebarOpen && !isClosing ? 'translate-x-full lg:translate-x-0' : '',
           hasMultipleClinics && clinicTheme.border
         )}
@@ -333,8 +333,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       )}
 
       {/* Main content */}
-      <main className="lg:mr-64 pt-14 lg:pt-0 min-h-screen">
-        <div className="p-4 lg:p-6 animate-fade-in">{children}</div>
+      <main className="lg:mr-64 pt-14 lg:pt-0 min-h-screen overflow-x-hidden">
+        <div className="p-4 lg:p-6 w-full max-w-full">{children}</div>
       </main>
     </div>
   );

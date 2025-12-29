@@ -58,18 +58,34 @@ export function usePatients(clinicId?: string | null) {
   return useQuery({
     queryKey: ['patients', clinicId],
     queryFn: async () => {
+      // Get staff user IDs to exclude
+      const { data: staffRoles } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .in('role', ['admin', 'doctor', 'secretary']);
+      
+      const staffUserIds = staffRoles?.map(r => r.user_id).filter(Boolean) || [];
+
       let query = supabase
         .from('patients')
         .select('*, clinic:clinics(id, name)')
         .order('created_at', { ascending: false });
+      
       if (clinicId) {
         // Show ONLY patients assigned to this clinic
         query = query.eq('clinic_id', clinicId);
       }
+      
       const { data, error } = await query;
       
       if (error) throw error;
-      return data as Patient[];
+      
+      // Filter out patients who are staff members
+      const filteredData = (data || []).filter(patient => 
+        !patient.user_id || !staffUserIds.includes(patient.user_id)
+      );
+      
+      return filteredData as Patient[];
     },
   });
 }
@@ -147,6 +163,15 @@ export function useDeletePatient() {
   
   return useMutation({
     mutationFn: async (id: string) => {
+      // First delete dependent patient_invitations
+      const { error: invitationsError } = await supabase
+        .from('patient_invitations')
+        .delete()
+        .eq('patient_id', id);
+      
+      if (invitationsError) throw invitationsError;
+      
+      // Then delete the patient
       const { error } = await supabase
         .from('patients')
         .delete()
