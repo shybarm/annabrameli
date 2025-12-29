@@ -12,20 +12,35 @@ serve(async (req) => {
   }
 
   try {
-    const { invite_code } = await req.json();
+    let invite_code: string | undefined;
     
-    if (!invite_code) {
+    try {
+      const body = await req.json();
+      invite_code = body?.invite_code;
+    } catch (parseError) {
+      console.error('Failed to parse request body:', parseError);
       return new Response(
-        JSON.stringify({ error: 'Missing invite code' }),
+        JSON.stringify({ ok: false, success: false, code: 'BAD_REQUEST', error: 'Invalid request body' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }}
+      );
+    }
+    
+    if (!invite_code || typeof invite_code !== 'string' || invite_code.trim() === '') {
+      console.log('Missing or invalid invite_code:', invite_code);
+      return new Response(
+        JSON.stringify({ ok: false, success: false, code: 'BAD_REQUEST', error: 'Missing or invalid invite code' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }}
       );
     }
 
+    console.log('Accepting invite code:', invite_code.substring(0, 8) + '...');
+
     // Verify the user is authenticated
     const authHeader = req.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
+      console.log('Missing authorization header');
       return new Response(
-        JSON.stringify({ error: 'Unauthorized - missing authorization' }),
+        JSON.stringify({ ok: false, success: false, code: 'UNAUTHORIZED', error: 'Missing authorization' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }}
       );
     }
@@ -41,11 +56,14 @@ serve(async (req) => {
 
     const { data: { user }, error: authError } = await userSupabase.auth.getUser();
     if (authError || !user) {
+      console.log('Auth error:', authError?.message);
       return new Response(
-        JSON.stringify({ error: 'Invalid or expired token' }),
+        JSON.stringify({ ok: false, success: false, code: 'UNAUTHORIZED', error: 'Invalid or expired token' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }}
       );
     }
+
+    console.log('User authenticated:', user.id);
 
     // Use service role for database operations
     const adminSupabase = createClient(supabaseUrl, serviceRoleKey);
@@ -54,37 +72,40 @@ serve(async (req) => {
     const { data: invitation, error: invError } = await adminSupabase
       .from('patient_invitations')
       .select('*')
-      .eq('invite_code', invite_code)
+      .eq('invite_code', invite_code.trim())
       .maybeSingle();
 
     if (invError) {
       console.error('Error fetching invitation:', invError);
       return new Response(
-        JSON.stringify({ success: false, error: 'Failed to fetch invitation' }),
+        JSON.stringify({ ok: false, success: false, code: 'SERVER_ERROR', error: 'Failed to fetch invitation' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }}
       );
     }
 
     if (!invitation) {
+      console.log('Invitation not found');
       return new Response(
-        JSON.stringify({ success: false, error: 'Invitation not found' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }}
+        JSON.stringify({ ok: false, success: false, code: 'INVITE_NOT_FOUND', error: 'Invitation not found' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' }}
       );
     }
 
     // Check if already accepted
     if (invitation.accepted_at) {
+      console.log('Invitation already accepted');
       return new Response(
-        JSON.stringify({ success: false, error: 'Invitation already accepted' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }}
+        JSON.stringify({ ok: false, success: false, code: 'INVITE_ALREADY_USED', error: 'Invitation already accepted' }),
+        { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' }}
       );
     }
 
     // Check if expired
     if (new Date(invitation.expires_at) < new Date()) {
+      console.log('Invitation expired');
       return new Response(
-        JSON.stringify({ success: false, error: 'Invitation has expired' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }}
+        JSON.stringify({ ok: false, success: false, code: 'INVITE_EXPIRED', error: 'Invitation has expired' }),
+        { status: 410, headers: { ...corsHeaders, 'Content-Type': 'application/json' }}
       );
     }
 
@@ -92,6 +113,7 @@ serve(async (req) => {
 
     // Check if there's an existing patient to link
     if (patientId) {
+      console.log('Linking existing patient:', patientId);
       // Link existing patient record to user
       const { error: updatePatientError } = await adminSupabase
         .from('patients')
@@ -100,9 +122,13 @@ serve(async (req) => {
 
       if (updatePatientError) {
         console.error('Error updating patient:', updatePatientError);
-        throw new Error('Failed to link patient record');
+        return new Response(
+          JSON.stringify({ ok: false, success: false, code: 'SERVER_ERROR', error: 'Failed to link patient record' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }}
+        );
       }
     } else {
+      console.log('Creating new patient record');
       // Create new patient record
       const { data: newPatient, error: patientError } = await adminSupabase
         .from('patients')
@@ -118,7 +144,10 @@ serve(async (req) => {
 
       if (patientError) {
         console.error('Error creating patient:', patientError);
-        throw new Error('Failed to create patient record');
+        return new Response(
+          JSON.stringify({ ok: false, success: false, code: 'SERVER_ERROR', error: 'Failed to create patient record' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }}
+        );
       }
       
       patientId = newPatient.id;
@@ -155,16 +184,17 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({
+        ok: true,
         success: true,
         patient_id: patientId,
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }}
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' }}
     );
 
   } catch (error) {
     console.error('Error in accept-patient-invite:', error);
     return new Response(
-      JSON.stringify({ success: false, error: error instanceof Error ? error.message : 'Internal server error' }),
+      JSON.stringify({ ok: false, success: false, code: 'SERVER_ERROR', error: error instanceof Error ? error.message : 'Internal server error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }}
     );
   }
