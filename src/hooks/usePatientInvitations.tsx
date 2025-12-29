@@ -98,24 +98,79 @@ export function useDeletePatientInvitation() {
   });
 }
 
+// Helper to get user-friendly error message in Hebrew
+function getErrorMessage(code: string | undefined, fallback: string): string {
+  switch (code) {
+    case 'INVITE_NOT_FOUND':
+      return 'הזמנה לא נמצאה. ייתכן שהקישור שגוי.';
+    case 'INVITE_ALREADY_USED':
+      return 'ההזמנה כבר מומשה. ניתן להתחבר לפורטל.';
+    case 'INVITE_EXPIRED':
+      return 'פג תוקף ההזמנה. אנא פנה למרפאה לקבלת הזמנה חדשה.';
+    case 'BAD_REQUEST':
+      return 'בקשה שגויה. אנא נסה שוב.';
+    case 'UNAUTHORIZED':
+      return 'יש להתחבר למערכת כדי לקבל את ההזמנה.';
+    case 'SERVER_ERROR':
+      return 'שגיאת שרת. אנא נסה שוב מאוחר יותר.';
+    default:
+      return fallback;
+  }
+}
+
 export function usePatientInvitationByCode(code: string | undefined) {
   return useQuery({
     queryKey: ['patient-invitation', code],
     queryFn: async () => {
+      // Validate code before making request
+      if (!code || code.trim() === '') {
+        console.log('usePatientInvitationByCode: No code provided');
+        return {
+          valid: false,
+          accepted: false,
+          expired: false,
+          error: 'קישור הזמנה חסר',
+        } as any;
+      }
+
+      console.log('usePatientInvitationByCode: Verifying code:', code.substring(0, 8) + '...');
+
       // Use edge function to verify invite code securely
       const { data, error } = await supabase.functions.invoke('verify-patient-invite', {
-        body: { invite_code: code }
+        body: { invite_code: code.trim() }
       });
 
-      if (error) throw error;
+      console.log('usePatientInvitationByCode: Response:', { data, error });
+
+      // Handle edge function errors (non-2xx responses)
+      if (error) {
+        console.error('usePatientInvitationByCode: Edge function error:', error);
+        
+        // Try to parse error context for specific error codes
+        const errorCode = error.context?.code || 'SERVER_ERROR';
+        const errorMsg = getErrorMessage(errorCode, error.message || 'שגיאה באימות ההזמנה');
+        
+        // For known error codes, return a structured response instead of throwing
+        if (errorCode === 'INVITE_NOT_FOUND') {
+          return { valid: false, accepted: false, expired: false, error: errorMsg };
+        }
+        if (errorCode === 'INVITE_ALREADY_USED') {
+          return { valid: false, accepted: true, expired: false, error: errorMsg };
+        }
+        if (errorCode === 'INVITE_EXPIRED') {
+          return { valid: false, accepted: false, expired: true, error: errorMsg };
+        }
+        
+        throw new Error(errorMsg);
+      }
       
-      if (!data.valid) {
+      if (!data?.valid) {
         // Return special object to indicate status
         return {
           valid: false,
-          accepted: data.accepted || false,
-          expired: data.expired || false,
-          error: data.error,
+          accepted: data?.accepted || false,
+          expired: data?.expired || false,
+          error: data?.error || 'הזמנה לא תקינה',
         } as any;
       }
 
@@ -124,7 +179,8 @@ export function usePatientInvitationByCode(code: string | undefined) {
         ...data.invitation
       } as PatientInvitation & { valid: boolean };
     },
-    enabled: !!code,
+    enabled: !!code && code.trim() !== '',
+    retry: false, // Don't retry on 404/409/410 errors
   });
 }
 
@@ -133,15 +189,30 @@ export function useAcceptPatientInvitation() {
 
   return useMutation({
     mutationFn: async ({ code }: { code: string; userId?: string }) => {
+      // Validate code before making request
+      if (!code || code.trim() === '') {
+        throw new Error('קוד הזמנה חסר');
+      }
+
+      console.log('useAcceptPatientInvitation: Accepting code:', code.substring(0, 8) + '...');
+
       // Use edge function to accept invitation securely
       const { data, error } = await supabase.functions.invoke('accept-patient-invite', {
-        body: { invite_code: code }
+        body: { invite_code: code.trim() }
       });
 
-      if (error) throw error;
+      console.log('useAcceptPatientInvitation: Response:', { data, error });
+
+      // Handle edge function errors
+      if (error) {
+        console.error('useAcceptPatientInvitation: Edge function error:', error);
+        const errorCode = error.context?.code;
+        throw new Error(getErrorMessage(errorCode, error.message || 'שגיאה בקבלת ההזמנה'));
+      }
       
-      if (!data.success) {
-        throw new Error(data.error || 'Failed to accept invitation');
+      if (!data?.success) {
+        const errorCode = data?.code;
+        throw new Error(getErrorMessage(errorCode, data?.error || 'שגיאה בקבלת ההזמנה'));
       }
 
       return { id: data.patient_id };
@@ -151,6 +222,7 @@ export function useAcceptPatientInvitation() {
       toast({ title: 'הזמנה התקבלה בהצלחה' });
     },
     onError: (error) => {
+      console.error('useAcceptPatientInvitation: Mutation error:', error);
       toast({ 
         title: 'שגיאה בקבלת הזמנה', 
         description: error.message, 
