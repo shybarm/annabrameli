@@ -87,16 +87,16 @@ export function ClinicSelector() {
         hasMultipleClinics && selectedClinicId ? clinicTheme.headerBg : 'bg-muted/50'
       )}
     >
-      <div className="max-w-7xl mx-auto flex items-center gap-3">
-        <Building2 className="h-4 w-4 text-muted-foreground" />
-        <span className="text-sm text-muted-foreground">מרפאה:</span>
+      <div className="max-w-7xl mx-auto flex flex-wrap items-center gap-2 sm:gap-3">
+        <Building2 className="h-4 w-4 text-muted-foreground shrink-0" />
+        <span className="text-sm text-muted-foreground shrink-0">מרפאה:</span>
         <Select value={selectValue} onValueChange={handleClinicChange}>
           <SelectTrigger
-            className={cn('w-48 h-8 text-sm', hasMultipleClinics && selectedClinicId && clinicTheme.border)}
+            className={cn('w-40 sm:w-48 h-8 text-sm', hasMultipleClinics && selectedClinicId && clinicTheme.border)}
           >
             <SelectValue placeholder="בחר מרפאה" />
           </SelectTrigger>
-          <SelectContent className="z-[100] bg-popover max-h-[300px]">
+          <SelectContent className="z-[200] bg-popover">
             <SelectItem value="all">כל המרפאות</SelectItem>
             {clinics?.map((clinic) => (
               <SelectItem key={clinic.id} value={clinic.id}>
@@ -109,10 +109,11 @@ export function ClinicSelector() {
           <DialogTrigger asChild>
             <Button variant="outline" size="sm" className="h-8 shrink-0">
               <Plus className="h-4 w-4 ml-1" />
-              מרפאה חדשה
+              <span className="hidden sm:inline">מרפאה חדשה</span>
+              <span className="sm:hidden">חדש</span>
             </Button>
           </DialogTrigger>
-          <DialogContent dir="rtl">
+          <DialogContent dir="rtl" className="z-[250]">
             <DialogHeader>
               <DialogTitle>הוספת מרפאה חדשה</DialogTitle>
             </DialogHeader>
@@ -167,7 +168,6 @@ export function ClinicSelector() {
             מרפאה {clinicIndex + 1}
           </span>
         )}
-
       </div>
     </div>
   );
