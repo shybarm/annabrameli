@@ -7,8 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { usePatients } from '@/hooks/usePatients';
 import { useUnreadMessageCount } from '@/hooks/useAdminMessages';
+import { useMarkPatientReviewed } from '@/hooks/useUnreviewedPatients';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Phone, Mail, User, UserPlus, MessageCircle, MapPin, Sparkles } from 'lucide-react';
+import { Plus, Search, Phone, Mail, User, UserPlus, MessageCircle, MapPin, Sparkles, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { PageHelpButton } from '@/components/tutorial/PageHelpButton';
 import { pageTutorials } from '@/components/tutorial/tutorialData';
@@ -35,13 +36,15 @@ function PatientsListContent() {
   const isSearching = searchQuery.length >= 2;
   const { data: patients, isLoading } = usePatients(isSearching ? null : selectedClinicId);
   const { data: unreadCount } = useUnreadMessageCount();
+  const markReviewed = useMarkPatientReviewed();
 
   // Sort and filter patients - new patients always at top
   const sortedAndFilteredPatients = patients
     ?.filter(patient => {
       // Filter by new patients if toggle is on
       if (showOnlyNew) {
-        const isNew = patient.intake_completed_at && !patient.reviewed_at;
+        // New patient = reviewed_at is null
+        const isNew = !patient.reviewed_at;
         if (!isNew) return false;
       }
       
@@ -55,9 +58,9 @@ function PatientsListContent() {
       );
     })
     ?.sort((a, b) => {
-      // New patients (completed intake but not reviewed) always at top
-      const aIsNew = a.intake_completed_at && !a.reviewed_at;
-      const bIsNew = b.intake_completed_at && !b.reviewed_at;
+      // New patients (not reviewed) always at top
+      const aIsNew = !a.reviewed_at;
+      const bIsNew = !b.reviewed_at;
       
       if (aIsNew && !bIsNew) return -1;
       if (!aIsNew && bIsNew) return 1;
@@ -124,8 +127,8 @@ function PatientsListContent() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3" data-tutorial="patients-list">
           {sortedAndFilteredPatients.map((patient) => {
             const patientUnreadCount = unreadCount?.byPatient[patient.id] || 0;
-            // Check if patient is new (completed intake but not reviewed)
-            const isNewPatient = patient.intake_completed_at && !patient.reviewed_at;
+            // Check if patient is new (not reviewed)
+            const isNewPatient = !patient.reviewed_at;
             
             return (
               <Card 
@@ -164,13 +167,29 @@ function PatientsListContent() {
                         </Badge>
                       )}
                       <Badge variant={patient.status === 'active' ? 'default' : 'secondary'}>
-                        {patient.status === 'active' ? 'פעיל' : 'לא פעיל'}
+                        {patient.status === 'active' ? 'פעיל' : patient.status === 'scheduled' ? 'מתוכנן' : 'לא פעיל'}
                       </Badge>
                       {patientUnreadCount > 0 && (
                         <Badge className="bg-primary text-primary-foreground text-xs">
                           <MessageCircle className="h-3 w-3 ml-1" />
                           הודעה חדשה
                         </Badge>
+                      )}
+                      {/* Quick action: Mark as scheduled */}
+                      {isNewPatient && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-6 text-xs bg-amber-50 border-amber-300 hover:bg-amber-100 text-amber-700"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            markReviewed.mutate(patient.id);
+                          }}
+                          disabled={markReviewed.isPending}
+                        >
+                          <CheckCircle className="h-3 w-3 ml-1" />
+                          סמן כמתוכנן
+                        </Button>
                       )}
                     </div>
                   </div>

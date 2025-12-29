@@ -608,7 +608,22 @@ export default function PatientDetail() {
               </div>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            {/* Mark as Scheduled button - prominently shown for new patients */}
+            {isUnreviewed && (
+              <Button 
+                variant="default"
+                className="bg-amber-500 hover:bg-amber-600 text-white"
+                onClick={() => {
+                  if (!id) return;
+                  markReviewed.mutate(id);
+                }}
+                disabled={markReviewed.isPending}
+              >
+                <CheckCircle className="h-4 w-4 ml-2" />
+                {markReviewed.isPending ? 'מעדכן...' : 'סמן כמתוכנן'}
+              </Button>
+            )}
             {patient.phone && (
               <Button variant="outline" onClick={handleWhatsApp}>
                 <MessageCircle className="h-4 w-4 ml-2" />
