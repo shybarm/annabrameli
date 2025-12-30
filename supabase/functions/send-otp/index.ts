@@ -8,18 +8,27 @@ const corsHeaders = {
 
 // Normalize phone to E.164 format for Israel
 function normalizePhone(phone: string): string {
-  let normalized = phone.replace(/[\s\-\(\)]/g, '');
+  // Remove all non-digit characters except +
+  let normalized = phone.replace(/[^\d+]/g, '');
   
   // Handle Israeli phone numbers
   if (normalized.startsWith('0')) {
+    // Israeli local format: 05xxxxxxxx -> +9725xxxxxxxx
     normalized = '+972' + normalized.substring(1);
-  } else if (normalized.startsWith('972')) {
+  } else if (normalized.startsWith('972') && !normalized.startsWith('+')) {
     normalized = '+' + normalized;
   } else if (!normalized.startsWith('+')) {
+    // Assume Israeli number without prefix
     normalized = '+972' + normalized;
   }
   
   return normalized;
+}
+
+// Validate E.164 phone format
+function isValidE164(phone: string): boolean {
+  // E.164: + followed by 1-15 digits
+  return /^\+[1-9]\d{1,14}$/.test(phone);
 }
 
 serve(async (req) => {
@@ -55,6 +64,18 @@ serve(async (req) => {
     }
 
     const normalizedPhone = normalizePhone(phone);
+    
+    // Validate phone format
+    if (!isValidE164(normalizedPhone)) {
+      console.error("Invalid phone format after normalization:", normalizedPhone);
+      return new Response(
+        JSON.stringify({ error: "מספר טלפון לא תקין", code: "INVALID_PHONE" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    
+    console.log(`Processing OTP request for phone: ${normalizedPhone.substring(0, 7)}...`);
+    
     const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 
                req.headers.get('x-real-ip') || 'unknown';
 
@@ -121,10 +142,25 @@ serve(async (req) => {
     });
 
     if (!verifyResponse.ok) {
-      const verifyError = await verifyResponse.text();
-      console.error("Twilio Verify error:", verifyError);
+      const verifyError = await verifyResponse.json();
+      console.error("Twilio Verify error details:", JSON.stringify(verifyError));
+      console.error("Phone sent to Twilio:", normalizedPhone);
+      console.error("Service SID used:", twilioVerifyServiceSid?.substring(0, 10) + "...");
+      
+      // Return more specific error based on Twilio error code
+      if (verifyError.code === 60200) {
+        return new Response(
+          JSON.stringify({ 
+            error: "מספר טלפון לא נתמך או שגוי", 
+            code: "INVALID_PHONE_TWILIO",
+            details: verifyError.message 
+          }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      
       return new Response(
-        JSON.stringify({ error: "Failed to send verification code" }),
+        JSON.stringify({ error: "שגיאה בשליחת קוד אימות" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
