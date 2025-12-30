@@ -620,7 +620,26 @@ export default function GuestBooking() {
 
                 {/* Time */}
                 <div className="space-y-2">
-                  <Label>שעה מבוקשת *</Label>
+                  <div className="flex items-center justify-between">
+                    <Label>שעה מבוקשת *</Label>
+                    {date && !loadingSlots && (
+                      <span className={cn(
+                        "text-xs px-2 py-0.5 rounded-full",
+                        availableTimeSlots.length > 5 
+                          ? "bg-green-100 text-green-700" 
+                          : availableTimeSlots.length > 0 
+                            ? "bg-amber-100 text-amber-700"
+                            : "bg-red-100 text-red-700"
+                      )}>
+                        {availableTimeSlots.length > 0 
+                          ? `${availableTimeSlots.length} שעות פנויות`
+                          : 'אין שעות פנויות'}
+                      </span>
+                    )}
+                    {date && loadingSlots && (
+                      <span className="text-xs text-muted-foreground">בודק זמינות...</span>
+                    )}
+                  </div>
                   <Select value={time} onValueChange={setTime} disabled={!date || loadingSlots}>
                     <SelectTrigger>
                       <SelectValue placeholder={loadingSlots ? 'טוען שעות פנויות...' : (date ? 'בחר שעה' : 'נא לבחור תאריך קודם')}>
