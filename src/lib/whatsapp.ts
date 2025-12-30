@@ -32,17 +32,18 @@ export function normalizePhoneToE164(phone: string | null | undefined): string |
 
 /**
  * Opens WhatsApp Web with a prefilled message.
+ * If phone is valid, opens direct chat. Otherwise opens share mode.
  * @param phone - Phone number (will be normalized to E.164)
  * @param message - Message text to prefill
- * @returns true if opened successfully, false if phone is invalid
  */
-export function openWhatsAppChat(phone: string | null | undefined, message: string): boolean {
+export function openWhatsAppChat(phone: string | null | undefined, message: string): void {
   const normalizedPhone = normalizePhoneToE164(phone);
-  if (!normalizedPhone) return false;
-  
   const encodedMessage = encodeURIComponent(message);
-  const url = `https://wa.me/${normalizedPhone}?text=${encodedMessage}`;
+  
+  // If valid phone, open direct chat; otherwise use share mode
+  const url = normalizedPhone 
+    ? `https://wa.me/${normalizedPhone}?text=${encodedMessage}`
+    : `https://wa.me/?text=${encodedMessage}`;
   
   window.open(url, '_blank', 'noopener,noreferrer');
-  return true;
 }
