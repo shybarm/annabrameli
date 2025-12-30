@@ -22,7 +22,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { 
   ArrowRight, User, Clock, Calendar, FileText, Save, 
   Upload, MessageCircle, CreditCard, File, Printer, Mail, Pill, Stethoscope, Eye, ClipboardList,
-  Activity, FlaskConical, ScanLine, PenTool, CheckCircle
+  Activity, FlaskConical, ScanLine, PenTool, CheckCircle, Sparkles, Copy
 } from 'lucide-react';
 import { PageHelpButton } from '@/components/tutorial/PageHelpButton';
 import { appointmentDetailTutorial } from '@/components/tutorial/tutorialData';
@@ -51,6 +51,8 @@ export default function AppointmentDetail() {
   const [viewerOpen, setViewerOpen] = useState(false);
   const [viewerIndex, setViewerIndex] = useState(0);
   const [showSignaturePad, setShowSignaturePad] = useState(false);
+  const [aiSummary, setAiSummary] = useState('');
+  const [isSummarizing, setIsSummarizing] = useState(false);
   
   const { user } = useAuth();
   const { data: signatures } = useElectronicSignatures('appointment', id || '');
@@ -199,6 +201,46 @@ export default function AppointmentDetail() {
     const files = e.target.files;
     if (files) {
       Array.from(files).forEach(uploadFile);
+    }
+  };
+
+  const handleGenerateSummary = async () => {
+    if (!documents || documents.length === 0) return;
+    
+    setIsSummarizing(true);
+    setAiSummary('');
+    
+    try {
+      console.log('Starting AI summary generation for', documents.length, 'documents');
+      const { data, error } = await supabase.functions.invoke('summarize-documents', {
+        body: {
+          documents: documents.map(doc => ({
+            title: doc.title,
+            document_type: doc.document_type,
+            created_at: doc.created_at,
+            file_path: doc.file_path,
+            mime_type: doc.mime_type,
+          })),
+          patientName: appointment?.patients ? `${appointment.patients.first_name} ${appointment.patients.last_name}` : undefined,
+          patientId: appointment?.patient_id,
+        },
+      });
+
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || 'Failed to generate summary');
+      
+      console.log('AI summary generated successfully');
+      setAiSummary(data.summary);
+      toast({ title: 'הסיכום נוצר בהצלחה' });
+    } catch (error: any) {
+      console.error('Summary error:', error);
+      toast({ 
+        title: 'שגיאה ביצירת הסיכום', 
+        description: error.message, 
+        variant: 'destructive' 
+      });
+    } finally {
+      setIsSummarizing(false);
     }
   };
 
@@ -1107,59 +1149,100 @@ export default function AppointmentDetail() {
 
           {/* Documents Tab */}
           <TabsContent value="documents">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="h-5 w-5 text-primary" />
-                  מסמכים וקבצים ({documents?.length || 0})
-                </CardTitle>
-                <Button 
-                  variant="outline" 
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploading}
-                >
-                  <Upload className="h-4 w-4 ml-2" />
-                  {isUploading ? 'מעלה...' : 'העלה קובץ'}
-                </Button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  multiple
-                  accept="image/*,.pdf,.doc,.docx"
-                  className="hidden"
-                  onChange={handleFileSelect}
-                />
-              </CardHeader>
-              <CardContent>
-                {documents && documents.length > 0 ? (
-                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                    {documents.map((doc, index) => (
-                      <div 
-                        key={doc.id} 
-                        className="flex items-center gap-3 p-3 border rounded-lg hover:bg-accent/50 cursor-pointer group"
+            <div className="space-y-4">
+              {/* AI Summary Section */}
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-primary" />
+                    סיכום מסמכים AI
+                  </CardTitle>
+                  <Button 
+                    variant="outline" 
+                    onClick={handleGenerateSummary}
+                    disabled={isSummarizing || !documents || documents.length === 0}
+                  >
+                    <Sparkles className="h-4 w-4 ml-2" />
+                    {isSummarizing ? 'מייצר סיכום...' : 'צור סיכום'}
+                  </Button>
+                </CardHeader>
+                {aiSummary && (
+                  <CardContent>
+                    <div className="relative bg-muted/50 p-4 rounded-lg">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute top-2 left-2 h-8 w-8"
                         onClick={() => {
-                          setViewerIndex(index);
-                          setViewerOpen(true);
+                          navigator.clipboard.writeText(aiSummary);
+                          toast({ title: 'הסיכום הועתק!' });
                         }}
                       >
-                        <File className="h-8 w-8 text-muted-foreground" />
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium truncate">{doc.title}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {format(new Date(doc.created_at), 'dd/MM/yyyy')}
-                          </p>
-                        </div>
-                        <Eye className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                      <div className="whitespace-pre-wrap text-sm pr-0 pl-10">
+                        {aiSummary}
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-center text-muted-foreground py-8">
-                    אין מסמכים. לחץ על "העלה קובץ" כדי להוסיף.
-                  </p>
+                    </div>
+                  </CardContent>
                 )}
-              </CardContent>
-            </Card>
+              </Card>
+
+              {/* Documents List */}
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-primary" />
+                    מסמכים וקבצים ({documents?.length || 0})
+                  </CardTitle>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                  >
+                    <Upload className="h-4 w-4 ml-2" />
+                    {isUploading ? 'מעלה...' : 'העלה קובץ'}
+                  </Button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    accept="image/*,.pdf,.doc,.docx"
+                    className="hidden"
+                    onChange={handleFileSelect}
+                  />
+                </CardHeader>
+                <CardContent>
+                  {documents && documents.length > 0 ? (
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                      {documents.map((doc, index) => (
+                        <div 
+                          key={doc.id} 
+                          className="flex items-center gap-3 p-3 border rounded-lg hover:bg-accent/50 cursor-pointer group"
+                          onClick={() => {
+                            setViewerIndex(index);
+                            setViewerOpen(true);
+                          }}
+                        >
+                          <File className="h-8 w-8 text-muted-foreground" />
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium truncate">{doc.title}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {format(new Date(doc.created_at), 'dd/MM/yyyy')}
+                            </p>
+                          </div>
+                          <Eye className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-center text-muted-foreground py-8">
+                      אין מסמכים. לחץ על "העלה קובץ" כדי להוסיף.
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
             
             {/* Document Viewer Modal */}
             {documents && documents.length > 0 && (
