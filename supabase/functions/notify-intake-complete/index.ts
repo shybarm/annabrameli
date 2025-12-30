@@ -64,7 +64,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`notify-intake-complete: Sending notification to ${notificationEmail}`);
 
     const emailResponse = await resend.emails.send({
-      from: `${clinicName} <onboarding@resend.dev>`,
+      from: `${clinicName} <info@ihaveallergy.com>`,
       to: [notificationEmail],
       subject: `טופס קליטה הושלם - ${patientName}`,
       html: `
