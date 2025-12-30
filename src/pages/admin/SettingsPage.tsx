@@ -551,31 +551,32 @@ export default function SettingsPage() {
                 const isOpen = dayHours !== null && dayHours !== undefined;
                 
                 return (
-                  <div key={day} className="p-3 border rounded-lg bg-card/50">
-                    <div className="flex items-center justify-between mb-2 gap-3">
-                      <span className="font-medium">{dayLabels[day]}</span>
-                      <label className="flex items-center gap-3 whitespace-nowrap">
-                        <span className="text-sm text-muted-foreground">{isOpen ? 'פתוח' : 'סגור'}</span>
+                  <div key={day} className="grid grid-cols-[auto_1fr_auto] items-center gap-4 p-3 border rounded-lg bg-card/50 min-h-14">
+                    <span className="font-medium whitespace-nowrap">{dayLabels[day]}</span>
+                    <div className="flex justify-center">
+                      {isOpen && dayHours && (
+                        <div dir="ltr" className="flex items-center gap-2">
+                          <TimeSelect 
+                            value={dayHours.open} 
+                            onChange={(val) => updateDayHours(day, 'open', val)} 
+                          />
+                          <span className="text-sm text-muted-foreground">—</span>
+                          <TimeSelect 
+                            value={dayHours.close} 
+                            onChange={(val) => updateDayHours(day, 'close', val)} 
+                          />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 h-11">
+                      <span className="text-sm text-muted-foreground whitespace-nowrap">{isOpen ? 'פתוח' : 'סגור'}</span>
+                      <div dir="ltr">
                         <Switch
                           checked={isOpen}
                           onCheckedChange={() => toggleDayOpen(day)}
-                          className="shrink-0"
-                        />
-                      </label>
-                    </div>
-                    {isOpen && dayHours && (
-                      <div className="flex flex-wrap items-center gap-2 mt-2">
-                        <TimeSelect 
-                          value={dayHours.open} 
-                          onChange={(val) => updateDayHours(day, 'open', val)} 
-                        />
-                        <span className="text-sm text-muted-foreground">עד</span>
-                        <TimeSelect 
-                          value={dayHours.close} 
-                          onChange={(val) => updateDayHours(day, 'close', val)} 
                         />
                       </div>
-                    )}
+                    </div>
                   </div>
                 );
               })}
