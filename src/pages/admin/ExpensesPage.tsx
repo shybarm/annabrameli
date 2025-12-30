@@ -227,47 +227,86 @@ export default function ExpensesPage() {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
               </div>
             ) : expenses && expenses.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="text-right border-b">
-                      <th className="pb-3 font-medium">תאריך</th>
-                      <th className="pb-3 font-medium">קטגוריה</th>
-                      <th className="pb-3 font-medium">תיאור</th>
-                      <th className="pb-3 font-medium">סכום</th>
-                      <th className="pb-3 font-medium">פעולות</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y">
-                    {expenses.map((expense) => (
-                      <tr key={expense.id} className="hover:bg-muted/50">
-                        <td className="py-3">{format(new Date(expense.expense_date), 'dd/MM/yyyy')}</td>
-                        <td className="py-3">{getCategoryLabel(expense.category)}</td>
-                        <td className="py-3 text-muted-foreground">{expense.description || '-'}</td>
-                        <td className="py-3 font-semibold">₪{Number(expense.amount).toLocaleString()}</td>
-                        <td className="py-3">
-                          <div className="flex gap-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleEdit(expense)}
-                            >
-                              <Edit className="h-4 w-4 text-muted-foreground" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => deleteExpense.mutate(expense.id)}
-                            >
-                              <Trash2 className="h-4 w-4 text-red-500" />
-                            </Button>
-                          </div>
-                        </td>
+              <>
+                {/* Mobile: Card View */}
+                <div className="space-y-3 md:hidden">
+                  {expenses.map((expense) => (
+                    <div key={expense.id} className="p-4 border rounded-lg bg-card">
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <p className="font-semibold">{getCategoryLabel(expense.category)}</p>
+                          <p className="text-sm text-muted-foreground">{format(new Date(expense.expense_date), 'dd/MM/yyyy')}</p>
+                        </div>
+                        <p className="text-lg font-bold text-red-600">₪{Number(expense.amount).toLocaleString()}</p>
+                      </div>
+                      {expense.description && (
+                        <p className="text-sm text-muted-foreground mb-3">{expense.description}</p>
+                      )}
+                      <div className="flex gap-2 border-t pt-3">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEdit(expense)}
+                          className="flex-1 min-h-[40px]"
+                        >
+                          <Edit className="h-4 w-4 ml-2" />
+                          עריכה
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => deleteExpense.mutate(expense.id)}
+                          className="text-red-500 hover:text-red-600 min-h-[40px]"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {/* Desktop: Table View */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="text-right border-b">
+                        <th className="pb-3 font-medium">תאריך</th>
+                        <th className="pb-3 font-medium">קטגוריה</th>
+                        <th className="pb-3 font-medium">תיאור</th>
+                        <th className="pb-3 font-medium">סכום</th>
+                        <th className="pb-3 font-medium">פעולות</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="divide-y">
+                      {expenses.map((expense) => (
+                        <tr key={expense.id} className="hover:bg-muted/50">
+                          <td className="py-3">{format(new Date(expense.expense_date), 'dd/MM/yyyy')}</td>
+                          <td className="py-3">{getCategoryLabel(expense.category)}</td>
+                          <td className="py-3 text-muted-foreground">{expense.description || '-'}</td>
+                          <td className="py-3 font-semibold">₪{Number(expense.amount).toLocaleString()}</td>
+                          <td className="py-3">
+                            <div className="flex gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEdit(expense)}
+                              >
+                                <Edit className="h-4 w-4 text-muted-foreground" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => deleteExpense.mutate(expense.id)}
+                              >
+                                <Trash2 className="h-4 w-4 text-red-500" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             ) : (
               <div className="text-center py-8">
                 <Receipt className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />

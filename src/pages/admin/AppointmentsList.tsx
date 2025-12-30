@@ -185,31 +185,40 @@ export default function AppointmentsList() {
                   <div
                     key={apt.id}
                     className={cn(
-                      "flex items-center justify-between p-4 rounded-lg border hover:shadow-md transition-shadow cursor-pointer",
+                      "p-4 rounded-lg border hover:shadow-md transition-shadow cursor-pointer",
                       isNewPatient ? "bg-amber-50 border-amber-300 ring-2 ring-amber-400" : "bg-white"
                     )}
                     onClick={() => navigate(`/admin/appointments/${apt.id}`)}
                   >
-                    <div className="flex items-center gap-4">
+                    {/* Mobile-friendly stacked layout */}
+                    <div className="flex items-start gap-3">
                       <div className={cn(
-                        "flex items-center justify-center w-14 h-14 rounded-lg",
+                        "flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-lg flex-shrink-0",
                         isNewPatient ? "bg-amber-200 text-amber-700" : "bg-medical-100 text-medical-700"
                       )}>
-                        <Clock className="h-6 w-6" />
+                        <Clock className="h-5 w-5 sm:h-6 sm:w-6" />
                       </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <p className="font-semibold text-lg">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="font-semibold text-base sm:text-lg">
                             {apt.patients?.first_name} {apt.patients?.last_name}
                           </p>
+                          <p className="text-lg sm:text-xl font-bold text-medical-700">
+                            {format(new Date(apt.scheduled_at), 'HH:mm')}
+                          </p>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2 mt-1">
                           {isNewPatient && (
                             <Badge className="bg-amber-500 text-white text-xs animate-pulse">
                               <Sparkles className="h-3 w-3 ml-1" />
                               מטופל חדש
                             </Badge>
                           )}
+                          <Badge className={statusColors[apt.status]} data-tutorial="appointment-status">
+                            {statusLabels[apt.status]}
+                          </Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-muted-foreground mt-1">
                           {apt.appointment_types?.name_he || 'ייעוץ'} | {apt.duration_minutes} דקות
                         </p>
                         {apt.patients?.phone && (
@@ -219,32 +228,24 @@ export default function AppointmentsList() {
                         )}
                       </div>
                     </div>
-                    <div className="flex flex-col items-end gap-2">
-                      <p className="text-xl font-bold text-medical-700">
-                        {format(new Date(apt.scheduled_at), 'HH:mm')}
-                      </p>
-                      <Badge className={statusColors[apt.status]} data-tutorial="appointment-status">
-                        {statusLabels[apt.status]}
-                      </Badge>
-                      
-                      {/* Status dropdown */}
-                      <div onClick={(e) => e.stopPropagation()}>
-                        <Select
-                          value={apt.status}
-                          onValueChange={(newStatus) => handleStatusChange(apt.id, newStatus, { stopPropagation: () => {} } as React.MouseEvent)}
-                        >
-                          <SelectTrigger className={`w-32 h-8 text-xs ${statusColors[apt.status] || 'bg-gray-100'}`}>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="scheduled">מתוכנן</SelectItem>
-                            <SelectItem value="waiting_room">בחדר המתנה</SelectItem>
-                            <SelectItem value="in_treatment">חדר רופא</SelectItem>
-                            <SelectItem value="completed">הושלם</SelectItem>
-                            <SelectItem value="cancelled">בוטל</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                    
+                    {/* Status dropdown - full width on mobile */}
+                    <div onClick={(e) => e.stopPropagation()} className="mt-3 pt-3 border-t">
+                      <Select
+                        value={apt.status}
+                        onValueChange={(newStatus) => handleStatusChange(apt.id, newStatus, { stopPropagation: () => {} } as React.MouseEvent)}
+                      >
+                        <SelectTrigger className={`w-full sm:w-40 min-h-[44px] text-sm ${statusColors[apt.status] || 'bg-gray-100'}`}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="scheduled">מתוכנן</SelectItem>
+                          <SelectItem value="waiting_room">בחדר המתנה</SelectItem>
+                          <SelectItem value="in_treatment">חדר רופא</SelectItem>
+                          <SelectItem value="completed">הושלם</SelectItem>
+                          <SelectItem value="cancelled">בוטל</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                     );
@@ -301,8 +302,9 @@ export default function AppointmentsList() {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-medical-600" />
               </div>
             ) : (
-              <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-                <div className="grid grid-cols-7 gap-2 min-w-[600px] sm:min-w-0">
+              <>
+                {/* Mobile: Horizontal scroll list of days */}
+                <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:hidden snap-x snap-mandatory">
                   {weekDays.map((day) => {
                     const dayAppointments = getAppointmentsForDay(day);
                     const isToday = isSameDay(day, today);
@@ -310,15 +312,71 @@ export default function AppointmentsList() {
                     return (
                       <div
                         key={day.toISOString()}
-                        className={`min-h-[120px] p-2 rounded-lg border ${
+                        className={cn(
+                          "min-w-[140px] flex-shrink-0 p-3 rounded-lg border snap-start",
                           isToday ? 'border-medical-500 bg-medical-50' : 'border-gray-200'
-                        }`}
+                        )}
                       >
                         <div className="text-center mb-2">
                           <p className="text-xs text-muted-foreground">
                             {format(day, 'EEEE', { locale: he })}
                           </p>
-                          <p className={`text-lg font-semibold ${isToday ? 'text-medical-700' : ''}`}>
+                          <p className={cn("text-lg font-semibold", isToday && "text-medical-700")}>
+                            {format(day, 'd')}
+                          </p>
+                        </div>
+                        <div className="space-y-1">
+                          {dayAppointments.slice(0, 2).map((apt) => {
+                            const isNewPatient = apt.patients?.intake_completed_at && !apt.patients?.reviewed_at;
+                            return (
+                            <div
+                              key={apt.id}
+                              className={cn(
+                                "text-xs p-1.5 rounded cursor-pointer hover:opacity-80",
+                                isNewPatient ? "bg-amber-200 text-amber-800" : statusColors[apt.status]
+                              )}
+                              onClick={() => navigate(`/admin/appointments/${apt.id}`)}
+                            >
+                              <p className="font-medium truncate">
+                                {apt.patients?.first_name}
+                              </p>
+                              <p>{format(new Date(apt.scheduled_at), 'HH:mm')}</p>
+                            </div>
+                            );
+                          })}
+                          {dayAppointments.length > 2 && (
+                            <p className="text-xs text-center text-muted-foreground">
+                              +{dayAppointments.length - 2}
+                            </p>
+                          )}
+                          {dayAppointments.length === 0 && (
+                            <p className="text-xs text-center text-muted-foreground py-2">-</p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                
+                {/* Desktop: Grid layout */}
+                <div className="hidden sm:grid grid-cols-7 gap-2">
+                  {weekDays.map((day) => {
+                    const dayAppointments = getAppointmentsForDay(day);
+                    const isToday = isSameDay(day, today);
+                    
+                    return (
+                      <div
+                        key={day.toISOString()}
+                        className={cn(
+                          "min-h-[120px] p-2 rounded-lg border",
+                          isToday ? 'border-medical-500 bg-medical-50' : 'border-gray-200'
+                        )}
+                      >
+                        <div className="text-center mb-2">
+                          <p className="text-xs text-muted-foreground">
+                            {format(day, 'EEEE', { locale: he })}
+                          </p>
+                          <p className={cn("text-lg font-semibold", isToday && "text-medical-700")}>
                             {format(day, 'd')}
                           </p>
                         </div>
@@ -354,7 +412,7 @@ export default function AppointmentsList() {
                     );
                   })}
                 </div>
-              </div>
+              </>
             )}
           </CardContent>
         </Card>

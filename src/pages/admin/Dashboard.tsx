@@ -9,6 +9,7 @@ import { format, differenceInMinutes, startOfWeek, addDays, isSameDay } from 'da
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
+import { cn } from '@/lib/utils';
 import { 
   Calendar, 
   Clock, 
@@ -596,7 +597,8 @@ export default function AdminDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-6 gap-2">
+            {/* Mobile: Horizontal scroll */}
+            <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:hidden snap-x snap-mandatory">
               {daysOfWeek.map((dayName, index) => {
                 const day = addDays(weekStart, index);
                 const dayKey = format(day, 'yyyy-MM-dd');
@@ -606,15 +608,53 @@ export default function AdminDashboard() {
                 return (
                   <div 
                     key={dayKey}
-                    className={`p-2 rounded-lg border text-center cursor-pointer transition-colors hover:bg-accent/50 ${
+                    className={cn(
+                      "min-w-[80px] flex-shrink-0 p-3 rounded-lg border text-center cursor-pointer transition-colors hover:bg-accent/50 snap-start",
                       isToday ? 'border-primary bg-primary/5' : 'border-muted'
-                    }`}
+                    )}
                     onClick={() => navigate(`/admin/appointments?date=${dayKey}`)}
                   >
-                    <p className={`text-xs font-medium ${isToday ? 'text-primary' : 'text-muted-foreground'}`}>
+                    <p className={cn("text-xs font-medium", isToday ? 'text-primary' : 'text-muted-foreground')}>
                       {dayName}
                     </p>
-                    <p className={`text-lg font-bold ${isToday ? 'text-primary' : ''}`}>
+                    <p className={cn("text-lg font-bold", isToday && "text-primary")}>
+                      {format(day, 'd')}
+                    </p>
+                    <div className="mt-1">
+                      {dayAppts.length > 0 ? (
+                        <Badge variant="secondary" className="text-xs">
+                          {dayAppts.length}
+                        </Badge>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">-</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            
+            {/* Desktop: Grid */}
+            <div className="hidden sm:grid grid-cols-6 gap-2">
+              {daysOfWeek.map((dayName, index) => {
+                const day = addDays(weekStart, index);
+                const dayKey = format(day, 'yyyy-MM-dd');
+                const dayAppts = appointmentsByDay[dayKey] || [];
+                const isToday = isSameDay(day, new Date());
+                
+                return (
+                  <div 
+                    key={dayKey}
+                    className={cn(
+                      "p-2 rounded-lg border text-center cursor-pointer transition-colors hover:bg-accent/50",
+                      isToday ? 'border-primary bg-primary/5' : 'border-muted'
+                    )}
+                    onClick={() => navigate(`/admin/appointments?date=${dayKey}`)}
+                  >
+                    <p className={cn("text-xs font-medium", isToday ? 'text-primary' : 'text-muted-foreground')}>
+                      {dayName}
+                    </p>
+                    <p className={cn("text-lg font-bold", isToday && "text-primary")}>
                       {format(day, 'd')}
                     </p>
                     <div className="mt-1">
