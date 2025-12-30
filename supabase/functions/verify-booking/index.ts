@@ -92,8 +92,8 @@ serve(async (req) => {
         const siteUrl = Deno.env.get("SITE_URL") || "https://ftatmcyrmeyhghgckvbj.lovable.app";
         const verifyLink = `${siteUrl}/verify-booking?token=${newToken}`;
 
-        await resend.emails.send({
-          from: "מרפאת ד\"ר אנה ברמלי <onboarding@resend.dev>",
+        const emailRes = await resend.emails.send({
+          from: "מרפאת ד\"ר אנה ברמלי <noreply@ihaveallergy.com>",
           to: [verification.email],
           subject: "אימות קביעת תור - קישור חדש",
           html: `
@@ -104,12 +104,14 @@ serve(async (req) => {
               <div style="margin: 30px 0;">
                 <a href="${verifyLink}" style="background: #2563eb; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold;">אמת/י את התור</a>
               </div>
+              <p style="margin: 18px 0; color: #111;">למה צריך אימות? זה מאפשר לנו לשמור את הבקשה שלך ולהפוך את ההזמנה הבאה שלך לקלה ומהירה יותר.</p>
               <p style="color: #666; font-size: 14px;">הקישור יפוג תוך 30 דקות.</p>
               <p>בברכה,<br>מרפאת ד"ר אנה ברמלי</p>
             </div>
           `,
         });
 
+        console.log("Resend resend() response:", emailRes);
         console.log("Resent verification email to:", verification.email);
       }
 
@@ -188,6 +190,25 @@ serve(async (req) => {
         JSON.stringify({ error: "שגיאה באימות התור" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    // If this patient was created via guest booking, activate them only after email verification
+    const { data: aptForPatient } = await supabase
+      .from("appointments")
+      .select("patient_id")
+      .eq("id", verification.appointment_id)
+      .maybeSingle();
+
+    if (aptForPatient?.patient_id) {
+      const { error: patientStatusError } = await supabase
+        .from("patients")
+        .update({ status: "active" })
+        .eq("id", aptForPatient.patient_id)
+        .eq("status", "pending_verification");
+
+      if (patientStatusError) {
+        console.error("Error activating patient after verification:", patientStatusError);
+      }
     }
 
     console.log("Appointment confirmed:", verification.appointment_id);

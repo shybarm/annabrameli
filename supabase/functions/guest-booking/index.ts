@@ -127,7 +127,7 @@ serve(async (req) => {
           phone: trimmedPhone,
           email: trimmedEmail,
           clinic_id: clinicId,
-          status: 'active'
+          status: 'pending_verification'
         })
         .select("id")
         .single();
@@ -265,7 +265,7 @@ serve(async (req) => {
           minute: "2-digit",
         });
 
-        await resend.emails.send({
+        const emailRes = await resend.emails.send({
           from: "מרפאת ד\"ר אנה ברמלי <noreply@ihaveallergy.com>",
           to: [trimmedEmail],
           subject: `אימות קביעת תור - ${dateStr}`,
@@ -274,23 +274,28 @@ serve(async (req) => {
               <h2 style="color: #2563eb;">אימות קביעת תור 🏥</h2>
               <p>שלום ${trimmedFirstName},</p>
               <p>קיבלנו את בקשתך לתור במרפאה. לאישור סופי, נא ללחוץ על הכפתור הבא:</p>
-              
+
               <div style="margin: 30px 0; text-align: center;">
                 <a href="${verifyLink}" style="background: #2563eb; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">אמת/י את התור</a>
               </div>
-              
+
               <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
                 <p style="margin: 5px 0;"><strong>📅 תאריך:</strong> ${dateStr}</p>
                 <p style="margin: 5px 0;"><strong>🕐 שעה:</strong> ${timeStr}</p>
               </div>
-              
+
+              <p style="margin: 18px 0; color: #111;">
+                למה צריך אימות? זה מאפשר לנו לשמור את הבקשה שלך ולהפוך את ההזמנה הבאה שלך לקלה ומהירה יותר.
+              </p>
+
               <p style="color: #666; font-size: 14px;">⚠️ הקישור יפוג תוך 30 דקות. אם לא ביקשת לקבוע תור, ניתן להתעלם מהודעה זו.</p>
-              
+
               <p>בברכה,<br>מרפאת ד"ר אנה ברמלי</p>
             </div>
           `,
         });
 
+        console.log("Resend send() response:", emailRes);
         console.log("Verification email sent to:", trimmedEmail);
       } catch (emailError) {
         console.error("Failed to send verification email:", emailError);

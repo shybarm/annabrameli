@@ -80,11 +80,12 @@ export function usePatients(clinicId?: string | null) {
       
       if (error) throw error;
       
-      // Filter out patients who are staff members
-      const filteredData = (data || []).filter(patient => 
-        !patient.user_id || !staffUserIds.includes(patient.user_id)
-      );
-      
+      // Filter out patients who are staff members and those pending email verification
+      const filteredData = (data || []).filter(patient => {
+        if (patient.status === 'pending_verification') return false;
+        return !patient.user_id || !staffUserIds.includes(patient.user_id);
+      });
+
       return filteredData as Patient[];
     },
   });
@@ -199,6 +200,7 @@ export function useSearchPatients(query: string) {
         .from('patients')
         .select('*, clinic:clinics(id, name)')
         .or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,phone.ilike.%${query}%,id_number.ilike.%${query}%`)
+        .neq('status', 'pending_verification')
         .limit(20);
       
       if (error) throw error;
