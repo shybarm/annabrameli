@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo, useEffect } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
@@ -16,8 +16,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
-import { Stethoscope, Calendar as CalendarIcon, Clock, ArrowRight, CheckCircle, Upload, X, FileText, MapPin, Shield, Smartphone } from 'lucide-react';
+import { Stethoscope, Calendar as CalendarIcon, Clock, ArrowRight, CheckCircle, Upload, X, FileText, MapPin, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
 
@@ -36,7 +35,7 @@ const ALLOWED_FILE_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image
 
 export default function GuestBooking() {
   const navigate = useNavigate();
-  const [step, setStep] = useState<'clinic' | 'info' | 'verify' | 'appointment' | 'success'>('clinic');
+  const [step, setStep] = useState<'clinic' | 'info' | 'appointment' | 'success'>('clinic');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const captchaRef = useRef<HCaptcha>(null);
@@ -54,13 +53,6 @@ export default function GuestBooking() {
   const [documents, setDocuments] = useState<File[]>([]);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [calendarOpen, setCalendarOpen] = useState(false);
-
-  // OTP state
-  const [otpCode, setOtpCode] = useState('');
-  const [otpSending, setOtpSending] = useState(false);
-  const [otpVerifying, setOtpVerifying] = useState(false);
-  const [verificationToken, setVerificationToken] = useState<string | null>(null);
-  const [resendCooldown, setResendCooldown] = useState(0);
 
   const { data: clinics, isLoading: loadingClinics } = usePublicClinics();
   const { data: appointmentTypes } = useAppointmentTypes();
@@ -89,14 +81,6 @@ export default function GuestBooking() {
     const openDays = days.map((day, i) => clinic.working_hours?.[day] ? dayLabels[i] : null).filter(Boolean);
     return openDays.join(', ');
   };
-
-  // Resend cooldown timer
-  useEffect(() => {
-    if (resendCooldown > 0) {
-      const timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [resendCooldown]);
 
   const handleCaptchaVerify = (token: string) => {
     setCaptchaToken(token);
@@ -174,7 +158,7 @@ export default function GuestBooking() {
     setStep('info');
   };
 
-  const handleSendOTP = async () => {
+  const handleContinueToAppointment = () => {
     try {
       guestSchema.parse({ firstName, lastName, phone, email });
     } catch (error) {
@@ -187,131 +171,10 @@ export default function GuestBooking() {
       }
       return;
     }
-
-    setOtpSending(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('send-otp', {
-        body: { phone: phone.trim() },
-      });
-
-      if (error) throw error;
-
-      if (data.success) {
-        setStep('verify');
-        setResendCooldown(60);
-        toast({
-          title: 'קוד אימות נשלח',
-          description: 'בדוק את הודעות ה-SMS שלך',
-        });
-      } else {
-        // Handle rate limiting
-        if (data.code === 'RATE_LIMIT') {
-          toast({
-            title: 'יותר מדי ניסיונות',
-            description: 'נסה שוב בעוד מספר דקות',
-            variant: 'destructive',
-          });
-        } else if (data.code === 'COOLDOWN') {
-          setResendCooldown(data.remainingSeconds || 60);
-          toast({
-            title: 'המתן לפני שליחה נוספת',
-            description: `ניתן לשלוח שוב בעוד ${data.remainingSeconds || 60} שניות`,
-            variant: 'destructive',
-          });
-        } else {
-          throw new Error(data.error || 'שגיאה בשליחת קוד אימות');
-        }
-      }
-    } catch (error: any) {
-      console.error('OTP send error:', error);
-      toast({
-        title: 'שגיאה בשליחת קוד אימות',
-        description: error.message || 'נסה שוב מאוחר יותר',
-        variant: 'destructive',
-      });
-    } finally {
-      setOtpSending(false);
-    }
-  };
-
-  const handleVerifyOTP = async () => {
-    if (otpCode.length !== 6) {
-      toast({
-        title: 'נא להזין קוד בן 6 ספרות',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    setOtpVerifying(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('verify-otp', {
-        body: { phone: phone.trim(), otp: otpCode },
-      });
-
-      if (error) throw error;
-
-      if (data.success) {
-        setVerificationToken(data.verificationToken);
-        setStep('appointment');
-        toast({
-          title: 'הטלפון אומת בהצלחה',
-        });
-      } else {
-        if (data.code === 'MAX_ATTEMPTS') {
-          toast({
-            title: 'יותר מדי ניסיונות שגויים',
-            description: 'נא לבקש קוד חדש',
-            variant: 'destructive',
-          });
-        } else if (data.code === 'EXPIRED') {
-          toast({
-            title: 'הקוד פג תוקף',
-            description: 'נא לבקש קוד חדש',
-            variant: 'destructive',
-          });
-        } else {
-          toast({
-            title: 'קוד שגוי',
-            description: data.error || 'נא לנסות שוב',
-            variant: 'destructive',
-          });
-        }
-      }
-    } catch (error: any) {
-      console.error('OTP verify error:', error);
-      toast({
-        title: 'שגיאה באימות הקוד',
-        description: error.message || 'נסה שוב',
-        variant: 'destructive',
-      });
-    } finally {
-      setOtpVerifying(false);
-    }
-  };
-
-  const handleResendOTP = async () => {
-    if (resendCooldown > 0) return;
-    setOtpCode('');
-    await handleSendOTP();
-  };
-
-  const handleContinue = () => {
-    handleSendOTP();
+    setStep('appointment');
   };
 
   const handleSubmit = async () => {
-    // CRITICAL: Cannot submit without OTP verification
-    if (!verificationToken) {
-      toast({
-        title: 'נדרש אימות טלפון',
-        description: 'יש לאמת את מספר הטלפון לפני קביעת תור',
-        variant: 'destructive',
-      });
-      setStep('verify');
-      return;
-    }
-
     if (!appointmentTypeId || !date || !time) {
       toast({
         title: 'נא למלא את כל השדות',
@@ -345,7 +208,6 @@ export default function GuestBooking() {
           time,
           notes: notes.trim() || null,
           captchaToken,
-          verificationToken, // Include OTP verification token
         },
       });
 
@@ -457,7 +319,7 @@ export default function GuestBooking() {
           <p className="text-muted-foreground">ד״ר אנה ברמלי</p>
         </div>
 
-        {/* Progress */}
+        {/* Progress - 3 steps now */}
         <div className="flex items-center justify-center gap-2 mb-6">
           <div className={cn(
             'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium',
@@ -465,26 +327,19 @@ export default function GuestBooking() {
           )}>
             1
           </div>
-          <div className="w-6 h-0.5 bg-medical-200" />
+          <div className="w-8 h-0.5 bg-medical-200" />
           <div className={cn(
             'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium',
             step === 'info' ? 'bg-medical-600 text-white' : 'bg-medical-100 text-medical-600'
           )}>
             2
           </div>
-          <div className="w-6 h-0.5 bg-medical-200" />
-          <div className={cn(
-            'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium',
-            step === 'verify' ? 'bg-medical-600 text-white' : 'bg-medical-100 text-medical-600'
-          )}>
-            3
-          </div>
-          <div className="w-6 h-0.5 bg-medical-200" />
+          <div className="w-8 h-0.5 bg-medical-200" />
           <div className={cn(
             'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium',
             step === 'appointment' ? 'bg-medical-600 text-white' : 'bg-medical-100 text-medical-600'
           )}>
-            4
+            3
           </div>
         </div>
 
@@ -611,81 +466,12 @@ export default function GuestBooking() {
                   />
                 </div>
                 <Button
-                  onClick={handleContinue}
+                  onClick={handleContinueToAppointment}
                   className="w-full"
-                  disabled={!firstName || !lastName || !phone || otpSending}
+                  disabled={!firstName || !lastName || !phone}
                 >
-                  {otpSending ? 'שולח קוד אימות...' : 'המשך'}
+                  המשך
                 </Button>
-              </CardContent>
-            </>
-          )}
-
-          {step === 'verify' && (
-            <>
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="sm" onClick={() => { setStep('info'); setOtpCode(''); }}>
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <Smartphone className="h-5 w-5" />
-                      אימות טלפון
-                    </CardTitle>
-                    <CardDescription>הזן את קוד האימות שנשלח אליך</CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="text-center">
-                  <p className="text-sm text-muted-foreground mb-2">
-                    שלחנו קוד אימות בן 6 ספרות למספר:
-                  </p>
-                  <p className="font-medium text-lg" dir="ltr">{phone}</p>
-                </div>
-
-                <div className="flex justify-center" dir="ltr">
-                  <InputOTP
-                    value={otpCode}
-                    onChange={setOtpCode}
-                    maxLength={6}
-                  >
-                    <InputOTPGroup>
-                      <InputOTPSlot index={0} />
-                      <InputOTPSlot index={1} />
-                      <InputOTPSlot index={2} />
-                      <InputOTPSlot index={3} />
-                      <InputOTPSlot index={4} />
-                      <InputOTPSlot index={5} />
-                    </InputOTPGroup>
-                  </InputOTP>
-                </div>
-
-                <Button
-                  onClick={handleVerifyOTP}
-                  className="w-full"
-                  disabled={otpCode.length !== 6 || otpVerifying}
-                >
-                  {otpVerifying ? 'מאמת...' : 'אמת והמשך'}
-                </Button>
-
-                <div className="text-center">
-                  <p className="text-sm text-muted-foreground mb-2">לא קיבלת קוד?</p>
-                  <Button
-                    variant="link"
-                    onClick={handleResendOTP}
-                    disabled={resendCooldown > 0 || otpSending}
-                    className="text-medical-600"
-                  >
-                    {resendCooldown > 0 
-                      ? `ניתן לשלוח שוב בעוד ${resendCooldown} שניות`
-                      : otpSending 
-                        ? 'שולח...'
-                        : 'שלח קוד חדש'
-                    }
-                  </Button>
-                </div>
               </CardContent>
             </>
           )}
@@ -694,7 +480,7 @@ export default function GuestBooking() {
             <>
               <CardHeader>
                 <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="sm" onClick={() => setStep('verify')}>
+                  <Button variant="ghost" size="sm" onClick={() => setStep('info')}>
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                   <div>
@@ -872,7 +658,7 @@ export default function GuestBooking() {
                 <Button
                   onClick={handleSubmit}
                   className="w-full"
-                  disabled={isSubmitting || !appointmentTypeId || !date || !time || !captchaToken || !verificationToken}
+                  disabled={isSubmitting || !appointmentTypeId || !date || !time || !captchaToken}
                 >
                   {isSubmitting ? 'שולח בקשה...' : 'שלח בקשה לתור'}
                 </Button>
