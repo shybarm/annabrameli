@@ -2,6 +2,25 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
+// Normalize phone to E.164 format for Israel (consistent with backend)
+export function normalizePhoneForStorage(phone: string): string {
+  // Remove all non-digit characters except +
+  let normalized = phone.replace(/[^\d+]/g, '');
+  
+  // Handle Israeli phone numbers
+  if (normalized.startsWith('0')) {
+    // Israeli local format: 05xxxxxxxx -> +9725xxxxxxxx
+    normalized = '+972' + normalized.substring(1);
+  } else if (normalized.startsWith('972') && !normalized.startsWith('+')) {
+    normalized = '+' + normalized;
+  } else if (!normalized.startsWith('+') && normalized.length > 0) {
+    // Assume Israeli number without prefix
+    normalized = '+972' + normalized;
+  }
+  
+  return normalized;
+}
+
 export interface Patient {
   id: string;
   user_id: string | null;
@@ -131,6 +150,28 @@ export function useCreatePatient() {
       toast({ title: 'שגיאה', description: error.message, variant: 'destructive' });
     },
   });
+}
+
+// Find existing patient by clinic_id + normalized phone (duplicate prevention)
+export function useFindExistingPatient() {
+  return async (clinicId: string, normalizedPhone: string): Promise<Patient | null> => {
+    if (!clinicId || !normalizedPhone) return null;
+    
+    const { data, error } = await supabase
+      .from('patients')
+      .select('*')
+      .eq('clinic_id', clinicId)
+      .eq('phone', normalizedPhone)
+      .limit(1)
+      .maybeSingle();
+    
+    if (error) {
+      console.error('Error finding existing patient:', error);
+      return null;
+    }
+    
+    return data as Patient | null;
+  };
 }
 
 export function useUpdatePatient() {
