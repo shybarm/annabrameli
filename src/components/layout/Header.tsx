@@ -72,20 +72,12 @@ export const Header = () => {
 
           {/* CTA Buttons */}
           <div className="hidden lg:flex items-center gap-3">
-            {user && isStaff ? (
+            {user && isStaff && (
               <Button variant="outline" size="sm" asChild>
                 <Link to="/admin">
                   <Settings className="w-4 h-4 ml-2" />
                   ניהול
                 </Link>
-              </Button>
-            ) : user ? (
-              <Button variant="outline" size="sm" asChild>
-                <Link to="/portal">הפורטל שלי</Link>
-              </Button>
-            ) : (
-              <Button variant="ghost" size="sm" asChild>
-                <Link to="/auth">התחברות</Link>
               </Button>
             )}
             <Button variant="default" size="sm" className="shadow-teal" asChild>
@@ -130,20 +122,12 @@ export const Header = () => {
                   </Link>
                 ))}
                 <div className="pt-4 px-4 space-y-2">
-                  {user && isStaff ? (
+                  {user && isStaff && (
                     <Button variant="outline" className="w-full" asChild>
                       <Link to="/admin">
                         <Settings className="w-4 h-4 ml-2" />
                         ניהול
                       </Link>
-                    </Button>
-                  ) : user ? (
-                    <Button variant="outline" className="w-full" asChild>
-                      <Link to="/portal">הפורטל שלי</Link>
-                    </Button>
-                  ) : (
-                    <Button variant="ghost" className="w-full" asChild>
-                      <Link to="/auth">התחברות</Link>
                     </Button>
                   )}
                   <Button variant="default" className="w-full shadow-teal" asChild>
