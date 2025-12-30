@@ -36,6 +36,7 @@ import StaffIntake from "./pages/admin/StaffIntake";
 import AuditLogPage from "./pages/admin/AuditLogPage";
 import DoctorDiaryPage from "./pages/admin/DoctorDiaryPage";
 import WorkHoursPage from "./pages/admin/WorkHoursPage";
+import CancellationsReport from "./pages/admin/CancellationsReport";
 import PatientPortal from "./pages/patient/PatientPortal";
 import GuestBooking from "./pages/GuestBooking";
 import JoinTeam from "./pages/JoinTeam";
@@ -126,6 +127,7 @@ const App = () => (
               <Route path="/admin/audit-log" element={<AuditLogPage />} />
               <Route path="/admin/doctor-diary" element={<DoctorDiaryPage />} />
               <Route path="/admin/work-hours" element={<WorkHoursPage />} />
+              <Route path="/admin/cancellations" element={<CancellationsReport />} />
               
               <Route path="*" element={<NotFound />} />
             </Routes>
