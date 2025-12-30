@@ -86,13 +86,13 @@ export function AccessibilityMenu() {
         <Button
           variant="outline"
           size="icon"
-          className="fixed bottom-4 left-4 z-50 h-12 w-12 rounded-full shadow-lg bg-primary text-primary-foreground hover:bg-primary/90"
+          className="fixed bottom-4 right-4 z-50 h-12 w-12 rounded-full shadow-lg bg-primary text-primary-foreground hover:bg-primary/90"
           aria-label="תפריט נגישות"
         >
           <Accessibility className="h-6 w-6" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-64 p-4" side="top">
+      <DropdownMenuContent align="end" className="w-64 p-4" side="top">
         <DropdownMenuLabel className="text-center text-lg font-bold">
           נגישות
         </DropdownMenuLabel>
