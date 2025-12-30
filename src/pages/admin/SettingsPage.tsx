@@ -546,14 +546,15 @@ export default function SettingsPage() {
                 
                 return (
                   <div key={day} className="p-3 border rounded-lg bg-card/50">
-                    <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center justify-between mb-2 gap-3">
                       <span className="font-medium">{dayLabels[day]}</span>
-                      <label className="flex items-center gap-2">
+                      <label className="flex items-center gap-3 whitespace-nowrap">
+                        <span className="text-sm text-muted-foreground">{isOpen ? 'פתוח' : 'סגור'}</span>
                         <Switch
                           checked={isOpen}
                           onCheckedChange={() => toggleDayOpen(day)}
+                          className="shrink-0"
                         />
-                        <span className="text-sm">{isOpen ? 'פתוח' : 'סגור'}</span>
                       </label>
                     </div>
                     {isOpen && dayHours && (
