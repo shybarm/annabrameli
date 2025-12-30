@@ -291,6 +291,45 @@ export type Database = {
         }
         Relationships: []
       }
+      booking_otp: {
+        Row: {
+          attempts: number
+          created_at: string
+          expires_at: string
+          id: string
+          ip_address: string | null
+          otp_hash: string
+          phone: string
+          token_expires_at: string | null
+          verification_token: string | null
+          verified: boolean
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          expires_at: string
+          id?: string
+          ip_address?: string | null
+          otp_hash: string
+          phone: string
+          token_expires_at?: string | null
+          verification_token?: string | null
+          verified?: boolean
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          expires_at?: string
+          id?: string
+          ip_address?: string | null
+          otp_hash?: string
+          phone?: string
+          token_expires_at?: string | null
+          verification_token?: string | null
+          verified?: boolean
+        }
+        Relationships: []
+      }
       clinic_settings: {
         Row: {
           id: string
