@@ -127,7 +127,7 @@ serve(async (req) => {
           phone: trimmedPhone,
           email: trimmedEmail,
           clinic_id: clinicId,
-          status: 'pending_verification'
+          status: 'inactive'
         })
         .select("id")
         .single();
