@@ -27,7 +27,7 @@ const guestSchema = z.object({
   firstName: z.string().trim().min(2, 'שם פרטי חייב להכיל לפחות 2 תווים').max(100),
   lastName: z.string().trim().min(2, 'שם משפחה חייב להכיל לפחות 2 תווים').max(100),
   phone: z.string().trim().min(9, 'מספר טלפון לא תקין').max(20),
-  email: z.string().trim().email('כתובת אימייל לא תקינה').max(255).optional().or(z.literal('')),
+  email: z.string().trim().min(1, 'כתובת אימייל נדרשת').email('כתובת אימייל לא תקינה').max(255),
 });
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -279,12 +279,13 @@ export default function GuestBooking() {
       <div className="min-h-screen bg-gradient-to-b from-medical-50 to-white flex items-center justify-center p-4" dir="rtl">
         <Card className="w-full max-w-md border-medical-200">
           <CardContent className="pt-8 pb-8 text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="h-8 w-8 text-green-600" />
+            <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle className="h-8 w-8 text-amber-600" />
             </div>
-            <h2 className="text-2xl font-bold text-foreground mb-2">הבקשה נשלחה בהצלחה!</h2>
+            <h2 className="text-2xl font-bold text-foreground mb-2">נשלח מייל לאימות!</h2>
             <p className="text-muted-foreground mb-6">
-              קיבלנו את בקשתך לתור. צוות המרפאה ייצור איתך קשר בהקדם לאישור.
+              שלחנו קישור לאימות לכתובת <strong>{email}</strong>.<br />
+              יש ללחוץ על הקישור לאישור סופי של התור.
             </p>
             <div className="bg-muted p-4 rounded-lg mb-6 text-right">
               <p className="text-sm text-muted-foreground">פרטי הבקשה:</p>
@@ -294,6 +295,9 @@ export default function GuestBooking() {
                 {date && format(date, 'EEEE, d בMMMM yyyy', { locale: he })} בשעה {time}
               </p>
             </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              ⚠️ הקישור יפוג תוך 30 דקות. אם לא קיבלת מייל, בדוק בתיקיית הספאם.
+            </p>
             <Button onClick={() => navigate('/')} className="w-full">
               חזרה לאתר
             </Button>
@@ -454,7 +458,7 @@ export default function GuestBooking() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">אימייל (אופציונלי)</Label>
+                  <Label htmlFor="email">אימייל *</Label>
                   <Input
                     id="email"
                     type="email"
@@ -463,12 +467,14 @@ export default function GuestBooking() {
                     placeholder="email@example.com"
                     maxLength={255}
                     dir="ltr"
+                    required
                   />
+                  <p className="text-xs text-muted-foreground">נשלח קישור לאימות התור</p>
                 </div>
                 <Button
                   onClick={handleContinueToAppointment}
                   className="w-full"
-                  disabled={!firstName || !lastName || !phone}
+                  disabled={!firstName || !lastName || !phone || !email}
                 >
                   המשך
                 </Button>
