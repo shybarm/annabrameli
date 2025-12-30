@@ -43,6 +43,15 @@ export default function AppointmentsList() {
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [cancellingAppointmentId, setCancellingAppointmentId] = useState<string | null>(null);
   const [cancellationReason, setCancellationReason] = useState('');
+  const [selectedReasonType, setSelectedReasonType] = useState<string>('');
+
+  const CANCELLATION_REASONS = [
+    { value: 'patient_no_show', label: 'המטופל לא הגיע' },
+    { value: 'patient_cancelled', label: 'ביטול ע״י מטופל' },
+    { value: 'clinic_cancelled', label: 'ביטול ע״י מרפאה' },
+    { value: 'scheduling_error', label: 'טעות בקביעת תור' },
+    { value: 'other', label: 'אחר' },
+  ];
 
   // Fetch today's appointments for current clinic
   const { data: todayAppointments, isLoading: todayLoading } = useAppointments(
@@ -118,6 +127,7 @@ export default function AppointmentsList() {
     if (newStatus === 'cancelled') {
       setCancellingAppointmentId(id);
       setCancellationReason('');
+      setSelectedReasonType('');
       setCancelDialogOpen(true);
     } else {
       updateStatus.mutate({ id, status: newStatus });
@@ -125,15 +135,23 @@ export default function AppointmentsList() {
   };
 
   const handleConfirmCancel = () => {
-    if (cancellingAppointmentId) {
+    if (cancellingAppointmentId && selectedReasonType) {
+      const reasonLabel = CANCELLATION_REASONS.find(r => r.value === selectedReasonType)?.label || '';
+      const fullReason = selectedReasonType === 'other' 
+        ? cancellationReason.trim() || reasonLabel
+        : cancellationReason.trim() 
+          ? `${reasonLabel}: ${cancellationReason.trim()}`
+          : reasonLabel;
+      
       updateStatus.mutate({ 
         id: cancellingAppointmentId, 
         status: 'cancelled',
-        cancellation_reason: cancellationReason 
+        cancellation_reason: fullReason
       });
       setCancelDialogOpen(false);
       setCancellingAppointmentId(null);
       setCancellationReason('');
+      setSelectedReasonType('');
     }
   };
 
@@ -424,22 +442,46 @@ export default function AppointmentsList() {
               <DialogTitle>סיבת ביטול התור</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-4">
-              <Label htmlFor="cancellation-reason">
-                למה התור בוטל? (המידע יעזור לנו לשפר את השירות)
-              </Label>
-              <Textarea
-                id="cancellation-reason"
-                placeholder="לדוגמה: המטופל ביקש לדחות, בעיית לו&quot;ז, מחלה..."
-                value={cancellationReason}
-                onChange={(e) => setCancellationReason(e.target.value)}
-                rows={3}
-              />
+              <div className="space-y-2">
+                <Label>בחר סיבת ביטול</Label>
+                <Select value={selectedReasonType} onValueChange={setSelectedReasonType}>
+                  <SelectTrigger className="min-h-[44px]">
+                    <SelectValue placeholder="בחר סיבה..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CANCELLATION_REASONS.map((reason) => (
+                      <SelectItem key={reason.value} value={reason.value}>
+                        {reason.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {selectedReasonType && (
+                <div className="space-y-2">
+                  <Label htmlFor="cancellation-reason">
+                    {selectedReasonType === 'other' ? 'תאר את הסיבה' : 'פרטים נוספים (אופציונלי)'}
+                  </Label>
+                  <Textarea
+                    id="cancellation-reason"
+                    placeholder={selectedReasonType === 'other' ? 'הזן סיבה...' : 'הוסף פרטים...'}
+                    value={cancellationReason}
+                    onChange={(e) => setCancellationReason(e.target.value)}
+                    rows={3}
+                  />
+                </div>
+              )}
             </div>
             <DialogFooter className="gap-2">
               <Button variant="outline" onClick={() => setCancelDialogOpen(false)}>
                 חזור
               </Button>
-              <Button variant="destructive" onClick={handleConfirmCancel}>
+              <Button 
+                variant="destructive" 
+                onClick={handleConfirmCancel}
+                disabled={!selectedReasonType || (selectedReasonType === 'other' && !cancellationReason.trim())}
+              >
                 בטל תור
               </Button>
             </DialogFooter>

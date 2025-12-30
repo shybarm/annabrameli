@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAppointmentsRealtime, useUpdateAppointment, useAppointments } from '@/hooks/useAppointments';
 import { useClinicContext } from '@/contexts/ClinicContext';
+import { useProjectAnalytics } from '@/hooks/useAnalytics';
 import { format, differenceInMinutes, startOfWeek, addDays, isSameDay } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -27,6 +28,9 @@ import {
   Armchair,
   ChevronLeft,
   ChevronRight,
+  TrendingUp,
+  TrendingDown,
+  Users,
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { he } from 'date-fns/locale';
@@ -121,6 +125,9 @@ export default function AdminDashboard() {
   const activeAppointments = todaysAppointments?.filter(a => a.status !== 'cancelled') || [];
   const waitingCount = activeAppointments.filter(a => a.status === 'arrived' || a.status === 'in_progress' || a.status === 'waiting_room').length;
   const completedCount = activeAppointments.filter(a => a.status === 'completed').length;
+
+  // Analytics data
+  const { data: analyticsData, isLoading: analyticsLoading } = useProjectAnalytics();
 
   // Track appointments that changed to waiting_room status
   const [waitingStartTimes, setWaitingStartTimes] = useState<Record<string, Date>>({});
@@ -325,7 +332,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Quick Stats */}
-        <div className="grid gap-4 grid-cols-3" data-tutorial="stats-cards">
+        <div className="grid gap-4 grid-cols-2 sm:grid-cols-4" data-tutorial="stats-cards">
           <Card className="bg-blue-50 border-blue-200">
             <CardContent className="py-4 text-center">
               <div className="text-3xl font-bold text-blue-700">
@@ -348,6 +355,37 @@ export default function AdminDashboard() {
                 {completedCount}
               </div>
               <p className="text-sm text-green-600">הושלמו</p>
+            </CardContent>
+          </Card>
+          
+          {/* Visitors KPI */}
+          <Card className="bg-purple-50 border-purple-200">
+            <CardContent className="py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex-1 text-center">
+                  <div className="text-3xl font-bold text-purple-700">
+                    {analyticsLoading ? '...' : analyticsData?.visitors.today || 0}
+                  </div>
+                  <p className="text-sm text-purple-600">מבקרים היום</p>
+                </div>
+                {analyticsData && !analyticsLoading && (
+                  <div className={cn(
+                    "flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full",
+                    analyticsData.visitors.trend === 'up' 
+                      ? "bg-green-100 text-green-700"
+                      : analyticsData.visitors.trend === 'down'
+                        ? "bg-gray-100 text-gray-600"
+                        : "bg-gray-100 text-gray-600"
+                  )}>
+                    {analyticsData.visitors.trend === 'up' ? (
+                      <TrendingUp className="h-3 w-3" />
+                    ) : analyticsData.visitors.trend === 'down' ? (
+                      <TrendingDown className="h-3 w-3" />
+                    ) : null}
+                    <span>{analyticsData.visitors.change}</span>
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
         </div>
