@@ -330,6 +330,57 @@ export type Database = {
         }
         Relationships: []
       }
+      booking_verifications: {
+        Row: {
+          appointment_id: string
+          clinic_id: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          last_resend_at: string | null
+          token: string
+          used_at: string | null
+        }
+        Insert: {
+          appointment_id: string
+          clinic_id?: string | null
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          last_resend_at?: string | null
+          token?: string
+          used_at?: string | null
+        }
+        Update: {
+          appointment_id?: string
+          clinic_id?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          last_resend_at?: string | null
+          token?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_verifications_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_verifications_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clinic_settings: {
         Row: {
           id: string

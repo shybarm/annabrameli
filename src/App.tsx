@@ -41,6 +41,7 @@ import PatientPortal from "./pages/patient/PatientPortal";
 import GuestBooking from "./pages/GuestBooking";
 import JoinTeam from "./pages/JoinTeam";
 import PatientInviteAccept from "./pages/PatientInviteAccept";
+import VerifyBooking from "./pages/VerifyBooking";
 import NotFound from "./pages/NotFound";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import AccessibilityStatement from "./pages/AccessibilityStatement";
@@ -97,6 +98,9 @@ const App = () => (
               
               {/* Guest Booking (public) */}
               <Route path="/book" element={<GuestBooking />} />
+              
+              {/* Booking Verification (public) */}
+              <Route path="/verify-booking" element={<VerifyBooking />} />
               
               {/* Team Join (public) */}
               <Route path="/join/:code" element={<JoinTeam />} />
