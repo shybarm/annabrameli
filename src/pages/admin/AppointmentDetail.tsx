@@ -53,6 +53,8 @@ export default function AppointmentDetail() {
   const [showSignaturePad, setShowSignaturePad] = useState(false);
   const [aiSummary, setAiSummary] = useState('');
   const [isSummarizing, setIsSummarizing] = useState(false);
+  const [reviewBeforeSend, setReviewBeforeSend] = useState(true);
+  const [showReviewDialog, setShowReviewDialog] = useState(false);
   
   const { user } = useAuth();
   const { data: signatures } = useElectronicSignatures('appointment', id || '');
@@ -357,182 +359,196 @@ export default function AppointmentDetail() {
     }
   });
 
+  // Generate print HTML (reusable for print and review)
+  const generatePrintHtml = () => {
+    const safeFirstName = escapeHtml(appointment?.patients?.first_name || '');
+    const safeLastName = escapeHtml(appointment?.patients?.last_name || '');
+    const safeIdNumber = escapeHtml(appointment?.patients?.id_number || '');
+    const safePhysicalExam = escapeHtml(physicalExam).replace(/\n/g, '<br>');
+    const safeLabTests = escapeHtml(labTests).replace(/\n/g, '<br>');
+    const safeAuxiliaryTests = escapeHtml(auxiliaryTests).replace(/\n/g, '<br>');
+    const safeVisitSummary = escapeHtml(visitSummary).replace(/\n/g, '<br>');
+    const safeTreatmentPlan = escapeHtml(treatmentPlan).replace(/\n/g, '<br>');
+    const safeMedications = escapeHtml(medications).replace(/\n/g, '<br>');
+
+    const doctorName = clinicSettings?.doctor_name || 'ד״ר אנה ברמלי';
+    const doctorLicense = clinicSettings?.doctor_license || '';
+    const doctorSpecialty = clinicSettings?.doctor_specialty || 'רפואה משלימה';
+    const clinicAddress = clinicSettings?.clinic_address || '';
+    const clinicPhone = clinicSettings?.clinic_phone || '';
+    const latestSignature = signatures?.[0];
+
+    return `
+      <html dir="rtl">
+        <head>
+          <title>סיכום ביקור</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              padding: 40px;
+              max-width: 800px;
+              margin: 0 auto;
+              line-height: 1.8;
+            }
+            .header {
+              text-align: center;
+              margin-bottom: 30px;
+              padding-bottom: 20px;
+              border-bottom: 2px solid #0066cc;
+            }
+            .header h1 {
+              color: #0066cc;
+              margin-bottom: 5px;
+            }
+            .header p {
+              margin: 3px 0;
+              color: #666;
+              font-size: 14px;
+            }
+            h2 { font-size: 20px; margin-bottom: 15px; color: #333; }
+            .patient-info {
+              background: #f5f5f5;
+              padding: 15px;
+              border-radius: 8px;
+              margin-bottom: 20px;
+            }
+            .section { margin-bottom: 24px; }
+            .section-title { font-weight: bold; margin-bottom: 8px; color: #0066cc; }
+            .content { white-space: pre-wrap; }
+            .signature-section {
+              margin-top: 40px;
+              padding-top: 20px;
+              border-top: 1px solid #ddd;
+            }
+            .signature-box {
+              display: flex;
+              align-items: flex-start;
+              gap: 20px;
+            }
+            .signature-img {
+              max-width: 200px;
+              max-height: 80px;
+              border: 1px solid #ddd;
+              border-radius: 4px;
+            }
+            .signature-details {
+              font-size: 14px;
+            }
+            .footer {
+              margin-top: 40px;
+              padding-top: 20px;
+              border-top: 2px solid #0066cc;
+              text-align: center;
+              font-size: 12px;
+              color: #666;
+            }
+            @media print {
+              body { padding: 20px; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>${escapeHtml(doctorName)}</h1>
+            <p>${escapeHtml(doctorSpecialty)}</p>
+            ${doctorLicense ? `<p>מספר רישיון: ${escapeHtml(doctorLicense)}</p>` : ''}
+            ${clinicAddress ? `<p>${escapeHtml(clinicAddress)}</p>` : ''}
+            ${clinicPhone ? `<p>טלפון: ${escapeHtml(clinicPhone)}</p>` : ''}
+          </div>
+          
+          <h2>סיכום ביקור</h2>
+          
+          <div class="patient-info">
+            <p><strong>מטופל:</strong> ${safeFirstName} ${safeLastName}</p>
+            <p><strong>תאריך:</strong> ${appointment?.scheduled_at ? format(new Date(appointment.scheduled_at), 'dd/MM/yyyy', { locale: he }) : ''}</p>
+            ${safeIdNumber ? `<p><strong>ת.ז:</strong> ${safeIdNumber}</p>` : ''}
+          </div>
+          
+          ${physicalExam.trim() ? `
+            <div class="section">
+              <div class="section-title">בדיקה גופנית:</div>
+              <div class="content">${safePhysicalExam}</div>
+            </div>
+          ` : ''}
+          
+          ${labTests.trim() ? `
+            <div class="section">
+              <div class="section-title">בדיקות מעבדה:</div>
+              <div class="content">${safeLabTests}</div>
+            </div>
+          ` : ''}
+          
+          ${auxiliaryTests.trim() ? `
+            <div class="section">
+              <div class="section-title">בדיקות עזר:</div>
+              <div class="content">${safeAuxiliaryTests}</div>
+            </div>
+          ` : ''}
+          
+          ${visitSummary.trim() ? `
+            <div class="section">
+              <div class="section-title">סיכום הביקור:</div>
+              <div class="content">${safeVisitSummary}</div>
+            </div>
+          ` : ''}
+          
+          ${treatmentPlan.trim() ? `
+            <div class="section">
+              <div class="section-title">תוכנית טיפול:</div>
+              <div class="content">${safeTreatmentPlan}</div>
+            </div>
+          ` : ''}
+          
+          ${medications.trim() ? `
+            <div class="section">
+              <div class="section-title">תרופות:</div>
+              <div class="content">${safeMedications}</div>
+            </div>
+          ` : ''}
+          
+          ${latestSignature ? `
+            <div class="signature-section">
+              <div class="signature-box">
+                <img src="${latestSignature.signature_data}" alt="חתימה" class="signature-img" />
+                <div class="signature-details">
+                  <p><strong>${escapeHtml(latestSignature.signer_name)}</strong></p>
+                  <p>${latestSignature.signer_role === 'doctor' ? 'רופא' : latestSignature.signer_role === 'admin' ? 'מנהל' : 'מזכירה'}</p>
+                  <p>נחתם: ${format(new Date(latestSignature.signed_at), 'dd/MM/yyyy HH:mm', { locale: he })}</p>
+                </div>
+              </div>
+            </div>
+          ` : ''}
+          
+          <div class="footer">
+            <p>${escapeHtml(doctorName)} | ${escapeHtml(doctorSpecialty)}</p>
+            ${clinicAddress ? `<p>${escapeHtml(clinicAddress)}</p>` : ''}
+            ${clinicPhone ? `<p>${escapeHtml(clinicPhone)}</p>` : ''}
+          </div>
+        </body>
+      </html>
+    `;
+  };
+
   const handlePrint = () => {
     const printWindow = window.open('', '_blank');
     if (printWindow) {
-      // Escape all user-provided data to prevent XSS
-      const safeFirstName = escapeHtml(appointment?.patients?.first_name || '');
-      const safeLastName = escapeHtml(appointment?.patients?.last_name || '');
-      const safeIdNumber = escapeHtml(appointment?.patients?.id_number || '');
-      const safePhysicalExam = escapeHtml(physicalExam).replace(/\n/g, '<br>');
-      const safeLabTests = escapeHtml(labTests).replace(/\n/g, '<br>');
-      const safeAuxiliaryTests = escapeHtml(auxiliaryTests).replace(/\n/g, '<br>');
-      const safeVisitSummary = escapeHtml(visitSummary).replace(/\n/g, '<br>');
-      const safeTreatmentPlan = escapeHtml(treatmentPlan).replace(/\n/g, '<br>');
-      const safeMedications = escapeHtml(medications).replace(/\n/g, '<br>');
-
-      // Get doctor info from clinic settings
-      const doctorName = clinicSettings?.doctor_name || 'ד״ר אנה ברמלי';
-      const doctorLicense = clinicSettings?.doctor_license || '';
-      const doctorSpecialty = clinicSettings?.doctor_specialty || 'רפואה משלימה';
-      const clinicAddress = clinicSettings?.clinic_address || '';
-      const clinicPhone = clinicSettings?.clinic_phone || '';
-
-      // Get signature if exists
-      const latestSignature = signatures?.[0];
-
-      printWindow.document.write(`
-        <html dir="rtl">
-          <head>
-            <title>סיכום ביקור</title>
-            <style>
-              body {
-                font-family: Arial, sans-serif;
-                padding: 40px;
-                max-width: 800px;
-                margin: 0 auto;
-                line-height: 1.8;
-              }
-              .header {
-                text-align: center;
-                margin-bottom: 30px;
-                padding-bottom: 20px;
-                border-bottom: 2px solid #0066cc;
-              }
-              .header h1 {
-                color: #0066cc;
-                margin-bottom: 5px;
-              }
-              .header p {
-                margin: 3px 0;
-                color: #666;
-                font-size: 14px;
-              }
-              h2 { font-size: 20px; margin-bottom: 15px; color: #333; }
-              .patient-info {
-                background: #f5f5f5;
-                padding: 15px;
-                border-radius: 8px;
-                margin-bottom: 20px;
-              }
-              .section { margin-bottom: 24px; }
-              .section-title { font-weight: bold; margin-bottom: 8px; color: #0066cc; }
-              .content { white-space: pre-wrap; }
-              .signature-section {
-                margin-top: 40px;
-                padding-top: 20px;
-                border-top: 1px solid #ddd;
-              }
-              .signature-box {
-                display: flex;
-                align-items: flex-start;
-                gap: 20px;
-              }
-              .signature-img {
-                max-width: 200px;
-                max-height: 80px;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-              }
-              .signature-details {
-                font-size: 14px;
-              }
-              .footer {
-                margin-top: 40px;
-                padding-top: 20px;
-                border-top: 2px solid #0066cc;
-                text-align: center;
-                font-size: 12px;
-                color: #666;
-              }
-              @media print {
-                body { padding: 20px; }
-              }
-            </style>
-          </head>
-          <body>
-            <div class="header">
-              <h1>${escapeHtml(doctorName)}</h1>
-              <p>${escapeHtml(doctorSpecialty)}</p>
-              ${doctorLicense ? `<p>מספר רישיון: ${escapeHtml(doctorLicense)}</p>` : ''}
-              ${clinicAddress ? `<p>${escapeHtml(clinicAddress)}</p>` : ''}
-              ${clinicPhone ? `<p>טלפון: ${escapeHtml(clinicPhone)}</p>` : ''}
-            </div>
-            
-            <h2>סיכום ביקור</h2>
-            
-            <div class="patient-info">
-              <p><strong>מטופל:</strong> ${safeFirstName} ${safeLastName}</p>
-              <p><strong>תאריך:</strong> ${appointment?.scheduled_at ? format(new Date(appointment.scheduled_at), 'dd/MM/yyyy', { locale: he }) : ''}</p>
-              ${safeIdNumber ? `<p><strong>ת.ז:</strong> ${safeIdNumber}</p>` : ''}
-            </div>
-            
-            ${physicalExam.trim() ? `
-              <div class="section">
-                <div class="section-title">בדיקה גופנית:</div>
-                <div class="content">${safePhysicalExam}</div>
-              </div>
-            ` : ''}
-            
-            ${labTests.trim() ? `
-              <div class="section">
-                <div class="section-title">בדיקות מעבדה:</div>
-                <div class="content">${safeLabTests}</div>
-              </div>
-            ` : ''}
-            
-            ${auxiliaryTests.trim() ? `
-              <div class="section">
-                <div class="section-title">בדיקות עזר:</div>
-                <div class="content">${safeAuxiliaryTests}</div>
-              </div>
-            ` : ''}
-            
-            ${visitSummary.trim() ? `
-              <div class="section">
-                <div class="section-title">סיכום הביקור:</div>
-                <div class="content">${safeVisitSummary}</div>
-              </div>
-            ` : ''}
-            
-            ${treatmentPlan.trim() ? `
-              <div class="section">
-                <div class="section-title">תוכנית טיפול:</div>
-                <div class="content">${safeTreatmentPlan}</div>
-              </div>
-            ` : ''}
-            
-            ${medications.trim() ? `
-              <div class="section">
-                <div class="section-title">תרופות:</div>
-                <div class="content">${safeMedications}</div>
-              </div>
-            ` : ''}
-            
-            ${latestSignature ? `
-              <div class="signature-section">
-                <div class="signature-box">
-                  <img src="${latestSignature.signature_data}" alt="חתימה" class="signature-img" />
-                  <div class="signature-details">
-                    <p><strong>${escapeHtml(latestSignature.signer_name)}</strong></p>
-                    <p>${latestSignature.signer_role === 'doctor' ? 'רופא' : latestSignature.signer_role === 'admin' ? 'מנהל' : 'מזכירה'}</p>
-                    <p>נחתם: ${format(new Date(latestSignature.signed_at), 'dd/MM/yyyy HH:mm', { locale: he })}</p>
-                  </div>
-                </div>
-              </div>
-            ` : ''}
-            
-            <div class="footer">
-              <p>${escapeHtml(doctorName)} | ${escapeHtml(doctorSpecialty)}</p>
-              ${clinicAddress ? `<p>${escapeHtml(clinicAddress)}</p>` : ''}
-              ${clinicPhone ? `<p>${escapeHtml(clinicPhone)}</p>` : ''}
-            </div>
-          </body>
-        </html>
-      `);
+      printWindow.document.write(generatePrintHtml());
       printWindow.document.close();
       printWindow.print();
     }
+  };
+
+  const handleSendEmailClick = () => {
+    if (reviewBeforeSend) {
+      setShowReviewDialog(true);
+    } else {
+      handleSendEmail();
+    }
+  };
+
+  const handleConfirmSendFromReview = async () => {
+    setShowReviewDialog(false);
+    await handleSendEmail();
   };
 
   const statusColors: Record<string, string> = {
@@ -990,12 +1006,23 @@ export default function AppointmentDetail() {
                   
                   <Button 
                     variant="outline" 
-                    onClick={handleSendEmail}
+                    onClick={handleSendEmailClick}
                     disabled={isSendingEmail || !appointment.patients?.email || (!visitSummary.trim() && !treatmentPlan.trim() && !medications.trim())}
                   >
                     <Mail className="h-4 w-4 ml-2" />
                     {isSendingEmail ? 'שולח...' : 'שלח באימייל'}
                   </Button>
+
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="reviewBeforeSend"
+                      checked={reviewBeforeSend}
+                      onCheckedChange={(checked) => setReviewBeforeSend(checked as boolean)}
+                    />
+                    <Label htmlFor="reviewBeforeSend" className="text-sm cursor-pointer">
+                      בדיקה לפני שליחה
+                    </Label>
+                  </div>
                   
                   <Button 
                     variant="outline" 
@@ -1046,6 +1073,41 @@ export default function AppointmentDetail() {
                         }}
                         onCancel={() => setShowSignaturePad(false)}
                       />
+                    </DialogContent>
+                  </Dialog>
+
+                  {/* Review Before Send Dialog */}
+                  <Dialog open={showReviewDialog} onOpenChange={setShowReviewDialog}>
+                    <DialogContent className="sm:max-w-4xl max-h-[90vh]">
+                      <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                          <Eye className="h-5 w-5" />
+                          בדיקה לפני שליחה
+                        </DialogTitle>
+                      </DialogHeader>
+                      <div className="overflow-auto max-h-[60vh] border rounded-lg">
+                        <iframe
+                          srcDoc={generatePrintHtml()}
+                          className="w-full h-[500px] bg-white"
+                          title="תצוגה מקדימה של סיכום הביקור"
+                        />
+                      </div>
+                      <DialogFooter className="flex gap-2 sm:gap-0">
+                        <Button
+                          variant="outline"
+                          onClick={() => setShowReviewDialog(false)}
+                        >
+                          חזרה
+                        </Button>
+                        <Button
+                          onClick={handleConfirmSendFromReview}
+                          disabled={isSendingEmail}
+                          className="bg-primary text-primary-foreground"
+                        >
+                          <Mail className="h-4 w-4 ml-2" />
+                          {isSendingEmail ? 'שולח...' : 'שלח עכשיו'}
+                        </Button>
+                      </DialogFooter>
                     </DialogContent>
                   </Dialog>
                 </div>
