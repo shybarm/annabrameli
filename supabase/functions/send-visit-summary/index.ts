@@ -180,7 +180,7 @@ const handler = async (req: Request): Promise<Response> => {
     `;
 
     const emailResponse = await resend.emails.send({
-      from: "מרפאת ד\"ר אנה ברמלי <onboarding@resend.dev>",
+      from: "מרפאת ד\"ר אנה ברמלי <info@ihaveallergy.com>",
       to: [patientEmail],
       subject: `סיכום ביקור - ${safeVisitDate}`,
       html: emailHtml,

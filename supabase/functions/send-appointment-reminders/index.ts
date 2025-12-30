@@ -154,7 +154,7 @@ serve(async (req) => {
             const resend = new Resend(resendApiKey);
             
             const emailResponse = await resend.emails.send({
-              from: "מרפאת ד\"ר אנה ברמלי <onboarding@resend.dev>",
+              from: "מרפאת ד\"ר אנה ברמלי <info@ihaveallergy.com>",
               to: [patient.email],
               subject: `תזכורת לתור - ${dateStr} בשעה ${timeStr}`,
               html: `

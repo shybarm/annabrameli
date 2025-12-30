@@ -93,7 +93,7 @@ serve(async (req) => {
         const verifyLink = `${siteUrl}/verify-booking?token=${newToken}`;
 
         const emailRes = await resend.emails.send({
-          from: "מרפאת ד\"ר אנה ברמלי <noreply@ihaveallergy.com>",
+          from: "מרפאת ד\"ר אנה ברמלי <info@ihaveallergy.com>",
           to: [verification.email],
           subject: "אימות קביעת תור - קישור חדש",
           html: `
