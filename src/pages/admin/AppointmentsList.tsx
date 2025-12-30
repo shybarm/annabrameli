@@ -44,6 +44,7 @@ export default function AppointmentsList() {
   const [cancellingAppointmentId, setCancellingAppointmentId] = useState<string | null>(null);
   const [cancellationReason, setCancellationReason] = useState('');
   const [selectedReasonType, setSelectedReasonType] = useState<string>('');
+  const [dayViewDate, setDayViewDate] = useState<Date | null>(null);
 
   const CANCELLATION_REASONS = [
     { value: 'patient_no_show', label: 'המטופל לא הגיע' },
@@ -363,9 +364,12 @@ export default function AppointmentsList() {
                             );
                           })}
                           {dayAppointments.length > 2 && (
-                            <p className="text-xs text-center text-muted-foreground">
-                              +{dayAppointments.length - 2}
-                            </p>
+                            <button
+                              className="text-xs text-center text-primary hover:underline w-full py-1"
+                              onClick={() => setDayViewDate(day)}
+                            >
+                              +{dayAppointments.length - 2} נוספים
+                            </button>
                           )}
                           {dayAppointments.length === 0 && (
                             <p className="text-xs text-center text-muted-foreground py-2">-</p>
@@ -421,9 +425,12 @@ export default function AppointmentsList() {
                             );
                           })}
                           {dayAppointments.length > 3 && (
-                            <p className="text-xs text-center text-muted-foreground">
+                            <button
+                              className="text-xs text-center text-primary hover:underline w-full py-1"
+                              onClick={() => setDayViewDate(day)}
+                            >
                               +{dayAppointments.length - 3} נוספים
-                            </p>
+                            </button>
                           )}
                         </div>
                       </div>
@@ -483,6 +490,69 @@ export default function AppointmentsList() {
                 disabled={!selectedReasonType || (selectedReasonType === 'other' && !cancellationReason.trim())}
               >
                 בטל תור
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Day View Dialog */}
+        <Dialog open={!!dayViewDate} onOpenChange={(open) => !open && setDayViewDate(null)}>
+          <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-hidden flex flex-col">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Calendar className="h-5 w-5" />
+                {dayViewDate && format(dayViewDate, 'EEEE, d בMMMM yyyy', { locale: he })}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="flex-1 overflow-y-auto space-y-2 py-2">
+              {dayViewDate && getAppointmentsForDay(dayViewDate)
+                .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime())
+                .map((apt) => {
+                  const isNewPatient = apt.patients?.intake_completed_at && !apt.patients?.reviewed_at;
+                  return (
+                    <div
+                      key={apt.id}
+                      className={cn(
+                        "p-3 rounded-lg border cursor-pointer hover:shadow-md transition-shadow",
+                        isNewPatient ? "bg-amber-50 border-amber-300" : "bg-white"
+                      )}
+                      onClick={() => {
+                        setDayViewDate(null);
+                        navigate(`/admin/appointments/${apt.id}`);
+                      }}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg font-bold text-medical-700">
+                            {format(new Date(apt.scheduled_at), 'HH:mm')}
+                          </span>
+                          <span className="font-medium">
+                            {apt.patients?.first_name} {apt.patients?.last_name}
+                          </span>
+                          {isNewPatient && (
+                            <Badge className="bg-amber-500 text-white text-xs">
+                              <Sparkles className="h-3 w-3 ml-1" />
+                              חדש
+                            </Badge>
+                          )}
+                        </div>
+                        <Badge className={statusColors[apt.status]}>
+                          {statusLabels[apt.status]}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {apt.appointment_types?.name_he || 'ייעוץ'} | {apt.duration_minutes} דקות
+                      </p>
+                    </div>
+                  );
+                })}
+              {dayViewDate && getAppointmentsForDay(dayViewDate).length === 0 && (
+                <p className="text-center text-muted-foreground py-8">אין תורים ביום זה</p>
+              )}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setDayViewDate(null)}>
+                סגור
               </Button>
             </DialogFooter>
           </DialogContent>
