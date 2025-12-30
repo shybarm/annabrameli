@@ -28,6 +28,8 @@ import { PageHelpButton } from '@/components/tutorial/PageHelpButton';
 import { appointmentDetailTutorial } from '@/components/tutorial/tutorialData';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
+import { WhatsAppShareDialog, ShareOption } from '@/components/admin/WhatsAppShareDialog';
+import { openWhatsAppHandoff, buildWhatsAppMessage } from '@/lib/whatsapp';
 
 export default function AppointmentDetail() {
   const { id } = useParams();
@@ -251,8 +253,46 @@ export default function AppointmentDetail() {
   };
 
   const handleShareWhatsApp = () => {
-    // WhatsApp functionality removed - will be rebuilt
-    toast({ title: 'פונקציית WhatsApp בבנייה מחדש' });
+    const patientName = `${appointment?.patients?.first_name || ''} ${appointment?.patients?.last_name || ''}`.trim() || 'מטופל/ת';
+    
+    const message = buildWhatsAppMessage({
+      patientName,
+      clinicName: 'ד״ר אנה ברמלי',
+      body: buildVisitSummaryText(),
+    });
+    
+    openWhatsAppHandoff(appointment?.patients?.phone, message);
+    
+    // Mark as shared via WhatsApp
+    updateAppointment.mutate({ visit_shared_whatsapp_at: new Date().toISOString() });
+  };
+
+  // Build share options for WhatsApp dialog
+  const getWhatsAppShareOptions = (): ShareOption[] => {
+    const options: ShareOption[] = [];
+    const patientName = `${appointment?.patients?.first_name || ''} ${appointment?.patients?.last_name || ''}`.trim() || 'מטופל/ת';
+    
+    // Visit summary if available
+    if (visitSummary.trim() || treatmentPlan.trim() || medications.trim()) {
+      options.push({
+        id: 'summary',
+        label: 'סיכום ביקור',
+        icon: 'summary',
+        body: buildVisitSummaryText(),
+      });
+    }
+    
+    // Generic reminder
+    options.push({
+      id: 'reminder',
+      label: 'תזכורת תור',
+      icon: 'link',
+      body: appointment?.scheduled_at 
+        ? `תזכורת: יש לך תור ב-${format(new Date(appointment.scheduled_at), 'dd/MM/yyyy בשעה HH:mm', { locale: he })}.`
+        : 'תזכורת לגבי התור הקרוב שלך.',
+    });
+    
+    return options;
   };
 
   const handleSendEmail = async () => {
@@ -681,6 +721,14 @@ export default function AppointmentDetail() {
               </div>
               
               <div className="flex flex-wrap gap-2">
+                <WhatsAppShareDialog
+                  phone={appointment.patients?.phone}
+                  patientName={`${appointment.patients?.first_name || ''} ${appointment.patients?.last_name || ''}`.trim() || 'מטופל/ת'}
+                  clinicName="ד״ר אנה ברמלי"
+                  options={getWhatsAppShareOptions()}
+                  triggerVariant="outline"
+                  triggerClassName="flex-1"
+                />
                 <Button 
                   variant="outline" 
                   className="flex-1"
