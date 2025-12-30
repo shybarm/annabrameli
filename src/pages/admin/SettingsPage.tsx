@@ -349,43 +349,49 @@ export default function SettingsPage() {
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                          <label className="flex items-center justify-between gap-3 text-sm rounded-md border border-border/40 px-3 py-2">
-                            <span className="text-muted-foreground">WhatsApp</span>
-                            <Switch
-                              checked={reminder.send_whatsapp}
-                              onCheckedChange={(checked) =>
-                                updateReminder.mutate({
-                                  id: reminder.id,
-                                  updates: { send_whatsapp: checked },
-                                })
-                              }
-                            />
-                          </label>
-                          <label className="flex items-center justify-between gap-3 text-sm rounded-md border border-border/40 px-3 py-2">
-                            <span className="text-muted-foreground">אימייל</span>
-                            <Switch
-                              checked={reminder.send_email}
-                              onCheckedChange={(checked) =>
-                                updateReminder.mutate({
-                                  id: reminder.id,
-                                  updates: { send_email: checked },
-                                })
-                              }
-                            />
-                          </label>
-                          <label className="flex items-center justify-between gap-3 text-sm rounded-md border border-border/40 px-3 py-2">
-                            <span className="text-muted-foreground">פעיל</span>
-                            <Switch
-                              checked={reminder.is_active}
-                              onCheckedChange={(checked) =>
-                                updateReminder.mutate({
-                                  id: reminder.id,
-                                  updates: { is_active: checked },
-                                })
-                              }
-                            />
-                          </label>
+                        <div className="grid grid-cols-3 gap-3">
+                          <div className="flex items-center justify-between h-11 px-3 rounded-md border border-border/40 bg-background">
+                            <span className="text-sm text-muted-foreground">WhatsApp</span>
+                            <div dir="ltr">
+                              <Switch
+                                checked={reminder.send_whatsapp}
+                                onCheckedChange={(checked) =>
+                                  updateReminder.mutate({
+                                    id: reminder.id,
+                                    updates: { send_whatsapp: checked },
+                                  })
+                                }
+                              />
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between h-11 px-3 rounded-md border border-border/40 bg-background">
+                            <span className="text-sm text-muted-foreground">אימייל</span>
+                            <div dir="ltr">
+                              <Switch
+                                checked={reminder.send_email}
+                                onCheckedChange={(checked) =>
+                                  updateReminder.mutate({
+                                    id: reminder.id,
+                                    updates: { send_email: checked },
+                                  })
+                                }
+                              />
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between h-11 px-3 rounded-md border border-border/40 bg-background">
+                            <span className="text-sm text-muted-foreground">פעיל</span>
+                            <div dir="ltr">
+                              <Switch
+                                checked={reminder.is_active}
+                                onCheckedChange={(checked) =>
+                                  updateReminder.mutate({
+                                    id: reminder.id,
+                                    updates: { is_active: checked },
+                                  })
+                                }
+                              />
+                            </div>
+                          </div>
                         </div>
                       </div>
                     ))}
