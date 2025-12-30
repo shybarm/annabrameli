@@ -34,8 +34,6 @@ import {
   FileText, Edit, Save, X, MessageCircle, Upload, File, Pill, Stethoscope, Eye, Sparkles,
   ClipboardList, Link, CheckCircle, Trash2, Tag, Loader2, Copy, UserPlus, MapPin
 } from 'lucide-react';
-import { WhatsAppButton } from '@/components/admin/WhatsAppButton';
-import { openWhatsAppChat } from '@/lib/whatsapp';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { useInviteExistingPatient, usePatientPortalInvitation } from '@/hooks/usePatientInvitations';
@@ -430,24 +428,8 @@ export default function PatientDetail() {
   };
 
   const handleSendIntakeWhatsApp = () => {
-    if (!patient?.phone || (!intakeLink && !intakeToken?.token)) return;
-
-    const link = intakeLink || buildIntakeLink(intakeToken?.token) || '';
-    const message = 
-      `שלום ${patient.first_name}! 👋\n\n` +
-      `לפני הביקור במרפאה, נבקש למלא טופס קליטה קצר:\n${link}\n\n` +
-      `תודה,\n${clinicName}`;
-    
-    openWhatsAppChat(patient.phone, message);
-
-    // Mark as sent
-    if (intakeToken?.id) {
-      supabase
-        .from('intake_tokens')
-        .update({ sent_via: 'whatsapp', sent_at: new Date().toISOString() })
-        .eq('id', intakeToken.id)
-        .then(() => queryClient.invalidateQueries({ queryKey: ['intake-token', id] }));
-    }
+    // WhatsApp functionality removed - will be rebuilt
+    toast({ title: 'פונקציית WhatsApp בבנייה מחדש' });
   };
 
   const handleCopyIntakeLink = () => {
@@ -482,20 +464,8 @@ export default function PatientDetail() {
   };
 
   const handleSendPortalWhatsApp = () => {
-    if (!patient?.phone) return;
-    const link = portalInviteLink || buildPortalInviteLink(portalInvitation?.invite_code);
-    if (!link) return;
-
-    const message = 
-      `שלום ${patient.first_name}! 👋\n\n` +
-      `הוזמנת להצטרף לפורטל המטופלים שלנו. עם הפורטל תוכל/י:\n` +
-      `✅ לראות ולנהל תורים\n` +
-      `✅ לצפות בסיכומי ביקור\n` +
-      `✅ לשלוח הודעות לצוות\n\n` +
-      `להרשמה:\n${link}\n\n` +
-      `תודה,\n${clinicName}`;
-    
-    openWhatsAppChat(patient.phone, message);
+    // WhatsApp functionality removed - will be rebuilt
+    toast({ title: 'פונקציית WhatsApp בבנייה מחדש' });
   };
 
   if (isLoading) {
@@ -625,11 +595,6 @@ export default function PatientDetail() {
                 {markReviewed.isPending ? 'מעדכן...' : 'קבל למרפאה'}
               </Button>
             )}
-            <WhatsAppButton 
-              phone={patient.phone}
-              message={getWhatsAppMessage()}
-              variant="outline"
-            />
             <Button className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => navigate(`/admin/appointments/new?patient=${id}`)}>
               <Calendar className="h-4 w-4 ml-2" />
               קבע תור

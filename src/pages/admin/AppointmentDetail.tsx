@@ -24,8 +24,6 @@ import {
   Upload, MessageCircle, CreditCard, File, Printer, Mail, Pill, Stethoscope, Eye, ClipboardList,
   Activity, FlaskConical, ScanLine, PenTool, CheckCircle
 } from 'lucide-react';
-import { openWhatsAppChat, normalizePhoneToE164 } from '@/lib/whatsapp';
-import { WhatsAppButton } from '@/components/admin/WhatsAppButton';
 import { PageHelpButton } from '@/components/tutorial/PageHelpButton';
 import { appointmentDetailTutorial } from '@/components/tutorial/tutorialData';
 import { format } from 'date-fns';
@@ -253,9 +251,8 @@ export default function AppointmentDetail() {
   };
 
   const handleShareWhatsApp = () => {
-    openWhatsAppChat(appointment?.patients?.phone, buildVisitSummaryText());
-    // Mark as shared via WhatsApp
-    updateAppointment.mutate({ visit_shared_whatsapp_at: new Date().toISOString() });
+    // WhatsApp functionality removed - will be rebuilt
+    toast({ title: 'פונקציית WhatsApp בבנייה מחדש' });
   };
 
   const handleSendEmail = async () => {
@@ -684,14 +681,6 @@ export default function AppointmentDetail() {
               </div>
               
               <div className="flex flex-wrap gap-2">
-                <div className="flex-1">
-                  <WhatsAppButton 
-                    phone={appointment.patients?.phone}
-                    message={getReminderMessage()}
-                    variant="outline"
-                    className="w-full"
-                  />
-                </div>
                 <Button 
                   variant="outline" 
                   className="flex-1"

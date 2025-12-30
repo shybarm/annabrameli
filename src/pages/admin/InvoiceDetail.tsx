@@ -14,7 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { ArrowRight, Printer, Mail, CheckCircle, Edit, Save, X, Plus, Trash2, Link2, Copy, MessageCircle, ExternalLink, CreditCard, Wallet } from 'lucide-react';
 import { format } from 'date-fns';
-import { openWhatsAppChat, normalizePhoneToE164 } from '@/lib/whatsapp';
+
 
 interface EditableItem {
   id?: string;
@@ -187,14 +187,8 @@ export default function InvoiceDetail() {
   };
 
   const handleShareWhatsApp = () => {
-    const patientData = invoice?.patients as any;
-    if (!patientData?.phone) {
-      toast({ title: 'אין מספר טלפון למטופל', variant: 'destructive' });
-      return;
-    }
-    
-    const message = `שלום ${patientData.first_name},\n\nמצורף קישור לתשלום עבור חשבונית מספר ${invoice?.invoice_number} בסך ₪${Number(invoice?.total).toLocaleString()}:\n\n${invoice?.payment_link || ''}\n\nתודה,\nד״ר אנה ברמלי`;
-    openWhatsAppChat(patientData.phone, message);
+    // WhatsApp functionality removed - will be rebuilt
+    toast({ title: 'פונקציית WhatsApp בבנייה מחדש' });
   };
 
   const handleItemChange = (index: number, field: keyof EditableItem, value: string | number) => {
