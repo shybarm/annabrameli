@@ -37,8 +37,6 @@ import {
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { useInviteExistingPatient, usePatientPortalInvitation } from '@/hooks/usePatientInvitations';
-import { WhatsAppShareDialog, ShareOption } from '@/components/admin/WhatsAppShareDialog';
-import { openWhatsAppHandoff, buildWhatsAppMessage } from '@/lib/whatsapp';
 
 export default function PatientDetail() {
   const { id } = useParams();
@@ -174,13 +172,7 @@ export default function PatientDetail() {
     toast({ title: 'הערות רפואיות נשמרו' });
   };
 
-  // Get clinic name for WhatsApp message
-  const patientClinic = clinics?.find(c => c.id === patient?.clinic_id);
-  const clinicName = patientClinic?.name || 'מרפאת ד"ר אנה ברמלי';
-  
-  const getWhatsAppMessage = () => {
-    return `היי ${patient?.first_name || ''}, כאן ${clinicName}. `;
-  };
+  // File validation constants
 
   // File validation constants
   const ALLOWED_FILE_TYPES = [
@@ -429,30 +421,6 @@ export default function PatientDetail() {
     }
   };
 
-  const handleSendIntakeWhatsApp = () => {
-    if (!patient?.phone) return;
-    const link = intakeLink || buildIntakeLink(intakeToken?.token);
-    if (!link) return;
-    
-    const message = buildWhatsAppMessage({
-      patientName: patient.first_name || 'מטופל/ת',
-      clinicName: clinicName,
-      body: 'לפני הביקור במרפאה, נבקש למלא טופס קליטה קצר:',
-      url: link,
-    });
-    
-    openWhatsAppHandoff(patient.phone, message);
-    
-    // Mark as sent
-    if (intakeToken?.id) {
-      supabase
-        .from('intake_tokens')
-        .update({ sent_via: 'whatsapp', sent_at: new Date().toISOString() })
-        .eq('id', intakeToken.id)
-        .then(() => queryClient.invalidateQueries({ queryKey: ['intake-token', id] }));
-    }
-  };
-
   const handleCopyIntakeLink = () => {
     const link = intakeLink || buildIntakeLink(intakeToken?.token);
     if (!link) return;
@@ -482,62 +450,6 @@ export default function PatientDetail() {
     if (!link) return;
     navigator.clipboard.writeText(link);
     toast({ title: 'הקישור הועתק!' });
-  };
-
-  const handleSendPortalWhatsApp = () => {
-    if (!patient?.phone) return;
-    const link = portalInviteLink || buildPortalInviteLink(portalInvitation?.invite_code);
-    if (!link) return;
-    
-    const message = buildWhatsAppMessage({
-      patientName: patient.first_name || 'מטופל/ת',
-      clinicName: clinicName,
-      body: 'הוזמנת להצטרף לפורטל המטופלים שלנו. עם הפורטל תוכל/י לראות ולנהל תורים, לצפות בסיכומי ביקור ולשלוח הודעות לצוות.',
-      url: link,
-    });
-    
-    openWhatsAppHandoff(patient.phone, message);
-  };
-
-  // Build share options for WhatsApp dialog
-  const getWhatsAppShareOptions = (): ShareOption[] => {
-    const options: ShareOption[] = [];
-    
-    // Intake form link
-    const intakeUrl = intakeLink || buildIntakeLink(intakeToken?.token);
-    if (intakeUrl) {
-      options.push({
-        id: 'intake',
-        label: 'טופס קליטה',
-        icon: 'form',
-        body: 'לפני הביקור במרפאה, נבקש למלא טופס קליטה קצר:',
-        url: intakeUrl,
-      });
-    }
-    
-    // Portal invite link
-    const portalUrl = portalInviteLink || buildPortalInviteLink(portalInvitation?.invite_code);
-    if (portalUrl) {
-      options.push({
-        id: 'portal',
-        label: 'הזמנה לפורטל',
-        icon: 'link',
-        body: 'הוזמנת להצטרף לפורטל המטופלים שלנו. עם הפורטל תוכל/י לראות ולנהל תורים, לצפות בסיכומי ביקור ולשלוח הודעות לצוות.',
-        url: portalUrl,
-      });
-    }
-    
-    // Generic greeting if no links available
-    if (options.length === 0) {
-      options.push({
-        id: 'greeting',
-        label: 'הודעה כללית',
-        icon: 'link',
-        body: 'יש לנו עדכון עבורך. אנא צור/י קשר עם המרפאה לפרטים נוספים.',
-      });
-    }
-    
-    return options;
   };
 
   if (isLoading) {
@@ -667,13 +579,6 @@ export default function PatientDetail() {
                 {markReviewed.isPending ? 'מעדכן...' : 'קבל למרפאה'}
               </Button>
             )}
-            <WhatsAppShareDialog
-              phone={patient.phone}
-              patientName={patient.first_name || 'מטופל/ת'}
-              clinicName={clinicName}
-              options={getWhatsAppShareOptions()}
-              triggerVariant="outline"
-            />
             <Button className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => navigate(`/admin/appointments/new?patient=${id}`)}>
               <Calendar className="h-4 w-4 ml-2" />
               קבע תור
@@ -722,18 +627,10 @@ export default function PatientDetail() {
               </div>
               <div className="flex gap-2">
                 {intakeToken?.token && !intakeToken.completed_at ? (
-                  <>
-                    <Button variant="outline" size="sm" onClick={handleCopyIntakeLink}>
-                      <Link className="h-4 w-4 ml-1" />
-                      העתק קישור
-                    </Button>
-                    {patient.phone && (
-                      <Button variant="outline" size="sm" onClick={handleSendIntakeWhatsApp}>
-                        <MessageCircle className="h-4 w-4 ml-1" />
-                        שלח בוואטסאפ
-                      </Button>
-                    )}
-                  </>
+                  <Button variant="outline" size="sm" onClick={handleCopyIntakeLink}>
+                    <Link className="h-4 w-4 ml-1" />
+                    העתק קישור
+                  </Button>
                 ) : (
                   <Button 
                     size="sm" 
@@ -767,18 +664,10 @@ export default function PatientDetail() {
               </div>
               <div className="flex gap-2">
                 {portalInvitation && !portalInvitation.accepted_at && new Date(portalInvitation.expires_at) > new Date() ? (
-                  <>
-                    <Button variant="outline" size="sm" onClick={handleCopyPortalLink}>
-                      <Link className="h-4 w-4 ml-1" />
-                      העתק קישור
-                    </Button>
-                    {patient.phone && (
-                      <Button variant="outline" size="sm" onClick={handleSendPortalWhatsApp}>
-                        <MessageCircle className="h-4 w-4 ml-1" />
-                        שלח בוואטסאפ
-                      </Button>
-                    )}
-                  </>
+                  <Button variant="outline" size="sm" onClick={handleCopyPortalLink}>
+                    <Link className="h-4 w-4 ml-1" />
+                    העתק קישור
+                  </Button>
                 ) : (
                   <Button 
                     size="sm" 
