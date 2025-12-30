@@ -266,7 +266,7 @@ serve(async (req) => {
         });
 
         await resend.emails.send({
-          from: "מרפאת ד\"ר אנה ברמלי <onboarding@resend.dev>",
+          from: "מרפאת ד\"ר אנה ברמלי <noreply@ihaveallergy.com>",
           to: [trimmedEmail],
           subject: `אימות קביעת תור - ${dateStr}`,
           html: `
