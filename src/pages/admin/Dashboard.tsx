@@ -8,7 +8,6 @@ import { useClinicContext } from '@/contexts/ClinicContext';
 import { format, differenceInMinutes, startOfWeek, addDays, isSameDay } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { openWhatsAppChat } from '@/lib/whatsapp';
 import { useQuery } from '@tanstack/react-query';
 import { 
   Calendar, 
@@ -271,11 +270,8 @@ export default function AdminDashboard() {
       intakeToken = existingToken?.token;
     }
 
-    const intakeUrl = `${window.location.origin}/intake?token=${intakeToken}`;
-    const message = `שלום ${patientData.first_name},\n\nהתור שלך יגיע בעוד כמה דק על מנת לייעל את הטיפול בך השלם את טופס קליטה למרפאה:\n\n${intakeUrl}\n\nתודה,\nד״ר אנה ברמלי`;
-    
-    openWhatsAppChat(patientData.phone, message);
-    toast({ title: 'נפתח WhatsApp לשליחת תזכורת' });
+    // WhatsApp functionality removed - will be rebuilt
+    toast({ title: 'פונקציית WhatsApp בבנייה מחדש' });
   };
 
   // Get appointments grouped by day for weekly calendar
