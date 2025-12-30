@@ -43,7 +43,7 @@ serve(async (req) => {
     }
 
     const body = await req.json();
-    const { firstName, lastName, phone, email, clinicId, appointmentTypeId, date, time, notes, captchaToken, verificationToken: otpVerificationToken } = body;
+    const { firstName, lastName, phone, email, clinicId, appointmentTypeId, date, time, notes, captchaToken } = body;
 
     // Validate required fields - phone is mandatory, email is optional
     if (!firstName || !lastName || !phone || !clinicId || !appointmentTypeId || !date || !time) {
@@ -53,36 +53,9 @@ serve(async (req) => {
       );
     }
 
-    // SECURITY: Verify OTP verification token is valid
-    if (!otpVerificationToken) {
-      return new Response(
-        JSON.stringify({ error: "נדרש אימות טלפון", code: "OTP_REQUIRED" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
     const trimmedPhone = normalizePhone(phone);
     
-    // Verify the OTP token matches the phone
-    const { data: otpRecord, error: otpError } = await supabase
-      .from("booking_otp")
-      .select("*")
-      .eq("phone", trimmedPhone)
-      .eq("verification_token", otpVerificationToken)
-      .eq("verified", true)
-      .gte("token_expires_at", new Date().toISOString())
-      .limit(1)
-      .maybeSingle();
-
-    if (otpError || !otpRecord) {
-      console.error("OTP verification failed:", otpError);
-      return new Response(
-        JSON.stringify({ error: "אימות טלפון נכשל או פג תוקף", code: "OTP_INVALID" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    console.log("OTP verified for phone:", trimmedPhone.substring(0, 8) + "...");
+    console.log("Processing booking for phone:", trimmedPhone.substring(0, 8) + "...");
 
     // Validate email format if provided
     if (email) {
@@ -135,7 +108,7 @@ serve(async (req) => {
       console.log("Found existing patient by verified phone:", patientId);
     }
 
-    // If no patient found, create one with minimal fields
+    // If no patient found, create one with minimal fields (status: active since no verification needed)
     if (!patientId) {
       const { data: newPatient, error: patientError } = await supabase
         .from("patients")
@@ -145,7 +118,7 @@ serve(async (req) => {
           phone: trimmedPhone,
           email: trimmedEmail,
           clinic_id: clinicId,
-          status: 'inactive'
+          status: 'active'
         })
         .select("id")
         .single();
@@ -211,7 +184,7 @@ serve(async (req) => {
       }
     }
 
-    // Create appointment with status: pending_verification
+    // Create appointment with status: scheduled (no verification needed)
     const { data: appointment, error: appointmentError } = await supabase
       .from("appointments")
       .insert({
@@ -221,7 +194,7 @@ serve(async (req) => {
         scheduled_at: scheduledAt,
         duration_minutes: durationMinutes,
         notes: notes?.trim().substring(0, 1000) || null,
-        status: 'pending_verification'
+        status: 'scheduled'
       })
       .select("id, created_at")
       .single();
@@ -234,41 +207,10 @@ serve(async (req) => {
       );
     }
 
-    console.log("Created pending appointment:", appointment.id);
+    console.log("Created appointment:", appointment.id);
 
-    // Create verification token
-    const verificationToken = crypto.randomUUID().replace(/-/g, '') + crypto.randomUUID().replace(/-/g, '');
-    const tokenExpiry = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
-
-    const { error: verificationError } = await supabase
-      .from("booking_verifications")
-      .insert({
-        token: verificationToken,
-        appointment_id: appointment.id,
-        clinic_id: clinicId,
-        email: trimmedEmail,
-        expires_at: tokenExpiry.toISOString()
-      });
-
-    if (verificationError) {
-      console.error("Verification token creation error:", verificationError);
-      // Cancel the appointment since we can't verify
-      await supabase
-        .from("appointments")
-        .update({ status: 'cancelled', cancellation_reason: 'Failed to create verification token' })
-        .eq("id", appointment.id);
-      
-      return new Response(
-        JSON.stringify({ error: "שגיאה ביצירת קישור אימות" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Send verification email
-    const siteUrl = Deno.env.get("SITE_URL") || "https://ftatmcyrmeyhghgckvbj.lovable.app";
-    const verifyLink = `${siteUrl}/verify-booking?token=${verificationToken}`;
-
-    if (resendApiKey) {
+    // Send confirmation email (optional, not required for booking to complete)
+    if (resendApiKey && trimmedEmail) {
       try {
         const resend = new Resend(resendApiKey);
         
@@ -286,41 +228,28 @@ serve(async (req) => {
         const emailRes = await resend.emails.send({
           from: "מרפאת ד\"ר אנה ברמלי <noreply@ihaveallergy.com>",
           to: [trimmedEmail],
-          subject: `אימות קביעת תור - ${dateStr}`,
+          subject: `אישור תור - ${dateStr}`,
           html: `
             <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-              <h2 style="color: #2563eb;">אימות קביעת תור 🏥</h2>
+              <h2 style="color: #2563eb;">התור נקבע בהצלחה! 🏥</h2>
               <p>שלום ${trimmedFirstName},</p>
-              <p>קיבלנו את בקשתך לתור במרפאה. לאישור סופי, נא ללחוץ על הכפתור הבא:</p>
-
-              <div style="margin: 30px 0; text-align: center;">
-                <a href="${verifyLink}" style="background: #2563eb; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">אמת/י את התור</a>
-              </div>
+              <p>התור שלך נקבע בהצלחה.</p>
 
               <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
                 <p style="margin: 5px 0;"><strong>📅 תאריך:</strong> ${dateStr}</p>
                 <p style="margin: 5px 0;"><strong>🕐 שעה:</strong> ${timeStr}</p>
               </div>
 
-              <p style="margin: 18px 0; color: #111;">
-                למה צריך אימות? זה מאפשר לנו לשמור את הבקשה שלך ולהפוך את ההזמנה הבאה שלך לקלה ומהירה יותר.
-              </p>
-
-              <p style="color: #666; font-size: 14px;">⚠️ הקישור יפוג תוך 30 דקות. אם לא ביקשת לקבוע תור, ניתן להתעלם מהודעה זו.</p>
-
               <p>בברכה,<br>מרפאת ד"ר אנה ברמלי</p>
             </div>
           `,
         });
 
-        console.log("Resend send() response:", emailRes);
-        console.log("Verification email sent to:", trimmedEmail);
+        console.log("Confirmation email sent to:", trimmedEmail);
       } catch (emailError) {
-        console.error("Failed to send verification email:", emailError);
-        // Don't fail the request - the user can try again
+        console.error("Failed to send confirmation email:", emailError);
+        // Don't fail the request - appointment was created successfully
       }
-    } else {
-      console.warn("RESEND_API_KEY not configured - verification email not sent");
     }
 
     // Also insert into staging table for audit/tracking
@@ -339,7 +268,7 @@ serve(async (req) => {
         captcha_token: captchaToken ? await hashData(captchaToken) : null,
         ip_address: ip.substring(0, 45),
         fingerprint_hash: fingerprintHash.substring(0, 64),
-        status: 'pending',
+        status: 'approved',
         patient_id: patientId
       })
       .select()
@@ -350,7 +279,7 @@ serve(async (req) => {
       // Don't fail - appointment was created successfully
     }
 
-    createAuditLog('guest-booking', 'pending_verification_created', undefined, { 
+    createAuditLog('guest-booking', 'appointment_created', undefined, { 
       bookingId: booking?.id,
       patientId,
       appointmentId: appointment.id,
@@ -363,8 +292,7 @@ serve(async (req) => {
         bookingId: booking?.id || appointment.id,
         patientId,
         appointmentId: appointment.id,
-        pendingVerification: true,
-        message: "נשלח מייל לאימות. נא ללחוץ על הקישור לאישור סופי." 
+        message: "התור נקבע בהצלחה!" 
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
