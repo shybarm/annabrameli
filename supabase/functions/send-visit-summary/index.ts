@@ -186,6 +186,17 @@ const handler = async (req: Request): Promise<Response> => {
       html: emailHtml,
     });
 
+    console.log('Resend API response:', JSON.stringify(emailResponse));
+
+    // Check for Resend API error response
+    if (emailResponse.error) {
+      console.error('Resend email error:', emailResponse.error);
+      return new Response(
+        JSON.stringify({ success: false, error: emailResponse.error.message || 'Failed to send email' }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
     createAuditLog('send-visit-summary', 'email_sent', userId);
 
     return new Response(JSON.stringify({ success: true, data: emailResponse }), {
