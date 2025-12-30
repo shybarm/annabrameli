@@ -31,19 +31,40 @@ export function normalizePhoneToE164(phone: string | null | undefined): string |
 }
 
 /**
- * Opens WhatsApp Web with a prefilled message.
- * If phone is valid, opens direct chat. Otherwise opens share mode.
- * @param phone - Phone number (will be normalized to E.164)
- * @param message - Message text to prefill
+ * Central WhatsApp opener (single source of truth).
+ * NOTE: `wa.me` commonly redirects to `api.whatsapp.com`.
+ * In environments where `api.whatsapp.com` is blocked, open `web.whatsapp.com` directly.
+ */
+export function openWhatsApp({
+  phone,
+  text,
+}: {
+  phone?: string | null;
+  text?: string;
+}): void {
+  const encoded = encodeURIComponent(text || '');
+  const normalizedPhone = normalizePhoneToE164(phone);
+
+  // Prefer direct Web WhatsApp to avoid `wa.me` → `api.whatsapp.com` redirects.
+  // Phone chat:
+  //   https://web.whatsapp.com/send?phone=<E164>&text=<ENCODED>
+  // Share-mode:
+  //   https://web.whatsapp.com/send?text=<ENCODED>
+  let url = normalizedPhone
+    ? `https://web.whatsapp.com/send?phone=${normalizedPhone}&text=${encoded}`
+    : `https://web.whatsapp.com/send?text=${encoded}`;
+
+  // Minimal runtime guard: never open api.whatsapp.com
+  if (url.includes('api.whatsapp.com')) {
+    url = url.replace('https://api.whatsapp.com', 'https://wa.me');
+  }
+
+  window.open(url, '_blank', 'noopener,noreferrer');
+}
+
+/**
+ * Backwards-compatible helper used across the app.
  */
 export function openWhatsAppChat(phone: string | null | undefined, message: string): void {
-  const normalizedPhone = normalizePhoneToE164(phone);
-  const encodedMessage = encodeURIComponent(message);
-  
-  // If valid phone, open direct chat; otherwise use share mode
-  const url = normalizedPhone 
-    ? `https://wa.me/${normalizedPhone}?text=${encodedMessage}`
-    : `https://wa.me/?text=${encodedMessage}`;
-  
-  window.open(url, '_blank', 'noopener,noreferrer');
+  openWhatsApp({ phone, text: message });
 }
