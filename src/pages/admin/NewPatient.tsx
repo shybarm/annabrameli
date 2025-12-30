@@ -8,14 +8,16 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useCreatePatient } from '@/hooks/usePatients';
+import { useCreatePatient, useFindExistingPatient, normalizePhoneForStorage } from '@/hooks/usePatients';
 import { ArrowRight, Save } from 'lucide-react';
 import { useClinicContext } from '@/contexts/ClinicContext';
+import { toast } from '@/hooks/use-toast';
 
 export default function NewPatient() {
   const navigate = useNavigate();
   const { selectedClinicId } = useClinicContext();
   const createPatient = useCreatePatient();
+  const findExistingPatient = useFindExistingPatient();
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -39,17 +41,38 @@ export default function NewPatient() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Validate phone is provided
+    if (!formData.phone.trim()) {
+      toast({ title: 'שגיאה', description: 'טלפון הוא שדה חובה', variant: 'destructive' });
+      return;
+    }
+
+    const normalizedPhone = normalizePhoneForStorage(formData.phone);
+    
+    // Check for existing patient by clinic_id + normalized phone
+    if (selectedClinicId) {
+      const existingPatient = await findExistingPatient(selectedClinicId, normalizedPhone);
+      if (existingPatient) {
+        toast({ 
+          title: 'מטופל קיים', 
+          description: 'נמצא מטופל עם מספר טלפון זה. מעביר לכרטיס המטופל.',
+        });
+        navigate(`/admin/patients/${existingPatient.id}`);
+        return;
+      }
+    }
+    
     const allergiesArray = formData.allergies
       ? formData.allergies.split(',').map(a => a.trim()).filter(Boolean)
       : undefined;
 
     await createPatient.mutateAsync({
       first_name: formData.first_name,
-      last_name: formData.last_name,
+      last_name: formData.last_name || undefined,
       id_number: formData.id_number || undefined,
       date_of_birth: formData.date_of_birth || undefined,
       gender: formData.gender || undefined,
-      phone: formData.phone || undefined,
+      phone: normalizedPhone,
       email: formData.email || undefined,
       address: formData.address || undefined,
       city: formData.city || undefined,
@@ -151,7 +174,7 @@ export default function NewPatient() {
             </CardHeader>
             <CardContent className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="phone">טלפון</Label>
+                <Label htmlFor="phone">טלפון *</Label>
                 <Input
                   id="phone"
                   type="tel"
@@ -159,6 +182,7 @@ export default function NewPatient() {
                   onChange={(e) => updateField('phone', e.target.value)}
                   dir="ltr"
                   placeholder="050-1234567"
+                  required
                 />
               </div>
               <div className="space-y-2">
