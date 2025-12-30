@@ -1007,7 +1007,7 @@ export default function AppointmentDetail() {
                   <Button 
                     variant="outline" 
                     onClick={handleSendEmailClick}
-                    disabled={isSendingEmail || !appointment.patients?.email || (!visitSummary.trim() && !treatmentPlan.trim() && !medications.trim())}
+                    disabled={isSendingEmail || !appointment.patients?.email || (visitSummary.trim().length <= 2 && treatmentPlan.trim().length <= 2 && medications.trim().length <= 2 && chiefComplaint.trim().length <= 2 && currentIllness.trim().length <= 2 && physicalExam.trim().length <= 2 && labTests.trim().length <= 2 && auxiliaryTests.trim().length <= 2)}
                   >
                     <Mail className="h-4 w-4 ml-2" />
                     {isSendingEmail ? 'שולח...' : 'שלח באימייל'}
@@ -1027,7 +1027,7 @@ export default function AppointmentDetail() {
                   <Button 
                     variant="outline" 
                     onClick={handlePrint}
-                    disabled={!visitSummary.trim() && !treatmentPlan.trim() && !medications.trim()}
+                    disabled={visitSummary.trim().length <= 2 && treatmentPlan.trim().length <= 2 && medications.trim().length <= 2 && chiefComplaint.trim().length <= 2 && currentIllness.trim().length <= 2 && physicalExam.trim().length <= 2 && labTests.trim().length <= 2 && auxiliaryTests.trim().length <= 2}
                   >
                     <Printer className="h-4 w-4 ml-2" />
                     הדפס
@@ -1037,7 +1037,7 @@ export default function AppointmentDetail() {
                     <DialogTrigger asChild>
                       <Button 
                         variant={signatures?.length ? "outline" : "default"}
-                        disabled={!visitSummary.trim() && !treatmentPlan.trim()}
+                        disabled={visitSummary.trim().length <= 2 && treatmentPlan.trim().length <= 2 && medications.trim().length <= 2 && chiefComplaint.trim().length <= 2 && currentIllness.trim().length <= 2 && physicalExam.trim().length <= 2 && labTests.trim().length <= 2 && auxiliaryTests.trim().length <= 2}
                         className={signatures?.length ? "" : "bg-green-600 hover:bg-green-700 text-white"}
                       >
                         {signatures?.length ? (
