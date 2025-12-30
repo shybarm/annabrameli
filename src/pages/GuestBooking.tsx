@@ -7,6 +7,7 @@ import HCaptcha from '@hcaptcha/react-hcaptcha';
 import { useAppointmentTypes } from '@/hooks/useAppointments';
 import { usePublicClinics, getClinicHoursForDay, getAvailableTimeSlots, type PublicClinic } from '@/hooks/useClinics';
 import { supabase } from '@/integrations/supabase/client';
+import { FunctionsHttpError } from '@supabase/supabase-js';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -209,7 +210,25 @@ export default function GuestBooking() {
         },
       });
 
+      // Handle FunctionsHttpError (non-2xx responses) - parse the JSON body
       if (response.error) {
+        if (response.error instanceof FunctionsHttpError) {
+          // Try to get the actual error response from the body
+          try {
+            const errorData = await response.error.context.json();
+            if (errorData.code === 'SLOT_TAKEN' || errorData.code === 'SLOT_RACE_CONDITION') {
+              setTime('');
+              throw new Error(errorData.error || 'הזמן הזה כבר תפוס. בחרו זמן אחר.');
+            }
+            throw new Error(errorData.error || 'שגיאה בשליחת הבקשה');
+          } catch (parseError) {
+            // If we can't parse the error, check if it's already the error we threw
+            if (parseError instanceof Error && parseError.message.includes('תפוס')) {
+              throw parseError;
+            }
+            throw new Error('שגיאה בשליחת הבקשה');
+          }
+        }
         throw new Error(response.error.message || 'שגיאה בשליחת הבקשה');
       }
 
