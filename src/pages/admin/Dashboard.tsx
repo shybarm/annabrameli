@@ -366,7 +366,7 @@ export default function AdminDashboard() {
                   <div className="text-3xl font-bold text-purple-700">
                     {analyticsLoading ? '...' : analyticsData?.visitors.today || 0}
                   </div>
-                  <p className="text-sm text-purple-600">מבקרים היום</p>
+                  <p className="text-sm text-purple-600">מבקרים באתר היום</p>
                 </div>
                 {analyticsData && !analyticsLoading && (
                   <div className={cn(
