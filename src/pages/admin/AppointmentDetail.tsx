@@ -253,16 +253,9 @@ export default function AppointmentDetail() {
   };
 
   const handleShareWhatsApp = () => {
-    if (!appointment?.patients?.phone) {
-      toast({ title: 'אין מספר טלפון למטופל', variant: 'destructive' });
-      return;
-    }
-    
-    const success = openWhatsAppChat(appointment.patients.phone, buildVisitSummaryText());
-    if (success) {
-      // Mark as shared via WhatsApp
-      updateAppointment.mutate({ visit_shared_whatsapp_at: new Date().toISOString() });
-    }
+    openWhatsAppChat(appointment?.patients?.phone, buildVisitSummaryText());
+    // Mark as shared via WhatsApp
+    updateAppointment.mutate({ visit_shared_whatsapp_at: new Date().toISOString() });
   };
 
   const handleSendEmail = async () => {

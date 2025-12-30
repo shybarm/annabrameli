@@ -17,29 +17,19 @@ export function WhatsAppButton({
   size = 'sm',
   className = ''
 }: WhatsAppButtonProps) {
-  const isValid = !!normalizePhoneToE164(phone);
-  
   const handleClick = () => {
     openWhatsAppChat(phone, message);
   };
   
   return (
-    <div className="flex flex-col">
-      <Button
-        variant={variant}
-        size={size}
-        onClick={handleClick}
-        disabled={!isValid}
-        className={`gap-1 ${className}`}
-      >
-        <MessageCircle className="h-4 w-4" />
-        שלח ב-WhatsApp
-      </Button>
-      {!isValid && (
-        <span className="text-xs text-destructive mt-1">
-          חסר מספר טלפון תקין לשליחה ב-WhatsApp
-        </span>
-      )}
-    </div>
+    <Button
+      variant={variant}
+      size={size}
+      onClick={handleClick}
+      className={`gap-1 ${className}`}
+    >
+      <MessageCircle className="h-4 w-4" />
+      שלח ב-WhatsApp
+    </Button>
   );
 }
