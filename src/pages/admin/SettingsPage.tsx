@@ -349,42 +349,42 @@ export default function SettingsPage() {
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
-                        <div className="flex flex-wrap items-center gap-4">
-                          <label className="flex items-center gap-2 text-sm min-w-[100px]">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          <label className="flex items-center justify-between gap-3 text-sm rounded-md border border-border/40 px-3 py-2">
+                            <span className="text-muted-foreground">WhatsApp</span>
                             <Switch
                               checked={reminder.send_whatsapp}
-                              onCheckedChange={(checked) => 
-                                updateReminder.mutate({ 
-                                  id: reminder.id, 
-                                  updates: { send_whatsapp: checked } 
+                              onCheckedChange={(checked) =>
+                                updateReminder.mutate({
+                                  id: reminder.id,
+                                  updates: { send_whatsapp: checked },
                                 })
                               }
                             />
-                            WhatsApp
                           </label>
-                          <label className="flex items-center gap-2 text-sm min-w-[80px]">
+                          <label className="flex items-center justify-between gap-3 text-sm rounded-md border border-border/40 px-3 py-2">
+                            <span className="text-muted-foreground">אימייל</span>
                             <Switch
                               checked={reminder.send_email}
-                              onCheckedChange={(checked) => 
-                                updateReminder.mutate({ 
-                                  id: reminder.id, 
-                                  updates: { send_email: checked } 
+                              onCheckedChange={(checked) =>
+                                updateReminder.mutate({
+                                  id: reminder.id,
+                                  updates: { send_email: checked },
                                 })
                               }
                             />
-                            אימייל
                           </label>
-                          <label className="flex items-center gap-2 text-sm min-w-[70px]">
+                          <label className="flex items-center justify-between gap-3 text-sm rounded-md border border-border/40 px-3 py-2">
+                            <span className="text-muted-foreground">פעיל</span>
                             <Switch
                               checked={reminder.is_active}
-                              onCheckedChange={(checked) => 
-                                updateReminder.mutate({ 
-                                  id: reminder.id, 
-                                  updates: { is_active: checked } 
+                              onCheckedChange={(checked) =>
+                                updateReminder.mutate({
+                                  id: reminder.id,
+                                  updates: { is_active: checked },
                                 })
                               }
                             />
-                            פעיל
                           </label>
                         </div>
                       </div>
