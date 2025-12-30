@@ -7,14 +7,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
-import { Settings, Building, Clock, Users, Bell, Plus, Trash2, Play, HelpCircle, RotateCcw, CreditCard, Edit, Save, X, MapPin, Shield } from 'lucide-react';
+import { Settings, Building, Clock, Users, Bell, Plus, Trash2, Play, HelpCircle, RotateCcw } from 'lucide-react';
+import { TreatmentManagement } from '@/components/admin/TreatmentManagement';
 import { MFASettings } from '@/components/auth/MFASettings';
 import { useOnboarding } from '@/components/tutorial/OnboardingTutorial';
 import { FullAppTour } from '@/components/tutorial/FullAppTour';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { useAppointmentTypes } from '@/hooks/useAppointments';
 import { useClinicContext } from '@/contexts/ClinicContext';
 import { useClinic, useUpdateClinic, Clinic } from '@/hooks/useClinics';
 
@@ -97,8 +97,6 @@ export default function SettingsPage() {
   const [newHours, setNewHours] = useState('');
   const { resetOnboarding } = useOnboarding();
   const [showTutorial, setShowTutorial] = useState(false);
-  const [editingPriceId, setEditingPriceId] = useState<string | null>(null);
-  const [editingPrice, setEditingPrice] = useState<number>(0);
   
   // Get current clinic context
   const { selectedClinicId } = useClinicContext();
@@ -144,27 +142,6 @@ export default function SettingsPage() {
       }
     }
   }, [currentClinic]);
-  
-  const { data: appointmentTypes, isLoading: loadingTypes } = useAppointmentTypes();
-
-  // Update appointment type price mutation
-  const updatePrice = useMutation({
-    mutationFn: async ({ id, price }: { id: string; price: number }) => {
-      const { error } = await supabase
-        .from('appointment_types')
-        .update({ price })
-        .eq('id', id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['appointment-types'] });
-      toast({ title: 'המחיר עודכן בהצלחה' });
-      setEditingPriceId(null);
-    },
-    onError: (error: any) => {
-      toast({ title: 'שגיאה', description: error.message, variant: 'destructive' });
-    },
-  });
 
   const handleResetTutorial = () => {
     resetOnboarding();
@@ -629,80 +606,8 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        {/* Treatment Prices */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CreditCard className="h-5 w-5" />
-              מחירון טיפולים
-            </CardTitle>
-            <CardDescription>עדכון מחירי טיפולים לשימוש בחשבוניות</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {loadingTypes ? (
-              <div className="flex justify-center py-4">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
-              </div>
-            ) : appointmentTypes && appointmentTypes.length > 0 ? (
-              <div className="space-y-3">
-                {appointmentTypes.map((type) => (
-                  <div 
-                    key={type.id} 
-                    className="flex items-center justify-between p-4 border rounded-lg"
-                  >
-                    <div>
-                      <p className="font-medium">{type.name_he}</p>
-                      <p className="text-sm text-muted-foreground">{type.duration_minutes} דקות</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {editingPriceId === type.id ? (
-                        <>
-                          <Input
-                            type="number"
-                            value={editingPrice}
-                            onChange={(e) => setEditingPrice(Number(e.target.value))}
-                            className="w-24"
-                            dir="ltr"
-                          />
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => updatePrice.mutate({ id: type.id, price: editingPrice })}
-                          >
-                            <Save className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => setEditingPriceId(null)}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </>
-                      ) : (
-                        <>
-                          <span className="font-bold">₪{type.price?.toLocaleString() || 0}</span>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => {
-                              setEditingPriceId(type.id);
-                              setEditingPrice(type.price || 0);
-                            }}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-center text-muted-foreground py-4">אין סוגי טיפולים</p>
-            )}
-          </CardContent>
-        </Card>
+        {/* Treatment Management */}
+        <TreatmentManagement />
 
         {/* Security - 2FA */}
         <MFASettings />
