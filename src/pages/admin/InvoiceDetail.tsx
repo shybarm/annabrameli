@@ -12,10 +12,8 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useInvoice, useUpdateInvoiceStatus, useUpdateInvoice } from '@/hooks/useInvoices';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { ArrowRight, Printer, Mail, CheckCircle, Edit, Save, X, Plus, Trash2, Link2, Copy, MessageCircle, ExternalLink, CreditCard, Wallet } from 'lucide-react';
+import { ArrowRight, Printer, Mail, CheckCircle, Edit, Save, X, Plus, Trash2, Link2, Copy, ExternalLink, CreditCard, Wallet } from 'lucide-react';
 import { format } from 'date-fns';
-import { WhatsAppShareDialog, ShareOption } from '@/components/admin/WhatsAppShareDialog';
-import { openWhatsAppHandoff, buildWhatsAppMessage } from '@/lib/whatsapp';
 
 
 interface EditableItem {
@@ -186,23 +184,6 @@ export default function InvoiceDetail() {
       navigator.clipboard.writeText(invoice.payment_link);
       toast({ title: 'הקישור הועתק' });
     }
-  };
-
-  const handleShareWhatsApp = () => {
-    const patientData = invoice?.patients as any;
-    if (!patientData?.phone) {
-      toast({ title: 'אין מספר טלפון למטופל', variant: 'destructive' });
-      return;
-    }
-    
-    const message = buildWhatsAppMessage({
-      patientName: patientData.first_name || 'מטופל/ת',
-      clinicName: 'ד״ר אנה ברמלי',
-      body: `מצורף קישור לתשלום עבור חשבונית מספר ${invoice?.invoice_number} בסך ₪${Number(invoice?.total).toLocaleString()}:`,
-      url: invoice?.payment_link || undefined,
-    });
-    
-    openWhatsAppHandoff(patientData.phone, message);
   };
 
   const handleItemChange = (index: number, field: keyof EditableItem, value: string | number) => {
@@ -522,10 +503,6 @@ export default function InvoiceDetail() {
                       <Button variant="outline" size="sm" onClick={() => window.open(invoice.payment_link!, '_blank')}>
                         <ExternalLink className="h-4 w-4 ml-1" />
                         פתח
-                      </Button>
-                      <Button variant="default" size="sm" onClick={handleShareWhatsApp} className="bg-green-600 hover:bg-green-700">
-                        <MessageCircle className="h-4 w-4 ml-1" />
-                        וואטסאפ
                       </Button>
                     </div>
                   </div>

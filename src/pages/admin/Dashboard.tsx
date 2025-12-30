@@ -32,7 +32,6 @@ import { he } from 'date-fns/locale';
 import { OnboardingTutorial } from '@/components/tutorial/OnboardingTutorial';
 import { PageHelpButton } from '@/components/tutorial/PageHelpButton';
 import { pageTutorials } from '@/components/tutorial/tutorialData';
-import { openWhatsAppHandoff, buildWhatsAppMessage } from '@/lib/whatsapp';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -272,15 +271,8 @@ export default function AdminDashboard() {
     }
 
     const intakeUrl = `${window.location.origin}/intake?token=${intakeToken}`;
-    const message = buildWhatsAppMessage({
-      patientName: patientData.first_name || 'מטופל/ת',
-      clinicName: 'ד״ר אנה ברמלי',
-      body: 'התור שלך יגיע בקרוב. על מנת לייעל את הטיפול, אנא השלם/י את טופס הקליטה:',
-      url: intakeUrl,
-    });
-    
-    openWhatsAppHandoff(patientData.phone, message);
-    toast({ title: 'נפתח WhatsApp לשליחת תזכורת' });
+    navigator.clipboard.writeText(intakeUrl);
+    toast({ title: 'קישור הועתק! שלח ללקוח בוואטסאפ' });
   };
 
   // Get appointments grouped by day for weekly calendar
