@@ -1,6 +1,6 @@
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { format } from 'date-fns';
+import { format, addMinutes, parseISO } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { z } from 'zod';
 import HCaptcha from '@hcaptcha/react-hcaptcha';
@@ -59,11 +59,75 @@ export default function GuestBooking() {
   const selectedType = appointmentTypes?.find(t => t.id === appointmentTypeId);
   const selectedClinic = clinics?.find(c => c.id === selectedClinicId) as PublicClinic | undefined;
 
-  // Get available time slots based on selected clinic and date
+  // State for booked slots
+  const [bookedSlots, setBookedSlots] = useState<{ start: Date; end: Date }[]>([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+
+  // Fetch booked appointments when date or clinic changes
+  useEffect(() => {
+    const fetchBookedSlots = async () => {
+      if (!date || !selectedClinicId) {
+        setBookedSlots([]);
+        return;
+      }
+
+      setLoadingSlots(true);
+      try {
+        const startOfDay = format(date, 'yyyy-MM-dd') + 'T00:00:00';
+        const endOfDay = format(date, 'yyyy-MM-dd') + 'T23:59:59';
+
+        const { data, error } = await supabase
+          .from('appointments')
+          .select('scheduled_at, duration_minutes')
+          .eq('clinic_id', selectedClinicId)
+          .gte('scheduled_at', startOfDay)
+          .lte('scheduled_at', endOfDay)
+          .not('status', 'eq', 'cancelled')
+          .not('is_deleted', 'eq', true);
+
+        if (error) {
+          console.error('Error fetching booked slots:', error);
+          setBookedSlots([]);
+          return;
+        }
+
+        const slots = (data || []).map(apt => ({
+          start: parseISO(apt.scheduled_at),
+          end: addMinutes(parseISO(apt.scheduled_at), apt.duration_minutes || 30)
+        }));
+        setBookedSlots(slots);
+      } catch (err) {
+        console.error('Error fetching booked slots:', err);
+        setBookedSlots([]);
+      } finally {
+        setLoadingSlots(false);
+      }
+    };
+
+    fetchBookedSlots();
+  }, [date, selectedClinicId]);
+
+  // Get available time slots based on selected clinic and date, filtering out booked slots
   const availableTimeSlots = useMemo(() => {
     if (!selectedClinic || !date) return [];
-    return getAvailableTimeSlots(selectedClinic as any, date, 30);
-  }, [selectedClinic, date]);
+    
+    const allSlots = getAvailableTimeSlots(selectedClinic as any, date, 30);
+    const duration = selectedType?.duration_minutes || 30;
+    
+    // Filter out slots that conflict with booked appointments
+    return allSlots.filter(slot => {
+      const [hours, minutes] = slot.split(':').map(Number);
+      const slotStart = new Date(date);
+      slotStart.setHours(hours, minutes, 0, 0);
+      const slotEnd = addMinutes(slotStart, duration);
+      
+      // Check if this slot conflicts with any booked slot
+      return !bookedSlots.some(booked => {
+        // Overlap check: slot starts before booked ends AND slot ends after booked starts
+        return slotStart < booked.end && slotEnd > booked.start;
+      });
+    });
+  }, [selectedClinic, date, bookedSlots, selectedType?.duration_minutes]);
 
   // Get open days for calendar disabled dates
   const isDateDisabled = (date: Date) => {
@@ -557,9 +621,9 @@ export default function GuestBooking() {
                 {/* Time */}
                 <div className="space-y-2">
                   <Label>שעה מבוקשת *</Label>
-                  <Select value={time} onValueChange={setTime} disabled={!date}>
+                  <Select value={time} onValueChange={setTime} disabled={!date || loadingSlots}>
                     <SelectTrigger>
-                      <SelectValue placeholder={date ? 'בחר שעה' : 'נא לבחור תאריך קודם'}>
+                      <SelectValue placeholder={loadingSlots ? 'טוען שעות פנויות...' : (date ? 'בחר שעה' : 'נא לבחור תאריך קודם')}>
                         {time && (
                           <div className="flex items-center gap-2">
                             <Clock className="h-4 w-4" />
@@ -569,7 +633,11 @@ export default function GuestBooking() {
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
-                      {availableTimeSlots.length > 0 ? (
+                      {loadingSlots ? (
+                        <div className="p-2 text-sm text-muted-foreground text-center">
+                          טוען...
+                        </div>
+                      ) : availableTimeSlots.length > 0 ? (
                         availableTimeSlots.map((slot) => (
                           <SelectItem key={slot} value={slot}>
                             {slot}
