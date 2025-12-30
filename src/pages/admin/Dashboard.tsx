@@ -433,10 +433,10 @@ export default function AdminDashboard() {
                       }`}
                       onClick={() => navigate(`/admin/appointments/${apt.id}`)}
                     >
-                      <div className="flex items-start justify-between gap-4">
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
                         {/* Patient Info */}
-                        <div className="flex items-start gap-3 flex-1">
-                          <div className={`flex items-center justify-center w-12 h-12 rounded-lg flex-shrink-0 ${
+                        <div className="flex items-start gap-3 flex-1 min-w-0">
+                          <div className={`flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex-shrink-0 ${
                             apt.status === 'waiting_room'
                               ? isLongWait ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
                               : apt.status === 'with_doctor' || apt.status === 'in_treatment'
@@ -498,15 +498,15 @@ export default function AdminDashboard() {
                             
                             {/* Intake Status */}
                             {!patientData?.intake_completed_at && (
-                              <div className="flex items-center gap-2 mt-2">
-                                <Badge className="bg-yellow-100 text-yellow-700 text-xs">
+                              <div className="flex flex-wrap items-center gap-2 mt-2">
+                                <Badge className="bg-yellow-100 text-yellow-700 text-xs whitespace-nowrap">
                                   <FileWarning className="h-3 w-3 ml-1" />
                                   לא השלים קליטה
                                 </Badge>
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  className="h-6 text-xs px-2 text-green-600 border-green-300 hover:bg-green-50"
+                                  className="h-6 text-xs px-2 text-green-600 border-green-300 hover:bg-green-50 whitespace-nowrap"
                                   onClick={(e) => handleSendIntakeReminder(e, patientData, apt.patient_id)}
                                 >
                                   <Send className="h-3 w-3 ml-1" />
@@ -518,8 +518,8 @@ export default function AdminDashboard() {
                         </div>
 
                         {/* Time & Status */}
-                        <div className="flex items-center gap-3 flex-shrink-0">
-                          <div className="text-left">
+                        <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-3 flex-shrink-0 w-full sm:w-auto border-t sm:border-t-0 pt-3 sm:pt-0 mt-1 sm:mt-0">
+                          <div className="text-right sm:text-left">
                             <p className="font-bold text-lg">
                               {format(new Date(apt.scheduled_at), 'HH:mm')}
                             </p>
@@ -537,7 +537,7 @@ export default function AdminDashboard() {
                           
                           {/* Status action buttons with next step indicator */}
                           {apt.status !== 'cancelled' && apt.status !== 'completed' && apt.status !== 'no_show' && (
-                            <div className="flex flex-col gap-1">
+                            <div className="flex flex-row sm:flex-col gap-1">
                               {/* Scheduled/Confirmed -> Waiting Room or No Show */}
                               {(apt.status === 'scheduled' || apt.status === 'confirmed') && (
                                 <>
