@@ -204,7 +204,7 @@ serve(async (req) => {
         .from("patients")
         .update({ status: "active" })
         .eq("id", aptForPatient.patient_id)
-        .eq("status", "pending_verification");
+        .eq("status", "inactive");
 
       if (patientStatusError) {
         console.error("Error activating patient after verification:", patientStatusError);

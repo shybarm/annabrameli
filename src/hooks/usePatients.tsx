@@ -80,9 +80,9 @@ export function usePatients(clinicId?: string | null) {
       
       if (error) throw error;
       
-      // Filter out patients who are staff members and those pending email verification
+      // Filter out patients who are staff members and those pending email verification (inactive from guest booking)
       const filteredData = (data || []).filter(patient => {
-        if (patient.status === 'pending_verification') return false;
+        if (patient.status === 'inactive') return false;
         return !patient.user_id || !staffUserIds.includes(patient.user_id);
       });
 
