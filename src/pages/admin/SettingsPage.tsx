@@ -357,59 +357,59 @@ export default function SettingsPage() {
                     {reminders.map((reminder) => (
                       <div 
                         key={reminder.id} 
-                        className="flex items-center justify-between p-4 border rounded-lg bg-card"
+                        className="p-4 border rounded-lg bg-card"
                       >
-                        <div className="flex items-center gap-4">
-                          <div className="font-medium min-w-[80px]">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="font-medium">
                             {formatHours(reminder.hours_before)} לפני
                           </div>
-                          <div className="flex items-center gap-6">
-                            <label className="flex items-center gap-2 text-sm">
-                              <Switch
-                                checked={reminder.send_whatsapp}
-                                onCheckedChange={(checked) => 
-                                  updateReminder.mutate({ 
-                                    id: reminder.id, 
-                                    updates: { send_whatsapp: checked } 
-                                  })
-                                }
-                              />
-                              WhatsApp
-                            </label>
-                            <label className="flex items-center gap-2 text-sm">
-                              <Switch
-                                checked={reminder.send_email}
-                                onCheckedChange={(checked) => 
-                                  updateReminder.mutate({ 
-                                    id: reminder.id, 
-                                    updates: { send_email: checked } 
-                                  })
-                                }
-                              />
-                              אימייל
-                            </label>
-                            <label className="flex items-center gap-2 text-sm">
-                              <Switch
-                                checked={reminder.is_active}
-                                onCheckedChange={(checked) => 
-                                  updateReminder.mutate({ 
-                                    id: reminder.id, 
-                                    updates: { is_active: checked } 
-                                  })
-                                }
-                              />
-                              פעיל
-                            </label>
-                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => deleteReminder.mutate(reminder.id)}
+                            className="text-destructive hover:text-destructive h-8 w-8"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => deleteReminder.mutate(reminder.id)}
-                          className="text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <div className="flex flex-wrap items-center gap-4">
+                          <label className="flex items-center gap-2 text-sm min-w-[100px]">
+                            <Switch
+                              checked={reminder.send_whatsapp}
+                              onCheckedChange={(checked) => 
+                                updateReminder.mutate({ 
+                                  id: reminder.id, 
+                                  updates: { send_whatsapp: checked } 
+                                })
+                              }
+                            />
+                            WhatsApp
+                          </label>
+                          <label className="flex items-center gap-2 text-sm min-w-[80px]">
+                            <Switch
+                              checked={reminder.send_email}
+                              onCheckedChange={(checked) => 
+                                updateReminder.mutate({ 
+                                  id: reminder.id, 
+                                  updates: { send_email: checked } 
+                                })
+                              }
+                            />
+                            אימייל
+                          </label>
+                          <label className="flex items-center gap-2 text-sm min-w-[70px]">
+                            <Switch
+                              checked={reminder.is_active}
+                              onCheckedChange={(checked) => 
+                                updateReminder.mutate({ 
+                                  id: reminder.id, 
+                                  updates: { is_active: checked } 
+                                })
+                              }
+                            />
+                            פעיל
+                          </label>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -421,22 +421,23 @@ export default function SettingsPage() {
 
                 <Separator />
 
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <div className="flex items-center gap-2 flex-1">
                     <Input
                       type="number"
                       value={newHours}
                       onChange={(e) => setNewHours(e.target.value)}
-                      placeholder="שעות לפני"
-                      className="w-32"
+                      placeholder="שעות"
+                      className="w-20 sm:w-32"
                       min={1}
                     />
-                    <span className="text-muted-foreground">שעות לפני התור</span>
+                    <span className="text-muted-foreground text-sm sm:text-base">שעות לפני התור</span>
                   </div>
                   <Button
                     variant="outline"
                     onClick={handleAddReminder}
                     disabled={addReminder.isPending}
+                    className="w-full sm:w-auto min-h-[44px]"
                   >
                     <Plus className="h-4 w-4 ml-2" />
                     הוסף תזכורת
@@ -566,27 +567,29 @@ export default function SettingsPage() {
                 const isOpen = dayHours !== null && dayHours !== undefined;
                 
                 return (
-                  <div key={day} className="flex items-center gap-4">
-                    <span className="w-20 font-medium">{dayLabels[day]}</span>
-                    <label className="flex items-center gap-2 min-w-[80px]">
-                      <Switch
-                        checked={isOpen}
-                        onCheckedChange={() => toggleDayOpen(day)}
-                      />
-                      <span className="text-sm">{isOpen ? 'פתוח' : 'סגור'}</span>
-                    </label>
+                  <div key={day} className="p-3 border rounded-lg bg-card/50">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-medium">{dayLabels[day]}</span>
+                      <label className="flex items-center gap-2">
+                        <Switch
+                          checked={isOpen}
+                          onCheckedChange={() => toggleDayOpen(day)}
+                        />
+                        <span className="text-sm">{isOpen ? 'פתוח' : 'סגור'}</span>
+                      </label>
+                    </div>
                     {isOpen && dayHours && (
-                      <>
+                      <div className="flex flex-wrap items-center gap-2 mt-2">
                         <TimeSelect 
                           value={dayHours.open} 
                           onChange={(val) => updateDayHours(day, 'open', val)} 
                         />
-                        <span>עד</span>
+                        <span className="text-sm text-muted-foreground">עד</span>
                         <TimeSelect 
                           value={dayHours.close} 
                           onChange={(val) => updateDayHours(day, 'close', val)} 
                         />
-                      </>
+                      </div>
                     )}
                   </div>
                 );
