@@ -43,23 +43,56 @@ serve(async (req) => {
     }
 
     const body = await req.json();
-    const { firstName, lastName, phone, email, clinicId, appointmentTypeId, date, time, notes, captchaToken } = body;
+    const { firstName, lastName, phone, email, clinicId, appointmentTypeId, date, time, notes, captchaToken, verificationToken: otpVerificationToken } = body;
 
-    // Validate required fields - email is now mandatory
-    if (!firstName || !lastName || !phone || !email || !clinicId || !appointmentTypeId || !date || !time) {
+    // Validate required fields - phone is mandatory, email is optional
+    if (!firstName || !lastName || !phone || !clinicId || !appointmentTypeId || !date || !time) {
       return new Response(
         JSON.stringify({ error: "חסרים שדות חובה" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email.trim())) {
+    // SECURITY: Verify OTP verification token is valid
+    if (!otpVerificationToken) {
       return new Response(
-        JSON.stringify({ error: "כתובת אימייל לא תקינה" }),
+        JSON.stringify({ error: "נדרש אימות טלפון", code: "OTP_REQUIRED" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    const trimmedPhone = normalizePhone(phone);
+    
+    // Verify the OTP token matches the phone
+    const { data: otpRecord, error: otpError } = await supabase
+      .from("booking_otp")
+      .select("*")
+      .eq("phone", trimmedPhone)
+      .eq("verification_token", otpVerificationToken)
+      .eq("verified", true)
+      .gte("token_expires_at", new Date().toISOString())
+      .limit(1)
+      .maybeSingle();
+
+    if (otpError || !otpRecord) {
+      console.error("OTP verification failed:", otpError);
+      return new Response(
+        JSON.stringify({ error: "אימות טלפון נכשל או פג תוקף", code: "OTP_INVALID" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log("OTP verified for phone:", trimmedPhone.substring(0, 8) + "...");
+
+    // Validate email format if provided
+    if (email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email.trim())) {
+        return new Response(
+          JSON.stringify({ error: "כתובת אימייל לא תקינה" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
     }
 
     // SECURITY: Verify CAPTCHA
@@ -80,16 +113,15 @@ serve(async (req) => {
     
     const fingerprintHash = await hashData(clientId);
 
-    // Normalize inputs
-    const trimmedPhone = normalizePhone(phone);
-    const trimmedEmail = email.trim().toLowerCase();
+    // Normalize inputs (trimmedPhone already defined above for OTP check)
+    const trimmedEmail = email ? email.trim().toLowerCase() : null;
     const trimmedFirstName = firstName.trim().substring(0, 100);
     const trimmedLastName = lastName.trim().substring(0, 100);
 
-    // Identity resolution: Find existing patient by clinic_id + phone (priority) or clinic_id + email
+    // Identity resolution: Find existing patient by clinic_id + phone ONLY (phone is verified via OTP)
     let patientId: string | null = null;
 
-    // Try to find by phone first (primary match)
+    // Find by phone (primary and only match - phone verified via OTP)
     const { data: existingByPhone } = await supabase
       .from("patients")
       .select("id")
@@ -100,21 +132,7 @@ serve(async (req) => {
 
     if (existingByPhone) {
       patientId = existingByPhone.id;
-      console.log("Found existing patient by phone:", patientId);
-    } else {
-      // Try by email (secondary match)
-      const { data: existingByEmail } = await supabase
-        .from("patients")
-        .select("id")
-        .eq("clinic_id", clinicId)
-        .ilike("email", trimmedEmail)
-        .limit(1)
-        .maybeSingle();
-
-      if (existingByEmail) {
-        patientId = existingByEmail.id;
-        console.log("Found existing patient by email:", patientId);
-      }
+      console.log("Found existing patient by verified phone:", patientId);
     }
 
     // If no patient found, create one with minimal fields
