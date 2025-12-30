@@ -398,41 +398,42 @@ export default function SettingsPage() {
 
                 <Separator />
 
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <div className="flex items-center gap-2 flex-1">
-                    <Input
-                      type="number"
-                      value={newHours}
-                      onChange={(e) => setNewHours(e.target.value)}
-                      placeholder="שעות"
-                      className="w-20 sm:w-32"
-                      min={1}
-                    />
-                    <span className="text-muted-foreground text-sm sm:text-base">שעות לפני התור</span>
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        value={newHours}
+                        onChange={(e) => setNewHours(e.target.value)}
+                        placeholder="שעות"
+                        className="w-24"
+                        min={1}
+                      />
+                      <span className="text-muted-foreground text-sm whitespace-nowrap">שעות לפני התור</span>
+                    </div>
+                    <Button
+                      variant="outline"
+                      onClick={handleAddReminder}
+                      disabled={addReminder.isPending}
+                      className="sm:w-auto"
+                    >
+                      <Plus className="h-4 w-4 ml-2" />
+                      הוסף תזכורת
+                    </Button>
                   </div>
-                  <Button
-                    variant="outline"
-                    onClick={handleAddReminder}
-                    disabled={addReminder.isPending}
-                    className="w-full sm:w-auto min-h-[44px]"
-                  >
-                    <Plus className="h-4 w-4 ml-2" />
-                    הוסף תזכורת
-                  </Button>
-                </div>
 
-                <div className="pt-2">
-                  <Button
-                    variant="outline"
-                    onClick={testReminders}
-                    className="w-full sm:w-auto"
-                  >
-                    <Play className="h-4 w-4 ml-2" />
-                    בדוק ושלח תזכורות עכשיו
-                  </Button>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    לחץ כדי לשלוח תזכורות לכל התורים הקרובים שעדיין לא קיבלו תזכורת
-                  </p>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={testReminders}
+                    >
+                      <Play className="h-4 w-4 ml-2" />
+                      בדוק ושלח תזכורות עכשיו
+                    </Button>
+                    <p className="text-xs text-muted-foreground">
+                      לחץ כדי לשלוח תזכורות לכל התורים הקרובים שעדיין לא קיבלו תזכורת
+                    </p>
+                  </div>
                 </div>
               </>
             )}
