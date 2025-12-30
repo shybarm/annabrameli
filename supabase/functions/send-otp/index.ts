@@ -22,11 +22,6 @@ function normalizePhone(phone: string): string {
   return normalized;
 }
 
-// Generate 6-digit OTP
-function generateOTP(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString();
-}
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -39,10 +34,10 @@ serve(async (req) => {
 
     const twilioAccountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
     const twilioAuthToken = Deno.env.get("TWILIO_AUTH_TOKEN");
-    const twilioPhoneNumber = Deno.env.get("TWILIO_PHONE_NUMBER");
+    const twilioVerifyServiceSid = Deno.env.get("TWILIO_VERIFY_SERVICE_SID");
 
-    if (!twilioAccountSid || !twilioAuthToken || !twilioPhoneNumber) {
-      console.error("Twilio credentials not configured");
+    if (!twilioAccountSid || !twilioAuthToken || !twilioVerifyServiceSid) {
+      console.error("Twilio Verify credentials not configured");
       return new Response(
         JSON.stringify({ error: "SMS service not configured" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -50,7 +45,7 @@ serve(async (req) => {
     }
 
     const body = await req.json();
-    const { phone, action } = body;
+    const { phone } = body;
 
     if (!phone) {
       return new Response(
@@ -79,8 +74,9 @@ serve(async (req) => {
       console.log(`Rate limit exceeded for phone: ${normalizedPhone.substring(0, 8)}...`);
       return new Response(
         JSON.stringify({ 
+          success: false,
           error: "יותר מדי בקשות. נסה שוב בעוד מספר דקות.",
-          code: "RATE_LIMITED"
+          code: "RATE_LIMIT"
         }),
         { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
@@ -96,44 +92,23 @@ serve(async (req) => {
       .limit(1)
       .maybeSingle();
 
-    if (recentSend && action !== 'verify') {
+    if (recentSend) {
+      const cooldownRemaining = 60;
       return new Response(
         JSON.stringify({ 
+          success: false,
           error: "המתן דקה לפני שליחת קוד חדש",
-          code: "COOLDOWN"
+          code: "COOLDOWN",
+          remainingSeconds: cooldownRemaining
         }),
         { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Generate OTP
-    const otp = generateOTP();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
-
-    // Store OTP in database
-    const { error: insertError } = await supabase
-      .from("booking_otp")
-      .insert({
-        phone: normalizedPhone,
-        otp_hash: otp, // In production, hash this
-        expires_at: expiresAt.toISOString(),
-        ip_address: ip.substring(0, 45),
-        attempts: 0
-      });
-
-    if (insertError) {
-      console.error("Error storing OTP:", insertError);
-      return new Response(
-        JSON.stringify({ error: "Failed to generate OTP" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Send SMS via Twilio
-    const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Messages.json`;
-    const message = `קוד האימות שלך: ${otp}\nתקף ל-10 דקות.`;
-
-    const twilioResponse = await fetch(twilioUrl, {
+    // Send OTP via Twilio Verify API
+    const verifyUrl = `https://verify.twilio.com/v2/Services/${twilioVerifyServiceSid}/Verifications`;
+    
+    const verifyResponse = await fetch(verifyUrl, {
       method: 'POST',
       headers: {
         'Authorization': 'Basic ' + btoa(`${twilioAccountSid}:${twilioAuthToken}`),
@@ -141,21 +116,33 @@ serve(async (req) => {
       },
       body: new URLSearchParams({
         To: normalizedPhone,
-        From: twilioPhoneNumber,
-        Body: message,
+        Channel: 'sms',
       }),
     });
 
-    if (!twilioResponse.ok) {
-      const twilioError = await twilioResponse.text();
-      console.error("Twilio error:", twilioError);
+    if (!verifyResponse.ok) {
+      const verifyError = await verifyResponse.text();
+      console.error("Twilio Verify error:", verifyError);
       return new Response(
-        JSON.stringify({ error: "Failed to send SMS" }),
+        JSON.stringify({ error: "Failed to send verification code" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    console.log(`OTP sent to ${normalizedPhone.substring(0, 8)}...`);
+    const verifyResult = await verifyResponse.json();
+    console.log(`OTP sent via Twilio Verify to ${normalizedPhone.substring(0, 8)}..., status: ${verifyResult.status}`);
+
+    // Store OTP request in database for rate limiting tracking
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    await supabase
+      .from("booking_otp")
+      .insert({
+        phone: normalizedPhone,
+        otp_hash: 'verify_' + verifyResult.sid, // Store Verify SID for reference
+        expires_at: expiresAt.toISOString(),
+        ip_address: ip.substring(0, 45),
+        attempts: 0
+      });
 
     return new Response(
       JSON.stringify({ 

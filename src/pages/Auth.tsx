@@ -6,8 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Stethoscope, Mail, Lock, User, ArrowRight, ShieldAlert } from 'lucide-react';
+import { Stethoscope, Mail, Lock, ArrowRight, ShieldAlert } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { MFAVerify } from '@/components/auth/MFAVerify';
 import { MFAEnroll } from '@/components/auth/MFAEnroll';
@@ -47,7 +46,7 @@ export default function Auth() {
     }
   }, [loading, rolesLoading, mfaLoading, user, needsMFAVerification, hasMFAEnabled, requiresMandatoryMFA]);
 
-  // Redirect authenticated users after roles are loaded and MFA requirements met
+  // Redirect authenticated staff users after roles are loaded and MFA requirements met
   useEffect(() => {
     if (!loading && !rolesLoading && !mfaLoading && user && !showMFAVerify && !showMFAEnroll) {
       // Check if staff user meets MFA requirements
@@ -60,13 +59,19 @@ export default function Auth() {
         return;
       }
       
+      // Only staff can access admin - patients are not allowed to login
       if (isStaff) {
         navigate('/admin');
       } else {
-        navigate('/portal');
+        // Non-staff users: sign them out and show error
+        toast({
+          title: 'גישה מוגבלת',
+          description: 'כניסה למערכת מיועדת לצוות המרפאה בלבד',
+          variant: 'destructive',
+        });
       }
     }
-  }, [loading, rolesLoading, mfaLoading, user, isStaff, isPatient, needsMFAVerification, hasMFAEnabled, requiresMandatoryMFA, showMFAVerify, showMFAEnroll, navigate]);
+  }, [loading, rolesLoading, mfaLoading, user, isStaff, needsMFAVerification, hasMFAEnabled, requiresMandatoryMFA, showMFAVerify, showMFAEnroll, navigate]);
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -234,18 +239,11 @@ export default function Auth() {
 
         <Card className="border-medical-200 shadow-lg">
           <CardHeader className="text-center">
-            <CardTitle>כניסה למערכת</CardTitle>
-            <CardDescription>התחבר לחשבון שלך או צור חשבון חדש</CardDescription>
+            <CardTitle>כניסה לצוות המרפאה</CardTitle>
+            <CardDescription>התחבר לחשבון צוות המרפאה שלך</CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="signin" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6">
-                <TabsTrigger value="signin">התחברות</TabsTrigger>
-                <TabsTrigger value="signup">הרשמה</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="signin">
-                <form onSubmit={handleSignIn} className="space-y-4">
+            <form onSubmit={handleSignIn} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="signin-email">אימייל</Label>
                     <div className="relative">
@@ -279,71 +277,6 @@ export default function Auth() {
                     {isLoading ? 'מתחבר...' : 'התחבר'}
                   </Button>
                 </form>
-              </TabsContent>
-
-              <TabsContent value="signup">
-                <form onSubmit={handleSignUp} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <Label htmlFor="firstName">שם פרטי</Label>
-                      <div className="relative">
-                        <User className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="firstName"
-                          name="firstName"
-                          placeholder="שם פרטי"
-                          required
-                          className="pr-10"
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="lastName">שם משפחה</Label>
-                      <Input
-                        id="lastName"
-                        name="lastName"
-                        placeholder="שם משפחה"
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-email">אימייל</Label>
-                    <div className="relative">
-                      <Mail className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="signup-email"
-                        name="email"
-                        type="email"
-                        placeholder="your@email.com"
-                        required
-                        className="pr-10"
-                        dir="ltr"
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-password">סיסמה</Label>
-                    <div className="relative">
-                      <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="signup-password"
-                        name="password"
-                        type="password"
-                        placeholder="לפחות 6 תווים"
-                        required
-                        minLength={6}
-                        className="pr-10"
-                        dir="ltr"
-                      />
-                    </div>
-                  </div>
-                  <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" disabled={isLoading}>
-                    {isLoading ? 'נרשם...' : 'הרשמה'}
-                  </Button>
-                </form>
-              </TabsContent>
-            </Tabs>
           </CardContent>
         </Card>
       </div>
