@@ -11,57 +11,89 @@ interface ShareOptions {
  * 
  * Priority:
  * 1. navigator.share() - native share sheet (mobile)
- * 2. WhatsApp deep link - opens WhatsApp Web/App
- * 3. Copy to clipboard - fallback for all devices
+ * 2. whatsapp://send deep link - opens WhatsApp app directly
+ * 3. wa.me web link - last resort fallback
+ * 4. Copy to clipboard - final fallback for all devices
  * 
  * All sharing is user-initiated only. Does not automatically include PHI.
  */
-export async function shareViaWhatsApp(options: ShareOptions): Promise<boolean> {
+export function shareViaWhatsApp(options: ShareOptions): boolean {
   const { title, text, phone } = options;
+  const encodedText = encodeURIComponent(text);
   
   // Try native share first (works on mobile)
   if (navigator.share && typeof navigator.share === 'function') {
-    try {
-      await navigator.share({
-        title: title || 'שיתוף',
-        text: text,
-      });
-      return true;
-    } catch (error: any) {
-      // User cancelled or share failed - try fallback
+    // Fire and forget - don't await to keep it synchronous for click handlers
+    navigator.share({
+      title: title || 'שיתוף',
+      text: text,
+    }).catch((error: any) => {
       if (error.name !== 'AbortError') {
-        console.log('Native share failed, trying WhatsApp deep link');
-      } else {
-        // User cancelled - don't show error
-        return false;
+        // Native share failed, try WhatsApp deep link
+        tryWhatsAppDeepLink(encodedText, phone);
       }
-    }
+    });
+    return true;
   }
   
-  // Fallback: WhatsApp deep link (no API, just URL)
+  // Fallback A: WhatsApp app deep link (whatsapp:// protocol)
+  // This must be triggered directly by click - no async before
+  return tryWhatsAppDeepLink(encodedText, phone);
+}
+
+/**
+ * Try WhatsApp deep link, fallback to wa.me, then clipboard
+ */
+function tryWhatsAppDeepLink(encodedText: string, phone?: string): boolean {
+  // Build whatsapp:// deep link (opens app directly)
+  const whatsappAppUrl = phone 
+    ? `whatsapp://send?phone=${phone.replace(/\D/g, '')}&text=${encodedText}`
+    : `whatsapp://send?text=${encodedText}`;
+  
+  // Try app deep link first
+  const appLink = document.createElement('a');
+  appLink.href = whatsappAppUrl;
+  appLink.style.display = 'none';
+  document.body.appendChild(appLink);
+  
   try {
-    const encodedText = encodeURIComponent(text);
-    // Use wa.me without phone to let user choose recipient
-    // If phone provided, include it for convenience
-    const whatsappUrl = phone 
-      ? `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodedText}`
-      : `https://wa.me/?text=${encodedText}`;
+    appLink.click();
+    document.body.removeChild(appLink);
     
-    const newWindow = window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+    // Set a short timeout to detect if app didn't open, then try wa.me
+    setTimeout(() => {
+      // If we're still here after 1.5s, try wa.me as fallback
+      tryWaMeLink(encodedText, phone);
+    }, 1500);
     
+    return true;
+  } catch (error) {
+    document.body.removeChild(appLink);
+    // App link failed, try wa.me
+    return tryWaMeLink(encodedText, phone);
+  }
+}
+
+/**
+ * Try wa.me web link as fallback
+ */
+function tryWaMeLink(encodedText: string, phone?: string): boolean {
+  const waMeUrl = phone 
+    ? `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodedText}`
+    : `https://wa.me/?text=${encodedText}`;
+  
+  try {
+    const newWindow = window.open(waMeUrl, '_blank', 'noopener,noreferrer');
     if (newWindow) {
       return true;
     }
-    
-    // Popup might be blocked - try direct navigation
-    window.location.href = whatsappUrl;
-    return true;
   } catch (error) {
-    console.log('WhatsApp deep link failed, falling back to clipboard');
+    console.log('wa.me link failed, falling back to clipboard');
   }
   
   // Final fallback: copy to clipboard
-  return copyToClipboard(text);
+  copyToClipboard(decodeURIComponent(encodedText));
+  return false;
 }
 
 /**
