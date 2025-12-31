@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
+import { motion } from 'framer-motion';
 
 type VerificationStatus = 'loading' | 'success' | 'error' | 'expired' | 'used';
 
@@ -97,26 +98,58 @@ export default function VerifyEmail() {
               {status === 'success' && (
                 <div className="text-center">
                   <CardHeader className="gradient-teal p-8">
-                    <div className="w-20 h-20 bg-primary-foreground/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <CheckCircle className="h-12 w-12 text-primary-foreground" />
-                    </div>
-                    <h2 className="text-2xl font-bold text-primary-foreground">האימייל אומת בהצלחה</h2>
+                    <motion.div 
+                      className="w-20 h-20 bg-primary-foreground/20 rounded-full flex items-center justify-center mx-auto mb-4"
+                      initial={{ scale: 0 }}
+                      animate={{ scale: [0, 1.2, 1] }}
+                      transition={{ duration: 0.5, ease: "easeOut" }}
+                    >
+                      <motion.div
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ delay: 0.3, duration: 0.3 }}
+                      >
+                        <CheckCircle className="h-12 w-12 text-primary-foreground" />
+                      </motion.div>
+                    </motion.div>
+                    <motion.div
+                      className="absolute inset-0 pointer-events-none"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: [0, 0.5, 0] }}
+                      transition={{ delay: 0.2, duration: 0.8 }}
+                    >
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full bg-primary-foreground/30 animate-ping" />
+                    </motion.div>
+                    <motion.h2 
+                      className="text-2xl font-bold text-primary-foreground"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.4, duration: 0.3 }}
+                    >
+                      האימייל אומת בהצלחה
+                    </motion.h2>
                   </CardHeader>
                   
                   <CardContent className="p-8 text-right">
-                    <p className="text-foreground mb-2">
-                      תודה על אימות כתובת האימייל שלך.
-                    </p>
-                    <p className="text-muted-foreground mb-2">
-                      בפעם הבאה שתקבע/י תור, אנא הקפד/י להשתמש באותה כתובת אימייל,
-                    </p>
-                    <p className="text-muted-foreground mb-8">
-                      כך שנוכל לזהות אותך באופן אוטומטי ולמנוע יצירת כפילויות במערכת.
-                    </p>
-                    
-                    <Button asChild className="w-full">
-                      <Link to="/">חזרה לדף הבית</Link>
-                    </Button>
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.5, duration: 0.3 }}
+                    >
+                      <p className="text-foreground mb-2">
+                        תודה על אימות כתובת האימייל שלך.
+                      </p>
+                      <p className="text-muted-foreground mb-2">
+                        בפעם הבאה שתקבע/י תור, אנא הקפד/י להשתמש באותה כתובת אימייל,
+                      </p>
+                      <p className="text-muted-foreground mb-8">
+                        כך שנוכל לזהות אותך באופן אוטומטי ולמנוע יצירת כפילויות במערכת.
+                      </p>
+                      
+                      <Button asChild className="w-full">
+                        <Link to="/">חזרה לדף הבית</Link>
+                      </Button>
+                    </motion.div>
                   </CardContent>
                 </div>
               )}
