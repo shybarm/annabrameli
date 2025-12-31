@@ -247,6 +247,8 @@ export function generateMedicalVisitSummaryPdf(
       margin-bottom: 10px;
       min-height: 60px;
       white-space: pre-wrap;
+      direction: rtl;
+      text-align: right;
     }
     
     /* Signature Section */
