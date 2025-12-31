@@ -6,11 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCreateAppointment, useAppointmentTypes } from '@/hooks/useAppointments';
 import { usePatients } from '@/hooks/usePatients';
 import { useClinics } from '@/hooks/useClinics';
-import { ArrowRight, Save, Search, MapPin } from 'lucide-react';
+import { useSendAppointmentConfirmation } from '@/hooks/useAppointmentConfirmation';
+import { ArrowRight, Save, Search, MapPin, Mail } from 'lucide-react';
 import { format } from 'date-fns';
 import { useClinicContext } from '@/contexts/ClinicContext';
 
@@ -18,12 +20,14 @@ export default function NewAppointment() {
   const navigate = useNavigate();
   const { selectedClinicId } = useClinicContext();
   const createAppointment = useCreateAppointment();
+  const sendConfirmation = useSendAppointmentConfirmation();
   const { data: appointmentTypes } = useAppointmentTypes();
   const { data: clinics } = useClinics();
   const [appointmentClinicId, setAppointmentClinicId] = useState<string | undefined>(selectedClinicId || undefined);
   const { data: patients } = usePatients(selectedClinicId);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPatientId, setSelectedPatientId] = useState('');
+  const [sendEmail, setSendEmail] = useState(true);
   const [formData, setFormData] = useState({
     appointment_type_id: '',
     date: format(new Date(), 'yyyy-MM-dd'),
@@ -41,6 +45,7 @@ export default function NewAppointment() {
 
   const selectedPatient = patients?.find(p => p.id === selectedPatientId);
   const selectedType = appointmentTypes?.find(t => t.id === formData.appointment_type_id);
+  const selectedClinic = clinics?.find(c => c.id === appointmentClinicId);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,7 +55,7 @@ export default function NewAppointment() {
     const scheduled_at = `${formData.date}T${formData.time}:00`;
 
     try {
-      await createAppointment.mutateAsync({
+      const appointment = await createAppointment.mutateAsync({
         patient_id: selectedPatientId,
         appointment_type_id: formData.appointment_type_id || undefined,
         clinic_id: appointmentClinicId || undefined,
@@ -58,6 +63,26 @@ export default function NewAppointment() {
         duration_minutes: formData.duration_minutes,
         notes: formData.notes || undefined,
       });
+
+      // Send confirmation email if enabled and patient has email
+      if (sendEmail && selectedPatient?.email && selectedClinic) {
+        try {
+          await sendConfirmation.mutateAsync({
+            appointmentId: appointment.id,
+            patientEmail: selectedPatient.email,
+            patientName: `${selectedPatient.first_name} ${selectedPatient.last_name}`,
+            appointmentDate: scheduled_at,
+            appointmentTypeName: selectedType?.name_he || 'ביקור',
+            clinicName: selectedClinic.name,
+            clinicAddress: selectedClinic.address || '',
+            clinicCity: selectedClinic.city || '',
+            clinicPhone: selectedClinic.phone || undefined
+          });
+        } catch (emailError) {
+          // Email error already handled by hook toast, don't block navigation
+          console.error('Email sending failed:', emailError);
+        }
+      }
 
       navigate('/admin/appointments');
     } catch (error: any) {
@@ -269,6 +294,32 @@ export default function NewAppointment() {
                   rows={3}
                 />
               </div>
+
+              {/* Send confirmation email checkbox */}
+              {selectedPatient?.email && selectedClinic && (
+                <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                  <Checkbox 
+                    id="sendEmail" 
+                    checked={sendEmail}
+                    onCheckedChange={(checked) => setSendEmail(checked === true)}
+                  />
+                  <div className="flex-1">
+                    <Label htmlFor="sendEmail" className="flex items-center gap-2 cursor-pointer text-blue-800">
+                      <Mail className="h-4 w-4" />
+                      שלח אישור תור למטופל
+                    </Label>
+                    <p className="text-xs text-blue-600 mt-0.5">
+                      אימייל עם פרטי התור ואפשרות להוספה ליומן
+                    </p>
+                  </div>
+                </div>
+              )}
+              {selectedPatient && !selectedPatient.email && (
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Mail className="h-3 w-3" />
+                  למטופל אין כתובת אימייל - לא ניתן לשלוח אישור
+                </p>
+              )}
             </CardContent>
           </Card>
 
