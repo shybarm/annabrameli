@@ -131,11 +131,13 @@ export function useCreateInvoice() {
     mutationFn: async (input: InvoiceInput) => {
       const invoice_number = await generateInvoiceNumber();
       
-      // Calculate totals
-      const subtotal = input.items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
+      // Calculate totals - prices are entered INCLUDING 18% VAT
+      // We calculate the breakdown for display purposes
+      const total = input.items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
       const tax_rate = 18;
-      const tax_amount = subtotal * (tax_rate / 100);
-      const total = subtotal + tax_amount;
+      // Reverse calculate: total = subtotal * 1.18, so subtotal = total / 1.18
+      const subtotal = Math.round((total / 1.18) * 100) / 100;
+      const tax_amount = Math.round((total - subtotal) * 100) / 100;
       
       // Create invoice (default status: פתוח)
       const { data: invoice, error: invoiceError } = await supabase
@@ -202,11 +204,12 @@ export function useUpdateInvoice() {
   
   return useMutation({
     mutationFn: async ({ id, input }: { id: string; input: InvoiceUpdateInput }) => {
-      // Calculate totals
-      const subtotal = input.items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
+      // Calculate totals - prices are entered INCLUDING 18% VAT
+      const total = input.items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
       const tax_rate = 18;
-      const tax_amount = subtotal * (tax_rate / 100);
-      const total = subtotal + tax_amount;
+      // Reverse calculate: total = subtotal * 1.18, so subtotal = total / 1.18
+      const subtotal = Math.round((total / 1.18) * 100) / 100;
+      const tax_amount = Math.round((total - subtotal) * 100) / 100;
       
       // Update invoice
       const { error: invoiceError } = await supabase

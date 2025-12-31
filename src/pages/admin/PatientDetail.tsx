@@ -647,57 +647,8 @@ export default function PatientDetail() {
           </Card>
         )}
 
-        {/* Portal Access Card - Show only if patient doesn't have a linked user account */}
-        {!patient.user_id && (
-          <Card className="border-blue-500/50 bg-blue-50/50 dark:bg-blue-950/20">
-            <CardContent className="flex items-center justify-between py-4">
-              <div className="flex items-center gap-3">
-                <UserPlus className="h-5 w-5 text-blue-600" />
-                <div>
-                  <p className="font-medium">גישה לפורטל מטופלים</p>
-                  <p className="text-sm text-muted-foreground">
-                    {portalInvitation && !portalInvitation.accepted_at && new Date(portalInvitation.expires_at) > new Date()
-                      ? 'קישור הזמנה נוצר - ממתין להרשמה'
-                      : 'שלח הזמנה למטופל להירשם לפורטל'}
-                  </p>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                {portalInvitation && !portalInvitation.accepted_at && new Date(portalInvitation.expires_at) > new Date() ? (
-                  <Button variant="outline" size="sm" onClick={handleCopyPortalLink}>
-                    <Link className="h-4 w-4 ml-1" />
-                    העתק קישור
-                  </Button>
-                ) : (
-                  <Button 
-                    size="sm" 
-                    onClick={handleGeneratePortalInvite}
-                    disabled={inviteExistingPatient.isPending || !patient.email}
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    <UserPlus className="h-4 w-4 ml-1" />
-                    {inviteExistingPatient.isPending ? 'יוצר...' : 'הזמן לפורטל'}
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-            {!patient.email && (
-              <div className="px-6 pb-4">
-                <p className="text-xs text-amber-600">⚠️ נדרש אימייל כדי לשלוח הזמנה לפורטל</p>
-              </div>
-            )}
-          </Card>
-        )}
-
-        {/* Show badge if patient has portal access */}
-        {patient.user_id && (
-          <div className="flex items-center gap-2">
-            <Badge className="bg-green-500 text-white animate-pulse">
-              <span className="w-2 h-2 bg-white rounded-full mr-2" />
-              פעיל בפורטל
-            </Badge>
-          </div>
-        )}
+        {/* Portal Access Card - DISABLED per ISO 27799 */}
+        {/* Patient portal has been disabled for security compliance */}
 
         <Tabs defaultValue="info" className="space-y-4">
           <TabsList className="flex-wrap">

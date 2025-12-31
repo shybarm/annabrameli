@@ -87,10 +87,11 @@ export default function NewInvoice() {
     }
   };
 
-  const subtotal = items.reduce((sum, item) => sum + item.total, 0);
+  // Prices are entered INCLUDING 18% VAT - we reverse calculate for display
+  const total = items.reduce((sum, item) => sum + item.total, 0);
   const taxRate = 18;
-  const taxAmount = subtotal * (taxRate / 100);
-  const total = subtotal + taxAmount;
+  const subtotal = Math.round((total / 1.18) * 100) / 100;
+  const taxAmount = Math.round((total - subtotal) * 100) / 100;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -234,7 +235,7 @@ export default function NewInvoice() {
                     />
                   </div>
                   <div className="sm:col-span-2 space-y-2">
-                    <Label>מחיר</Label>
+                    <Label>מחיר (כולל מע״מ)</Label>
                     <Input
                       type="number"
                       min="0"
