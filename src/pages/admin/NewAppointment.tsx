@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,7 @@ import { useClinicContext } from '@/contexts/ClinicContext';
 
 export default function NewAppointment() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { selectedClinicId } = useClinicContext();
   const createAppointment = useCreateAppointment();
   const sendConfirmation = useSendAppointmentConfirmation();
@@ -28,10 +29,15 @@ export default function NewAppointment() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPatientId, setSelectedPatientId] = useState('');
   const [sendEmail, setSendEmail] = useState(true);
+  
+  // Get pre-filled date/time from URL params (from availability grid)
+  const prefilledDate = searchParams.get('date');
+  const prefilledTime = searchParams.get('time');
+  
   const [formData, setFormData] = useState({
     appointment_type_id: '',
-    date: format(new Date(), 'yyyy-MM-dd'),
-    time: '09:00',
+    date: prefilledDate || format(new Date(), 'yyyy-MM-dd'),
+    time: prefilledTime || '09:00',
     duration_minutes: 30,
     notes: '',
   });
