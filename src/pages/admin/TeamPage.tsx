@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,7 +26,8 @@ import {
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { Users, UserPlus, Shield, ShieldOff, Trash2, UserCircle, Mail, Copy, Clock, CheckCircle, Settings, MapPin, Loader2 } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { Users, UserPlus, Shield, ShieldOff, Trash2, UserCircle, Mail, Copy, Clock, CheckCircle, Settings, MapPin, Loader2, Phone, Building, Edit } from 'lucide-react';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { useClinicContext } from '@/contexts/ClinicContext';
@@ -41,6 +43,9 @@ interface TeamMember {
   profile?: {
     first_name: string | null;
     last_name: string | null;
+    phone: string | null;
+    mobile: string | null;
+    address: string | null;
   };
   clinic?: {
     id: string;
@@ -64,30 +69,97 @@ interface Invitation {
   } | null;
 }
 
-const defaultPermissions = {
-  canViewPatients: true,
-  canEditPatients: false,
-  canViewAppointments: true,
-  canEditAppointments: false,
-  canViewBilling: false,
-  canEditBilling: false,
-  canViewDocuments: true,
-  canEditDocuments: false,
+// Granular permission categories for the UI
+const permissionCategories = {
+  patients: {
+    label: 'מטופלים',
+    permissions: {
+      canViewPatients: 'צפייה במטופלים',
+      canEditPatients: 'עריכת מטופלים',
+      canDeletePatients: 'מחיקת מטופלים',
+    },
+  },
+  appointments: {
+    label: 'תורים',
+    permissions: {
+      canViewAppointments: 'צפייה בתורים',
+      canEditAppointments: 'עריכת תורים',
+      canCancelAppointments: 'ביטול תורים',
+    },
+  },
+  documents: {
+    label: 'מסמכים וקבצים',
+    permissions: {
+      canViewDocuments: 'צפייה במסמכים',
+      canUploadDocuments: 'העלאת מסמכים',
+      canEditDocuments: 'עריכת מסמכים',
+      canDeleteDocuments: 'מחיקת מסמכים',
+    },
+  },
+  billing: {
+    label: 'חיוב וחשבוניות',
+    permissions: {
+      canViewBilling: 'צפייה בחיובים',
+      canEditBilling: 'עריכת חיובים',
+    },
+  },
+  expenses: {
+    label: 'הוצאות',
+    permissions: {
+      canViewExpenses: 'צפייה בהוצאות',
+      canEditExpenses: 'עריכת הוצאות',
+    },
+  },
+  admin: {
+    label: 'ניהול',
+    permissions: {
+      canViewTeam: 'צפייה בצוות',
+      canEditTeam: 'ניהול צוות',
+      canViewAuditLog: 'צפייה בלוג אבטחה',
+      canViewSettings: 'צפייה בהגדרות',
+      canEditSettings: 'עריכת הגדרות',
+    },
+  },
+  other: {
+    label: 'אחר',
+    permissions: {
+      canViewDoctorDiary: 'יומן רופא',
+      canViewCancellations: 'ביטולי תורים',
+      canViewWorkHours: 'צפייה בשעות עבודה',
+      canEditWorkHours: 'עריכת שעות עבודה',
+    },
+  },
 };
 
-const permissionLabels: Record<string, string> = {
-  canViewPatients: 'צפייה במטופלים',
-  canEditPatients: 'עריכת מטופלים',
-  canViewAppointments: 'צפייה בתורים',
-  canEditAppointments: 'עריכת תורים',
-  canViewBilling: 'צפייה בחיובים',
-  canEditBilling: 'עריכת חיובים',
-  canViewDocuments: 'צפייה במסמכים',
-  canEditDocuments: 'העלאת מסמכים',
+const defaultPermissions: Record<string, boolean> = {
+  canViewPatients: true,
+  canEditPatients: false,
+  canDeletePatients: false,
+  canViewAppointments: true,
+  canEditAppointments: false,
+  canCancelAppointments: false,
+  canViewDocuments: true,
+  canUploadDocuments: false,
+  canEditDocuments: false,
+  canDeleteDocuments: false,
+  canViewBilling: false,
+  canEditBilling: false,
+  canViewExpenses: false,
+  canEditExpenses: false,
+  canViewDoctorDiary: false,
+  canViewCancellations: true,
+  canViewTeam: false,
+  canEditTeam: false,
+  canViewWorkHours: true,
+  canEditWorkHours: false,
+  canViewAuditLog: false,
+  canViewSettings: false,
+  canEditSettings: false,
 };
 
 export default function TeamPage() {
   const queryClient = useQueryClient();
+  const { isAdmin, user } = useAuth();
   const { selectedClinicId } = useClinicContext();
   const { data: currentClinic } = useClinic(selectedClinicId ?? undefined);
   const { data: allClinics } = useClinics();
@@ -99,6 +171,16 @@ export default function TeamPage() {
   const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
   const [editingPermissions, setEditingPermissions] = useState<Record<string, boolean>>(defaultPermissions);
   const [editingClinicIds, setEditingClinicIds] = useState<string[]>([]);
+  
+  // Team member details editing (admin only)
+  const [editingDetails, setEditingDetails] = useState<{
+    userId: string;
+    firstName: string;
+    lastName: string;
+    phone: string;
+    mobile: string;
+    address: string;
+  } | null>(null);
 
   // Fetch team members for current clinic
   const { data: teamMembers, isLoading } = useQuery({
@@ -111,7 +193,6 @@ export default function TeamPage() {
         .order('created_at', { ascending: false });
       
       if (selectedClinicId) {
-        // Show members assigned to this clinic OR admins (who can see all)
         query = query.or(`clinic_id.eq.${selectedClinicId},role.eq.admin`);
       }
       
@@ -123,7 +204,7 @@ export default function TeamPage() {
       const userIds = roles.map(r => r.user_id);
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('user_id, first_name, last_name')
+        .select('user_id, first_name, last_name, phone, mobile, address')
         .in('user_id', userIds);
 
       if (profilesError) throw profilesError;
@@ -177,7 +258,6 @@ export default function TeamPage() {
       setPermissions(defaultPermissions);
       setSelectedClinicIds(selectedClinicId ? [selectedClinicId] : []);
       
-      // Copy invite link
       if (data?.inviteLink) {
         navigator.clipboard.writeText(data.inviteLink);
         toast({ title: 'ההזמנה נשלחה והקישור הועתק!' });
@@ -193,11 +273,9 @@ export default function TeamPage() {
   // Update member permissions and clinics
   const updateMember = useMutation({
     mutationFn: async ({ id, permissions, clinicIds }: { id: string; permissions: Record<string, boolean>; clinicIds: string[] }) => {
-      // Get current member info
       const member = teamMembers?.find(m => m.id === id);
       if (!member) throw new Error('Member not found');
       
-      // Update the current role with first clinic (or null)
       const { error: updateError } = await supabase
         .from('user_roles')
         .update({ 
@@ -207,10 +285,8 @@ export default function TeamPage() {
         .eq('id', id);
       if (updateError) throw updateError;
       
-      // Handle additional clinics: create new roles for each additional clinic
       if (clinicIds.length > 1) {
         for (let i = 1; i < clinicIds.length; i++) {
-          // Check if role already exists
           const { data: existing } = await supabase
             .from('user_roles')
             .select('id')
@@ -232,7 +308,6 @@ export default function TeamPage() {
         }
       }
       
-      // Remove roles for clinics not in the list anymore (except current one being edited)
       const existingRoles = teamMembers?.filter(m => m.user_id === member.user_id && m.id !== id) || [];
       for (const role of existingRoles) {
         if (role.clinic_id && !clinicIds.includes(role.clinic_id)) {
@@ -247,6 +322,32 @@ export default function TeamPage() {
     },
     onError: (error: any) => {
       toast({ title: 'שגיאה בעדכון', description: error.message, variant: 'destructive' });
+    },
+  });
+
+  // Update team member details (admin only)
+  const updateMemberDetails = useMutation({
+    mutationFn: async (details: { userId: string; firstName: string; lastName: string; phone: string; mobile: string; address: string }) => {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          first_name: details.firstName,
+          last_name: details.lastName,
+          phone: details.phone,
+          mobile: details.mobile,
+          address: details.address,
+        })
+        .eq('user_id', details.userId);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['team-members', selectedClinicId] });
+      setEditingDetails(null);
+      toast({ title: 'פרטי חבר הצוות עודכנו בהצלחה' });
+    },
+    onError: (error: any) => {
+      toast({ title: 'שגיאה בעדכון פרטים', description: error.message, variant: 'destructive' });
     },
   });
 
@@ -293,7 +394,7 @@ export default function TeamPage() {
       if (data?.error) throw new Error(data.error);
       return data;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       toast({ 
         title: 'אימות דו-שלבי אופס בהצלחה',
         description: `המשתמש יידרש להגדיר אימות דו-שלבי מחדש בכניסה הבאה`,
@@ -332,12 +433,53 @@ export default function TeamPage() {
   const handleEditMember = (member: TeamMember) => {
     setEditingMemberId(member.id);
     setEditingPermissions(member.permissions || defaultPermissions);
-    // Get all clinic IDs for this user
     const userClinicIds = teamMembers
       ?.filter(m => m.user_id === member.user_id && m.clinic_id)
       .map(m => m.clinic_id as string) || [];
     setEditingClinicIds(userClinicIds.length > 0 ? userClinicIds : (member.clinic_id ? [member.clinic_id] : []));
   };
+
+  const handleEditDetails = (member: TeamMember) => {
+    setEditingDetails({
+      userId: member.user_id,
+      firstName: member.profile?.first_name || '',
+      lastName: member.profile?.last_name || '',
+      phone: member.profile?.phone || '',
+      mobile: member.profile?.mobile || '',
+      address: member.profile?.address || '',
+    });
+  };
+
+  // Render granular permissions UI
+  const renderPermissionCategories = (
+    perms: Record<string, boolean>,
+    setPerms: (perms: Record<string, boolean>) => void,
+    idPrefix: string
+  ) => (
+    <div className="space-y-4">
+      {Object.entries(permissionCategories).map(([catKey, category]) => (
+        <div key={catKey} className="space-y-2">
+          <Label className="text-sm font-medium text-muted-foreground">{category.label}</Label>
+          <div className="grid grid-cols-2 gap-2">
+            {Object.entries(category.permissions).map(([permKey, permLabel]) => (
+              <div key={permKey} className="flex items-center gap-2">
+                <Checkbox
+                  id={`${idPrefix}-${permKey}`}
+                  checked={perms[permKey] || false}
+                  onCheckedChange={(checked) => 
+                    setPerms({ ...perms, [permKey]: !!checked })
+                  }
+                />
+                <Label htmlFor={`${idPrefix}-${permKey}`} className="text-xs cursor-pointer">
+                  {permLabel}
+                </Label>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <AdminLayout>
@@ -364,7 +506,7 @@ export default function TeamPage() {
                 הזמן חבר צוות
               </Button>
             </DialogTrigger>
-            <DialogContent dir="rtl" className="max-w-md">
+            <DialogContent dir="rtl" className="max-w-lg max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>הזמנת חבר צוות חדש</DialogTitle>
               </DialogHeader>
@@ -398,7 +540,7 @@ export default function TeamPage() {
                     <MapPin className="h-4 w-4" />
                     מרפאות להוספה
                   </Label>
-                  <ScrollArea className="h-32 border rounded-md p-2">
+                  <ScrollArea className="h-24 border rounded-md p-2">
                     <div className="space-y-2">
                       {allClinics?.map((clinic) => (
                         <div key={clinic.id} className="flex items-center gap-2">
@@ -420,26 +562,18 @@ export default function TeamPage() {
                       ))}
                     </div>
                   </ScrollArea>
-                  <p className="text-xs text-muted-foreground">בחר מרפאה אחת או יותר</p>
                 </div>
+                
+                <Separator />
+                
                 <div className="space-y-3">
-                  <Label>הרשאות</Label>
-                  <div className="grid grid-cols-2 gap-3">
-                    {Object.entries(permissionLabels).map(([key, label]) => (
-                      <div key={key} className="flex items-center gap-2">
-                        <Checkbox
-                          id={key}
-                          checked={permissions[key] || false}
-                          onCheckedChange={(checked) => 
-                            setPermissions(prev => ({ ...prev, [key]: !!checked }))
-                          }
-                        />
-                        <Label htmlFor={key} className="text-sm cursor-pointer">
-                          {label}
-                        </Label>
-                      </div>
-                    ))}
-                  </div>
+                  <Label className="flex items-center gap-1">
+                    <Shield className="h-4 w-4" />
+                    הרשאות מפורטות
+                  </Label>
+                  <ScrollArea className="h-64 border rounded-md p-3">
+                    {renderPermissionCategories(permissions, setPermissions, 'invite')}
+                  </ScrollArea>
                 </div>
                 <Button 
                   className="w-full" 
@@ -488,21 +622,100 @@ export default function TeamPage() {
                           </div>
                           <div>
                             <p className="font-medium">{getMemberName(member)}</p>
-                            <Badge className={roleColors[member.role]}>
-                              {roleLabels[member.role]}
-                            </Badge>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <Badge className={roleColors[member.role]}>
+                                {roleLabels[member.role]}
+                              </Badge>
+                              {member.profile?.phone && (
+                                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                  <Phone className="h-3 w-3" />
+                                  {member.profile.phone}
+                                </span>
+                              )}
+                              {member.clinic && (
+                                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                  <Building className="h-3 w-3" />
+                                  {member.clinic.name}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
+                          {/* Edit Details Button (Admin only) */}
+                          {isAdmin && (
+                            <Dialog open={editingDetails?.userId === member.user_id} onOpenChange={(open) => !open && setEditingDetails(null)}>
+                              <DialogTrigger asChild>
+                                <Button variant="ghost" size="sm" onClick={() => handleEditDetails(member)} title="עריכת פרטים">
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent dir="rtl" className="max-w-md">
+                                <DialogHeader>
+                                  <DialogTitle>עריכת פרטי חבר צוות</DialogTitle>
+                                </DialogHeader>
+                                <div className="space-y-4 pt-4">
+                                  <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                      <Label>שם פרטי</Label>
+                                      <Input
+                                        value={editingDetails?.firstName || ''}
+                                        onChange={(e) => setEditingDetails(prev => prev ? { ...prev, firstName: e.target.value } : null)}
+                                      />
+                                    </div>
+                                    <div className="space-y-2">
+                                      <Label>שם משפחה</Label>
+                                      <Input
+                                        value={editingDetails?.lastName || ''}
+                                        onChange={(e) => setEditingDetails(prev => prev ? { ...prev, lastName: e.target.value } : null)}
+                                      />
+                                    </div>
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label>טלפון</Label>
+                                    <Input
+                                      value={editingDetails?.phone || ''}
+                                      onChange={(e) => setEditingDetails(prev => prev ? { ...prev, phone: e.target.value } : null)}
+                                      dir="ltr"
+                                    />
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label>נייד</Label>
+                                    <Input
+                                      value={editingDetails?.mobile || ''}
+                                      onChange={(e) => setEditingDetails(prev => prev ? { ...prev, mobile: e.target.value } : null)}
+                                      dir="ltr"
+                                    />
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label>כתובת</Label>
+                                    <Input
+                                      value={editingDetails?.address || ''}
+                                      onChange={(e) => setEditingDetails(prev => prev ? { ...prev, address: e.target.value } : null)}
+                                    />
+                                  </div>
+                                  <Button 
+                                    className="w-full" 
+                                    onClick={() => editingDetails && updateMemberDetails.mutate(editingDetails)}
+                                    disabled={updateMemberDetails.isPending}
+                                  >
+                                    {updateMemberDetails.isPending ? 'שומר...' : 'שמור פרטים'}
+                                  </Button>
+                                </div>
+                              </DialogContent>
+                            </Dialog>
+                          )}
+                          
+                          {/* Edit Permissions Button */}
                           <Dialog open={editingMemberId === member.id} onOpenChange={(open) => !open && setEditingMemberId(null)}>
                             <DialogTrigger asChild>
-                              <Button variant="ghost" size="sm" onClick={() => handleEditMember(member)}>
+                              <Button variant="ghost" size="sm" onClick={() => handleEditMember(member)} title="הרשאות">
                                 <Settings className="h-4 w-4" />
                               </Button>
                             </DialogTrigger>
-                            <DialogContent dir="rtl" className="max-w-md">
+                            <DialogContent dir="rtl" className="max-w-lg max-h-[90vh] overflow-y-auto">
                               <DialogHeader>
-                                <DialogTitle>עריכת חבר צוות - {getMemberName(member)}</DialogTitle>
+                                <DialogTitle>עריכת הרשאות - {getMemberName(member)}</DialogTitle>
                               </DialogHeader>
                               <div className="space-y-4 pt-4">
                                 {/* Clinic Selection */}
@@ -511,7 +724,7 @@ export default function TeamPage() {
                                     <MapPin className="h-4 w-4" />
                                     מרפאות
                                   </Label>
-                                  <ScrollArea className="h-32 border rounded-md p-2">
+                                  <ScrollArea className="h-24 border rounded-md p-2">
                                     <div className="space-y-2">
                                       {allClinics?.map((clinic) => (
                                         <div key={clinic.id} className="flex items-center gap-2">
@@ -535,25 +748,17 @@ export default function TeamPage() {
                                   </ScrollArea>
                                 </div>
                                 
-                                {/* Permissions */}
+                                <Separator />
+                                
+                                {/* Granular Permissions */}
                                 <div className="space-y-3">
-                                  <Label>הרשאות</Label>
-                                  <div className="grid grid-cols-2 gap-3">
-                                    {Object.entries(permissionLabels).map(([key, label]) => (
-                                      <div key={key} className="flex items-center gap-2">
-                                        <Checkbox
-                                          id={`edit-${key}`}
-                                          checked={editingPermissions[key] || false}
-                                          onCheckedChange={(checked) => 
-                                            setEditingPermissions(prev => ({ ...prev, [key]: !!checked }))
-                                          }
-                                        />
-                                        <Label htmlFor={`edit-${key}`} className="text-sm cursor-pointer">
-                                          {label}
-                                        </Label>
-                                      </div>
-                                    ))}
-                                  </div>
+                                  <Label className="flex items-center gap-1">
+                                    <Shield className="h-4 w-4" />
+                                    הרשאות מפורטות
+                                  </Label>
+                                  <ScrollArea className="h-64 border rounded-md p-3">
+                                    {renderPermissionCategories(editingPermissions, setEditingPermissions, 'edit')}
+                                  </ScrollArea>
                                 </div>
 
                                 {/* Reset MFA Button */}
@@ -605,6 +810,8 @@ export default function TeamPage() {
                               </div>
                             </DialogContent>
                           </Dialog>
+                          
+                          {/* Remove Member */}
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button variant="ghost" size="sm">

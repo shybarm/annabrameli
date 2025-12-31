@@ -5,18 +5,33 @@ import { QueryClient } from '@tanstack/react-query';
 
 type AppRole = 'admin' | 'doctor' | 'secretary' | 'patient';
 
+// Granular permissions for fine-grained access control (ISO 27799 compliant)
 export interface UserPermissions {
+  // Patient permissions
   canViewPatients: boolean;
   canEditPatients: boolean;
+  canDeletePatients: boolean;
+  
+  // Appointment permissions
   canViewAppointments: boolean;
   canEditAppointments: boolean;
+  canCancelAppointments: boolean;
+  
+  // Document/File permissions - CRITICAL for storage access
+  canViewDocuments: boolean;
+  canUploadDocuments: boolean;
+  canEditDocuments: boolean;
+  canDeleteDocuments: boolean;
+  
+  // Billing permissions
   canViewBilling: boolean;
   canEditBilling: boolean;
-  canViewDocuments: boolean;
-  canEditDocuments: boolean;
-  // New section-level permissions
+  
+  // Expense permissions
   canViewExpenses: boolean;
   canEditExpenses: boolean;
+  
+  // Section-level permissions
   canViewDoctorDiary: boolean;
   canViewCancellations: boolean;
   canViewTeam: boolean;
@@ -28,15 +43,20 @@ export interface UserPermissions {
   canEditSettings: boolean;
 }
 
+// Default permissions (least privilege)
 const defaultPermissions: UserPermissions = {
   canViewPatients: false,
   canEditPatients: false,
+  canDeletePatients: false,
   canViewAppointments: false,
   canEditAppointments: false,
+  canCancelAppointments: false,
+  canViewDocuments: false,
+  canUploadDocuments: false,
+  canEditDocuments: false,
+  canDeleteDocuments: false,
   canViewBilling: false,
   canEditBilling: false,
-  canViewDocuments: false,
-  canEditDocuments: false,
   canViewExpenses: false,
   canEditExpenses: false,
   canViewDoctorDiary: false,
@@ -54,12 +74,16 @@ const defaultPermissions: UserPermissions = {
 const adminPermissions: UserPermissions = {
   canViewPatients: true,
   canEditPatients: true,
+  canDeletePatients: true,
   canViewAppointments: true,
   canEditAppointments: true,
+  canCancelAppointments: true,
+  canViewDocuments: true,
+  canUploadDocuments: true,
+  canEditDocuments: true,
+  canDeleteDocuments: true,
   canViewBilling: true,
   canEditBilling: true,
-  canViewDocuments: true,
-  canEditDocuments: true,
   canViewExpenses: true,
   canEditExpenses: true,
   canViewDoctorDiary: true,
@@ -77,12 +101,16 @@ const adminPermissions: UserPermissions = {
 const doctorPermissions: UserPermissions = {
   canViewPatients: true,
   canEditPatients: true,
+  canDeletePatients: false,
   canViewAppointments: true,
   canEditAppointments: true,
+  canCancelAppointments: true,
+  canViewDocuments: true,
+  canUploadDocuments: true,
+  canEditDocuments: true,
+  canDeleteDocuments: false,
   canViewBilling: true,
   canEditBilling: true,
-  canViewDocuments: true,
-  canEditDocuments: true,
   canViewExpenses: false,
   canEditExpenses: false,
   canViewDoctorDiary: true,
@@ -196,16 +224,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setPermissions({
             canViewPatients: storedPerms.canViewPatients ?? false,
             canEditPatients: storedPerms.canEditPatients ?? false,
+            canDeletePatients: storedPerms.canDeletePatients ?? false,
             canViewAppointments: storedPerms.canViewAppointments ?? false,
             canEditAppointments: storedPerms.canEditAppointments ?? false,
+            canCancelAppointments: storedPerms.canCancelAppointments ?? false,
+            canViewDocuments: storedPerms.canViewDocuments ?? false,
+            canUploadDocuments: storedPerms.canUploadDocuments ?? false,
+            canEditDocuments: storedPerms.canEditDocuments ?? false,
+            canDeleteDocuments: storedPerms.canDeleteDocuments ?? false,
             canViewBilling: storedPerms.canViewBilling ?? false,
             canEditBilling: storedPerms.canEditBilling ?? false,
-            canViewDocuments: storedPerms.canViewDocuments ?? false,
-            canEditDocuments: storedPerms.canEditDocuments ?? false,
             canViewExpenses: storedPerms.canViewExpenses ?? false,
             canEditExpenses: storedPerms.canEditExpenses ?? false,
             canViewDoctorDiary: storedPerms.canViewDoctorDiary ?? false,
-            canViewCancellations: storedPerms.canViewCancellations ?? true, // Secretaries can view cancellations by default
+            canViewCancellations: storedPerms.canViewCancellations ?? true,
             canViewTeam: storedPerms.canViewTeam ?? false,
             canEditTeam: storedPerms.canEditTeam ?? false,
             canViewWorkHours: storedPerms.canViewWorkHours ?? true,
@@ -231,8 +263,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isPatient = roles.includes('patient');
 
   const hasPermission = useCallback((permission: keyof UserPermissions): boolean => {
-    // Admins and doctors always have all permissions
-    if (isAdmin || isDoctor) return true;
+    // Admins always have all permissions
+    if (isAdmin) return true;
+    // Doctors have clinical permissions (defined in doctorPermissions)
+    if (isDoctor) return doctorPermissions[permission] || false;
     return permissions[permission] || false;
   }, [isAdmin, isDoctor, permissions]);
 

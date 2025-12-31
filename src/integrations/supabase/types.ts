@@ -1400,33 +1400,39 @@ export type Database = {
       }
       profiles: {
         Row: {
+          address: string | null
           avatar_url: string | null
           created_at: string
           first_name: string | null
           id: string
           last_name: string | null
+          mobile: string | null
           phone: string | null
           preferred_language: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          address?: string | null
           avatar_url?: string | null
           created_at?: string
           first_name?: string | null
           id?: string
           last_name?: string | null
+          mobile?: string | null
           phone?: string | null
           preferred_language?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          address?: string | null
           avatar_url?: string | null
           created_at?: string
           first_name?: string | null
           id?: string
           last_name?: string | null
+          mobile?: string | null
           phone?: string | null
           preferred_language?: string | null
           updated_at?: string
@@ -1845,6 +1851,10 @@ export type Database = {
       can_edit_billing: { Args: { _user_id: string }; Returns: boolean }
       can_edit_documents: { Args: { _user_id: string }; Returns: boolean }
       can_edit_patients: { Args: { _user_id: string }; Returns: boolean }
+      can_edit_profile: {
+        Args: { _target_user_id: string; _user_id: string }
+        Returns: boolean
+      }
       can_view_appointments: { Args: { _user_id: string }; Returns: boolean }
       can_view_billing: { Args: { _user_id: string }; Returns: boolean }
       can_view_documents: { Args: { _user_id: string }; Returns: boolean }
