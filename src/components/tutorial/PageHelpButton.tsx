@@ -109,12 +109,12 @@ export function PageHelpButton({ tutorial }: PageHelpButtonProps) {
         <TooltipTrigger asChild>
           <Button
             variant="outline"
-            size="sm"
+            size="icon"
             onClick={handleOpen}
-            className="gap-2"
+            className="h-9 w-9 sm:h-10 sm:w-10"
           >
             <Lightbulb className="h-4 w-4" />
-            <span className="hidden sm:inline">עזרה</span>
+            <span className="sr-only">עזרה</span>
           </Button>
         </TooltipTrigger>
         <TooltipContent>

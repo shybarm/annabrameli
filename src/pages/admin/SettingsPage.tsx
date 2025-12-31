@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
-import { Settings, Building, Clock, Users, Bell, Plus, Trash2, Play, HelpCircle, RotateCcw } from 'lucide-react';
+import { Settings, Building, Clock, Users, Bell, Plus, Trash2, Play, HelpCircle, RotateCcw, History } from 'lucide-react';
 import { TreatmentManagement } from '@/components/admin/TreatmentManagement';
 import { MFASettings } from '@/components/auth/MFASettings';
 import { useOnboarding } from '@/components/tutorial/OnboardingTutorial';
@@ -115,6 +115,12 @@ export default function SettingsPage() {
     doctor_specialty: '',
   });
   
+  // Appointment settings state
+  const [appointmentSettings, setAppointmentSettings] = useState({
+    break_between_appointments: 10,
+    max_appointments_per_day: 20,
+  });
+  
   // Working hours state
   const [workingHours, setWorkingHours] = useState<WorkingHours>({
     sunday: { open: '09:00', close: '18:00' },
@@ -124,6 +130,23 @@ export default function SettingsPage() {
     thursday: { open: '09:00', close: '18:00' },
     friday: { open: '09:00', close: '13:00' },
     saturday: null,
+  });
+
+  // Fetch appointment settings from clinic_settings
+  const { data: clinicSettings } = useQuery({
+    queryKey: ['clinic-appointment-settings', selectedClinicId],
+    queryFn: async () => {
+      if (!selectedClinicId) return null;
+      const { data, error } = await supabase
+        .from('clinic_settings')
+        .select('key, value')
+        .in('key', ['break_between_appointments', 'max_appointments_per_day']);
+      if (error) throw error;
+      const settings: Record<string, number> = {};
+      data?.forEach(s => settings[s.key] = s.value as number);
+      return settings;
+    },
+    enabled: !!selectedClinicId,
   });
 
   // Update form when clinic data loads
@@ -143,6 +166,16 @@ export default function SettingsPage() {
       }
     }
   }, [currentClinic]);
+
+  // Update appointment settings when loaded
+  useEffect(() => {
+    if (clinicSettings) {
+      setAppointmentSettings({
+        break_between_appointments: clinicSettings.break_between_appointments ?? 10,
+        max_appointments_per_day: clinicSettings.max_appointments_per_day ?? 20,
+      });
+    }
+  }, [clinicSettings]);
 
   const handleResetTutorial = () => {
     resetOnboarding();
@@ -290,6 +323,39 @@ export default function SettingsPage() {
       ...prev,
       [day]: prev[day] ? { ...prev[day], [field]: value } : { open: '09:00', close: '18:00', [field]: value },
     }));
+  };
+
+  // Save appointment settings mutation
+  const saveAppointmentSettings = useMutation({
+    mutationFn: async (settings: { break_between_appointments: number; max_appointments_per_day: number }) => {
+      // Upsert both settings
+      const { error: breakError } = await supabase
+        .from('clinic_settings')
+        .upsert({ 
+          key: 'break_between_appointments', 
+          value: settings.break_between_appointments 
+        }, { onConflict: 'key' });
+      if (breakError) throw breakError;
+
+      const { error: maxError } = await supabase
+        .from('clinic_settings')
+        .upsert({ 
+          key: 'max_appointments_per_day', 
+          value: settings.max_appointments_per_day 
+        }, { onConflict: 'key' });
+      if (maxError) throw maxError;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['clinic-appointment-settings'] });
+      toast({ title: 'הגדרות התורים נשמרו' });
+    },
+    onError: (error: any) => {
+      toast({ title: 'שגיאה', description: error.message, variant: 'destructive' });
+    },
+  });
+
+  const handleSaveAppointmentSettings = () => {
+    saveAppointmentSettings.mutate(appointmentSettings);
   };
 
   if (loadingClinic) {
@@ -606,14 +672,32 @@ export default function SettingsPage() {
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="buffer">הפסקה בין תורים (דקות)</Label>
-                <Input id="buffer" type="number" defaultValue="10" />
+                <Input 
+                  id="buffer" 
+                  type="number" 
+                  value={appointmentSettings.break_between_appointments}
+                  onChange={(e) => setAppointmentSettings(prev => ({ ...prev, break_between_appointments: Number(e.target.value) || 0 }))}
+                  min={0}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="max_daily">מקסימום תורים ביום</Label>
-                <Input id="max_daily" type="number" defaultValue="20" />
+                <Input 
+                  id="max_daily" 
+                  type="number" 
+                  value={appointmentSettings.max_appointments_per_day}
+                  onChange={(e) => setAppointmentSettings(prev => ({ ...prev, max_appointments_per_day: Number(e.target.value) || 0 }))}
+                  min={1}
+                />
               </div>
             </div>
-            <Button className="bg-primary text-primary-foreground hover:bg-primary/90">שמור שינויים</Button>
+            <Button 
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+              onClick={handleSaveAppointmentSettings}
+              disabled={saveAppointmentSettings.isPending}
+            >
+              {saveAppointmentSettings.isPending ? 'שומר...' : 'שמור שינויים'}
+            </Button>
           </CardContent>
         </Card>
 
@@ -637,6 +721,26 @@ export default function SettingsPage() {
               ניהול משתמשי הצוות והרשאות הגישה שלהם למערכת
             </p>
             <Button variant="outline" onClick={() => navigate('/admin/team')}>ניהול צוות</Button>
+          </CardContent>
+        </Card>
+
+        {/* Audit Log Link */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <History className="h-5 w-5" />
+              לוג אבטחה
+            </CardTitle>
+            <CardDescription>צפייה בלוג פעילות ואבטחה</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground mb-4">
+              צפה בהיסטוריית הפעולות והגישות במערכת
+            </p>
+            <Button variant="outline" onClick={() => navigate('/admin/audit-log')}>
+              <History className="h-4 w-4 ml-2" />
+              צפה בלוג אבטחה
+            </Button>
           </CardContent>
         </Card>
 

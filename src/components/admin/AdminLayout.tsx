@@ -58,7 +58,6 @@ const navItems: NavItem[] = [
   { href: '/admin/expenses', icon: Wallet, label: 'הוצאות', requiredPermission: 'canViewExpenses' },
   { href: '/admin/team', icon: UsersRound, label: 'צוות', requiredPermission: 'canViewTeam' },
   { href: '/admin/work-hours', icon: Clock, label: 'שעות עבודה', requiredPermission: 'canViewWorkHours' },
-  { href: '/admin/audit-log', icon: History, label: 'לוג אבטחה', requiredPermission: 'canViewAuditLog' },
   { href: '/admin/settings', icon: Settings, label: 'הגדרות', requiredPermission: 'canViewSettings' },
 ];
 

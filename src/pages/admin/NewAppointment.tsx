@@ -27,12 +27,14 @@ export default function NewAppointment() {
   const [appointmentClinicId, setAppointmentClinicId] = useState<string | undefined>(selectedClinicId || undefined);
   const { data: patients } = usePatients(selectedClinicId);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedPatientId, setSelectedPatientId] = useState('');
   const [sendEmail, setSendEmail] = useState(true);
   
-  // Get pre-filled date/time from URL params (from availability grid)
+  // Get pre-filled patient/date/time from URL params (from patient context or availability grid)
+  const prefilledPatientId = searchParams.get('patient');
   const prefilledDate = searchParams.get('date');
   const prefilledTime = searchParams.get('time');
+  
+  const [selectedPatientId, setSelectedPatientId] = useState(prefilledPatientId || '');
   
   const [formData, setFormData] = useState({
     appointment_type_id: '',
