@@ -14,6 +14,18 @@ export interface UserPermissions {
   canEditBilling: boolean;
   canViewDocuments: boolean;
   canEditDocuments: boolean;
+  // New section-level permissions
+  canViewExpenses: boolean;
+  canEditExpenses: boolean;
+  canViewDoctorDiary: boolean;
+  canViewCancellations: boolean;
+  canViewTeam: boolean;
+  canEditTeam: boolean;
+  canViewWorkHours: boolean;
+  canEditWorkHours: boolean;
+  canViewAuditLog: boolean;
+  canViewSettings: boolean;
+  canEditSettings: boolean;
 }
 
 const defaultPermissions: UserPermissions = {
@@ -25,10 +37,21 @@ const defaultPermissions: UserPermissions = {
   canEditBilling: false,
   canViewDocuments: false,
   canEditDocuments: false,
+  canViewExpenses: false,
+  canEditExpenses: false,
+  canViewDoctorDiary: false,
+  canViewCancellations: false,
+  canViewTeam: false,
+  canEditTeam: false,
+  canViewWorkHours: true, // All staff can view their own hours
+  canEditWorkHours: false,
+  canViewAuditLog: false,
+  canViewSettings: false,
+  canEditSettings: false,
 };
 
-// Admin and Doctor get full permissions
-const fullPermissions: UserPermissions = {
+// Admin gets full permissions
+const adminPermissions: UserPermissions = {
   canViewPatients: true,
   canEditPatients: true,
   canViewAppointments: true,
@@ -37,6 +60,40 @@ const fullPermissions: UserPermissions = {
   canEditBilling: true,
   canViewDocuments: true,
   canEditDocuments: true,
+  canViewExpenses: true,
+  canEditExpenses: true,
+  canViewDoctorDiary: true,
+  canViewCancellations: true,
+  canViewTeam: true,
+  canEditTeam: true,
+  canViewWorkHours: true,
+  canEditWorkHours: true,
+  canViewAuditLog: true,
+  canViewSettings: true,
+  canEditSettings: true,
+};
+
+// Doctor gets clinical permissions
+const doctorPermissions: UserPermissions = {
+  canViewPatients: true,
+  canEditPatients: true,
+  canViewAppointments: true,
+  canEditAppointments: true,
+  canViewBilling: true,
+  canEditBilling: true,
+  canViewDocuments: true,
+  canEditDocuments: true,
+  canViewExpenses: false,
+  canEditExpenses: false,
+  canViewDoctorDiary: true,
+  canViewCancellations: true,
+  canViewTeam: false,
+  canEditTeam: false,
+  canViewWorkHours: true,
+  canEditWorkHours: false,
+  canViewAuditLog: false,
+  canViewSettings: false,
+  canEditSettings: false,
 };
 
 interface AuthContextType {
@@ -126,12 +183,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const userRoles = data?.map(r => r.role as AppRole) || [];
       setRoles(userRoles);
 
-      // Determine permissions based on role
-      // Admin and Doctor get full permissions
-      if (userRoles.includes('admin') || userRoles.includes('doctor')) {
-        setPermissions(fullPermissions);
+      // Determine permissions based on role hierarchy
+      if (userRoles.includes('admin')) {
+        setPermissions(adminPermissions);
+      } else if (userRoles.includes('doctor')) {
+        setPermissions(doctorPermissions);
       } else {
-        // Secretary and others use stored permissions
+        // Secretary and others use stored permissions merged with defaults
         const staffRole = data?.find(r => r.role === 'secretary');
         if (staffRole?.permissions && typeof staffRole.permissions === 'object') {
           const storedPerms = staffRole.permissions as Record<string, boolean>;
@@ -144,6 +202,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             canEditBilling: storedPerms.canEditBilling ?? false,
             canViewDocuments: storedPerms.canViewDocuments ?? false,
             canEditDocuments: storedPerms.canEditDocuments ?? false,
+            canViewExpenses: storedPerms.canViewExpenses ?? false,
+            canEditExpenses: storedPerms.canEditExpenses ?? false,
+            canViewDoctorDiary: storedPerms.canViewDoctorDiary ?? false,
+            canViewCancellations: storedPerms.canViewCancellations ?? true, // Secretaries can view cancellations by default
+            canViewTeam: storedPerms.canViewTeam ?? false,
+            canEditTeam: storedPerms.canEditTeam ?? false,
+            canViewWorkHours: storedPerms.canViewWorkHours ?? true,
+            canEditWorkHours: storedPerms.canEditWorkHours ?? false,
+            canViewAuditLog: storedPerms.canViewAuditLog ?? false,
+            canViewSettings: storedPerms.canViewSettings ?? false,
+            canEditSettings: storedPerms.canEditSettings ?? false,
           });
         } else {
           setPermissions(defaultPermissions);

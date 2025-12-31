@@ -306,7 +306,7 @@ export default function DoctorDiaryPage() {
 
   return (
     <AdminLayout>
-      <PermissionGuard permission="canViewAppointments">
+      <PermissionGuard permission="canViewDoctorDiary">
         <div className="space-y-6">
           {/* Compliance Banner */}
           <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 flex items-center gap-3">

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AdminLayout } from '@/components/admin/AdminLayout';
+import { PermissionGuard } from '@/components/admin/PermissionGuard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -303,7 +304,8 @@ export default function SettingsPage() {
 
   return (
     <AdminLayout>
-      <div className="space-y-6 max-w-3xl">
+      <PermissionGuard permission="canViewSettings">
+        <div className="space-y-6 max-w-3xl">
         <div>
           <h1 className="text-2xl font-bold text-foreground">הגדרות</h1>
           <p className="text-muted-foreground">
@@ -668,6 +670,7 @@ export default function SettingsPage() {
           onComplete={() => setShowTutorial(false)} 
         />
       )}
+      </PermissionGuard>
     </AdminLayout>
   );
 }

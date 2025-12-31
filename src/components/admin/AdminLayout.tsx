@@ -50,15 +50,15 @@ const navItems: NavItem[] = [
   { href: '/admin', icon: LayoutDashboard, label: 'לוח בקרה', exact: true },
   { href: '/admin/patients', icon: Users, label: 'מטופלים', requiredPermission: 'canViewPatients' },
   { href: '/admin/appointments', icon: Calendar, label: 'תורים', requiredPermission: 'canViewAppointments' },
-  { href: '/admin/doctor-diary', icon: BookOpen, label: 'יומן רופא', requiredPermission: 'canViewAppointments' },
-  { href: '/admin/cancellations', icon: XCircle, label: 'ביטולי תורים', requiredPermission: 'canViewAppointments' },
+  { href: '/admin/doctor-diary', icon: BookOpen, label: 'יומן רופא', requiredPermission: 'canViewDoctorDiary' },
+  { href: '/admin/cancellations', icon: XCircle, label: 'ביטולי תורים', requiredPermission: 'canViewCancellations' },
   { href: '/admin/billing', icon: Receipt, label: 'חיוב וחשבוניות', requiredPermission: 'canViewBilling' },
-  { href: '/admin/expenses', icon: Wallet, label: 'הוצאות', requiredPermission: 'canViewBilling' },
+  { href: '/admin/expenses', icon: Wallet, label: 'הוצאות', requiredPermission: 'canViewExpenses' },
   { href: '/admin/messages', icon: MessageSquare, label: 'הודעות' },
-  { href: '/admin/team', icon: UsersRound, label: 'צוות', adminOnly: true },
-  { href: '/admin/work-hours', icon: Clock, label: 'שעות עבודה' },
-  { href: '/admin/audit-log', icon: History, label: 'לוג אבטחה', adminOnly: true },
-  { href: '/admin/settings', icon: Settings, label: 'הגדרות', adminOnly: true },
+  { href: '/admin/team', icon: UsersRound, label: 'צוות', requiredPermission: 'canViewTeam' },
+  { href: '/admin/work-hours', icon: Clock, label: 'שעות עבודה', requiredPermission: 'canViewWorkHours' },
+  { href: '/admin/audit-log', icon: History, label: 'לוג אבטחה', requiredPermission: 'canViewAuditLog' },
+  { href: '/admin/settings', icon: Settings, label: 'הגדרות', requiredPermission: 'canViewSettings' },
 ];
 
 export function AdminLayout({ children }: AdminLayoutProps) {
