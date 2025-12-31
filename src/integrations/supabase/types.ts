@@ -1871,6 +1871,30 @@ export type Database = {
       }
       check_team_invite_code: { Args: { _code: string }; Returns: boolean }
       cleanup_expired_data: { Args: never; Returns: undefined }
+      create_appointment_atomic: {
+        Args: {
+          p_appointment_type_id: string
+          p_clinic_id: string
+          p_duration_minutes?: number
+          p_notes?: string
+          p_patient_id: string
+          p_scheduled_at: string
+          p_status?: string
+        }
+        Returns: string
+      }
+      get_available_slots: {
+        Args: {
+          p_clinic_id: string
+          p_date: string
+          p_duration_minutes?: number
+        }
+        Returns: {
+          slot_datetime: string
+          slot_time: string
+        }[]
+      }
+      get_blocking_statuses: { Args: never; Returns: string[] }
       get_public_clinic: {
         Args: { clinic_id: string }
         Returns: {

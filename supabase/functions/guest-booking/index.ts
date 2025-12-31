@@ -143,71 +143,47 @@ serve(async (req) => {
 
     const durationMinutes = appointmentType?.duration_minutes || 30;
 
-    // DOUBLE-BOOKING PREVENTION: Check for overlapping appointments
+    // ATOMIC BOOKING: Use the atomic RPC to prevent race conditions
     const scheduledAt = `${date}T${time}:00`;
-    const startTime = new Date(scheduledAt);
-    const endTime = new Date(startTime.getTime() + durationMinutes * 60 * 1000);
     
-    // Get appointments on the same day for this clinic
-    const dayStart = new Date(startTime);
-    dayStart.setHours(0, 0, 0, 0);
-    const dayEnd = new Date(startTime);
-    dayEnd.setHours(23, 59, 59, 999);
-    
-    const { data: existingAppointments } = await supabase
-      .from("appointments")
-      .select("id, scheduled_at, duration_minutes, created_at")
-      .eq("clinic_id", clinicId)
-      .not("status", "in", '("cancelled","pending_verification")')
-      .gte("scheduled_at", dayStart.toISOString())
-      .lte("scheduled_at", dayEnd.toISOString());
-    
-    // Check for overlaps
-    for (const apt of existingAppointments || []) {
-      const aptStart = new Date(apt.scheduled_at);
-      const aptEnd = new Date(aptStart.getTime() + (apt.duration_minutes || 30) * 60 * 1000);
+    const { data: appointmentId, error: rpcError } = await supabase.rpc('create_appointment_atomic', {
+      p_patient_id: patientId,
+      p_clinic_id: clinicId,
+      p_appointment_type_id: appointmentTypeId,
+      p_scheduled_at: scheduledAt,
+      p_duration_minutes: durationMinutes,
+      p_notes: notes?.trim().substring(0, 1000) || null,
+      p_status: 'scheduled'
+    });
+
+    if (rpcError) {
+      console.error("Appointment creation error:", rpcError);
       
-      if (aptStart < endTime && aptEnd > startTime) {
+      // Check for slot taken error from the atomic RPC
+      if (rpcError.message?.includes('SLOT_TAKEN')) {
         createAuditLog('guest-booking', 'slot_taken', undefined, { 
           clinicId, 
-          requestedTime: scheduledAt,
-          conflictingAppointmentId: apt.id 
+          requestedTime: scheduledAt
         });
         return new Response(
           JSON.stringify({ 
             success: false, 
-            error: "הזמן הזה כבר תפוס. בחרו זמן אחר.",
+            error: "השעה נתפסה זה עתה, בחר/י שעה אחרת",
             code: "SLOT_TAKEN"
           }),
           { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-    }
-
-    // Create appointment with status: scheduled (no verification needed)
-    const { data: appointment, error: appointmentError } = await supabase
-      .from("appointments")
-      .insert({
-        patient_id: patientId,
-        clinic_id: clinicId,
-        appointment_type_id: appointmentTypeId,
-        scheduled_at: scheduledAt,
-        duration_minutes: durationMinutes,
-        notes: notes?.trim().substring(0, 1000) || null,
-        status: 'scheduled'
-      })
-      .select("id, created_at")
-      .single();
-
-    if (appointmentError) {
-      console.error("Appointment creation error:", appointmentError);
+      
       return new Response(
         JSON.stringify({ error: "שגיאה ביצירת התור" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    console.log("Created appointment:", appointment.id);
+    // Use the appointmentId directly (we already have it from the RPC)
+    const createdAppointmentId = appointmentId as string;
+    console.log("Created appointment:", createdAppointmentId);
 
     // Get clinic details for emails (including doctor info for footer)
     let clinicName = "מרפאת ד\"ר אנה ברמלי";
@@ -266,7 +242,7 @@ serve(async (req) => {
         
         const calendarTitle = `${clinicName} – תור`;
         const calendarDescription = `תור ב${clinicName}${clinicPhone ? `. טלפון: ${clinicPhone}` : ''}`;
-        const uid = `appointment-${appointment.id}@ihaveallergy.com`;
+        const uid = `appointment-${createdAppointmentId}@ihaveallergy.com`;
         
         const icsContent = [
           'BEGIN:VCALENDAR',
@@ -588,16 +564,16 @@ serve(async (req) => {
     createAuditLog('guest-booking', 'appointment_created', undefined, { 
       bookingId: booking?.id,
       patientId,
-      appointmentId: appointment.id,
+      appointmentId: createdAppointmentId,
       clinicId 
     });
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        bookingId: booking?.id || appointment.id,
+        bookingId: booking?.id || createdAppointmentId,
         patientId,
-        appointmentId: appointment.id,
+        appointmentId: createdAppointmentId,
         message: "התור נקבע בהצלחה!" 
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }

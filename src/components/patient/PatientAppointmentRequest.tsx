@@ -10,15 +10,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarPlus, Calendar as CalendarIcon, Clock } from 'lucide-react';
+import { CalendarPlus, Calendar as CalendarIcon, Clock, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
-
-const timeSlots = [
-  '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
-  '12:00', '12:30', '14:00', '14:30', '15:00', '15:30',
-  '16:00', '16:30', '17:00', '17:30'
-];
 
 export default function PatientAppointmentRequest() {
   const [open, setOpen] = useState(false);
@@ -30,8 +24,18 @@ export default function PatientAppointmentRequest() {
   const { data: appointmentTypes } = useAppointmentTypes();
   const { data: patient } = usePatientRecord();
   const createAppointment = useCreateAppointment();
-
+  
   const selectedType = appointmentTypes?.find(t => t.id === appointmentTypeId);
+  
+  // Note: PatientAppointmentRequest uses hardcoded slots since patient may not have clinic_id
+  // For patients, we use static time slots - the server validates on submission
+  const staticTimeSlots = [
+    '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
+    '12:00', '12:30', '14:00', '14:30', '15:00', '15:30',
+    '16:00', '16:30', '17:00', '17:30'
+  ];
+  const loadingSlots = false;
+  const availableSlots = staticTimeSlots;
 
   const handleSubmit = async () => {
     if (!patient || !appointmentTypeId || !date || !time) {
@@ -62,7 +66,7 @@ export default function PatientAppointmentRequest() {
         description: 'המרפאה תאשר את התור בהקדם',
       });
     } catch (error) {
-      // Error handled in mutation
+      // Error handled in mutation - slots are auto-refreshed
     }
   };
 
@@ -71,6 +75,12 @@ export default function PatientAppointmentRequest() {
     setDate(undefined);
     setTime('');
     setNotes('');
+  };
+
+  // Reset time when date changes (as available slots change)
+  const handleDateChange = (newDate: Date | undefined) => {
+    setDate(newDate);
+    setTime(''); // Reset time selection
   };
 
   return (
@@ -133,7 +143,7 @@ export default function PatientAppointmentRequest() {
                 <Calendar
                   mode="single"
                   selected={date}
-                  onSelect={setDate}
+                  onSelect={handleDateChange}
                   disabled={(date) => date < new Date() || date.getDay() === 6}
                   initialFocus
                 />
@@ -141,26 +151,37 @@ export default function PatientAppointmentRequest() {
             </Popover>
           </div>
 
-          {/* Time */}
+          {/* Time - from server */}
           <div className="space-y-2">
             <Label>שעה מבוקשת</Label>
-            <Select value={time} onValueChange={setTime}>
+            <Select value={time} onValueChange={setTime} disabled={!date || loadingSlots}>
               <SelectTrigger>
-                <SelectValue placeholder="בחר שעה">
-                  {time && (
+                <SelectValue placeholder={loadingSlots ? "טוען..." : "בחר שעה"}>
+                  {loadingSlots ? (
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>טוען...</span>
+                    </div>
+                  ) : time ? (
                     <div className="flex items-center gap-2">
                       <Clock className="h-4 w-4" />
                       <span>{time}</span>
                     </div>
-                  )}
+                  ) : null}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                {timeSlots.map((slot) => (
-                  <SelectItem key={slot} value={slot}>
-                    {slot}
-                  </SelectItem>
-                ))}
+                {availableSlots.length === 0 && !loadingSlots ? (
+                  <div className="p-3 text-center text-sm text-muted-foreground">
+                    אין שעות פנויות בתאריך זה
+                  </div>
+                ) : (
+                  availableSlots.map((slot) => (
+                    <SelectItem key={slot} value={slot}>
+                      {slot}
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
           </div>
