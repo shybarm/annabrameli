@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
+import { PermissionGuard } from '@/components/admin/PermissionGuard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -122,7 +123,8 @@ export default function AuditLogPage() {
 
   return (
     <AdminLayout>
-      <div className="space-y-6" dir="rtl">
+      <PermissionGuard permission="canViewAuditLog">
+        <div className="space-y-6" dir="rtl">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <History className="h-8 w-8 text-primary" />
@@ -321,6 +323,7 @@ export default function AuditLogPage() {
           </CardContent>
         </Card>
       </div>
+      </PermissionGuard>
     </AdminLayout>
   );
 }
