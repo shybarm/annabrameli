@@ -7,12 +7,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAppointments, useAppointmentsRealtime, useAppointmentTypes } from '@/hooks/useAppointments';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { Plus, Calendar, Clock, ChevronRight, ChevronLeft, CalendarDays, MapPin, Sparkles } from 'lucide-react';
+import { Plus, Calendar, Clock, ChevronRight, ChevronLeft, CalendarDays, MapPin, Sparkles, LayoutGrid, List } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, addDays, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, isWeekend, addWeeks } from 'date-fns';
 import { he } from 'date-fns/locale';
@@ -20,6 +21,7 @@ import { PageHelpButton } from '@/components/tutorial/PageHelpButton';
 import { pageTutorials } from '@/components/tutorial/tutorialData';
 import { useClinicContext } from '@/contexts/ClinicContext';
 import { useClinic } from '@/hooks/useClinics';
+import { DayAvailabilityGrid } from '@/components/admin/DayAvailabilityGrid';
 
 export default function AppointmentsList() {
   const navigate = useNavigate();
@@ -45,6 +47,8 @@ export default function AppointmentsList() {
   const [cancellationReason, setCancellationReason] = useState('');
   const [selectedReasonType, setSelectedReasonType] = useState<string>('');
   const [dayViewDate, setDayViewDate] = useState<Date | null>(null);
+  const [viewMode, setViewMode] = useState<'list' | 'availability'>('list');
+  const [availabilityDate, setAvailabilityDate] = useState<Date>(today);
 
   const CANCELLATION_REASONS = [
     { value: 'patient_no_show', label: 'המטופל לא הגיע' },
@@ -68,8 +72,14 @@ export default function AppointmentsList() {
     selectedClinicId
   );
 
-  useAppointmentsRealtime();
+  // Fetch appointments for the selected availability date
+  const { data: availabilityDateAppointments } = useAppointments(
+    format(availabilityDate, 'yyyy-MM-dd'),
+    format(addDays(availabilityDate, 1), 'yyyy-MM-dd'),
+    selectedClinicId
+  );
 
+  useAppointmentsRealtime();
   // Update status mutation
   const updateStatus = useMutation({
     mutationFn: async ({ id, status, cancellation_reason }: { id: string; status: string; cancellation_reason?: string }) => {
@@ -169,6 +179,18 @@ export default function AppointmentsList() {
             <p className="text-muted-foreground">ניהול ומעקב אחר תורים</p>
           </div>
           <div className="flex gap-2">
+            <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'list' | 'availability')} className="w-auto">
+              <TabsList className="grid grid-cols-2 h-10">
+                <TabsTrigger value="list" className="gap-1.5 px-3">
+                  <List className="h-4 w-4" />
+                  <span className="hidden sm:inline">רשימה</span>
+                </TabsTrigger>
+                <TabsTrigger value="availability" className="gap-1.5 px-3">
+                  <LayoutGrid className="h-4 w-4" />
+                  <span className="hidden sm:inline">זמינות</span>
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
             <PageHelpButton tutorial={pageTutorials['/admin/appointments']} />
             <Button 
               data-tutorial="new-appointment-btn"
@@ -181,8 +203,84 @@ export default function AppointmentsList() {
           </div>
         </div>
 
-        {/* Today's Appointments - FIRST */}
-        <Card data-tutorial="appointments-list" className="border-2 border-medical-200 bg-medical-50/30">
+        {/* Availability View */}
+        {viewMode === 'availability' && (
+          <Card className="border-2 border-primary/20">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => setAvailabilityDate(prev => addDays(prev, 1))}
+                  aria-label="יום הבא"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </Button>
+                <div className="text-center">
+                  <CardTitle className="flex items-center justify-center gap-2">
+                    <LayoutGrid className="h-5 w-5 text-primary" />
+                    לוח זמינות
+                  </CardTitle>
+                  {currentClinic && (
+                    <p className="text-sm font-medium text-primary mt-1 flex items-center justify-center gap-1">
+                      <MapPin className="h-4 w-4" />
+                      {currentClinic.name}
+                    </p>
+                  )}
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => setAvailabilityDate(prev => addDays(prev, -1))}
+                  aria-label="יום קודם"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </Button>
+              </div>
+              
+              {/* Quick date navigation */}
+              <div className="flex justify-center gap-1 mt-3 flex-wrap">
+                {[-1, 0, 1, 2, 3].map(offset => {
+                  const d = addDays(today, offset);
+                  const isSelected = isSameDay(d, availabilityDate);
+                  return (
+                    <Button
+                      key={offset}
+                      variant={isSelected ? "default" : "outline"}
+                      size="sm"
+                      className={cn("text-xs", isSelected && "pointer-events-none")}
+                      onClick={() => setAvailabilityDate(d)}
+                    >
+                      {offset === 0 ? 'היום' : offset === 1 ? 'מחר' : format(d, 'EEE d/M', { locale: he })}
+                    </Button>
+                  );
+                })}
+              </div>
+            </CardHeader>
+            <CardContent>
+              <DayAvailabilityGrid
+                clinicId={selectedClinicId ?? undefined}
+                date={availabilityDate}
+                appointments={(availabilityDateAppointments || []).filter(apt => apt.status !== 'cancelled')}
+                onSlotClick={(time, isAvailable, appointmentId) => {
+                  if (isAvailable) {
+                    // Navigate to create appointment with pre-filled date/time
+                    const dateStr = format(availabilityDate, 'yyyy-MM-dd');
+                    navigate(`/admin/appointments/new?date=${dateStr}&time=${time}`);
+                  } else if (appointmentId) {
+                    // Navigate to appointment details
+                    navigate(`/admin/appointments/${appointmentId}`);
+                  }
+                }}
+              />
+            </CardContent>
+          </Card>
+        )}
+
+        {/* List View - Today's Appointments */}
+        {viewMode === 'list' && (
+          <>
+          <Card data-tutorial="appointments-list" className="border-2 border-medical-200 bg-medical-50/30">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2">
               <Calendar className="h-5 w-5 text-medical-600" />
@@ -441,6 +539,8 @@ export default function AppointmentsList() {
             )}
           </CardContent>
         </Card>
+        </>
+        )}
 
         {/* Cancellation Reason Dialog */}
         <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
