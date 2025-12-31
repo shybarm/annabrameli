@@ -209,15 +209,19 @@ serve(async (req) => {
 
     console.log("Created appointment:", appointment.id);
 
-    // Get clinic details for emails
+    // Get clinic details for emails (including doctor info for footer)
     let clinicName = "מרפאת ד\"ר אנה ברמלי";
     let clinicAddress = "";
     let clinicCity = "";
     let clinicPhone = "";
+    let clinicEmail = "";
+    let doctorName = "";
+    let doctorLicense = "";
+    let doctorSpecialty = "";
 
     const { data: clinic } = await supabase
       .from("clinics")
-      .select("name, address, city, phone")
+      .select("name, address, city, phone, email, doctor_name, doctor_license, doctor_specialty")
       .eq("id", clinicId)
       .maybeSingle();
 
@@ -226,6 +230,10 @@ serve(async (req) => {
       clinicAddress = clinic.address || "";
       clinicCity = clinic.city || "";
       clinicPhone = clinic.phone || "";
+      clinicEmail = clinic.email || "";
+      doctorName = clinic.doctor_name || "";
+      doctorLicense = clinic.doctor_license || "";
+      doctorSpecialty = clinic.doctor_specialty || "";
     }
 
     const fullAddress = [clinicAddress, clinicCity].filter(Boolean).join(", ");
@@ -307,72 +315,124 @@ serve(async (req) => {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="font-family: Arial, sans-serif; background-color: #f5f5f5; margin: 0; padding: 20px;">
-  <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-    <div style="background: linear-gradient(135deg, #0d9488 0%, #0891b2 100%); color: white; padding: 30px; text-align: center;">
-      <div style="font-size: 48px; margin-bottom: 15px;">✓</div>
-      <h1 style="margin: 0; font-size: 24px; font-weight: 600;">התור נקבע בהצלחה!</h1>
+<body style="font-family: 'Segoe UI', Tahoma, Arial, sans-serif; background-color: #f0f4f8; margin: 0; padding: 24px;">
+  <div style="max-width: 560px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.12);">
+    
+    <!-- Header -->
+    <div style="background: linear-gradient(135deg, #0d9488 0%, #0891b2 100%); color: white; padding: 40px 32px; text-align: center;">
+      <div style="width: 64px; height: 64px; background: rgba(255,255,255,0.2); border-radius: 50%; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center;">
+        <span style="font-size: 32px; line-height: 1;">✓</span>
+      </div>
+      <h1 style="margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -0.5px;">התור נקבע בהצלחה!</h1>
+      <p style="margin: 8px 0 0; opacity: 0.9; font-size: 15px;">פרטי התור נשמרו במערכת</p>
     </div>
     
-    <div style="padding: 30px;">
-      <p style="font-size: 18px; margin-bottom: 20px;">שלום ${sanitize(trimmedFirstName)},</p>
-      <p>התור שלך נקבע בהצלחה. להלן הפרטים:</p>
+    <!-- Body -->
+    <div style="padding: 32px;">
+      <p style="font-size: 17px; color: #1e293b; margin: 0 0 24px;">שלום ${sanitize(trimmedFirstName)},</p>
       
-      <div style="background: #f8fafc; border-radius: 10px; padding: 25px; margin: 25px 0; border-right: 4px solid #0d9488;">
-        <div style="margin: 12px 0;">
-          <span style="font-size: 20px;">📅</span>
-          <span style="font-size: 12px; color: #666; margin-right: 12px;">תאריך:</span>
-          <strong style="font-size: 16px; color: #1e293b;">${dateStr}</strong>
-        </div>
+      <!-- Appointment Card -->
+      <div style="background: linear-gradient(to bottom, #f8fafc, #f1f5f9); border-radius: 12px; padding: 24px; margin: 0 0 28px; border: 1px solid #e2e8f0;">
+        <h3 style="margin: 0 0 20px; font-size: 14px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">פרטי התור</h3>
         
-        <div style="margin: 12px 0;">
-          <span style="font-size: 20px;">🕐</span>
-          <span style="font-size: 12px; color: #666; margin-right: 12px;">שעה:</span>
-          <strong style="font-size: 16px; color: #1e293b;">${timeStr}</strong>
-        </div>
-        
-        <div style="margin: 12px 0;">
-          <span style="font-size: 20px;">🏥</span>
-          <span style="font-size: 12px; color: #666; margin-right: 12px;">מרפאה:</span>
-          <strong style="font-size: 16px; color: #1e293b;">${sanitize(clinicName)}</strong>
-        </div>
-        
-        ${fullAddress ? `
-        <div style="margin: 12px 0;">
-          <span style="font-size: 20px;">📍</span>
-          <span style="font-size: 12px; color: #666; margin-right: 12px;">כתובת:</span>
-          <strong style="font-size: 15px; color: #1e293b;">${sanitize(fullAddress)}</strong>
-        </div>
-        ` : ''}
-        
-        ${clinicPhone ? `
-        <div style="margin: 12px 0;">
-          <span style="font-size: 20px;">📞</span>
-          <span style="font-size: 12px; color: #666; margin-right: 12px;">טלפון:</span>
-          <strong style="font-size: 16px; color: #1e293b;" dir="ltr">${sanitize(clinicPhone)}</strong>
-        </div>
-        ` : ''}
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr>
+            <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0; vertical-align: top; width: 36px;">
+              <span style="font-size: 20px;">📅</span>
+            </td>
+            <td style="padding: 12px 12px 12px 0; border-bottom: 1px solid #e2e8f0; vertical-align: top;">
+              <span style="font-size: 13px; color: #64748b; display: block; margin-bottom: 2px;">תאריך</span>
+              <strong style="font-size: 16px; color: #0f172a;">${dateStr}</strong>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0; vertical-align: top;">
+              <span style="font-size: 20px;">🕐</span>
+            </td>
+            <td style="padding: 12px 12px 12px 0; border-bottom: 1px solid #e2e8f0; vertical-align: top;">
+              <span style="font-size: 13px; color: #64748b; display: block; margin-bottom: 2px;">שעה</span>
+              <strong style="font-size: 16px; color: #0f172a;">${timeStr}</strong>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 12px 0; ${fullAddress || clinicPhone ? 'border-bottom: 1px solid #e2e8f0;' : ''} vertical-align: top;">
+              <span style="font-size: 20px;">🏥</span>
+            </td>
+            <td style="padding: 12px 12px 12px 0; ${fullAddress || clinicPhone ? 'border-bottom: 1px solid #e2e8f0;' : ''} vertical-align: top;">
+              <span style="font-size: 13px; color: #64748b; display: block; margin-bottom: 2px;">מרפאה</span>
+              <strong style="font-size: 16px; color: #0f172a;">${sanitize(clinicName)}</strong>
+            </td>
+          </tr>
+          ${fullAddress ? `
+          <tr>
+            <td style="padding: 12px 0; ${clinicPhone ? 'border-bottom: 1px solid #e2e8f0;' : ''} vertical-align: top;">
+              <span style="font-size: 20px;">📍</span>
+            </td>
+            <td style="padding: 12px 12px 12px 0; ${clinicPhone ? 'border-bottom: 1px solid #e2e8f0;' : ''} vertical-align: top;">
+              <span style="font-size: 13px; color: #64748b; display: block; margin-bottom: 2px;">כתובת</span>
+              <strong style="font-size: 15px; color: #0f172a;">${sanitize(fullAddress)}</strong>
+            </td>
+          </tr>
+          ` : ''}
+          ${clinicPhone ? `
+          <tr>
+            <td style="padding: 12px 0; vertical-align: top;">
+              <span style="font-size: 20px;">📞</span>
+            </td>
+            <td style="padding: 12px 12px 12px 0; vertical-align: top;">
+              <span style="font-size: 13px; color: #64748b; display: block; margin-bottom: 2px;">טלפון</span>
+              <strong style="font-size: 15px; color: #0f172a;" dir="ltr">${sanitize(clinicPhone)}</strong>
+            </td>
+          </tr>
+          ` : ''}
+        </table>
       </div>
       
-      <div style="text-align: center; margin: 30px 0; padding: 20px; background: #f0fdfa; border-radius: 10px;">
-        <h3 style="margin: 0 0 15px 0; color: #0d9488; font-size: 16px;">🗓️ הוסף ליומן</h3>
-        <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
-          <a href="${googleCalendarLink}" target="_blank" style="display: inline-block; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; background: #4285f4; color: white; min-width: 200px; text-align: center;">
+      <!-- Calendar Section -->
+      <div style="background: #f0fdfa; border-radius: 12px; padding: 24px; text-align: center; border: 1px solid #99f6e4;">
+        <div style="font-size: 28px; margin-bottom: 12px;">🗓️</div>
+        <h3 style="margin: 0 0 8px; color: #0d9488; font-size: 17px; font-weight: 600;">הוסף ליומן</h3>
+        <p style="margin: 0 0 20px; color: #64748b; font-size: 14px;">כדי לא לשכוח את התור</p>
+        
+        <div style="display: block;">
+          <a href="${googleCalendarLink}" target="_blank" style="display: block; padding: 14px 28px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 15px; background: linear-gradient(135deg, #4285f4 0%, #1a73e8 100%); color: white; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(66,133,244,0.3);">
             הוסף ל-Google Calendar
           </a>
-          <a href="data:text/calendar;charset=utf-8;base64,${icsBase64}" download="appointment.ics" style="display: inline-block; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; background: #6b7280; color: white; min-width: 200px; text-align: center;">
+          <a href="data:text/calendar;charset=utf-8;base64,${icsBase64}" download="appointment.ics" style="display: block; padding: 14px 28px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 15px; background: #ffffff; color: #475569; border: 2px solid #cbd5e1;">
             הורד קובץ יומן (ICS)
           </a>
         </div>
       </div>
     </div>
     
-    <div style="padding: 20px 30px; background: #f8fafc; text-align: center; font-size: 13px; color: #64748b; border-top: 1px solid #e2e8f0;">
-      <p style="font-weight: 600; color: #0d9488; margin: 0;">${sanitize(clinicName)}</p>
-      <p style="margin: 8px 0;">נשמח לראותך!</p>
-      <p style="font-size: 11px; color: #94a3b8; margin-top: 15px;">
-        הודעה זו נשלחה אוטומטית. לשאלות, פנו למרפאה${clinicPhone ? ` בטלפון ${clinicPhone}` : ''}.
-      </p>
+    <!-- Divider -->
+    <div style="height: 1px; background: linear-gradient(to right, transparent, #e2e8f0, transparent); margin: 0 32px;"></div>
+    
+    <!-- Professional Footer -->
+    <div style="padding: 28px 32px; background: #f8fafc;">
+      ${doctorName ? `
+      <div style="text-align: center; margin-bottom: 20px;">
+        <p style="margin: 0; font-size: 16px; font-weight: 600; color: #0f172a;">${sanitize(doctorName)}</p>
+        ${doctorSpecialty ? `<p style="margin: 4px 0 0; font-size: 14px; color: #64748b;">${sanitize(doctorSpecialty)}</p>` : ''}
+        ${doctorLicense ? `<p style="margin: 4px 0 0; font-size: 13px; color: #94a3b8;">מס׳ רישיון: ${sanitize(doctorLicense)}</p>` : ''}
+      </div>
+      <div style="height: 1px; background: #e2e8f0; margin: 16px 0;"></div>
+      ` : ''}
+      
+      <div style="text-align: center;">
+        <p style="margin: 0; font-size: 15px; font-weight: 600; color: #0d9488;">${sanitize(clinicName)}</p>
+        ${fullAddress ? `<p style="margin: 6px 0 0; font-size: 14px; color: #64748b;">${sanitize(fullAddress)}</p>` : ''}
+        ${clinicPhone ? `<p style="margin: 4px 0 0; font-size: 14px; color: #64748b;" dir="ltr">${sanitize(clinicPhone)}</p>` : ''}
+      </div>
+      
+      <div style="text-align: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid #e2e8f0;">
+        <p style="margin: 0; font-size: 12px; color: #94a3b8;">
+          נשלח אוטומטית ממערכת המרפאה
+        </p>
+        <p style="margin: 8px 0 0; font-size: 12px; color: #94a3b8;">
+          נשמח לראותך! 💙
+        </p>
+      </div>
     </div>
   </div>
 </body>
