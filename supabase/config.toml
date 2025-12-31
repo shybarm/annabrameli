@@ -56,3 +56,12 @@ verify_jwt = false
 
 [functions.verify-booking]
 verify_jwt = false
+
+[functions.send-email-verification]
+verify_jwt = false
+
+[functions.verify-email-token]
+verify_jwt = false
+
+[functions.send-appointment-confirmation]
+verify_jwt = false

@@ -566,6 +566,54 @@ export type Database = {
         }
         Relationships: []
       }
+      email_verifications: {
+        Row: {
+          clinic_id: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          patient_id: string
+          token: string
+          verified_at: string | null
+        }
+        Insert: {
+          clinic_id?: string | null
+          created_at?: string
+          email: string
+          expires_at: string
+          id?: string
+          patient_id: string
+          token: string
+          verified_at?: string | null
+        }
+        Update: {
+          clinic_id?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          patient_id?: string
+          token?: string
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_verifications_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_verifications_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       expenses: {
         Row: {
           amount: number
