@@ -108,8 +108,8 @@ const App = () => (
               {/* Patient Invite (public) */}
               <Route path="/patient-invite/:code" element={<PatientInviteAccept />} />
               
-              {/* Patient Portal */}
-              <Route path="/portal" element={<PatientPortal />} />
+              {/* Patient Portal - DISABLED per ISO 27799 */}
+              {/* <Route path="/portal" element={<PatientPortal />} /> */}
               
               {/* Admin routes */}
               <Route path="/admin" element={<AdminDashboard />} />

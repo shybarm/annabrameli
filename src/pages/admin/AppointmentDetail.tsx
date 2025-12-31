@@ -629,10 +629,20 @@ export default function AppointmentDetail() {
 
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [cancellationReason, setCancellationReason] = useState('');
+  const [selectedReasonType, setSelectedReasonType] = useState('');
+
+  const CANCELLATION_REASONS = [
+    { value: 'patient_no_show', label: 'המטופל לא הגיע' },
+    { value: 'patient_cancelled', label: 'ביטול ע״י מטופל' },
+    { value: 'clinic_cancelled', label: 'ביטול ע״י מרפאה' },
+    { value: 'scheduling_error', label: 'טעות בקביעת תור' },
+    { value: 'other', label: 'אחר' },
+  ];
 
   const handleStatusChange = (newStatus: string) => {
     if (newStatus === 'cancelled') {
       setCancellationReason('');
+      setSelectedReasonType('');
       setCancelDialogOpen(true);
     } else {
       setStatus(newStatus);
@@ -641,13 +651,22 @@ export default function AppointmentDetail() {
   };
 
   const handleConfirmCancel = async () => {
+    if (!selectedReasonType) return;
+    
+    const reasonLabel = CANCELLATION_REASONS.find(r => r.value === selectedReasonType)?.label || '';
+    const fullReason = selectedReasonType === 'other' 
+      ? cancellationReason.trim() || reasonLabel
+      : cancellationReason.trim() 
+        ? `${reasonLabel}: ${cancellationReason.trim()}`
+        : reasonLabel;
+    
     setStatus('cancelled');
     const { error } = await supabase
       .from('appointments')
       .update({ 
         status: 'cancelled',
         cancelled_at: new Date().toISOString(),
-        cancellation_reason: cancellationReason || null
+        cancellation_reason: fullReason
       })
       .eq('id', id);
     
@@ -658,6 +677,8 @@ export default function AppointmentDetail() {
       queryClient.invalidateQueries({ queryKey: ['appointments'] });
       toast({ title: 'התור בוטל' });
       setCancelDialogOpen(false);
+      setCancellationReason('');
+      setSelectedReasonType('');
     }
   };
 
@@ -741,22 +762,46 @@ export default function AppointmentDetail() {
               <DialogTitle>סיבת ביטול התור</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-4">
-              <Label htmlFor="cancel-reason">
-                למה התור בוטל? (המידע יעזור לנו לשפר את השירות)
-              </Label>
-              <Textarea
-                id="cancel-reason"
-                placeholder="לדוגמה: המטופל ביקש לדחות, בעיית לו&quot;ז, מחלה..."
-                value={cancellationReason}
-                onChange={(e) => setCancellationReason(e.target.value)}
-                rows={3}
-              />
+              <div className="space-y-2">
+                <Label>בחר סיבת ביטול</Label>
+                <Select value={selectedReasonType} onValueChange={setSelectedReasonType}>
+                  <SelectTrigger className="min-h-[44px]">
+                    <SelectValue placeholder="בחר סיבה..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CANCELLATION_REASONS.map((reason) => (
+                      <SelectItem key={reason.value} value={reason.value}>
+                        {reason.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {selectedReasonType && (
+                <div className="space-y-2">
+                  <Label htmlFor="cancel-reason">
+                    {selectedReasonType === 'other' ? 'תאר את הסיבה' : 'פרטים נוספים (אופציונלי)'}
+                  </Label>
+                  <Textarea
+                    id="cancel-reason"
+                    placeholder={selectedReasonType === 'other' ? 'הזן סיבה...' : 'הוסף פרטים...'}
+                    value={cancellationReason}
+                    onChange={(e) => setCancellationReason(e.target.value)}
+                    rows={3}
+                  />
+                </div>
+              )}
             </div>
             <DialogFooter className="gap-2">
               <Button variant="outline" onClick={() => setCancelDialogOpen(false)}>
                 חזור
               </Button>
-              <Button variant="destructive" onClick={handleConfirmCancel}>
+              <Button 
+                variant="destructive" 
+                onClick={handleConfirmCancel}
+                disabled={!selectedReasonType || (selectedReasonType === 'other' && !cancellationReason.trim())}
+              >
                 בטל תור
               </Button>
             </DialogFooter>
@@ -1072,6 +1117,22 @@ export default function AppointmentDetail() {
                   >
                     <Mail className="h-4 w-4 ml-2" />
                     {isSendingEmail ? 'שולח...' : 'שלח באימייל'}
+                  </Button>
+
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      const text = buildVisitSummaryText();
+                      const whatsappUrl = `https://wa.me/${appointment.patients?.phone?.replace(/\D/g, '')}?text=${encodeURIComponent(text)}`;
+                      window.open(whatsappUrl, '_blank');
+                      updateAppointment.mutate({ visit_shared_whatsapp_at: new Date().toISOString() });
+                    }}
+                    disabled={!appointment.patients?.phone || !pdfReady}
+                    title={!pdfReady ? 'יש לשמור ולחתום תחילה' : !appointment.patients?.phone ? 'אין מספר טלפון' : ''}
+                    className="bg-green-50 hover:bg-green-100 text-green-700 border-green-200"
+                  >
+                    <MessageCircle className="h-4 w-4 ml-2" />
+                    שלח ב-WhatsApp
                   </Button>
 
                   <div className="flex items-center gap-2">
