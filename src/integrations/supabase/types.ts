@@ -1482,6 +1482,42 @@ export type Database = {
         }
         Relationships: []
       }
+      reminder_runs: {
+        Row: {
+          email_sent_count: number | null
+          error_count: number | null
+          errors: Json | null
+          finished_at: string | null
+          id: string
+          processed_count: number | null
+          started_at: string
+          trigger_type: string | null
+          whatsapp_sent_count: number | null
+        }
+        Insert: {
+          email_sent_count?: number | null
+          error_count?: number | null
+          errors?: Json | null
+          finished_at?: string | null
+          id?: string
+          processed_count?: number | null
+          started_at?: string
+          trigger_type?: string | null
+          whatsapp_sent_count?: number | null
+        }
+        Update: {
+          email_sent_count?: number | null
+          error_count?: number | null
+          errors?: Json | null
+          finished_at?: string | null
+          id?: string
+          processed_count?: number | null
+          started_at?: string
+          trigger_type?: string | null
+          whatsapp_sent_count?: number | null
+        }
+        Relationships: []
+      }
       reminder_schedules: {
         Row: {
           created_at: string
