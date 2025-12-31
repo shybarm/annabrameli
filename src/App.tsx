@@ -43,6 +43,7 @@ import JoinTeam from "./pages/JoinTeam";
 import PatientInviteAccept from "./pages/PatientInviteAccept";
 import VerifyBooking from "./pages/VerifyBooking";
 import VerifyEmail from "./pages/VerifyEmail";
+import MagicLink from "./pages/MagicLink";
 import NotFound from "./pages/NotFound";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import AccessibilityStatement from "./pages/AccessibilityStatement";
@@ -105,6 +106,7 @@ const App = () => (
               
               {/* Email Verification (public) */}
               <Route path="/verify-email" element={<VerifyEmail />} />
+              <Route path="/magic" element={<MagicLink />} />
               
               {/* Team Join (public) */}
               <Route path="/join/:code" element={<JoinTeam />} />
