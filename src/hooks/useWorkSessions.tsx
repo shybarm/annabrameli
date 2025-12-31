@@ -38,12 +38,37 @@ export const useWorkSessions = () => {
   const allSessions = useQuery({
     queryKey: ["work-sessions-all"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Fetch work sessions
+      const { data: sessions, error: sessionsError } = await supabase
         .from("work_sessions")
-        .select("*, profiles:user_id(first_name, last_name)")
-        .order("date", { ascending: false });
-      if (error) throw error;
-      return data;
+        .select("*")
+        .order("date", { ascending: false })
+        .order("start_time", { ascending: false });
+      
+      if (sessionsError) throw sessionsError;
+      if (!sessions?.length) return [];
+      
+      // Get unique user IDs
+      const userIds = [...new Set(sessions.map(s => s.user_id))];
+      
+      // Fetch profiles for these users
+      const { data: profiles, error: profilesError } = await supabase
+        .from("profiles")
+        .select("user_id, first_name, last_name")
+        .in("user_id", userIds);
+      
+      if (profilesError) throw profilesError;
+      
+      // Create a map for quick lookup
+      const profileMap = new Map(
+        (profiles || []).map(p => [p.user_id, p])
+      );
+      
+      // Merge sessions with profiles
+      return sessions.map(s => ({
+        ...s,
+        profiles: profileMap.get(s.user_id) || null,
+      }));
     },
   });
 
