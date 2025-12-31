@@ -78,6 +78,36 @@ export const useWorkSessions = () => {
       const today = new Date().toISOString().split("T")[0];
       const now = new Date().toTimeString().split(" ")[0];
       
+      // Check if a session already exists for today
+      const { data: existingSession } = await supabase
+        .from("work_sessions")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("date", today)
+        .maybeSingle();
+      
+      // If session exists with end_time (closed), reopen it
+      if (existingSession) {
+        if (existingSession.end_time === null) {
+          // Already working - throw specific error
+          throw new Error("ALREADY_WORKING");
+        }
+        // Reopen the closed session
+        const { data, error } = await supabase
+          .from("work_sessions")
+          .update({ 
+            start_time: now, 
+            end_time: null,
+            status: "auto" 
+          })
+          .eq("id", existingSession.id)
+          .select()
+          .single();
+        if (error) throw error;
+        return data;
+      }
+      
+      // No session exists - create new one
       const { data, error } = await supabase
         .from("work_sessions")
         .insert({
