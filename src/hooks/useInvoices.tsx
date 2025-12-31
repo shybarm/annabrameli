@@ -137,7 +137,7 @@ export function useCreateInvoice() {
       const tax_amount = subtotal * (tax_rate / 100);
       const total = subtotal + tax_amount;
       
-      // Create invoice
+      // Create invoice (default status: פתוח)
       const { data: invoice, error: invoiceError } = await supabase
         .from('invoices')
         .insert({
@@ -151,6 +151,7 @@ export function useCreateInvoice() {
           tax_rate,
           tax_amount,
           total,
+          status: 'sent', // Default to פתוח (open) instead of draft
         })
         .select()
         .single();

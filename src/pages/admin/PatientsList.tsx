@@ -166,9 +166,6 @@ function PatientsListContent() {
                           מטופל חדש
                         </Badge>
                       )}
-                      <Badge variant={patient.status === 'active' ? 'default' : 'secondary'}>
-                        {patient.status === 'active' ? 'פעיל' : patient.status === 'scheduled' ? 'מתוכנן' : 'לא פעיל'}
-                      </Badge>
                       {patientUnreadCount > 0 && (
                         <Badge className="bg-primary text-primary-foreground text-xs">
                           <MessageCircle className="h-3 w-3 ml-1" />
