@@ -40,6 +40,7 @@ interface TeamMember {
   permissions: Record<string, boolean> | null;
   created_at: string;
   clinic_id: string | null;
+  email?: string | null;
   profile?: {
     first_name: string | null;
     last_name: string | null;
@@ -209,11 +210,36 @@ export default function TeamPage() {
 
       if (profilesError) throw profilesError;
 
-      return roles.map(role => ({
-        ...role,
-        permissions: role.permissions as Record<string, boolean> | null,
-        profile: profiles?.find(p => p.user_id === role.user_id),
-      })) as TeamMember[];
+      // Fetch emails from accepted team invitations
+      const { data: acceptedInvitations } = await supabase
+        .from('team_invitations')
+        .select('email, accepted_at')
+        .not('accepted_at', 'is', null);
+
+      // Create a map of emails by matching invitation acceptance time with user creation
+      const emailMap = new Map<string, string>();
+      acceptedInvitations?.forEach(inv => {
+        // We'll match by the invitation email
+        emailMap.set(inv.email.toLowerCase(), inv.email);
+      });
+
+      return roles.map(role => {
+        const profile = profiles?.find(p => p.user_id === role.user_id);
+        // Try to find email from accepted invitations (match by user_id pattern in invite acceptance)
+        const matchingInvite = acceptedInvitations?.find(inv => {
+          // Match by checking if invite was accepted around the time user role was created
+          const inviteAcceptedAt = new Date(inv.accepted_at).getTime();
+          const roleCreatedAt = new Date(role.created_at).getTime();
+          return Math.abs(inviteAcceptedAt - roleCreatedAt) < 60000; // Within 1 minute
+        });
+        
+        return {
+          ...role,
+          permissions: role.permissions as Record<string, boolean> | null,
+          profile,
+          email: matchingInvite?.email || null,
+        };
+      }) as TeamMember[];
     },
   });
 
@@ -626,6 +652,12 @@ export default function TeamPage() {
                               <Badge className={roleColors[member.role]}>
                                 {roleLabels[member.role]}
                               </Badge>
+                              {isAdmin && member.email && (
+                                <span className="text-xs text-muted-foreground flex items-center gap-1" dir="ltr">
+                                  <Mail className="h-3 w-3" />
+                                  {member.email}
+                                </span>
+                              )}
                               {member.profile?.phone && (
                                 <span className="text-xs text-muted-foreground flex items-center gap-1">
                                   <Phone className="h-3 w-3" />
