@@ -1,9 +1,13 @@
-import { ReactNode, useEffect, useRef } from 'react';
+import { ReactNode, useEffect, useRef, useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth, UserPermissions } from '@/hooks/useAuth';
-
+import { useWorkSessions } from '@/hooks/useWorkSessions';
 import { useUnreviewedPatientsCount } from '@/hooks/useUnreviewedPatients';
 import { TeamChatWidget } from './TeamChatWidget';
+import { WorkSessionCheckInModal } from './WorkSessionCheckInModal';
+import { LogoutConfirmDialog } from './LogoutConfirmDialog';
+import { IdleTimeoutProvider } from './IdleTimeoutProvider';
+import { WorkStatusToggle } from './WorkStatusToggle';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -26,7 +30,6 @@ import {
   Clock,
   XCircle,
 } from 'lucide-react';
-import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { ClinicSelector } from './ClinicSelector';
 import { useClinicContext } from '@/contexts/ClinicContext';
@@ -61,6 +64,7 @@ const navItems: NavItem[] = [
 
 export function AdminLayout({ children }: AdminLayoutProps) {
   const { user, loading, isStaff, isAdmin, signOut, roles, hasPermission } = useAuth();
+  const { todaySession } = useWorkSessions();
   const { clinicTheme, selectedClinicId } = useClinicContext();
   const { data: unreviewedPatientsCount } = useUnreviewedPatientsCount(selectedClinicId);
   const { data: clinics } = useClinics();
@@ -69,6 +73,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
 
   // Handle smooth sidebar close animation
@@ -147,6 +152,18 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     );
   }
 
+  // Work session state for logout dialog
+  const hasActiveSession = todaySession.data && todaySession.data.end_time === null;
+  const activeSessionId = todaySession.data?.id;
+
+  const handleSignOutClick = () => {
+    if (hasActiveSession) {
+      setShowLogoutDialog(true);
+    } else {
+      setShowLogoutDialog(true); // Still show confirmation
+    }
+  };
+
   const handleSignOut = async () => {
     await signOut();
     navigate('/auth');
@@ -162,11 +179,12 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   });
 
   return (
-    <div className={cn(
-      "min-h-screen transition-colors duration-500",
-      hasMultipleClinics ? clinicTheme.bg : "bg-background"
-    )} dir="rtl">
-      {/* Mobile header - Apple-style glass effect */}
+    <IdleTimeoutProvider isStaff={isStaff}>
+      <div className={cn(
+        "min-h-screen transition-colors duration-500",
+        hasMultipleClinics ? clinicTheme.bg : "bg-background"
+      )} dir="rtl">
+        {/* Mobile header - Apple-style glass effect */}
       <header className="lg:hidden fixed top-0 left-0 right-0 h-14 glass-light border-b border-border/50 z-50 flex items-center justify-between px-4 safe-area-inset-top">
         <Button 
           variant="ghost" 
@@ -272,6 +290,13 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
           <Separator className="opacity-50" />
 
+          {/* Work Status Toggle */}
+          <div className="px-4 py-3">
+            <WorkStatusToggle isStaff={isStaff} />
+          </div>
+
+          <Separator className="opacity-50" />
+
           {/* User section */}
           <div className="p-4 safe-area-inset-bottom">
             <div className="flex items-center gap-3 mb-4 p-3 rounded-xl bg-muted/30">
@@ -300,7 +325,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={handleSignOut}
+                onClick={handleSignOutClick}
                 className="rounded-xl h-10 w-10 spring-bounce text-destructive hover:text-destructive hover:bg-destructive/10"
               >
                 <LogOut className="h-4 w-4" />
@@ -328,6 +353,19 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       
       {/* Team Chat Widget */}
       <TeamChatWidget />
+      
+      {/* Work Session Check-in Modal */}
+      <WorkSessionCheckInModal isStaff={isStaff} />
+      
+      {/* Logout Confirmation Dialog */}
+      <LogoutConfirmDialog
+        open={showLogoutDialog}
+        onOpenChange={setShowLogoutDialog}
+        onLogout={handleSignOut}
+        hasActiveSession={hasActiveSession}
+        activeSessionId={activeSessionId}
+      />
     </div>
+    </IdleTimeoutProvider>
   );
 }
