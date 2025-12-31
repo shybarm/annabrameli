@@ -209,46 +209,292 @@ serve(async (req) => {
 
     console.log("Created appointment:", appointment.id);
 
-    // Send confirmation email (optional, not required for booking to complete)
+    // Get clinic details for emails
+    let clinicName = "מרפאת ד\"ר אנה ברמלי";
+    let clinicAddress = "";
+    let clinicCity = "";
+    let clinicPhone = "";
+
+    const { data: clinic } = await supabase
+      .from("clinics")
+      .select("name, address, city, phone")
+      .eq("id", clinicId)
+      .maybeSingle();
+
+    if (clinic) {
+      clinicName = clinic.name || clinicName;
+      clinicAddress = clinic.address || "";
+      clinicCity = clinic.city || "";
+      clinicPhone = clinic.phone || "";
+    }
+
+    const fullAddress = [clinicAddress, clinicCity].filter(Boolean).join(", ");
+
+    // TASK A: Send confirmation email with calendar invite
     if (resendApiKey && trimmedEmail) {
       try {
         const resend = new Resend(resendApiKey);
         
         const appointmentDate = new Date(scheduledAt);
+        const endDate = new Date(appointmentDate.getTime() + durationMinutes * 60 * 1000);
+        
         const dateStr = appointmentDate.toLocaleDateString("he-IL", {
           weekday: "long",
           day: "numeric",
           month: "long",
+          year: "numeric"
         });
         const timeStr = appointmentDate.toLocaleTimeString("he-IL", {
           hour: "2-digit",
           minute: "2-digit",
+          hour12: false
         });
 
+        // Generate ICS content (NO PHI in description - ISO 27799)
+        const formatDateForICS = (date: Date): string => {
+          return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+        };
+        const escapeICS = (text: string) => text.replace(/[,;\\]/g, '\\$&').replace(/\n/g, '\\n');
+        
+        const calendarTitle = `${clinicName} – תור`;
+        const calendarDescription = `תור ב${clinicName}${clinicPhone ? `. טלפון: ${clinicPhone}` : ''}`;
+        const uid = `appointment-${appointment.id}@ihaveallergy.com`;
+        
+        const icsContent = [
+          'BEGIN:VCALENDAR',
+          'VERSION:2.0',
+          'PRODID:-//Dr Anna Brameli Clinic//Appointment//HE',
+          'CALSCALE:GREGORIAN',
+          'METHOD:REQUEST',
+          'BEGIN:VEVENT',
+          `UID:${uid}`,
+          `DTSTAMP:${formatDateForICS(new Date())}`,
+          `DTSTART:${formatDateForICS(appointmentDate)}`,
+          `DTEND:${formatDateForICS(endDate)}`,
+          `SUMMARY:${escapeICS(calendarTitle)}`,
+          `LOCATION:${escapeICS(fullAddress)}`,
+          `DESCRIPTION:${escapeICS(calendarDescription)}`,
+          'STATUS:CONFIRMED',
+          'BEGIN:VALARM',
+          'TRIGGER:-PT1H',
+          'ACTION:DISPLAY',
+          'DESCRIPTION:תזכורת לתור',
+          'END:VALARM',
+          'END:VEVENT',
+          'END:VCALENDAR'
+        ].join('\r\n');
+        
+        const icsBase64 = btoa(unescape(encodeURIComponent(icsContent)));
+
+        // Generate Google Calendar link (NO PHI)
+        const googleParams = new URLSearchParams({
+          action: 'TEMPLATE',
+          text: calendarTitle,
+          dates: `${formatDateForICS(appointmentDate)}/${formatDateForICS(endDate)}`,
+          location: fullAddress,
+          details: calendarDescription,
+          ctz: 'Asia/Jerusalem'
+        });
+        const googleCalendarLink = `https://calendar.google.com/calendar/render?${googleParams.toString()}`;
+
+        // Sanitize for HTML
+        const sanitize = (text: string) => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+        const emailHtml = `
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f5f5f5; margin: 0; padding: 20px;">
+  <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+    <div style="background: linear-gradient(135deg, #0d9488 0%, #0891b2 100%); color: white; padding: 30px; text-align: center;">
+      <div style="font-size: 48px; margin-bottom: 15px;">✓</div>
+      <h1 style="margin: 0; font-size: 24px; font-weight: 600;">התור נקבע בהצלחה!</h1>
+    </div>
+    
+    <div style="padding: 30px;">
+      <p style="font-size: 18px; margin-bottom: 20px;">שלום ${sanitize(trimmedFirstName)},</p>
+      <p>התור שלך נקבע בהצלחה. להלן הפרטים:</p>
+      
+      <div style="background: #f8fafc; border-radius: 10px; padding: 25px; margin: 25px 0; border-right: 4px solid #0d9488;">
+        <div style="margin: 12px 0;">
+          <span style="font-size: 20px;">📅</span>
+          <span style="font-size: 12px; color: #666; margin-right: 12px;">תאריך:</span>
+          <strong style="font-size: 16px; color: #1e293b;">${dateStr}</strong>
+        </div>
+        
+        <div style="margin: 12px 0;">
+          <span style="font-size: 20px;">🕐</span>
+          <span style="font-size: 12px; color: #666; margin-right: 12px;">שעה:</span>
+          <strong style="font-size: 16px; color: #1e293b;">${timeStr}</strong>
+        </div>
+        
+        <div style="margin: 12px 0;">
+          <span style="font-size: 20px;">🏥</span>
+          <span style="font-size: 12px; color: #666; margin-right: 12px;">מרפאה:</span>
+          <strong style="font-size: 16px; color: #1e293b;">${sanitize(clinicName)}</strong>
+        </div>
+        
+        ${fullAddress ? `
+        <div style="margin: 12px 0;">
+          <span style="font-size: 20px;">📍</span>
+          <span style="font-size: 12px; color: #666; margin-right: 12px;">כתובת:</span>
+          <strong style="font-size: 15px; color: #1e293b;">${sanitize(fullAddress)}</strong>
+        </div>
+        ` : ''}
+        
+        ${clinicPhone ? `
+        <div style="margin: 12px 0;">
+          <span style="font-size: 20px;">📞</span>
+          <span style="font-size: 12px; color: #666; margin-right: 12px;">טלפון:</span>
+          <strong style="font-size: 16px; color: #1e293b;" dir="ltr">${sanitize(clinicPhone)}</strong>
+        </div>
+        ` : ''}
+      </div>
+      
+      <div style="text-align: center; margin: 30px 0; padding: 20px; background: #f0fdfa; border-radius: 10px;">
+        <h3 style="margin: 0 0 15px 0; color: #0d9488; font-size: 16px;">🗓️ הוסף ליומן</h3>
+        <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+          <a href="${googleCalendarLink}" target="_blank" style="display: inline-block; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; background: #4285f4; color: white; min-width: 200px; text-align: center;">
+            הוסף ל-Google Calendar
+          </a>
+          <a href="data:text/calendar;charset=utf-8;base64,${icsBase64}" download="appointment.ics" style="display: inline-block; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; background: #6b7280; color: white; min-width: 200px; text-align: center;">
+            הורד קובץ יומן (ICS)
+          </a>
+        </div>
+      </div>
+    </div>
+    
+    <div style="padding: 20px 30px; background: #f8fafc; text-align: center; font-size: 13px; color: #64748b; border-top: 1px solid #e2e8f0;">
+      <p style="font-weight: 600; color: #0d9488; margin: 0;">${sanitize(clinicName)}</p>
+      <p style="margin: 8px 0;">נשמח לראותך!</p>
+      <p style="font-size: 11px; color: #94a3b8; margin-top: 15px;">
+        הודעה זו נשלחה אוטומטית. לשאלות, פנו למרפאה${clinicPhone ? ` בטלפון ${clinicPhone}` : ''}.
+      </p>
+    </div>
+  </div>
+</body>
+</html>`;
+
         const emailRes = await resend.emails.send({
-          from: "מרפאת ד\"ר אנה ברמלי <noreply@ihaveallergy.com>",
+          from: `${clinicName} <noreply@ihaveallergy.com>`,
           to: [trimmedEmail],
           subject: `אישור תור - ${dateStr}`,
-          html: `
-            <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-              <h2 style="color: #2563eb;">התור נקבע בהצלחה! 🏥</h2>
-              <p>שלום ${trimmedFirstName},</p>
-              <p>התור שלך נקבע בהצלחה.</p>
-
-              <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                <p style="margin: 5px 0;"><strong>📅 תאריך:</strong> ${dateStr}</p>
-                <p style="margin: 5px 0;"><strong>🕐 שעה:</strong> ${timeStr}</p>
-              </div>
-
-              <p>בברכה,<br>מרפאת ד"ר אנה ברמלי</p>
-            </div>
-          `,
+          html: emailHtml,
+          attachments: [
+            {
+              filename: 'appointment.ics',
+              content: icsBase64
+            }
+          ]
         });
 
         console.log("Confirmation email sent to:", trimmedEmail);
       } catch (emailError) {
         console.error("Failed to send confirmation email:", emailError);
         // Don't fail the request - appointment was created successfully
+      }
+    }
+
+    // TASK B: Send email verification magic link (separate email)
+    if (resendApiKey && trimmedEmail) {
+      try {
+        // Generate secure one-time token
+        const verificationToken = crypto.randomUUID().replace(/-/g, '') + 
+                                  crypto.randomUUID().replace(/-/g, '') +
+                                  crypto.randomUUID().replace(/-/g, '').slice(0, 16);
+
+        // Set expiry to 24 hours (ISO 27799 compliant short TTL)
+        const tokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+        // Delete any existing pending verifications for this patient+email
+        await supabase
+          .from("email_verifications")
+          .delete()
+          .eq("patient_id", patientId)
+          .eq("email", trimmedEmail)
+          .is("verified_at", null);
+
+        // Create new verification record
+        const { error: verifyInsertError } = await supabase
+          .from("email_verifications")
+          .insert({
+            token: verificationToken,
+            patient_id: patientId,
+            email: trimmedEmail,
+            clinic_id: clinicId,
+            expires_at: tokenExpiresAt.toISOString()
+          });
+
+        if (!verifyInsertError) {
+          const resend = new Resend(resendApiKey);
+          const siteUrl = Deno.env.get("SITE_URL") || "https://ftatmcyrmeyhghgckvbj.lovable.app";
+          const verifyLink = `${siteUrl}/verify-email?token=${verificationToken}`;
+
+          const sanitize = (text: string) => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+          const verifyEmailHtml = `
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f8fafc; padding: 20px;">
+  <div style="background-color: white; border-radius: 12px; padding: 32px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+    <div style="text-align: center; margin-bottom: 24px;">
+      <h1 style="color: #1e40af; margin: 0; font-size: 24px;">🔐 אימות כתובת אימייל</h1>
+    </div>
+    
+    <p style="color: #374151; font-size: 16px; line-height: 1.6;">שלום ${sanitize(trimmedFirstName)},</p>
+    
+    <p style="color: #374151; font-size: 16px; line-height: 1.6;">
+      קיבלת הודעה זו לאחר קביעת התור שלך ב${sanitize(clinicName)}.
+    </p>
+    
+    <div style="background-color: #eff6ff; border-radius: 8px; padding: 16px; margin: 24px 0; border-right: 4px solid #2563eb;">
+      <p style="color: #1e40af; margin: 0; font-size: 15px;">
+        <strong>למה צריך אימות?</strong><br>
+        אימות האימייל מאפשר לנו לזהות אותך אוטומטית בביקורים הבאים ולמנוע יצירת רשומות כפולות במערכת.
+      </p>
+    </div>
+    
+    <div style="text-align: center; margin: 32px 0;">
+      <a href="${verifyLink}" 
+         style="display: inline-block; background-color: #2563eb; color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">
+        אמת את האימייל שלי
+      </a>
+    </div>
+    
+    <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 24px;">
+      <p style="color: #6b7280; font-size: 14px; margin: 0;">
+        <strong>${sanitize(clinicName)}</strong>
+        ${fullAddress ? `<br>${sanitize(fullAddress)}` : ''}
+      </p>
+    </div>
+    
+    <p style="color: #9ca3af; font-size: 12px; margin-top: 24px; text-align: center;">
+      קישור זה יפוג תוך 24 שעות.<br>
+      אם לא קבעת תור, ניתן להתעלם מהודעה זו.
+    </p>
+  </div>
+</body>
+</html>`;
+
+          await resend.emails.send({
+            from: `${clinicName} <noreply@ihaveallergy.com>`,
+            to: [trimmedEmail],
+            subject: "אמת את האימייל שלך – צעד אחרון",
+            html: verifyEmailHtml,
+          });
+
+          console.log("Email verification magic link sent to:", trimmedEmail);
+        }
+      } catch (verifyError) {
+        console.error("Failed to send email verification:", verifyError);
+        // Don't fail - booking succeeded, verification is optional
       }
     }
 
