@@ -195,7 +195,7 @@ const tourSteps: TourStep[] = [
   // Audit Log - 1 step
   {
     path: '/admin/audit-log',
-    pageName: 'יומן ביקורת',
+    pageName: 'לוג אבטחה',
     title: 'מעקב שינויים',
     description: 'כל פעולה במערכת נרשמת כאן: מי שינה, מה שינה, ומתי. חשוב לאבטחה, לתיעוד רפואי, ולעמידה ברגולציה.',
     icon: <History className="h-6 w-6" />,

@@ -195,7 +195,7 @@ export const pageTutorials: Record<string, PageTutorial> = {
   },
   '/admin/audit-log': {
     pageId: 'audit-log',
-    pageName: 'יומן ביקורת',
+    pageName: 'לוג אבטחה',
     steps: [
       {
         title: 'מעקב שינויים',
