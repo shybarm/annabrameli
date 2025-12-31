@@ -3,12 +3,19 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 
-// Count new patients (patients that haven't been reviewed/marked as scheduled)
+/**
+ * Single source of truth for "new patient" definition:
+ * - reviewed_at IS NULL
+ * - NOT a staff member (user_id not in admin/doctor/secretary roles)
+ * - NOT inactive status
+ * 
+ * Uses the same query key pattern as usePatients for consistent cache invalidation.
+ */
 export function useUnreviewedPatientsCount(clinicId?: string | null) {
   return useQuery({
-    queryKey: ['unreviewed-patients-count', clinicId],
+    queryKey: ['patients', clinicId, 'unreviewed-count'],
     queryFn: async () => {
-      // Get staff user IDs to exclude
+      // Get staff user IDs to exclude (same logic as usePatients)
       const { data: staffRoles } = await supabase
         .from('user_roles')
         .select('user_id')
@@ -18,10 +25,10 @@ export function useUnreviewedPatientsCount(clinicId?: string | null) {
 
       let query = supabase
         .from('patients')
-        .select('id, user_id', { count: 'exact', head: false })
+        .select('id, user_id, status')
         .is('reviewed_at', null);
       
-      // Filter by clinic if specified
+      // Filter by clinic if specified (same as usePatients)
       if (clinicId) {
         query = query.eq('clinic_id', clinicId);
       }
@@ -30,14 +37,17 @@ export function useUnreviewedPatientsCount(clinicId?: string | null) {
       
       if (error) throw error;
       
-      // Filter out staff members
-      const nonStaffPatients = (data || []).filter(p => 
-        !p.user_id || !staffUserIds.includes(p.user_id)
-      );
+      // Apply same filters as usePatients:
+      // 1. Exclude inactive patients
+      // 2. Exclude staff members
+      const newPatients = (data || []).filter(p => {
+        if (p.status === 'inactive') return false;
+        return !p.user_id || !staffUserIds.includes(p.user_id);
+      });
       
-      return nonStaffPatients.length;
+      return newPatients.length;
     },
-    refetchInterval: 30000, // Refetch every 30 seconds
+    staleTime: 10000, // Consider data fresh for 10 seconds
   });
 }
 
@@ -59,9 +69,8 @@ export function useMarkPatientReviewed() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['unreviewed-patients-count'] });
+      // Invalidate all patients queries (includes unreviewed-count since it uses same base key)
       queryClient.invalidateQueries({ queryKey: ['patients'] });
-      queryClient.invalidateQueries({ queryKey: ['patient-unreviewed'] });
       toast({ title: 'המטופל סומן כמתוכנן' });
     },
     onError: (error: any) => {
