@@ -1,11 +1,12 @@
-import { useState, useRef, useMemo, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { format, addMinutes, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { z } from 'zod';
 import HCaptcha from '@hcaptcha/react-hcaptcha';
 import { useAppointmentTypes } from '@/hooks/useAppointments';
-import { usePublicClinics, getClinicHoursForDay, getAvailableTimeSlots, type PublicClinic } from '@/hooks/useClinics';
+import { usePublicClinics, getClinicHoursForDay, type PublicClinic } from '@/hooks/useClinics';
+import { useAvailableSlots, useRefreshSlots } from '@/hooks/useAvailableSlots';
 import { supabase } from '@/integrations/supabase/client';
 import { FunctionsHttpError } from '@supabase/supabase-js';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -72,84 +73,17 @@ export default function GuestBooking() {
   const selectedType = appointmentTypes?.find(t => t.id === appointmentTypeId);
   const selectedClinic = clinics?.find(c => c.id === selectedClinicId) as PublicClinic | undefined;
 
-  // State for booked slots
-  const [bookedSlots, setBookedSlots] = useState<{ start: Date; end: Date }[]>([]);
-  const [loadingSlots, setLoadingSlots] = useState(false);
-
-  // Statuses that block a time slot (same as in useAppointments.tsx)
-  const BLOCKING_STATUSES = ['scheduled', 'confirmed', 'waiting_room', 'in_treatment', 'completed', 'pending_verification'];
-
-  // Fetch booked appointments when date or clinic changes
-  // Test scenarios:
-  // 1. No appointments on day X => full slot list visible from working hours
-  // 2. Cancel appointment => slot reappears immediately (refetch excludes cancelled)
-  useEffect(() => {
-    const fetchBookedSlots = async () => {
-      if (!date || !selectedClinicId) {
-        setBookedSlots([]);
-        return;
-      }
-
-      setLoadingSlots(true);
-      try {
-        // Use local date string for day boundaries (Asia/Jerusalem)
-        const dateStr = format(date, 'yyyy-MM-dd');
-        const startOfDay = `${dateStr}T00:00:00`;
-        const endOfDay = `${dateStr}T23:59:59`;
-
-        // Query only blocking statuses and non-deleted appointments
-        const { data, error } = await supabase
-          .from('appointments')
-          .select('scheduled_at, duration_minutes, status')
-          .eq('clinic_id', selectedClinicId)
-          .gte('scheduled_at', startOfDay)
-          .lte('scheduled_at', endOfDay)
-          .in('status', BLOCKING_STATUSES)
-          .or('is_deleted.is.null,is_deleted.eq.false');
-
-        if (error) {
-          console.error('Error fetching booked slots:', error);
-          setBookedSlots([]);
-          return;
-        }
-
-        // Map to slot objects - empty array if no appointments (full availability)
-        const slots = (data || []).map(apt => ({
-          start: parseISO(apt.scheduled_at),
-          end: addMinutes(parseISO(apt.scheduled_at), apt.duration_minutes || 30)
-        }));
-        setBookedSlots(slots);
-      } catch (err) {
-        console.error('Error fetching booked slots:', err);
-        setBookedSlots([]);
-      } finally {
-        setLoadingSlots(false);
-      }
-    };
-
-    fetchBookedSlots();
-  }, [date, selectedClinicId]);
-  
-  const availableTimeSlots = useMemo(() => {
-    if (!selectedClinic || !date) return [];
-    
-    const allSlots = getAvailableTimeSlots(selectedClinic as any, date, 30);
-    const duration = selectedType?.duration_minutes || 30;
-    
-    // Filter out slots that conflict with booked appointments
-    return allSlots.filter(slot => {
-      const [hours, minutes] = slot.split(':').map(Number);
-      const slotStart = new Date(date);
-      slotStart.setHours(hours, minutes, 0, 0);
-      const slotEnd = addMinutes(slotStart, duration);
-      
-      // Check if this slot conflicts with any booked slot
-      return !bookedSlots.some(booked => {
-        // Overlap check: slot starts before booked ends AND slot ends after booked starts
-        return slotStart < booked.end && slotEnd > booked.start;
-      });
-    });
-  }, [selectedClinic, date, bookedSlots, selectedType?.duration_minutes]);
+  // Use server-side slot availability - SINGLE SOURCE OF TRUTH
+  const { 
+    data: availableTimeSlots = [], 
+    isLoading: loadingSlots,
+    refetchSlots 
+  } = useAvailableSlots(
+    selectedClinicId || undefined,
+    date,
+    selectedType?.duration_minutes || 30
+  );
+  const refreshSlots = useRefreshSlots();
 
   // Get open days for calendar disabled dates
   const isDateDisabled = (date: Date) => {
@@ -349,11 +283,16 @@ export default function GuestBooking() {
       captchaRef.current?.resetCaptcha();
       setCaptchaToken(null);
       
-      // Show appropriate error message
-      const isSlotError = error.message?.includes('תפוס') || error.message?.includes('נתפס');
+      // Auto-refresh slots on slot error
+      const isSlotError = error.message?.includes('תפוס') || error.message?.includes('נתפס') || error.message?.includes('SLOT_TAKEN');
+      if (isSlotError) {
+        refreshSlots();
+        refetchSlots();
+      }
+      
       toast({
-        title: isSlotError ? 'הזמן הזה כבר תפוס' : 'שגיאה בקביעת התור',
-        description: isSlotError ? 'בחרו זמן אחר מהרשימה' : error.message,
+        title: isSlotError ? 'השעה נתפסה זה עתה' : 'שגיאה בקביעת התור',
+        description: isSlotError ? 'בחר/י שעה אחרת מהרשימה' : error.message,
         variant: 'destructive',
       });
     } finally {

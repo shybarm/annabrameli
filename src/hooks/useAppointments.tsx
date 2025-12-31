@@ -217,71 +217,48 @@ export function useCreateAppointment() {
   
   return useMutation({
     mutationFn: async (input: AppointmentInput) => {
-      // Check slot availability before creating
-      const { available } = await checkSlotAvailability(
-        input.clinic_id,
-        input.scheduled_at,
-        input.duration_minutes || 30
-      );
+      // Use atomic RPC to prevent race conditions
+      const { data: appointmentId, error: rpcError } = await supabase.rpc('create_appointment_atomic', {
+        p_patient_id: input.patient_id,
+        p_clinic_id: input.clinic_id || null,
+        p_appointment_type_id: input.appointment_type_id || null,
+        p_scheduled_at: input.scheduled_at,
+        p_duration_minutes: input.duration_minutes || 30,
+        p_notes: input.notes || null,
+        p_status: 'scheduled',
+      });
       
-      if (!available) {
-        throw new Error('SLOT_TAKEN');
+      if (rpcError) {
+        // Check if it's a slot taken error
+        if (rpcError.message?.includes('SLOT_TAKEN')) {
+          throw new Error('SLOT_TAKEN');
+        }
+        throw rpcError;
       }
       
+      // Fetch the created appointment to return full data
       const { data, error } = await supabase
         .from('appointments')
-        .insert(input)
-        .select()
+        .select('*')
+        .eq('id', appointmentId)
         .single();
       
       if (error) throw error;
-      
-      // Post-create validation for race condition handling
-      const { available: stillAvailable, conflictingAppointment } = await checkSlotAvailability(
-        input.clinic_id,
-        input.scheduled_at,
-        input.duration_minutes || 30,
-        data.id
-      );
-      
-      if (!stillAvailable && conflictingAppointment) {
-        // Race condition: another appointment was created at the same time
-        // Keep the one created first (compare created_at timestamps)
-        const thisCreatedAt = new Date(data.created_at);
-        const otherCreatedAt = new Date(conflictingAppointment.created_at);
-        
-        if (thisCreatedAt > otherCreatedAt) {
-          // This appointment was created later - cancel it
-          await supabase
-            .from('appointments')
-            .update({
-              status: 'cancelled',
-              cancelled_at: new Date().toISOString(),
-              cancellation_reason: 'התור נתפס באותו רגע על ידי מטופל אחר',
-            })
-            .eq('id', data.id);
-          
-          throw new Error('SLOT_RACE_CONDITION');
-        }
-      }
-      
       return data as Appointment;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['appointments'] });
+      queryClient.invalidateQueries({ queryKey: ['available-slots'] });
       toast({ title: 'תור נקבע בהצלחה' });
     },
     onError: (error: Error) => {
-      if (error.message === 'SLOT_TAKEN') {
+      // Refresh available slots on error
+      queryClient.invalidateQueries({ queryKey: ['available-slots'] });
+      
+      if (error.message === 'SLOT_TAKEN' || error.message?.includes('SLOT_TAKEN')) {
         toast({ 
-          title: 'הזמן הזה כבר תפוס', 
-          description: 'בחרו זמן אחר', 
-          variant: 'destructive' 
-        });
-      } else if (error.message === 'SLOT_RACE_CONDITION') {
-        toast({ 
-          title: 'התור נתפס באותו רגע', 
-          description: 'הזמנה בוטלה. אנא בחרו זמן אחר.', 
+          title: 'השעה נתפסה זה עתה', 
+          description: 'בחר/י שעה אחרת מהרשימה', 
           variant: 'destructive' 
         });
       } else {
@@ -337,6 +314,8 @@ export function useCancelAppointment() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['appointments'] });
+      // Refresh available slots when appointment is cancelled
+      queryClient.invalidateQueries({ queryKey: ['available-slots'] });
       toast({ title: 'התור בוטל' });
     },
     onError: (error) => {
