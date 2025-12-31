@@ -127,7 +127,7 @@ export default function AuditLogPage() {
           <div className="flex items-center gap-3">
             <History className="h-8 w-8 text-primary" />
             <div>
-              <h1 className="text-2xl font-bold">יומן ביקורת (Audit Log)</h1>
+              <h1 className="text-2xl font-bold">לוג אבטחה</h1>
               <p className="text-muted-foreground">תיעוד אוטומטי של כל השינויים במערכת</p>
             </div>
           </div>
