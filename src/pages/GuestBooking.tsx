@@ -76,7 +76,13 @@ export default function GuestBooking() {
   const [bookedSlots, setBookedSlots] = useState<{ start: Date; end: Date }[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
 
+  // Statuses that block a time slot (same as in useAppointments.tsx)
+  const BLOCKING_STATUSES = ['scheduled', 'confirmed', 'waiting_room', 'in_treatment', 'completed', 'pending_verification'];
+
   // Fetch booked appointments when date or clinic changes
+  // Test scenarios:
+  // 1. No appointments on day X => full slot list visible from working hours
+  // 2. Cancel appointment => slot reappears immediately (refetch excludes cancelled)
   useEffect(() => {
     const fetchBookedSlots = async () => {
       if (!date || !selectedClinicId) {
@@ -86,17 +92,20 @@ export default function GuestBooking() {
 
       setLoadingSlots(true);
       try {
-        const startOfDay = format(date, 'yyyy-MM-dd') + 'T00:00:00';
-        const endOfDay = format(date, 'yyyy-MM-dd') + 'T23:59:59';
+        // Use local date string for day boundaries (Asia/Jerusalem)
+        const dateStr = format(date, 'yyyy-MM-dd');
+        const startOfDay = `${dateStr}T00:00:00`;
+        const endOfDay = `${dateStr}T23:59:59`;
 
+        // Query only blocking statuses and non-deleted appointments
         const { data, error } = await supabase
           .from('appointments')
-          .select('scheduled_at, duration_minutes')
+          .select('scheduled_at, duration_minutes, status')
           .eq('clinic_id', selectedClinicId)
           .gte('scheduled_at', startOfDay)
           .lte('scheduled_at', endOfDay)
-          .not('status', 'eq', 'cancelled')
-          .not('is_deleted', 'eq', true);
+          .in('status', BLOCKING_STATUSES)
+          .or('is_deleted.is.null,is_deleted.eq.false');
 
         if (error) {
           console.error('Error fetching booked slots:', error);
@@ -104,6 +113,7 @@ export default function GuestBooking() {
           return;
         }
 
+        // Map to slot objects - empty array if no appointments (full availability)
         const slots = (data || []).map(apt => ({
           start: parseISO(apt.scheduled_at),
           end: addMinutes(parseISO(apt.scheduled_at), apt.duration_minutes || 30)

@@ -151,7 +151,13 @@ export function usePatientAppointments(patientId: string | undefined) {
   });
 }
 
+// Statuses that block a time slot (exclude cancelled, no_show, etc.)
+const BLOCKING_STATUSES = ['scheduled', 'confirmed', 'waiting_room', 'in_treatment', 'completed', 'pending_verification'];
+
 // Check if a time slot overlaps with existing appointments
+// Test scenarios:
+// 1. No appointments on day X => full slot list visible (slot generator returns all working hours)
+// 2. Cancel appointment => slot reappears immediately (cancelled status excluded from blocking)
 export async function checkSlotAvailability(
   clinicId: string | undefined,
   scheduledAt: string,
@@ -161,11 +167,21 @@ export async function checkSlotAvailability(
   const startTime = new Date(scheduledAt);
   const endTime = new Date(startTime.getTime() + durationMinutes * 60 * 1000);
   
+  // Compute day boundaries in Asia/Jerusalem timezone
+  // Format: YYYY-MM-DD from the scheduled time (preserving local date)
+  const dateStr = scheduledAt.split('T')[0];
+  const dayStart = `${dateStr}T00:00:00`;
+  const dayEnd = `${dateStr}T23:59:59`;
+  
   // Query for overlapping appointments in the same clinic
+  // Only include appointments with blocking statuses and not deleted
   let query = supabase
     .from('appointments')
     .select('*')
-    .neq('status', 'cancelled');
+    .in('status', BLOCKING_STATUSES)
+    .or('is_deleted.is.null,is_deleted.eq.false')
+    .gte('scheduled_at', dayStart)
+    .lte('scheduled_at', dayEnd);
   
   if (clinicId) {
     query = query.eq('clinic_id', clinicId);
@@ -174,16 +190,6 @@ export async function checkSlotAvailability(
   if (excludeAppointmentId) {
     query = query.neq('id', excludeAppointmentId);
   }
-  
-  // Get appointments on the same day
-  const dayStart = new Date(startTime);
-  dayStart.setHours(0, 0, 0, 0);
-  const dayEnd = new Date(startTime);
-  dayEnd.setHours(23, 59, 59, 999);
-  
-  query = query
-    .gte('scheduled_at', dayStart.toISOString())
-    .lte('scheduled_at', dayEnd.toISOString());
   
   const { data: appointments, error } = await query;
   
