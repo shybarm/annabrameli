@@ -84,11 +84,29 @@ export default function AppointmentDetail() {
         .maybeSingle();
       if (error) throw error;
       if (data) {
-        setInternalNotes(data.internal_notes || '');
         setVisitSummary(data.visit_summary || '');
         setTreatmentPlan(data.treatment_plan || '');
         setMedications(data.medications || '');
         setStatus(data.status || 'scheduled');
+      }
+      return data;
+    },
+    enabled: !!id,
+  });
+
+  // Fetch internal notes from secure table (staff-only)
+  const { data: internalNotesData } = useQuery({
+    queryKey: ['appointment-internal-notes', id],
+    queryFn: async () => {
+      if (!id) return null;
+      const { data, error } = await supabase
+        .from('appointment_internal_notes')
+        .select('notes')
+        .eq('appointment_id', id)
+        .maybeSingle();
+      if (error && error.code !== 'PGRST116') throw error;
+      if (data?.notes) {
+        setInternalNotes(data.notes);
       }
       return data;
     },
@@ -123,14 +141,32 @@ export default function AppointmentDetail() {
       visit_shared_whatsapp_at?: string;
       visit_shared_email_at?: string;
     }) => {
-      const { error } = await supabase
-        .from('appointments')
-        .update(updates)
-        .eq('id', id);
-      if (error) throw error;
+      // Handle internal_notes separately - save to secure table
+      if (updates.internal_notes !== undefined) {
+        const { error: notesError } = await supabase
+          .from('appointment_internal_notes')
+          .upsert({
+            appointment_id: id,
+            notes: updates.internal_notes,
+            updated_at: new Date().toISOString(),
+          }, { onConflict: 'appointment_id' });
+        if (notesError) throw notesError;
+        // Remove from main update
+        delete updates.internal_notes;
+      }
+      
+      // Update remaining fields on appointments table
+      if (Object.keys(updates).length > 0) {
+        const { error } = await supabase
+          .from('appointments')
+          .update(updates)
+          .eq('id', id);
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['appointment', id] });
+      queryClient.invalidateQueries({ queryKey: ['appointment-internal-notes', id] });
       queryClient.invalidateQueries({ queryKey: ['appointments'] });
       toast({ title: 'התור עודכן בהצלחה' });
     },
