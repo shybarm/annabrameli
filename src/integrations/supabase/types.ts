@@ -1482,6 +1482,44 @@ export type Database = {
         }
         Relationships: []
       }
+      reminder_delivery_log: {
+        Row: {
+          appointment_id: string
+          channel: string
+          created_at: string
+          error: string | null
+          id: string
+          provider_message_id: string | null
+          status: string
+        }
+        Insert: {
+          appointment_id: string
+          channel: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          provider_message_id?: string | null
+          status: string
+        }
+        Update: {
+          appointment_id?: string
+          channel?: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          provider_message_id?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reminder_delivery_log_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reminder_runs: {
         Row: {
           email_sent_count: number | null
