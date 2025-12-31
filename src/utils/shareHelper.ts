@@ -7,38 +7,22 @@ interface ShareOptions {
 }
 
 /**
- * Manual share helper - NO WhatsApp API, NO backend calls
+ * Direct WhatsApp share helper - bypasses OS share dialog
  * 
  * Priority:
- * 1. navigator.share() - native share sheet (mobile)
- * 2. whatsapp://send deep link - opens WhatsApp app directly
- * 3. wa.me web link - last resort fallback
- * 4. Copy to clipboard - final fallback for all devices
+ * 1. wa.me direct link with phone (opens WhatsApp directly)
+ * 2. whatsapp://send deep link (app protocol)
+ * 3. Copy to clipboard - final fallback
  * 
  * All sharing is user-initiated only. Does not automatically include PHI.
  */
 export function shareViaWhatsApp(options: ShareOptions): boolean {
-  const { title, text, phone } = options;
+  const { text, phone } = options;
   const encodedText = encodeURIComponent(text);
   
-  // Try native share first (works on mobile)
-  if (navigator.share && typeof navigator.share === 'function') {
-    // Fire and forget - don't await to keep it synchronous for click handlers
-    navigator.share({
-      title: title || 'שיתוף',
-      text: text,
-    }).catch((error: any) => {
-      if (error.name !== 'AbortError') {
-        // Native share failed, try WhatsApp deep link
-        tryWhatsAppDeepLink(encodedText, phone);
-      }
-    });
-    return true;
-  }
-  
-  // Fallback A: WhatsApp app deep link (whatsapp:// protocol)
-  // This must be triggered directly by click - no async before
-  return tryWhatsAppDeepLink(encodedText, phone);
+  // Always use direct WhatsApp link (bypass OS share dialog)
+  // wa.me is the most reliable cross-platform option
+  return tryWaMeLink(encodedText, phone);
 }
 
 /**
