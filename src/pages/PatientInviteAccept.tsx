@@ -34,7 +34,7 @@ export default function PatientInviteAccept() {
     setIsSubmitting(true);
     try {
       await acceptInvitation.mutateAsync({ code });
-      navigate('/portal');
+      navigate('/'); // Portal disabled - redirect to home
     } catch {
       // Error handled by mutation
     } finally {

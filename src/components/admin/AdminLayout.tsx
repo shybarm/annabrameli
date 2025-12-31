@@ -3,6 +3,7 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth, UserPermissions } from '@/hooks/useAuth';
 import { useUnreadMessageCount } from '@/hooks/useAdminMessages';
 import { useUnreviewedPatientsCount } from '@/hooks/useUnreviewedPatients';
+import { TeamChatWidget } from './TeamChatWidget';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -142,13 +143,6 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               className="rounded-xl spring-bounce"
             >
               חזרה לאתר
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={() => navigate('/portal')}
-              className="rounded-xl spring-bounce"
-            >
-              פורטל מטופלים
             </Button>
           </div>
         </div>
@@ -339,6 +333,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       <main className="lg:mr-64 min-h-screen overflow-x-hidden">
         <div className="p-4 lg:p-6 w-full max-w-full">{children}</div>
       </main>
+      
+      {/* Team Chat Widget */}
+      <TeamChatWidget />
     </div>
   );
 }
