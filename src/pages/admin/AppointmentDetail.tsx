@@ -19,6 +19,8 @@ import { ScoringToolbar } from '@/components/admin/scoring/ScoringToolbar';
 import { SignaturePad } from '@/components/admin/SignaturePad';
 import { useElectronicSignatures, useCreateElectronicSignature } from '@/hooks/useElectronicSignatures';
 import { useAuth } from '@/hooks/useAuth';
+import { useStaffProfile } from '@/hooks/useStaffProfile';
+import { generateMedicalVisitSummaryPdf } from '@/utils/medicalPdfTemplate';
 import { 
   ArrowRight, User, Clock, Calendar, FileText, Save, 
   Upload, MessageCircle, CreditCard, File, Printer, Mail, Pill, Stethoscope, Eye, ClipboardList,
@@ -58,6 +60,7 @@ export default function AppointmentDetail() {
   const [pdfReady, setPdfReady] = useState(false);
   
   const { user } = useAuth();
+  const { data: staffProfile } = useStaffProfile();
   const { data: signatures } = useElectronicSignatures('appointment', id || '');
   const createSignature = useCreateElectronicSignature();
 
@@ -395,15 +398,6 @@ export default function AppointmentDetail() {
     }
   };
 
-  // HTML escape function to prevent XSS attacks
-  const escapeHtml = (unsafe: string): string => {
-    return unsafe
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-  };
 
   // Fetch clinic settings for doctor info
   const { data: clinicSettings } = useQuery({
@@ -419,174 +413,42 @@ export default function AppointmentDetail() {
     }
   });
 
-  // Generate print HTML (reusable for print and review)
+  // Generate print HTML using medical PDF template
   const generatePrintHtml = () => {
-    const safeFirstName = escapeHtml(appointment?.patients?.first_name || '');
-    const safeLastName = escapeHtml(appointment?.patients?.last_name || '');
-    const safeIdNumber = escapeHtml(appointment?.patients?.id_number || '');
-    const safePhysicalExam = escapeHtml(physicalExam).replace(/\n/g, '<br>');
-    const safeLabTests = escapeHtml(labTests).replace(/\n/g, '<br>');
-    const safeAuxiliaryTests = escapeHtml(auxiliaryTests).replace(/\n/g, '<br>');
-    const safeVisitSummary = escapeHtml(visitSummary).replace(/\n/g, '<br>');
-    const safeTreatmentPlan = escapeHtml(treatmentPlan).replace(/\n/g, '<br>');
-    const safeMedications = escapeHtml(medications).replace(/\n/g, '<br>');
-
-    const doctorName = clinicSettings?.doctor_name || 'ד״ר אנה ברמלי';
-    const doctorLicense = clinicSettings?.doctor_license || '';
-    const doctorSpecialty = clinicSettings?.doctor_specialty || 'רפואה משלימה';
-    const clinicAddress = clinicSettings?.clinic_address || '';
-    const clinicPhone = clinicSettings?.clinic_phone || '';
     const latestSignature = signatures?.[0];
-
-    return `
-      <html dir="rtl">
-        <head>
-          <title>סיכום ביקור</title>
-          <style>
-            body {
-              font-family: Arial, sans-serif;
-              padding: 40px;
-              max-width: 800px;
-              margin: 0 auto;
-              line-height: 1.8;
-            }
-            .header {
-              text-align: center;
-              margin-bottom: 30px;
-              padding-bottom: 20px;
-              border-bottom: 2px solid #0066cc;
-            }
-            .header h1 {
-              color: #0066cc;
-              margin-bottom: 5px;
-            }
-            .header p {
-              margin: 3px 0;
-              color: #666;
-              font-size: 14px;
-            }
-            h2 { font-size: 20px; margin-bottom: 15px; color: #333; }
-            .patient-info {
-              background: #f5f5f5;
-              padding: 15px;
-              border-radius: 8px;
-              margin-bottom: 20px;
-            }
-            .section { margin-bottom: 24px; }
-            .section-title { font-weight: bold; margin-bottom: 8px; color: #0066cc; }
-            .content { white-space: pre-wrap; }
-            .signature-section {
-              margin-top: 40px;
-              padding-top: 20px;
-              border-top: 1px solid #ddd;
-            }
-            .signature-box {
-              display: flex;
-              align-items: flex-start;
-              gap: 20px;
-            }
-            .signature-img {
-              max-width: 200px;
-              max-height: 80px;
-              border: 1px solid #ddd;
-              border-radius: 4px;
-            }
-            .signature-details {
-              font-size: 14px;
-            }
-            .footer {
-              margin-top: 40px;
-              padding-top: 20px;
-              border-top: 2px solid #0066cc;
-              text-align: center;
-              font-size: 12px;
-              color: #666;
-            }
-            @media print {
-              body { padding: 20px; }
-            }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h1>${escapeHtml(doctorName)}</h1>
-            <p>${escapeHtml(doctorSpecialty)}</p>
-            ${doctorLicense ? `<p>מספר רישיון: ${escapeHtml(doctorLicense)}</p>` : ''}
-            ${clinicAddress ? `<p>${escapeHtml(clinicAddress)}</p>` : ''}
-            ${clinicPhone ? `<p>טלפון: ${escapeHtml(clinicPhone)}</p>` : ''}
-          </div>
-          
-          <h2>סיכום ביקור</h2>
-          
-          <div class="patient-info">
-            <p><strong>מטופל:</strong> ${safeFirstName} ${safeLastName}</p>
-            <p><strong>תאריך:</strong> ${appointment?.scheduled_at ? format(new Date(appointment.scheduled_at), 'dd/MM/yyyy', { locale: he }) : ''}</p>
-            ${safeIdNumber ? `<p><strong>ת.ז:</strong> ${safeIdNumber}</p>` : ''}
-          </div>
-          
-          ${physicalExam.trim() ? `
-            <div class="section">
-              <div class="section-title">בדיקה גופנית:</div>
-              <div class="content">${safePhysicalExam}</div>
-            </div>
-          ` : ''}
-          
-          ${labTests.trim() ? `
-            <div class="section">
-              <div class="section-title">בדיקות מעבדה:</div>
-              <div class="content">${safeLabTests}</div>
-            </div>
-          ` : ''}
-          
-          ${auxiliaryTests.trim() ? `
-            <div class="section">
-              <div class="section-title">בדיקות עזר:</div>
-              <div class="content">${safeAuxiliaryTests}</div>
-            </div>
-          ` : ''}
-          
-          ${visitSummary.trim() ? `
-            <div class="section">
-              <div class="section-title">סיכום הביקור:</div>
-              <div class="content">${safeVisitSummary}</div>
-            </div>
-          ` : ''}
-          
-          ${treatmentPlan.trim() ? `
-            <div class="section">
-              <div class="section-title">תוכנית טיפול:</div>
-              <div class="content">${safeTreatmentPlan}</div>
-            </div>
-          ` : ''}
-          
-          ${medications.trim() ? `
-            <div class="section">
-              <div class="section-title">תרופות:</div>
-              <div class="content">${safeMedications}</div>
-            </div>
-          ` : ''}
-          
-          ${latestSignature ? `
-            <div class="signature-section">
-              <div class="signature-box">
-                <img src="${latestSignature.signature_data}" alt="חתימה" class="signature-img" />
-                <div class="signature-details">
-                  <p><strong>${escapeHtml(latestSignature.signer_name)}</strong></p>
-                  <p>${latestSignature.signer_role === 'doctor' ? 'רופא' : latestSignature.signer_role === 'admin' ? 'מנהל' : 'מזכירה'}</p>
-                  <p>נחתם: ${format(new Date(latestSignature.signed_at), 'dd/MM/yyyy HH:mm', { locale: he })}</p>
-                </div>
-              </div>
-            </div>
-          ` : ''}
-          
-          <div class="footer">
-            <p>${escapeHtml(doctorName)} | ${escapeHtml(doctorSpecialty)}</p>
-            ${clinicAddress ? `<p>${escapeHtml(clinicAddress)}</p>` : ''}
-            ${clinicPhone ? `<p>${escapeHtml(clinicPhone)}</p>` : ''}
-          </div>
-        </body>
-      </html>
-    `;
+    
+    return generateMedicalVisitSummaryPdf(
+      {
+        first_name: appointment?.patients?.first_name || '',
+        last_name: appointment?.patients?.last_name || '',
+        id_number: appointment?.patients?.id_number || '',
+        date_of_birth: appointment?.patients?.date_of_birth || '',
+        phone: appointment?.patients?.phone || '',
+        address: appointment?.patients?.address || '',
+        city: appointment?.patients?.city || '',
+      },
+      {
+        doctor_name: clinicSettings?.doctor_name || 'ד״ר אנה ברמלי',
+        doctor_license: clinicSettings?.doctor_license || '',
+        doctor_specialty: clinicSettings?.doctor_specialty || 'רפואה משלימה',
+        clinic_name: clinicSettings?.clinic_name || '',
+        clinic_address: clinicSettings?.clinic_address || '',
+        clinic_phone: clinicSettings?.clinic_phone || '',
+      },
+      {
+        visit_date: appointment?.scheduled_at || new Date().toISOString(),
+        visit_summary: visitSummary.trim() || undefined,
+        treatment_plan: treatmentPlan.trim() || undefined,
+        medications: medications.trim() || undefined,
+        current_diagnoses: physicalExam.trim() || undefined,
+        past_diagnoses: labTests.trim() || undefined,
+      },
+      latestSignature ? {
+        signature_data: latestSignature.signature_data,
+        signer_name: latestSignature.signer_name,
+        signed_at: latestSignature.signed_at,
+      } : undefined
+    );
   };
 
   const handlePrint = () => {
@@ -1162,7 +1024,7 @@ export default function AppointmentDetail() {
                         <DialogTitle>חתימה דיגיטלית על סיכום הביקור</DialogTitle>
                       </DialogHeader>
                       <SignaturePad 
-                        defaultName={user?.email?.split('@')[0] || ''}
+                        defaultName={staffProfile?.full_name || ''}
                         defaultRole="doctor"
                         onSign={async (signatureData, signerName, signerRole, signatureMeaning) => {
                           try {
