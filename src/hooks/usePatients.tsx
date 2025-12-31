@@ -205,7 +205,39 @@ export function useDeletePatient() {
   
   return useMutation({
     mutationFn: async (id: string) => {
-      // First delete dependent patient_invitations
+      // Delete all appointments for this patient first
+      const { error: appointmentsError } = await supabase
+        .from('appointments')
+        .delete()
+        .eq('patient_id', id);
+      
+      if (appointmentsError) throw appointmentsError;
+      
+      // Delete patient documents records (storage files remain for audit)
+      const { error: docsError } = await supabase
+        .from('patient_documents')
+        .delete()
+        .eq('patient_id', id);
+      
+      if (docsError) throw docsError;
+      
+      // Delete messages
+      const { error: messagesError } = await supabase
+        .from('messages')
+        .delete()
+        .eq('patient_id', id);
+      
+      if (messagesError) throw messagesError;
+      
+      // Delete invoices and invoice items (cascade via FK) 
+      const { error: invoicesError } = await supabase
+        .from('invoices')
+        .delete()
+        .eq('patient_id', id);
+      
+      if (invoicesError) throw invoicesError;
+      
+      // Delete patient invitations
       const { error: invitationsError } = await supabase
         .from('patient_invitations')
         .delete()
@@ -213,7 +245,39 @@ export function useDeletePatient() {
       
       if (invitationsError) throw invitationsError;
       
-      // Then delete the patient
+      // Delete intake tokens
+      const { error: tokensError } = await supabase
+        .from('intake_tokens')
+        .delete()
+        .eq('patient_id', id);
+      
+      if (tokensError) throw tokensError;
+      
+      // Delete waitlist entries
+      const { error: waitlistError } = await supabase
+        .from('waitlist')
+        .delete()
+        .eq('patient_id', id);
+      
+      if (waitlistError) throw waitlistError;
+      
+      // Delete email verifications
+      const { error: emailVerError } = await supabase
+        .from('email_verifications')
+        .delete()
+        .eq('patient_id', id);
+      
+      if (emailVerError) throw emailVerError;
+      
+      // Delete upload tokens
+      const { error: uploadTokensError } = await supabase
+        .from('upload_tokens')
+        .delete()
+        .eq('patient_id', id);
+      
+      if (uploadTokensError) throw uploadTokensError;
+      
+      // Finally delete the patient
       const { error } = await supabase
         .from('patients')
         .delete()
@@ -223,7 +287,9 @@ export function useDeletePatient() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['patients'] });
-      toast({ title: 'המטופל נמחק בהצלחה' });
+      queryClient.invalidateQueries({ queryKey: ['appointments'] });
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      toast({ title: 'המטופל וכל הנתונים הקשורים נמחקו בהצלחה' });
     },
     onError: (error) => {
       toast({ title: 'שגיאה במחיקת המטופל', description: error.message, variant: 'destructive' });

@@ -589,20 +589,29 @@ export default function PatientDetail() {
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </AlertDialogTrigger>
-              <AlertDialogContent>
+              <AlertDialogContent dir="rtl">
                 <AlertDialogHeader>
-                  <AlertDialogTitle>מחיקת מטופל</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    האם אתה בטוח שברצונך למחוק את {patient.first_name} {patient.last_name}? פעולה זו לא ניתנת לביטול.
+                  <AlertDialogTitle className="text-destructive">מחיקת מטופל לצמיתות</AlertDialogTitle>
+                  <AlertDialogDescription className="text-right">
+                    <span className="font-bold text-destructive">האם אתה בטוח?</span>
+                    <br />
+                    פעולה זו בלתי הפיכה ותמחק את המטופל <strong>{patient.first_name} {patient.last_name}</strong> וכל הנתונים הקשורים אליו:
+                    <ul className="list-disc list-inside mt-2 space-y-1 text-muted-foreground">
+                      <li>כל התורים ({appointments?.length || 0})</li>
+                      <li>כל החשבוניות ({invoices?.length || 0})</li>
+                      <li>כל המסמכים ({documents?.length || 0})</li>
+                      <li>כל ההודעות והנתונים הרפואיים</li>
+                    </ul>
                   </AlertDialogDescription>
                 </AlertDialogHeader>
-                <AlertDialogFooter>
+                <AlertDialogFooter className="flex-row-reverse gap-2 sm:flex-row-reverse">
                   <AlertDialogCancel>ביטול</AlertDialogCancel>
                   <AlertDialogAction 
                     onClick={handleDeletePatient}
                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    disabled={deletePatient.isPending}
                   >
-                    מחק מטופל
+                    {deletePatient.isPending ? 'מוחק...' : 'כן, למחוק לצמיתות'}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>

@@ -290,7 +290,7 @@ export default function AppointmentsList() {
         <Card data-tutorial="calendar-view">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <Button variant="ghost" size="icon" onClick={() => navigateWeek('prev')}>
+              <Button variant="ghost" size="icon" onClick={() => navigateWeek('next')} aria-label="שבוע הבא">
                 <ChevronRight className="h-5 w-5" />
               </Button>
               <div className="text-center">
@@ -310,7 +310,7 @@ export default function AppointmentsList() {
                   <p className="text-xs text-muted-foreground mt-1">מוצג שבוע הבא (היום סוף שבוע)</p>
                 )}
               </div>
-              <Button variant="ghost" size="icon" onClick={() => navigateWeek('next')}>
+              <Button variant="ghost" size="icon" onClick={() => navigateWeek('prev')} aria-label="שבוע קודם">
                 <ChevronLeft className="h-5 w-5" />
               </Button>
             </div>
