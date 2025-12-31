@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -22,43 +22,63 @@ interface WorkSessionCheckInModalProps {
 
 export function WorkSessionCheckInModal({ isStaff }: WorkSessionCheckInModalProps) {
   const [open, setOpen] = useState(false);
+  const hasPromptedRef = useRef(false);
   const { todaySession, clockIn } = useWorkSessions();
   const { selectedClinicId } = useClinicContext();
 
   useEffect(() => {
-    if (!isStaff) return;
+    // Reset ref when isStaff changes (e.g., logout/login)
+    if (!isStaff) {
+      hasPromptedRef.current = false;
+      return;
+    }
 
-    // Check if already dismissed recently
+    // Don't prompt if already prompted this render cycle
+    if (hasPromptedRef.current) return;
+
+    // Wait for session data to fully load
+    if (todaySession.isLoading || todaySession.isFetching) return;
+
+    // Check if already dismissed recently (localStorage with 2-hour TTL)
     const dismissedAt = localStorage.getItem(DISMISS_KEY);
     if (dismissedAt) {
       const dismissedTime = parseInt(dismissedAt, 10);
-      if (Date.now() - dismissedTime < DISMISS_DURATION_MS) {
+      if (!isNaN(dismissedTime) && Date.now() - dismissedTime < DISMISS_DURATION_MS) {
+        hasPromptedRef.current = true; // Mark as handled
         return; // Still within dismiss period
       }
       localStorage.removeItem(DISMISS_KEY);
     }
 
-    // Wait for session data to load
-    if (todaySession.isLoading) return;
-
-    // Check if no active session exists
+    // Check if no active session exists (session is null OR end_time is set)
     const session = todaySession.data;
     const hasNoActiveSession = !session || session.end_time !== null;
 
     if (hasNoActiveSession) {
+      hasPromptedRef.current = true; // Mark that we've prompted
       // Small delay to avoid flash on page load
-      const timer = setTimeout(() => setOpen(true), 500);
+      const timer = setTimeout(() => setOpen(true), 600);
       return () => clearTimeout(timer);
+    } else {
+      // User already has an active session - don't prompt
+      hasPromptedRef.current = true;
     }
-  }, [isStaff, todaySession.data, todaySession.isLoading]);
+  }, [isStaff, todaySession.data, todaySession.isLoading, todaySession.isFetching]);
 
   const handleStartWork = async () => {
     try {
       await clockIn.mutateAsync(selectedClinicId || undefined);
       toast.success('שעות העבודה התחילו');
       setOpen(false);
-    } catch (error) {
-      toast.error('שגיאה בהתחלת שעות עבודה');
+      // Mark as handled so it doesn't show again
+      localStorage.setItem(DISMISS_KEY, Date.now().toString());
+    } catch (error: any) {
+      if (error?.message === 'ALREADY_WORKING') {
+        toast.info('את/ה כבר בעבודה');
+        setOpen(false);
+      } else {
+        toast.error('שגיאה בהתחלת שעות עבודה');
+      }
     }
   };
 
@@ -70,7 +90,10 @@ export function WorkSessionCheckInModal({ isStaff }: WorkSessionCheckInModalProp
   if (!isStaff) return null;
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(val) => {
+      if (!val) handleDismiss();
+      else setOpen(val);
+    }}>
       <DialogContent className="sm:max-w-md" dir="rtl">
         <DialogHeader className="text-right">
           <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">

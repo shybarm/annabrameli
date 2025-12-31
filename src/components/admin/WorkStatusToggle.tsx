@@ -1,9 +1,10 @@
 import { Button } from '@/components/ui/button';
-import { Play, Square, Clock, Loader2 } from 'lucide-react';
+import { Play, Square, Loader2 } from 'lucide-react';
 import { useWorkSessions, calculateHours } from '@/hooks/useWorkSessions';
 import { useClinicContext } from '@/contexts/ClinicContext';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 
 interface WorkStatusToggleProps {
   isStaff: boolean;
@@ -19,6 +20,7 @@ export function WorkStatusToggle({ isStaff, compact = false }: WorkStatusToggleP
   const session = todaySession.data;
   const isWorking = session && session.end_time === null;
   const isPending = clockIn.isPending || clockOut.isPending;
+  const isLoading = todaySession.isLoading;
 
   const handleToggle = async () => {
     try {
@@ -29,8 +31,12 @@ export function WorkStatusToggle({ isStaff, compact = false }: WorkStatusToggleP
         await clockIn.mutateAsync(selectedClinicId || undefined);
         toast.success('שעות העבודה התחילו');
       }
-    } catch (error) {
-      toast.error(isWorking ? 'שגיאה בעצירת שעות' : 'שגיאה בהתחלת שעות');
+    } catch (error: any) {
+      if (error?.message === 'ALREADY_WORKING') {
+        toast.info('את/ה כבר בעבודה');
+      } else {
+        toast.error(isWorking ? 'שגיאה בעצירת שעות' : 'שגיאה בהתחלת שעות');
+      }
     }
   };
 
@@ -45,74 +51,58 @@ export function WorkStatusToggle({ isStaff, compact = false }: WorkStatusToggleP
         variant={isWorking ? 'default' : 'outline'}
         size="sm"
         onClick={handleToggle}
-        disabled={isPending || todaySession.isLoading}
+        disabled={isPending || isLoading}
         className={cn(
-          'h-9 gap-2 rounded-xl transition-all',
+          'h-8 gap-1.5 text-xs font-medium transition-all',
           isWorking 
             ? 'bg-green-600 hover:bg-green-700 text-white' 
-            : 'border-primary/30 hover:bg-primary/5'
+            : 'border-border hover:bg-accent'
         )}
       >
         {isPending ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
+          <Loader2 className="h-3.5 w-3.5 animate-spin" />
         ) : isWorking ? (
-          <Square className="h-3.5 w-3.5" />
+          <Square className="h-3 w-3" />
         ) : (
-          <Play className="h-3.5 w-3.5" />
+          <Play className="h-3 w-3" />
         )}
-        <span className="text-xs font-medium">
-          {isPending 
-            ? '...' 
-            : isWorking 
-              ? 'סיים' 
-              : 'התחל עבודה'
-          }
-        </span>
+        {isPending ? '...' : isWorking ? 'סיים' : 'התחל'}
       </Button>
     );
   }
 
   return (
-    <div className={cn(
-      'flex items-center gap-3 p-3 rounded-xl border transition-all',
-      isWorking 
-        ? 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800' 
-        : 'bg-muted/30 border-border'
-    )}>
-      <div className={cn(
-        'w-10 h-10 rounded-lg flex items-center justify-center',
-        isWorking ? 'bg-green-600 text-white' : 'bg-muted'
-      )}>
-        <Clock className="h-5 w-5" />
+    <div className="p-2.5 rounded-lg bg-muted/40 border border-border/50">
+      {/* Header row: title + status pill */}
+      <div className="flex items-center justify-between gap-2 mb-2">
+        <span className="text-xs font-medium text-muted-foreground">שעות עבודה</span>
+        <Badge 
+          variant={isWorking ? "default" : "secondary"}
+          className={cn(
+            "text-[10px] px-1.5 py-0 h-4 font-normal",
+            isWorking 
+              ? "bg-green-600 hover:bg-green-600 text-white" 
+              : "bg-muted text-muted-foreground"
+          )}
+        >
+          {isLoading ? '...' : isWorking ? 'בעבודה' : 'לא בעבודה'}
+        </Badge>
       </div>
       
-      <div className="flex-1 min-w-0">
-        <p className={cn(
-          'text-sm font-medium',
-          isWorking ? 'text-green-700 dark:text-green-300' : 'text-muted-foreground'
-        )}>
-          {isWorking ? 'בעבודה' : 'לא בעבודה'}
-        </p>
-        {isWorking && duration && (
-          <p className="text-xs text-muted-foreground">
-            התחלה: {session?.start_time?.slice(0, 5)} • {duration}
-          </p>
-        )}
-      </div>
-
+      {/* Action button - full width */}
       <Button
         variant={isWorking ? 'destructive' : 'default'}
         size="sm"
         onClick={handleToggle}
-        disabled={isPending || todaySession.isLoading}
-        className="h-9 rounded-xl gap-2"
+        disabled={isPending || isLoading}
+        className="w-full h-8 text-xs gap-1.5"
       >
         {isPending ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
+          <Loader2 className="h-3.5 w-3.5 animate-spin" />
         ) : isWorking ? (
-          <Square className="h-4 w-4" />
+          <Square className="h-3.5 w-3.5" />
         ) : (
-          <Play className="h-4 w-4" />
+          <Play className="h-3.5 w-3.5" />
         )}
         {isPending 
           ? '...' 
@@ -121,6 +111,13 @@ export function WorkStatusToggle({ isStaff, compact = false }: WorkStatusToggleP
             : 'התחל עבודה'
         }
       </Button>
+      
+      {/* Optional: Show time if working */}
+      {isWorking && duration && (
+        <p className="text-[10px] text-muted-foreground text-center mt-1.5">
+          {session?.start_time?.slice(0, 5)} • {duration}
+        </p>
+      )}
     </div>
   );
 }
