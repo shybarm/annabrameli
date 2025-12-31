@@ -819,7 +819,8 @@ export default function AppointmentDetail() {
                     onChange={(e) => setChiefComplaint(e.target.value)}
                     placeholder="תלונה עיקרית של המטופל בביקור זה..."
                     rows={2}
-                    className="resize-none"
+                    className="resize-none text-right"
+                    dir="rtl"
                   />
                 </div>
 
@@ -836,7 +837,8 @@ export default function AppointmentDetail() {
                     onChange={(e) => setCurrentIllness(e.target.value)}
                     placeholder="תיאור המחלה הנוכחית, אנמנזה..."
                     rows={5}
-                    className="resize-none"
+                    className="resize-none text-right"
+                    dir="rtl"
                   />
                 </div>
 
@@ -886,7 +888,8 @@ export default function AppointmentDetail() {
                     onChange={(e) => setPhysicalExam(e.target.value)}
                     placeholder="ממצאי הבדיקה הגופנית..."
                     rows={4}
-                    className="resize-none"
+                    className="resize-none text-right"
+                    dir="rtl"
                   />
                 </div>
 
@@ -901,7 +904,8 @@ export default function AppointmentDetail() {
                     onChange={(e) => setLabTests(e.target.value)}
                     placeholder="בדיקות דם, שתן, תרביות וכו'..."
                     rows={3}
-                    className="resize-none"
+                    className="resize-none text-right"
+                    dir="rtl"
                   />
                 </div>
 
@@ -916,7 +920,8 @@ export default function AppointmentDetail() {
                     onChange={(e) => setAuxiliaryTests(e.target.value)}
                     placeholder="CT, MRI, אולטרסאונד, ביופסיה וכו'..."
                     rows={3}
-                    className="resize-none"
+                    className="resize-none text-right"
+                    dir="rtl"
                   />
                 </div>
 
@@ -960,7 +965,8 @@ export default function AppointmentDetail() {
                     onChange={(e) => setMedications(e.target.value)}
                     placeholder="רשום תרופות, מינון, אופן השימוש..."
                     rows={4}
-                    className="resize-none"
+                    className="resize-none text-right"
+                    dir="rtl"
                   />
                 </div>
 
