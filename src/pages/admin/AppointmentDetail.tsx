@@ -21,6 +21,7 @@ import { useElectronicSignatures, useCreateElectronicSignature } from '@/hooks/u
 import { useAuth } from '@/hooks/useAuth';
 import { useStaffProfile } from '@/hooks/useStaffProfile';
 import { generateMedicalVisitSummaryPdf } from '@/utils/medicalPdfTemplate';
+import { shareViaWhatsApp, copyToClipboard } from '@/utils/shareHelper';
 import { 
   ArrowRight, User, Clock, Calendar, FileText, Save, 
   Upload, MessageCircle, CreditCard, File, Printer, Mail, Pill, Stethoscope, Eye, ClipboardList,
@@ -983,18 +984,33 @@ export default function AppointmentDetail() {
 
                   <Button 
                     variant="outline" 
-                    onClick={() => {
+                    onClick={async () => {
                       const text = buildVisitSummaryText();
-                      const whatsappUrl = `https://wa.me/${appointment.patients?.phone?.replace(/\D/g, '')}?text=${encodeURIComponent(text)}`;
-                      window.open(whatsappUrl, '_blank');
-                      updateAppointment.mutate({ visit_shared_whatsapp_at: new Date().toISOString() });
+                      const success = await shareViaWhatsApp({
+                        title: 'סיכום ביקור',
+                        text,
+                        phone: appointment.patients?.phone
+                      });
+                      if (success) {
+                        updateAppointment.mutate({ visit_shared_whatsapp_at: new Date().toISOString() });
+                      }
                     }}
-                    disabled={!appointment.patients?.phone || !pdfReady}
-                    title={!pdfReady ? 'יש לשמור ולחתום תחילה' : !appointment.patients?.phone ? 'אין מספר טלפון' : ''}
+                    disabled={!pdfReady}
+                    title={!pdfReady ? 'יש לשמור ולחתום תחילה' : ''}
                     className="bg-green-50 hover:bg-green-100 text-green-700 border-green-200"
                   >
                     <MessageCircle className="h-4 w-4 ml-2" />
-                    שלח ב-WhatsApp
+                    שתף ב-WhatsApp
+                  </Button>
+
+                  <Button 
+                    variant="outline" 
+                    onClick={() => copyToClipboard(buildVisitSummaryText())}
+                    disabled={!pdfReady}
+                    title={!pdfReady ? 'יש לשמור ולחתום תחילה' : ''}
+                  >
+                    <Copy className="h-4 w-4 ml-2" />
+                    העתק טקסט
                   </Button>
 
                   <div className="flex items-center gap-2">
