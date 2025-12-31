@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -55,10 +55,18 @@ export default function AppointmentDetail() {
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [reviewBeforeSend, setReviewBeforeSend] = useState(true);
   const [showReviewDialog, setShowReviewDialog] = useState(false);
+  const [pdfReady, setPdfReady] = useState(false);
   
   const { user } = useAuth();
   const { data: signatures } = useElectronicSignatures('appointment', id || '');
   const createSignature = useCreateElectronicSignature();
+
+  // Set pdfReady if signatures already exist
+  useEffect(() => {
+    if (signatures && signatures.length > 0) {
+      setPdfReady(true);
+    }
+  }, [signatures]);
 
   // Fetch appointment
   const { data: appointment, isLoading } = useQuery({
@@ -254,7 +262,18 @@ export default function AppointmentDetail() {
     updateAppointment.mutate({ internal_notes: internalNotes, status });
   };
 
+  // Check if at least one field has >2 chars
+  const hasValidContent = () => {
+    const fields = [chiefComplaint, currentIllness, physicalExam, labTests, auxiliaryTests, visitSummary, treatmentPlan, medications];
+    return fields.some(field => field.trim().length > 2);
+  };
+
   const handleSaveVisitSummary = () => {
+    if (!hasValidContent()) {
+      toast({ title: 'נדרש למלא לפחות שדה אחד', description: 'יש להזין לפחות 3 תווים בשדה אחד', variant: 'destructive' });
+      return;
+    }
+    // Save first, then open signature
     const isCompleted = visitSummary.trim() || treatmentPlan.trim() || medications.trim();
     updateAppointment.mutate({ 
       visit_summary: visitSummary, 
@@ -262,6 +281,11 @@ export default function AppointmentDetail() {
       medications,
       visit_completed_at: isCompleted ? new Date().toISOString() : undefined,
       status: isCompleted ? 'completed' : status,
+    }, {
+      onSuccess: () => {
+        // After save, open signature popup
+        setShowSignaturePad(true);
+      }
     });
   };
 
@@ -997,17 +1021,18 @@ export default function AppointmentDetail() {
                 <div className="flex flex-wrap gap-3 pt-4 border-t" data-tutorial="share-buttons">
                   <Button 
                     onClick={handleSaveVisitSummary} 
-                    disabled={updateAppointment.isPending}
+                    disabled={updateAppointment.isPending || !hasValidContent()}
                     className="bg-primary text-primary-foreground hover:bg-primary/90"
                   >
                     <Save className="h-4 w-4 ml-2" />
-                    {updateAppointment.isPending ? 'שומר...' : 'שמור סיכום'}
+                    {updateAppointment.isPending ? 'שומר...' : 'שמור וחתום'}
                   </Button>
                   
                   <Button 
                     variant="outline" 
                     onClick={handleSendEmailClick}
-                    disabled={isSendingEmail || !appointment.patients?.email || (visitSummary.trim().length <= 2 && treatmentPlan.trim().length <= 2 && medications.trim().length <= 2 && chiefComplaint.trim().length <= 2 && currentIllness.trim().length <= 2 && physicalExam.trim().length <= 2 && labTests.trim().length <= 2 && auxiliaryTests.trim().length <= 2)}
+                    disabled={isSendingEmail || !appointment.patients?.email || !pdfReady}
+                    title={!pdfReady ? 'יש לשמור ולחתום תחילה' : ''}
                   >
                     <Mail className="h-4 w-4 ml-2" />
                     {isSendingEmail ? 'שולח...' : 'שלח באימייל'}
@@ -1027,32 +1052,14 @@ export default function AppointmentDetail() {
                   <Button 
                     variant="outline" 
                     onClick={handlePrint}
-                    disabled={visitSummary.trim().length <= 2 && treatmentPlan.trim().length <= 2 && medications.trim().length <= 2 && chiefComplaint.trim().length <= 2 && currentIllness.trim().length <= 2 && physicalExam.trim().length <= 2 && labTests.trim().length <= 2 && auxiliaryTests.trim().length <= 2}
+                    disabled={!pdfReady}
+                    title={!pdfReady ? 'יש לשמור ולחתום תחילה' : ''}
                   >
                     <Printer className="h-4 w-4 ml-2" />
                     הדפס
                   </Button>
 
                   <Dialog open={showSignaturePad} onOpenChange={setShowSignaturePad}>
-                    <DialogTrigger asChild>
-                      <Button 
-                        variant={signatures?.length ? "outline" : "default"}
-                        disabled={visitSummary.trim().length <= 2 && treatmentPlan.trim().length <= 2 && medications.trim().length <= 2 && chiefComplaint.trim().length <= 2 && currentIllness.trim().length <= 2 && physicalExam.trim().length <= 2 && labTests.trim().length <= 2 && auxiliaryTests.trim().length <= 2}
-                        className={signatures?.length ? "" : "bg-green-600 hover:bg-green-700 text-white"}
-                      >
-                        {signatures?.length ? (
-                          <>
-                            <CheckCircle className="h-4 w-4 ml-2 text-green-600" />
-                            נחתם ({signatures.length})
-                          </>
-                        ) : (
-                          <>
-                            <PenTool className="h-4 w-4 ml-2" />
-                            חתום דיגיטלית
-                          </>
-                        )}
-                      </Button>
-                    </DialogTrigger>
                     <DialogContent className="sm:max-w-md">
                       <DialogHeader>
                         <DialogTitle>חתימה דיגיטלית על סיכום הביקור</DialogTitle>
@@ -1061,15 +1068,22 @@ export default function AppointmentDetail() {
                         defaultName={user?.email?.split('@')[0] || ''}
                         defaultRole="doctor"
                         onSign={async (signatureData, signerName, signerRole, signatureMeaning) => {
-                          await createSignature.mutateAsync({
-                            record_type: 'appointment',
-                            record_id: id!,
-                            signature_data: signatureData,
-                            signer_name: signerName,
-                            signer_role: signerRole,
-                            signature_meaning: signatureMeaning
-                          });
-                          setShowSignaturePad(false);
+                          try {
+                            await createSignature.mutateAsync({
+                              record_type: 'appointment',
+                              record_id: id!,
+                              signature_data: signatureData,
+                              signer_name: signerName,
+                              signer_role: signerRole,
+                              signature_meaning: signatureMeaning
+                            });
+                            setShowSignaturePad(false);
+                            // PDF is now ready, show preview
+                            setPdfReady(true);
+                            setShowReviewDialog(true);
+                          } catch (error: any) {
+                            toast({ title: 'שגיאה ביצירת PDF', description: error.message, variant: 'destructive' });
+                          }
                         }}
                         onCancel={() => setShowSignaturePad(false)}
                       />
