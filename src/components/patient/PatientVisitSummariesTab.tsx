@@ -172,7 +172,7 @@ export default function PatientVisitSummariesTab() {
                         <FileText className="h-4 w-4 text-medical-600" />
                         סיכום ביקור
                       </h4>
-                      <p className="text-sm text-muted-foreground whitespace-pre-wrap bg-muted/50 p-3 rounded-md">
+                      <p className="text-sm text-muted-foreground whitespace-pre-wrap bg-muted/50 p-3 rounded-md text-right" dir="rtl">
                         {apt.visit_summary}
                       </p>
                     </div>
@@ -196,7 +196,7 @@ export default function PatientVisitSummariesTab() {
                         <ClipboardList className="h-4 w-4 text-medical-600" />
                         תכנית טיפול
                       </h4>
-                      <p className="text-sm text-muted-foreground whitespace-pre-wrap bg-muted/50 p-3 rounded-md">
+                      <p className="text-sm text-muted-foreground whitespace-pre-wrap bg-muted/50 p-3 rounded-md text-right" dir="rtl">
                         {apt.treatment_plan}
                       </p>
                     </div>

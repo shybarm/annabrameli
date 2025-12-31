@@ -930,7 +930,8 @@ export default function AppointmentDetail() {
                     onChange={(e) => setVisitSummary(e.target.value)}
                     placeholder="תאר את מהלך הביקור, ממצאים, אבחנה..."
                     rows={5}
-                    className="resize-none"
+                    className="resize-none text-right"
+                    dir="rtl"
                   />
                 </div>
 
@@ -944,7 +945,8 @@ export default function AppointmentDetail() {
                     onChange={(e) => setTreatmentPlan(e.target.value)}
                     placeholder="המלצות לטיפול, פעולות נדרשות, תור המשך..."
                     rows={4}
-                    className="resize-none"
+                    className="resize-none text-right"
+                    dir="rtl"
                   />
                 </div>
 

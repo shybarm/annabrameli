@@ -854,13 +854,13 @@ export default function PatientDetail() {
                           {apt.visit_summary && (
                             <div className="mb-2">
                               <p className="text-xs font-medium text-muted-foreground mb-1">סיכום:</p>
-                              <p className="text-sm whitespace-pre-wrap line-clamp-3">{apt.visit_summary}</p>
+                              <p className="text-sm whitespace-pre-wrap line-clamp-3 text-right" dir="rtl">{apt.visit_summary}</p>
                             </div>
                           )}
                           {apt.treatment_plan && (
                             <div className="mb-2">
                               <p className="text-xs font-medium text-muted-foreground mb-1">תוכנית טיפול:</p>
-                              <p className="text-sm whitespace-pre-wrap line-clamp-2">{apt.treatment_plan}</p>
+                              <p className="text-sm whitespace-pre-wrap line-clamp-2 text-right" dir="rtl">{apt.treatment_plan}</p>
                             </div>
                           )}
                           {apt.medications && (
