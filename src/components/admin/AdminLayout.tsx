@@ -1,7 +1,7 @@
 import { ReactNode, useEffect, useRef } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth, UserPermissions } from '@/hooks/useAuth';
-import { useUnreadMessageCount } from '@/hooks/useAdminMessages';
+
 import { useUnreviewedPatientsCount } from '@/hooks/useUnreviewedPatients';
 import { TeamChatWidget } from './TeamChatWidget';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,6 @@ import {
   Users,
   Calendar,
   Receipt,
-  MessageSquare,
   Settings,
   LogOut,
   Menu,
@@ -54,7 +53,6 @@ const navItems: NavItem[] = [
   { href: '/admin/cancellations', icon: XCircle, label: 'ביטולי תורים', requiredPermission: 'canViewCancellations' },
   { href: '/admin/billing', icon: Receipt, label: 'חיוב וחשבוניות', requiredPermission: 'canViewBilling' },
   { href: '/admin/expenses', icon: Wallet, label: 'הוצאות', requiredPermission: 'canViewExpenses' },
-  { href: '/admin/messages', icon: MessageSquare, label: 'הודעות' },
   { href: '/admin/team', icon: UsersRound, label: 'צוות', requiredPermission: 'canViewTeam' },
   { href: '/admin/work-hours', icon: Clock, label: 'שעות עבודה', requiredPermission: 'canViewWorkHours' },
   { href: '/admin/audit-log', icon: History, label: 'לוג אבטחה', requiredPermission: 'canViewAuditLog' },
@@ -63,7 +61,6 @@ const navItems: NavItem[] = [
 
 export function AdminLayout({ children }: AdminLayoutProps) {
   const { user, loading, isStaff, isAdmin, signOut, roles, hasPermission } = useAuth();
-  const { data: unreadCount } = useUnreadMessageCount();
   const { clinicTheme, selectedClinicId } = useClinicContext();
   const { data: unreviewedPatientsCount } = useUnreviewedPatientsCount(selectedClinicId);
   const { data: clinics } = useClinics();
@@ -232,13 +229,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                 const isActive = item.exact
                   ? location.pathname === item.href
                   : location.pathname.startsWith(item.href);
-                const isMessages = item.href === '/admin/messages';
                 const isPatients = item.href === '/admin/patients';
-                const badgeCount = isMessages 
-                  ? unreadCount?.total || 0 
-                  : isPatients 
-                    ? unreviewedPatientsCount || 0 
-                    : 0;
+                const badgeCount = isPatients ? unreviewedPatientsCount || 0 : 0;
                 return (
                   <Link
                     key={item.href}
