@@ -579,16 +579,16 @@ export default function GuestBooking() {
                     <SelectTrigger>
                       <SelectValue placeholder="בחר סוג תור" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="pointer-events-auto">
                       {appointmentTypes?.map((type) => (
-                        <SelectItem key={type.id} value={type.id}>
-                          <div className="flex items-center gap-2">
+                        <SelectItem key={type.id} value={type.id} className="pointer-events-auto">
+                          <span className="inline-flex items-center gap-2 pointer-events-none">
                             <span
-                              className="w-3 h-3 rounded-full"
+                              className="w-3 h-3 rounded-full shrink-0"
                               style={{ backgroundColor: type.color }}
                             />
                             <span>{type.name_he}</span>
-                          </div>
+                          </span>
                         </SelectItem>
                       ))}
                     </SelectContent>
