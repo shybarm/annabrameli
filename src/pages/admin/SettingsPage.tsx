@@ -379,141 +379,6 @@ export default function SettingsPage() {
           </p>
         </div>
 
-        {/* Reminder Settings */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Bell className="h-5 w-5" />
-              תזכורות תורים
-            </CardTitle>
-            <CardDescription>
-              הגדרת תזכורות אוטומטיות בוואטסאפ ובאימייל לפני תורים
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {loadingReminders ? (
-              <div className="flex justify-center py-4">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
-              </div>
-            ) : (
-              <>
-                {reminders && reminders.length > 0 ? (
-                  <div className="space-y-3">
-                    {reminders.map((reminder) => (
-                      <div 
-                        key={reminder.id} 
-                        className="p-4 border rounded-lg bg-card"
-                      >
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="font-medium">
-                            {formatHours(reminder.hours_before)} לפני
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => deleteReminder.mutate(reminder.id)}
-                            className="text-destructive hover:text-destructive h-8 w-8"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        <div className="grid grid-cols-3 gap-3">
-                          <div className="flex items-center justify-between h-11 px-3 rounded-md border border-border/40 bg-background">
-                            <span className="text-sm text-muted-foreground">WhatsApp</span>
-                            <div dir="ltr">
-                              <Switch
-                                checked={reminder.send_whatsapp}
-                                onCheckedChange={(checked) =>
-                                  updateReminder.mutate({
-                                    id: reminder.id,
-                                    updates: { send_whatsapp: checked },
-                                  })
-                                }
-                              />
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-between h-11 px-3 rounded-md border border-border/40 bg-background">
-                            <span className="text-sm text-muted-foreground">אימייל</span>
-                            <div dir="ltr">
-                              <Switch
-                                checked={reminder.send_email}
-                                onCheckedChange={(checked) =>
-                                  updateReminder.mutate({
-                                    id: reminder.id,
-                                    updates: { send_email: checked },
-                                  })
-                                }
-                              />
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-between h-11 px-3 rounded-md border border-border/40 bg-background">
-                            <span className="text-sm text-muted-foreground">פעיל</span>
-                            <div dir="ltr">
-                              <Switch
-                                checked={reminder.is_active}
-                                onCheckedChange={(checked) =>
-                                  updateReminder.mutate({
-                                    id: reminder.id,
-                                    updates: { is_active: checked },
-                                  })
-                                }
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground text-center py-4">
-                    אין תזכורות מוגדרות
-                  </p>
-                )}
-
-                <Separator />
-
-                <div className="flex flex-col gap-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                    <div className="flex items-center gap-2">
-                      <Input
-                        type="number"
-                        value={newHours}
-                        onChange={(e) => setNewHours(e.target.value)}
-                        placeholder="שעות"
-                        className="w-24"
-                        min={1}
-                      />
-                      <span className="text-muted-foreground text-sm whitespace-nowrap">שעות לפני התור</span>
-                    </div>
-                    <Button
-                      variant="outline"
-                      onClick={handleAddReminder}
-                      disabled={addReminder.isPending}
-                      className="sm:w-auto"
-                    >
-                      <Plus className="h-4 w-4 ml-2" />
-                      הוסף תזכורת
-                    </Button>
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={testReminders}
-                    >
-                      <Play className="h-4 w-4 ml-2" />
-                      בדוק ושלח תזכורות עכשיו
-                    </Button>
-                    <p className="text-xs text-muted-foreground">
-                      לחץ כדי לשלוח תזכורות לכל התורים הקרובים שעדיין לא קיבלו תזכורת
-                    </p>
-                  </div>
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
-
         {/* Clinic Info */}
         <Card>
           <CardHeader>
@@ -698,6 +563,141 @@ export default function SettingsPage() {
             >
               {saveAppointmentSettings.isPending ? 'שומר...' : 'שמור שינויים'}
             </Button>
+          </CardContent>
+        </Card>
+
+        {/* Reminder Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Bell className="h-5 w-5" />
+              תזכורות תורים
+            </CardTitle>
+            <CardDescription>
+              הגדרת תזכורות אוטומטיות בוואטסאפ ובאימייל לפני תורים
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {loadingReminders ? (
+              <div className="flex justify-center py-4">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
+              </div>
+            ) : (
+              <>
+                {reminders && reminders.length > 0 ? (
+                  <div className="space-y-3">
+                    {reminders.map((reminder) => (
+                      <div 
+                        key={reminder.id} 
+                        className="p-4 border rounded-lg bg-card"
+                      >
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="font-medium">
+                            {formatHours(reminder.hours_before)} לפני
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => deleteReminder.mutate(reminder.id)}
+                            className="text-destructive hover:text-destructive h-8 w-8"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <div className="grid grid-cols-3 gap-3">
+                          <div className="flex items-center justify-between h-11 px-3 rounded-md border border-border/40 bg-background">
+                            <span className="text-sm text-muted-foreground">WhatsApp</span>
+                            <div dir="ltr">
+                              <Switch
+                                checked={reminder.send_whatsapp}
+                                onCheckedChange={(checked) =>
+                                  updateReminder.mutate({
+                                    id: reminder.id,
+                                    updates: { send_whatsapp: checked },
+                                  })
+                                }
+                              />
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between h-11 px-3 rounded-md border border-border/40 bg-background">
+                            <span className="text-sm text-muted-foreground">אימייל</span>
+                            <div dir="ltr">
+                              <Switch
+                                checked={reminder.send_email}
+                                onCheckedChange={(checked) =>
+                                  updateReminder.mutate({
+                                    id: reminder.id,
+                                    updates: { send_email: checked },
+                                  })
+                                }
+                              />
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between h-11 px-3 rounded-md border border-border/40 bg-background">
+                            <span className="text-sm text-muted-foreground">פעיל</span>
+                            <div dir="ltr">
+                              <Switch
+                                checked={reminder.is_active}
+                                onCheckedChange={(checked) =>
+                                  updateReminder.mutate({
+                                    id: reminder.id,
+                                    updates: { is_active: checked },
+                                  })
+                                }
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground text-center py-4">
+                    אין תזכורות מוגדרות
+                  </p>
+                )}
+
+                <Separator />
+
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        value={newHours}
+                        onChange={(e) => setNewHours(e.target.value)}
+                        placeholder="שעות"
+                        className="w-24"
+                        min={1}
+                      />
+                      <span className="text-muted-foreground text-sm whitespace-nowrap">שעות לפני התור</span>
+                    </div>
+                    <Button
+                      variant="outline"
+                      onClick={handleAddReminder}
+                      disabled={addReminder.isPending}
+                      className="sm:w-auto"
+                    >
+                      <Plus className="h-4 w-4 ml-2" />
+                      הוסף תזכורת
+                    </Button>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={testReminders}
+                    >
+                      <Play className="h-4 w-4 ml-2" />
+                      בדוק ושלח תזכורות עכשיו
+                    </Button>
+                    <p className="text-xs text-muted-foreground">
+                      לחץ כדי לשלוח תזכורות לכל התורים הקרובים שעדיין לא קיבלו תזכורת
+                    </p>
+                  </div>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
 
