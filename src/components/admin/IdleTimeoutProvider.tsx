@@ -8,14 +8,14 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import { Clock, LogOut, Square } from 'lucide-react';
+import { Clock, Square } from 'lucide-react';
 import { useWorkSessions } from '@/hooks/useWorkSessions';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 const IDLE_TIMEOUT_MS = 45 * 60 * 1000; // 45 minutes
-const WARNING_COUNTDOWN_MS = 60 * 1000; // 60 seconds to respond
+const WARNING_COUNTDOWN_SECONDS = 60; // 60 seconds to respond
 
 interface IdleTimeoutProviderProps {
   children: React.ReactNode;
@@ -24,12 +24,13 @@ interface IdleTimeoutProviderProps {
 
 export function IdleTimeoutProvider({ children, isStaff }: IdleTimeoutProviderProps) {
   const [showWarning, setShowWarning] = useState(false);
-  const [countdown, setCountdown] = useState(60);
+  const [countdown, setCountdown] = useState(WARNING_COUNTDOWN_SECONDS);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   
   const idleTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const countdownTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const lastActivityRef = useRef<number>(Date.now());
+  const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const logoutDeadlineRef = useRef<number | null>(null);
+  const isLoggingOutRef = useRef(false);
   
   const { todaySession, clockOut } = useWorkSessions();
   const { signOut } = useAuth();
@@ -38,8 +39,51 @@ export function IdleTimeoutProvider({ children, isStaff }: IdleTimeoutProviderPr
   const hasActiveSession = todaySession.data && todaySession.data.end_time === null;
   const activeSessionId = todaySession.data?.id;
 
-  const handleLogout = useCallback(async (shouldClockOut: boolean = false) => {
+  // Force logout - called when countdown expires
+  const forceLogout = useCallback(async () => {
+    // Prevent multiple logout calls
+    if (isLoggingOutRef.current) return;
+    isLoggingOutRef.current = true;
     setIsLoggingOut(true);
+    
+    // Clear all timers
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+      countdownIntervalRef.current = null;
+    }
+    if (idleTimerRef.current) {
+      clearTimeout(idleTimerRef.current);
+      idleTimerRef.current = null;
+    }
+    logoutDeadlineRef.current = null;
+    
+    try {
+      await signOut();
+      navigate('/auth');
+    } catch (error) {
+      console.error('Force logout error:', error);
+      // Even on error, redirect to auth
+      navigate('/auth');
+    }
+  }, [signOut, navigate]);
+
+  // Handle manual logout with optional clock out
+  const handleLogout = useCallback(async (shouldClockOut: boolean = false) => {
+    if (isLoggingOutRef.current) return;
+    isLoggingOutRef.current = true;
+    setIsLoggingOut(true);
+    
+    // Clear all timers
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+      countdownIntervalRef.current = null;
+    }
+    if (idleTimerRef.current) {
+      clearTimeout(idleTimerRef.current);
+      idleTimerRef.current = null;
+    }
+    logoutDeadlineRef.current = null;
+    
     try {
       if (shouldClockOut && activeSessionId) {
         await clockOut.mutateAsync(activeSessionId);
@@ -49,36 +93,100 @@ export function IdleTimeoutProvider({ children, isStaff }: IdleTimeoutProviderPr
       navigate('/auth');
     } catch (error) {
       toast.error('שגיאה ביציאה מהמערכת');
+      isLoggingOutRef.current = false;
       setIsLoggingOut(false);
     }
   }, [activeSessionId, clockOut, signOut, navigate]);
 
+  // Start the warning countdown with deadline-based approach
+  const startWarningCountdown = useCallback(() => {
+    // Set absolute deadline for logout
+    const deadline = Date.now() + (WARNING_COUNTDOWN_SECONDS * 1000);
+    logoutDeadlineRef.current = deadline;
+    setCountdown(WARNING_COUNTDOWN_SECONDS);
+    setShowWarning(true);
+    
+    // Clear any existing countdown interval
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+    }
+    
+    // Use interval to check deadline - robust against tab throttling
+    countdownIntervalRef.current = setInterval(() => {
+      const now = Date.now();
+      const deadlineTime = logoutDeadlineRef.current;
+      
+      if (!deadlineTime) {
+        // Deadline was cleared (user clicked stay logged in)
+        if (countdownIntervalRef.current) {
+          clearInterval(countdownIntervalRef.current);
+          countdownIntervalRef.current = null;
+        }
+        return;
+      }
+      
+      const remainingMs = deadlineTime - now;
+      const remainingSeconds = Math.ceil(remainingMs / 1000);
+      
+      if (remainingMs <= 0) {
+        // Time's up - force logout immediately
+        if (countdownIntervalRef.current) {
+          clearInterval(countdownIntervalRef.current);
+          countdownIntervalRef.current = null;
+        }
+        setCountdown(0);
+        forceLogout();
+      } else {
+        setCountdown(remainingSeconds);
+      }
+    }, 1000);
+  }, [forceLogout]);
+
+  // Reset idle timer - called on user activity
   const resetIdleTimer = useCallback(() => {
-    lastActivityRef.current = Date.now();
+    // Don't reset if warning is showing or logging out
+    if (showWarning || isLoggingOutRef.current) return;
     
     if (idleTimerRef.current) {
       clearTimeout(idleTimerRef.current);
     }
     
-    if (!isStaff || showWarning) return;
+    if (!isStaff) return;
     
     idleTimerRef.current = setTimeout(() => {
-      setShowWarning(true);
-      setCountdown(60);
+      startWarningCountdown();
     }, IDLE_TIMEOUT_MS);
-  }, [isStaff, showWarning]);
+  }, [isStaff, showWarning, startWarningCountdown]);
 
-  const handleStayLoggedIn = () => {
-    setShowWarning(false);
-    if (countdownTimerRef.current) {
-      clearInterval(countdownTimerRef.current);
+  // Handle "stay logged in" button click
+  const handleStayLoggedIn = useCallback(() => {
+    // Clear the deadline first to stop the countdown
+    logoutDeadlineRef.current = null;
+    
+    // Clear countdown interval
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+      countdownIntervalRef.current = null;
     }
-    resetIdleTimer();
-  };
+    
+    // Hide warning and reset countdown display
+    setShowWarning(false);
+    setCountdown(WARNING_COUNTDOWN_SECONDS);
+    
+    // Reset idle timer for another 45 minutes
+    if (idleTimerRef.current) {
+      clearTimeout(idleTimerRef.current);
+    }
+    
+    idleTimerRef.current = setTimeout(() => {
+      startWarningCountdown();
+    }, IDLE_TIMEOUT_MS);
+  }, [startWarningCountdown]);
 
-  const handleClockOutAndLogout = () => {
+  // Handle clock out and logout button click
+  const handleClockOutAndLogout = useCallback(() => {
     handleLogout(true);
-  };
+  }, [handleLogout]);
 
   // Set up activity listeners
   useEffect(() => {
@@ -87,7 +195,8 @@ export function IdleTimeoutProvider({ children, isStaff }: IdleTimeoutProviderPr
     const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
     
     const handleActivity = () => {
-      if (!showWarning) {
+      // Only reset if warning is NOT showing
+      if (!showWarning && !isLoggingOutRef.current) {
         resetIdleTimer();
       }
     };
@@ -96,7 +205,7 @@ export function IdleTimeoutProvider({ children, isStaff }: IdleTimeoutProviderPr
       window.addEventListener(event, handleActivity, { passive: true });
     });
 
-    // Initial timer
+    // Start initial idle timer
     resetIdleTimer();
 
     return () => {
@@ -106,35 +215,24 @@ export function IdleTimeoutProvider({ children, isStaff }: IdleTimeoutProviderPr
       if (idleTimerRef.current) {
         clearTimeout(idleTimerRef.current);
       }
+      if (countdownIntervalRef.current) {
+        clearInterval(countdownIntervalRef.current);
+      }
     };
   }, [isStaff, showWarning, resetIdleTimer]);
 
-  // Countdown timer when warning is shown
+  // Cleanup on unmount
   useEffect(() => {
-    if (!showWarning) return;
-
-    setCountdown(60);
-    
-    countdownTimerRef.current = setInterval(() => {
-      setCountdown(prev => {
-        if (prev <= 1) {
-          // Time's up - auto logout WITHOUT clockOut (compliance-safe)
-          if (countdownTimerRef.current) {
-            clearInterval(countdownTimerRef.current);
-          }
-          handleLogout(false);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
     return () => {
-      if (countdownTimerRef.current) {
-        clearInterval(countdownTimerRef.current);
+      if (idleTimerRef.current) {
+        clearTimeout(idleTimerRef.current);
       }
+      if (countdownIntervalRef.current) {
+        clearInterval(countdownIntervalRef.current);
+      }
+      logoutDeadlineRef.current = null;
     };
-  }, [showWarning, handleLogout]);
+  }, []);
 
   if (!isStaff) {
     return <>{children}</>;
