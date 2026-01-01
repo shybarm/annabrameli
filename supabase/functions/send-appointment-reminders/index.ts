@@ -329,43 +329,58 @@ Deno.serve(async (req) => {
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+  const reminderInternalToken = Deno.env.get("REMINDER_INTERNAL_TOKEN");
 
   // Auth check
   const authHeader = req.headers.get("Authorization") || "";
   const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
 
   if (!token) {
-    console.error("Authentication failed: missing bearer token");
+    console.error("[Reminders] Authentication failed: missing bearer token");
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 
-  const isSchedulerCall = token === supabaseAnonKey;
+  // Check if this is a cron/scheduler call using the internal token
+  // SECURITY: The internal token is a secret, NOT the anon key
+  let isSchedulerCall = false;
+  let triggerType: "cron" | "manual" = "manual";
 
-  if (!isSchedulerCall) {
+  if (reminderInternalToken && token === reminderInternalToken) {
+    // Valid internal token - this is a cron call
+    isSchedulerCall = true;
+    triggerType = "cron";
+    console.log("[Reminders] Authenticated via internal token (cron)");
+  } else {
+    // Not an internal token - must be a valid user JWT with staff role
     const supabaseAuthClient = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } },
     });
 
     const { data: { user }, error } = await supabaseAuthClient.auth.getUser();
     if (error || !user) {
-      console.error("Authentication failed: Invalid or expired token");
+      console.error("[Reminders] Authentication failed: Invalid or expired JWT");
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
+    // Verify staff role using RPC
     const { data: staffCheck, error: rpcError } = await supabaseAuthClient.rpc("is_staff", { _user_id: user.id });
 
     if (rpcError || !staffCheck) {
-      return new Response(JSON.stringify({ error: "Forbidden" }), {
+      console.error(`[Reminders] Authorization failed: User ${user.id} is not staff`);
+      return new Response(JSON.stringify({ error: "Forbidden: Staff access required" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    triggerType = "manual";
+    console.log(`[Reminders] Authenticated via JWT (manual) - user: ${user.id}`);
   }
 
   // Create run record FAST (synchronous DB insert)
@@ -374,14 +389,14 @@ Deno.serve(async (req) => {
   const { data: runData, error: runError } = await supabase
     .from("reminder_runs")
     .insert({
-      trigger_type: isSchedulerCall ? "cron" : "manual",
+      trigger_type: triggerType,
       started_at: new Date().toISOString(),
     })
     .select("id")
     .single();
 
   if (runError) {
-    console.error("Failed to create run record:", runError);
+    console.error("[Reminders] Failed to create run record:", runError);
     return new Response(JSON.stringify({ error: "Failed to start run" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -389,7 +404,7 @@ Deno.serve(async (req) => {
   }
 
   const runId = runData.id;
-  console.log(`[Reminders] Run ${runId} created, starting background processing`);
+  console.log(`[Reminders] Run ${runId} created (${triggerType}), starting background processing`);
 
   // Use EdgeRuntime.waitUntil for background processing (returns immediately to avoid pg_net 5s timeout)
   // @ts-ignore - EdgeRuntime is available in Supabase Edge Functions runtime
@@ -406,6 +421,7 @@ Deno.serve(async (req) => {
     JSON.stringify({
       success: true,
       runId,
+      triggerType,
       message: "Reminder processing started in background",
     }),
     {
