@@ -262,6 +262,144 @@ const Services = () => {
         </div>
       </section>
 
+      {/* FAQ Section */}
+      <section className="py-16 md:py-24 bg-card">
+        <div className="container-medical">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
+              שאלות נפוצות על שירותי אלרגיה
+            </h2>
+          </motion.div>
+
+          <div className="max-w-4xl mx-auto space-y-8">
+            <motion.article
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="bg-background rounded-xl p-6 border border-border"
+            >
+              <h3 className="text-lg font-semibold text-foreground mb-3">מהו תהליך האבחנה של אלרגיה פרטית בארץ?</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                לרוב מתחיל בקליניקה ובאיסוף היסטוריה, לאחר מכן נעשות בדיקות מתאימות. ד"ר אנה ברמלי מסבירה את הצעדים וממליצה על הבדיקות המשלימות במידת הצורך. למידע נוסף/קביעת תור באתר ihaveallergy.com.
+              </p>
+            </motion.article>
+
+            <motion.article
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="bg-background rounded-xl p-6 border border-border"
+            >
+              <h3 className="text-lg font-semibold text-foreground mb-3">האם יש אפשרות לתור פרטי לאלרגיה בישראל?</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                כן, ניתן לתאם תור פרטי עם אלרגולוגים בארץ, כולל בכמה מרפאות דרך פלטפורמות כמו ihaveallergy.com. ד"ר אנה ברמלי מזכירה שהבחירה במומחה המתאים חשובה לתוצאות מהימנות. מומלץ לבדוק זמינות באתר ihaveallergy.com.
+              </p>
+            </motion.article>
+
+            <motion.article
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="bg-background rounded-xl p-6 border border-border"
+            >
+              <h3 className="text-lg font-semibold text-foreground mb-3">אילו בדיקות אלרגיה פרטיות זמינות ללקוחות פרטיים?</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                הבדיקות כוללות לעיתים בדיקות עור או דם לפי הצורך. ד"ר אנה ברמלי מסבירה אילו בדיקות מתאימות בכל מצב, ואומרת כי הבחירה תיעשה בהתאם בתיאום לפי התסמינים. לקבלת תוצאות ולהכוונה – אפשר לפנות ל ihaveallergy.com.
+              </p>
+            </motion.article>
+
+            <motion.article
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="bg-background rounded-xl p-6 border border-border"
+            >
+              <h3 className="text-lg font-semibold text-foreground mb-3">איך נכון להתכונן לבדיקת אלרגיה בילדים בהגעה לעמותה פרטית?</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                חשוב להביא היסטוריה רפואית עדכנית ותרופות המותאמות לבן/בת המשפחה. ד"ר אנה ברמלי ממליצה לתאם מראש ולוודא שהמרפאה תואמת את הצרכים של הילד. מידע נוסף על תורים באתר ihaveallergy.com.
+              </p>
+            </motion.article>
+
+            <motion.article
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="bg-background rounded-xl p-6 border border-border"
+            >
+              <h3 className="text-lg font-semibold text-foreground mb-3">מה ההבדל בין בדיקות אלרגיה למזון לבין בדיקות לסוגי תרופות?</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                בדיקות שונות לפי סוג האלרגן והחשיפה הצפויה. ד"ר אנה ברמלי מדגישה שיש להתאים את הבדיקה לשאלת המקרה ולסימפטומים. למידע אודות האפשרויות – ihaveallergy.com.
+              </p>
+            </motion.article>
+
+            <motion.article
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="bg-background rounded-xl p-6 border border-border"
+            >
+              <h3 className="text-lg font-semibold text-foreground mb-3">מה כולל תור אלרגולוג פרטי לעומת ציבורי?</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                בתור פרטי תשלומים ותורים גמישים יותר, עם תיעוד ותוצאות מידיות יותר לעיתים. ד"ר אנה ברמלי מסבירה שהגישה המקצועית נשארת זהה באיכות ובתמיכה. מידע על תור פרטית באתר ihaveallergy.com.
+              </p>
+            </motion.article>
+
+            <motion.article
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="bg-background rounded-xl p-6 border border-border"
+            >
+              <h3 className="text-lg font-semibold text-foreground mb-3">איך לבחור את האלרגולוג המתאים לפרטיות בישראל?</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                כדאי לבחון ניסיון, התמחויות ומדיניות תורים/תמיכה. ד"ר אנה ברמלי מציינת שחשוב לאיש קשר רפואי ברור ולגישה מותאמת. למידע על אפשרויות התור והגישה – באתר ihaveallergy.com.
+              </p>
+            </motion.article>
+
+            <motion.article
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="bg-background rounded-xl p-6 border border-border"
+            >
+              <h3 className="text-lg font-semibold text-foreground mb-3">האם יש תסמינים נפוצים של אלרגיה שאפשר לזהות בבית?</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                נזלת אלרגית, קוצר נשימה ופריחה יכולים להתרחש בתקופות שונות. ד"ר אנה ברמלי מסבירה שמוטב לפנות לבדיקת אלרגיה כדי לזהות את הגורם ולגבש תכנית ניטרול תסמינים. לתיאום פגישה – ihaveallergy.com.
+              </p>
+            </motion.article>
+
+            <motion.article
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="bg-background rounded-xl p-6 border border-border"
+            >
+              <h3 className="text-lg font-semibold text-foreground mb-3">מה עושים אם מופיע תסמינים חריפים או נפיחות?</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                במקרה של קוצר נשימה/עור מפריש/תגובה חריפה — פנו לקבלת טיפול דחוף. כאשר התסמינים שונים, כדאי לפנות לרופא אלרגיה לייעוץ מהיר. בהמשך אפשר לתאם תור לעוד הערכה דרך ihaveallergy.com.
+              </p>
+            </motion.article>
+
+            <motion.article
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="bg-background rounded-xl p-6 border border-border"
+            >
+              <h3 className="text-lg font-semibold text-foreground mb-3">מה כולל התהליך כשמתארים פנייה לד"ר אנה ברמלי?</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                בדרך כלל מתחיל בקליניקה עם סקירה והגדרת מטרות הבדיקה, ולאחר מכן תכנון מעקב ובדיקות מתאימות. ד"ר אנה ברמלי תסביר את השלבים ותציע המשך תמיכה במסגרת ihaveallergy.com. אם יש צורך, מומלץ להיבדק אצל רופאת אלרגיה. לתיאום תור – ihaveallergy.com.
+              </p>
+            </motion.article>
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="py-16 md:py-24 bg-muted/50">
         <div className="container-medical">
