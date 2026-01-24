@@ -48,6 +48,7 @@ import NotFound from "./pages/NotFound";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import AccessibilityStatement from "./pages/AccessibilityStatement";
 import SecurityPolicy from "./pages/SecurityPolicy";
+import DrAnnaBrameli from "./pages/DrAnnaBrameli";
 
 // Layout for public pages
 const PublicLayout = ({ children }: { children: React.ReactNode }) => (
@@ -91,7 +92,7 @@ const App = () => (
               <Route path="/privacy" element={<PublicLayout><PrivacyPolicy /></PublicLayout>} />
               <Route path="/accessibility" element={<PublicLayout><AccessibilityStatement /></PublicLayout>} />
               <Route path="/security" element={<PublicLayout><SecurityPolicy /></PublicLayout>} />
-              
+              <Route path="/dr-anna-brameli" element={<DrAnnaBrameli />} />
               {/* Auth */}
               <Route path="/auth" element={<Auth />} />
               
