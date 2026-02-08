@@ -52,6 +52,7 @@ import DrAnnaBrameli from "./pages/DrAnnaBrameli";
 import WhoIs from "./pages/WhoIs";
 import Blog from "./pages/Blog";
 import BlogArticlePage from "./pages/BlogArticle";
+import GoldenGuide from "./pages/GoldenGuide";
 
 // Layout for public pages
 const PublicLayout = ({ children }: { children: React.ReactNode }) => (
@@ -99,6 +100,7 @@ const App = () => (
               <Route path="/whois" element={<WhoIs />} />
               <Route path="/blog" element={<PublicLayout><Blog /></PublicLayout>} />
               <Route path="/blog/:slug" element={<PublicLayout><BlogArticlePage /></PublicLayout>} />
+              <Route path="/guides/טעימות-ראשונות-אלרגנים" element={<PublicLayout><GoldenGuide /></PublicLayout>} />
               {/* Auth */}
               <Route path="/auth" element={<Auth />} />
               
