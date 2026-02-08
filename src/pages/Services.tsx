@@ -140,14 +140,14 @@ const Services = () => {
       <SchemaMarkup type="medicalWebPage" />
 
       {/* Hero */}
-      <section className="gradient-hero py-16 md:py-24">
+      <section className="gradient-hero py-20 md:py-28">
         <div className="container-medical">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="max-w-3xl"
           >
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
+            <h1 className="font-bold text-foreground mb-6">
               שירותים ומצבים רפואיים
             </h1>
             <p className="text-lg text-muted-foreground leading-relaxed">
@@ -158,15 +158,15 @@ const Services = () => {
       </section>
 
       {/* Diagnostic Services */}
-      <section className="py-16 md:py-24 bg-card">
+      <section className="section-spacing-lg bg-surface">
         <div className="container-medical">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-12"
+            className="text-center mb-14"
           >
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
+            <h2 className="font-bold text-foreground mb-4">
               שירותי אבחון
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
@@ -174,21 +174,21 @@ const Services = () => {
             </p>
           </motion.div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {diagnosticServices.map((service, index) => (
               <motion.div
                 key={service.title}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="bg-background rounded-xl p-6 border border-border"
+                transition={{ delay: index * 0.08 }}
+                className="bg-card rounded-2xl p-7 border border-border/60 card-hover"
               >
-                <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center mb-4">
+                <div className="w-12 h-12 rounded-2xl bg-accent flex items-center justify-center mb-5">
                   <service.icon className="w-6 h-6 text-primary" />
                 </div>
                 <h3 className="text-lg font-semibold text-foreground mb-2">{service.title}</h3>
-                <p className="text-sm text-muted-foreground">{service.description}</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">{service.description}</p>
               </motion.div>
             ))}
           </div>
@@ -196,15 +196,15 @@ const Services = () => {
       </section>
 
       {/* Conditions */}
-      <section className="py-16 md:py-24">
+      <section className="section-spacing-lg">
         <div className="container-medical">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-12"
+            className="text-center mb-14"
           >
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
+            <h2 className="font-bold text-foreground mb-4">
               מצבים רפואיים
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
@@ -221,10 +221,10 @@ const Services = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.05 }}
-                className="bg-card rounded-2xl border border-border p-6 md:p-8 scroll-mt-24"
+                className="bg-card rounded-2xl border border-border/60 p-7 md:p-9 scroll-mt-24 card-hover"
               >
                 <div className="flex items-start gap-4 mb-6">
-                  <div className="w-14 h-14 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
+                  <div className="w-14 h-14 rounded-2xl bg-accent flex items-center justify-center flex-shrink-0">
                     <condition.icon className="w-7 h-7 text-primary" />
                   </div>
                   <div>
@@ -238,7 +238,7 @@ const Services = () => {
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-6">
-                  <div className="bg-muted/50 rounded-xl p-5">
+                  <div className="bg-surface rounded-2xl p-5">
                     <h4 className="font-semibold text-foreground mb-3">תסמינים נפוצים:</h4>
                     <ul className="space-y-2">
                       {condition.symptoms.map((symptom, i) => (
@@ -249,7 +249,7 @@ const Services = () => {
                       ))}
                     </ul>
                   </div>
-                  <div className="bg-accent/50 rounded-xl p-5">
+                  <div className="bg-accent/40 rounded-2xl p-5">
                     <h4 className="font-semibold text-foreground mb-3">טיפול:</h4>
                     <p className="text-muted-foreground text-sm leading-relaxed">
                       {condition.treatment}
@@ -263,15 +263,15 @@ const Services = () => {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-16 md:py-24 bg-card">
+      <section className="section-spacing-lg bg-surface">
         <div className="container-medical">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-12"
+            className="text-center mb-14"
           >
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
+            <h2 className="font-bold text-foreground mb-4">
               שאלות נפוצות על שירותי אלרגיה
             </h2>
           </motion.div>
@@ -401,7 +401,7 @@ const Services = () => {
       </section>
 
       {/* CTA */}
-      <section className="py-16 md:py-24 bg-muted/50">
+      <section className="section-spacing-lg bg-surface-warm">
         <div className="container-medical">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -409,13 +409,13 @@ const Services = () => {
             viewport={{ once: true }}
             className="text-center"
           >
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
+            <h2 className="font-bold text-foreground mb-4">
               מתי כדאי להיבדק?
             </h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto mb-8">
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto mb-10">
               כאשר יש תגובות חוזרות: פריחה, שיעול, נפיחות או בעיות נשימה לאחר חשיפה למזון, תרופה, עקיצה או אבקנים.
             </p>
-            <Button size="lg" className="shadow-teal" asChild>
+            <Button size="lg" asChild>
               <Link to="/contact">
                 <Phone className="w-5 h-5 ml-2" />
                 קביעת תור לאבחון

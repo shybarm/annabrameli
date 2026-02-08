@@ -69,17 +69,17 @@ const About = () => {
       <SchemaMarkup type="physician" />
 
       {/* Hero Section */}
-      <section className="gradient-hero py-16 md:py-24">
+      <section className="gradient-hero py-20 md:py-28">
         <div className="container-medical">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid lg:grid-cols-2 gap-14 items-center">
             <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             >
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
+              <h1 className="font-bold text-foreground mb-6">
                 ד״ר אנה ברמלי
-                <span className="block text-primary mt-2 text-2xl md:text-3xl">מומחית לאלרגיה ואימונולוגיה</span>
+                <span className="block text-primary mt-3 text-[22px] md:text-[28px] lg:text-[32px]">מומחית לאלרגיה ואימונולוגיה</span>
               </h1>
               <p className="text-lg text-muted-foreground leading-relaxed mb-6">
                 ד״ר ברמלי היא רופאה בכירה לאלרגיה ואימונולוגיה, בעלת ניסיון של שנים באבחון, טיפול ומניעה של מגוון רחב של אלרגיות בילדים ובמבוגרים.
@@ -90,17 +90,20 @@ const About = () => {
             </motion.div>
 
             <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
               className="flex justify-center"
             >
               <div className="relative">
-                <div className="absolute inset-0 gradient-teal rounded-3xl transform -rotate-3 opacity-20" />
+                <div className="absolute inset-0 gradient-teal rounded-3xl transform -rotate-3 opacity-15 blur-sm" />
                 <img
                   src={drAnnaImage}
                   alt="ד״ר אנה ברמלי"
                   className="relative w-80 h-80 md:w-96 md:h-96 object-cover rounded-3xl shadow-xl"
+                  loading="eager"
+                  width={384}
+                  height={384}
                 />
               </div>
             </motion.div>
@@ -109,7 +112,7 @@ const About = () => {
       </section>
 
       {/* Philosophy Section */}
-      <section className="py-16 md:py-24 bg-card">
+      <section className="section-spacing-lg bg-surface">
         <div className="container-medical">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -117,10 +120,10 @@ const About = () => {
             viewport={{ once: true }}
             className="max-w-3xl mx-auto text-center"
           >
-            <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center mx-auto mb-8">
+            <div className="w-16 h-16 rounded-2xl bg-accent flex items-center justify-center mx-auto mb-8">
               <Heart className="w-8 h-8 text-primary" />
             </div>
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-6">
+            <h2 className="font-bold text-foreground mb-6">
               הגישה המקצועית
             </h2>
             <p className="text-lg text-muted-foreground leading-relaxed mb-6">
@@ -134,15 +137,15 @@ const About = () => {
       </section>
 
       {/* Education & Training */}
-      <section className="py-16 md:py-24">
+      <section className="section-spacing-lg">
         <div className="container-medical">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-12"
+            className="text-center mb-14"
           >
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-4">
+            <h2 className="font-bold text-foreground mb-4">
               השכלה והתמחות
             </h2>
           </motion.div>
@@ -167,7 +170,7 @@ const About = () => {
                   <GraduationCap className="w-3 h-3 text-primary-foreground" />
                 </div>
 
-                <div className="bg-card rounded-xl p-6 border border-border mr-4">
+                <div className="bg-card rounded-2xl p-6 border border-border/60 mr-4 card-hover">
                   <span className="text-sm text-primary font-medium">{item.period}</span>
                   <h3 className="text-lg font-semibold text-foreground mt-2">{item.title}</h3>
                   <p className="text-muted-foreground mt-1">{item.institution}</p>
@@ -180,20 +183,20 @@ const About = () => {
       </section>
 
       {/* Achievements */}
-      <section className="py-16 md:py-24 bg-muted/50">
+      <section className="section-spacing-lg bg-surface-warm">
         <div className="container-medical">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-12"
+            className="text-center mb-14"
           >
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-4">
+            <h2 className="font-bold text-foreground mb-4">
               הישגים ופעילות
             </h2>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-3 gap-5">
             {achievements.map((item, index) => (
               <motion.div
                 key={index}
@@ -201,13 +204,13 @@ const About = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="bg-card rounded-xl p-6 border border-border text-center"
+                className="bg-card rounded-2xl p-7 border border-border/60 text-center card-hover"
               >
-                <div className="w-14 h-14 rounded-xl bg-accent flex items-center justify-center mx-auto mb-4">
+                <div className="w-14 h-14 rounded-2xl bg-accent flex items-center justify-center mx-auto mb-5">
                   <item.icon className="w-7 h-7 text-primary" />
                 </div>
                 <h3 className="text-lg font-semibold text-foreground mb-2">{item.title}</h3>
-                <p className="text-sm text-muted-foreground">{item.description}</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">{item.description}</p>
               </motion.div>
             ))}
           </div>
@@ -215,7 +218,7 @@ const About = () => {
       </section>
 
       {/* Certifications */}
-      <section className="py-16 md:py-24">
+      <section className="section-spacing-lg">
         <div className="container-medical">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -224,25 +227,25 @@ const About = () => {
             className="max-w-3xl mx-auto"
           >
             <div className="flex items-center gap-4 mb-8">
-              <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center">
+              <div className="w-12 h-12 rounded-2xl bg-accent flex items-center justify-center">
                 <Stethoscope className="w-6 h-6 text-primary" />
               </div>
-              <h2 className="text-2xl md:text-3xl font-bold text-foreground">
+              <h2 className="font-bold text-foreground">
                 הסמכות ורישיונות
               </h2>
             </div>
-            <div className="bg-card rounded-xl p-6 border border-border space-y-4">
+            <div className="bg-card rounded-2xl p-7 border border-border/60 space-y-4">
               <div className="flex items-center justify-between py-3 border-b border-border last:border-b-0">
                 <span className="text-foreground font-medium">רישיון רפואה ישראלי</span>
-                <span className="text-muted-foreground">מס׳ 132226</span>
+                <span className="text-muted-foreground text-sm">מס׳ 132226</span>
               </div>
               <div className="flex items-center justify-between py-3 border-b border-border last:border-b-0">
                 <span className="text-foreground font-medium">ECFMG Certification</span>
-                <span className="text-muted-foreground">מס׳ 0-829-897-8</span>
+                <span className="text-muted-foreground text-sm">מס׳ 0-829-897-8</span>
               </div>
               <div className="flex items-center justify-between py-3">
                 <span className="text-foreground font-medium">מומחית ברפואת ילדים</span>
-                <span className="text-muted-foreground">משרד הבריאות</span>
+                <span className="text-muted-foreground text-sm">משרד הבריאות</span>
               </div>
             </div>
           </motion.div>
