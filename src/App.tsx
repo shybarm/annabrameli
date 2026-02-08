@@ -55,6 +55,11 @@ import BlogArticlePage from "./pages/BlogArticle";
 import GoldenGuide from "./pages/GoldenGuide";
 import GoldenGuideRights from "./pages/GoldenGuideRights";
 import GoldenGuideTesting from "./pages/GoldenGuideTesting";
+import RashAfterBamba from "./pages/knowledge/RashAfterBamba";
+import RednessAroundMouth from "./pages/knowledge/RednessAroundMouth";
+import BambaAt4Months from "./pages/knowledge/BambaAt4Months";
+import VomitingAfterTahini from "./pages/knowledge/VomitingAfterTahini";
+import DaysBetweenAllergens from "./pages/knowledge/DaysBetweenAllergens";
 
 // Layout for public pages
 const PublicLayout = ({ children }: { children: React.ReactNode }) => (
@@ -105,6 +110,12 @@ const App = () => (
               <Route path="/guides/טעימות-ראשונות-אלרגנים" element={<PublicLayout><GoldenGuide /></PublicLayout>} />
               <Route path="/guides/זכויות-ילד-אלרגי-ישראל" element={<PublicLayout><GoldenGuideRights /></PublicLayout>} />
               <Route path="/guides/בדיקות-אלרגיה-ילדים-ישראל" element={<PublicLayout><GoldenGuideTesting /></PublicLayout>} />
+              {/* Knowledge satellite articles */}
+              <Route path="/knowledge/פריחה-אחרי-במבה" element={<PublicLayout><RashAfterBamba /></PublicLayout>} />
+              <Route path="/knowledge/אודם-סביב-הפה-אחרי-אלרגן" element={<PublicLayout><RednessAroundMouth /></PublicLayout>} />
+              <Route path="/knowledge/במבה-גיל-4-חודשים" element={<PublicLayout><BambaAt4Months /></PublicLayout>} />
+              <Route path="/knowledge/הקאה-אחרי-טחינה" element={<PublicLayout><VomitingAfterTahini /></PublicLayout>} />
+              <Route path="/knowledge/כמה-ימים-בין-אלרגנים" element={<PublicLayout><DaysBetweenAllergens /></PublicLayout>} />
               {/* Auth */}
               <Route path="/auth" element={<Auth />} />
               

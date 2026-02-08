@@ -470,8 +470,6 @@ const GoldenGuide = () => {
             {[
               { to: "/guides/זכויות-ילד-אלרגי-ישראל", label: "זכויות של ילד אלרגי בישראל" },
               { to: "/guides/בדיקות-אלרגיה-ילדים-ישראל", label: "בדיקות אלרגיה לילדים – מדריך מלא" },
-              { to: "/blog/פריחה-אחרי-במבה-לתינוק", label: "פריחה אחרי במבה – מתי זו אלרגיה?" },
-              { to: "/blog/אטופיק-דרמטיטיס-תינוקות", label: "אטופיק דרמטיטיס בתינוקות – מדריך טיפול" },
               { to: "/services", label: "בדיקות אלרגיה ושירותים נוספים" },
               { to: "/about", label: "אודות ד״ר אנה ברמלי" },
             ].map((link) => (
@@ -479,6 +477,36 @@ const GoldenGuide = () => {
                 key={link.to}
                 to={link.to}
                 className="flex items-center gap-2 bg-card rounded-xl p-4 border border-border/60 card-hover group text-sm"
+              >
+                <ArrowRight className="w-4 h-4 text-primary flex-shrink-0" />
+                <span className="text-foreground group-hover:text-primary transition-colors font-medium">
+                  {link.label}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </motion.section>
+
+        {/* Satellite articles hub */}
+        <motion.section
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mb-12"
+        >
+          <h2 className="text-xl md:text-2xl font-bold text-foreground mb-5">הרחבות חשובות להורים</h2>
+          <div className="grid sm:grid-cols-2 gap-3">
+            {[
+              { to: "/knowledge/פריחה-אחרי-במבה", label: "פריחה אחרי במבה – אלרגיה או גירוי?" },
+              { to: "/knowledge/אודם-סביב-הפה-אחרי-אלרגן", label: "אודם סביב הפה – מתי זה תקין?" },
+              { to: "/knowledge/במבה-גיל-4-חודשים", label: "במבה בגיל 4 חודשים – מותר?" },
+              { to: "/knowledge/הקאה-אחרי-טחינה", label: "הקאה אחרי טחינה – האם זו אלרגיה?" },
+              { to: "/knowledge/כמה-ימים-בין-אלרגנים", label: "כמה ימים בין אלרגנים?" },
+            ].map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                className="flex items-center gap-2 bg-surface-warm rounded-xl p-4 border border-border/40 card-hover group text-sm"
               >
                 <ArrowRight className="w-4 h-4 text-primary flex-shrink-0" />
                 <span className="text-foreground group-hover:text-primary transition-colors font-medium">
