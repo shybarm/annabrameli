@@ -50,6 +50,8 @@ import AccessibilityStatement from "./pages/AccessibilityStatement";
 import SecurityPolicy from "./pages/SecurityPolicy";
 import DrAnnaBrameli from "./pages/DrAnnaBrameli";
 import WhoIs from "./pages/WhoIs";
+import Blog from "./pages/Blog";
+import BlogArticlePage from "./pages/BlogArticle";
 
 // Layout for public pages
 const PublicLayout = ({ children }: { children: React.ReactNode }) => (
@@ -95,6 +97,8 @@ const App = () => (
               <Route path="/security" element={<PublicLayout><SecurityPolicy /></PublicLayout>} />
               <Route path="/dr-anna-brameli" element={<DrAnnaBrameli />} />
               <Route path="/whois" element={<WhoIs />} />
+              <Route path="/blog" element={<PublicLayout><Blog /></PublicLayout>} />
+              <Route path="/blog/:slug" element={<PublicLayout><BlogArticlePage /></PublicLayout>} />
               {/* Auth */}
               <Route path="/auth" element={<Auth />} />
               
