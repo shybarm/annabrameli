@@ -24,9 +24,9 @@ interface PubMedArticle {
 
 async function searchPubMed(): Promise<string[]> {
   const query = encodeURIComponent(
-    "(allergy OR allergic OR anaphylaxis OR urticaria OR asthma OR immunotherapy OR food allergy) AND (children OR pediatric OR clinical)"
+    '("food allergy" OR "allergic rhinitis" OR "anaphylaxis" OR "atopic dermatitis" OR "urticaria" OR "drug allergy" OR "insect allergy" OR "allergen immunotherapy" OR "peanut allergy" OR "egg allergy" OR "milk allergy") AND ("children" OR "pediatric" OR "treatment" OR "diagnosis")'
   );
-  const url = `${PUBMED_SEARCH_URL}?db=pubmed&term=${query}&retmax=10&sort=date&retmode=json&datetype=pdat&reldate=90`;
+  const url = `${PUBMED_SEARCH_URL}?db=pubmed&term=${query}&retmax=10&sort=date&retmode=json&datetype=pdat&reldate=60`;
 
   console.log("Searching PubMed with query...");
   const response = await fetch(url);
