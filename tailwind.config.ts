@@ -22,6 +22,8 @@ export default {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        surface: "hsl(var(--surface))",
+        "surface-warm": "hsl(var(--surface-warm))",
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
@@ -71,7 +73,6 @@ export default {
           600: "hsl(var(--teal-600))",
           700: "hsl(var(--teal-700))",
         },
-        // Alias for medical
         medical: {
           50: "hsl(var(--teal-50))",
           100: "hsl(var(--teal-100))",
@@ -81,6 +82,16 @@ export default {
           500: "hsl(var(--teal-500))",
           600: "hsl(var(--teal-600))",
           700: "hsl(var(--teal-700))",
+        },
+        coral: {
+          50: "hsl(var(--coral-50))",
+          100: "hsl(var(--coral-100))",
+          200: "hsl(var(--coral-200))",
+          300: "hsl(var(--coral-300))",
+          400: "hsl(var(--coral-400))",
+          500: "hsl(var(--coral-500))",
+          600: "hsl(var(--coral-600))",
+          700: "hsl(var(--coral-700))",
         },
         sand: {
           50: "hsl(var(--sand-50))",
@@ -98,7 +109,9 @@ export default {
       boxShadow: {
         medical: "var(--shadow-lg)",
         teal: "var(--shadow-teal)",
+        coral: "var(--shadow-coral)",
         soft: "var(--shadow-md)",
+        hover: "var(--shadow-hover)",
       },
       keyframes: {
         "accordion-down": {

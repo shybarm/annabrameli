@@ -217,14 +217,14 @@ const FAQ = () => {
       <SchemaMarkup type="medicalWebPage" />
 
       {/* Hero */}
-      <section className="gradient-hero py-16 md:py-24">
+      <section className="gradient-hero py-20 md:py-28">
         <div className="container-medical">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="max-w-3xl"
           >
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
+            <h1 className="font-bold text-foreground mb-6">
               שאלות ותשובות
             </h1>
             <p className="text-lg text-muted-foreground leading-relaxed">
@@ -235,7 +235,7 @@ const FAQ = () => {
       </section>
 
       {/* FAQ Content */}
-      <section className="py-16 md:py-24">
+      <section className="section-spacing-lg">
         <div className="container-medical">
           <div className="grid lg:grid-cols-4 gap-8">
             {/* Category Navigation */}
@@ -244,7 +244,7 @@ const FAQ = () => {
               animate={{ opacity: 1, x: 0 }}
               className="lg:col-span-1"
             >
-              <div className="sticky top-24 bg-card rounded-xl border border-border p-4">
+              <div className="sticky top-24 bg-card rounded-2xl border border-border/60 p-5">
                 <h3 className="font-semibold text-foreground mb-4">קטגוריות</h3>
                 <nav className="space-y-1">
                   {faqCategories.map((category) => (
@@ -261,7 +261,7 @@ const FAQ = () => {
                           window.scrollTo({ top: offsetPosition, behavior: "smooth" });
                         }
                       }}
-                      className={`w-full text-right px-3 py-2 rounded-lg text-sm transition-colors ${
+                      className={`w-full text-right px-3 py-2.5 rounded-xl text-sm transition-colors ${
                         activeCategory === category.title
                           ? "bg-primary text-primary-foreground"
                           : "text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -296,7 +296,7 @@ const FAQ = () => {
       </section>
 
       {/* Reassurance Section */}
-      <section className="py-16 md:py-24 bg-muted/50">
+      <section className="section-spacing-lg bg-surface-warm">
         <div className="container-medical">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -304,7 +304,7 @@ const FAQ = () => {
             viewport={{ once: true }}
             className="max-w-3xl mx-auto text-center"
           >
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-6">
+            <h2 className="font-bold text-foreground mb-6">
               אתם לא לבד
             </h2>
             <p className="text-muted-foreground leading-relaxed mb-6">

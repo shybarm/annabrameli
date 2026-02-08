@@ -36,32 +36,32 @@ export const Header = () => {
     <header
       className={`sticky top-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? "bg-card/95 backdrop-blur-md shadow-soft"
+          ? "bg-background/90 backdrop-blur-xl shadow-md border-b border-border/50"
           : "bg-transparent"
       }`}
     >
       <nav className="container-medical">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between h-[72px]">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-full gradient-teal flex items-center justify-center shadow-teal">
+            <div className="w-10 h-10 rounded-xl gradient-teal flex items-center justify-center shadow-teal transition-transform duration-200 group-hover:scale-105">
               <span className="text-primary-foreground font-bold text-lg">א</span>
             </div>
             <div>
-              <h1 className="text-lg font-bold text-foreground">ד״ר אנה ברמלי</h1>
-              <p className="text-xs text-muted-foreground">אלרגיה ואימונולוגיה</p>
+              <h1 className="text-base font-bold text-foreground leading-tight">ד״ר אנה ברמלי</h1>
+              <p className="text-[11px] text-muted-foreground leading-tight">אלרגיה ואימונולוגיה</p>
             </div>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center gap-1">
+          <div className="hidden lg:flex items-center gap-0.5">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 to={link.href}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`relative px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
                   location.pathname === link.href
-                    ? "bg-accent text-accent-foreground"
+                    ? "text-primary bg-accent"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 }`}
               >
@@ -73,23 +73,23 @@ export const Header = () => {
           {/* CTA Buttons */}
           <div className="hidden lg:flex items-center gap-3">
             {user && isStaff ? (
-              <Button variant="outline" size="sm" asChild>
+              <Button variant="ghost" size="sm" asChild>
                 <Link to="/admin">
-                  <Settings className="w-4 h-4 ml-2" />
+                  <Settings className="w-4 h-4 ml-1.5" />
                   ניהול
                 </Link>
               </Button>
             ) : (
               <Button variant="ghost" size="sm" asChild>
                 <Link to="/auth">
-                  <Settings className="w-4 h-4 ml-2" />
+                  <Settings className="w-4 h-4 ml-1.5" />
                   כניסת צוות
                 </Link>
               </Button>
             )}
-            <Button variant="default" size="sm" className="shadow-teal" asChild>
+            <Button size="sm" asChild>
               <Link to="/book">
-                <Phone className="w-4 h-4 ml-2" />
+                <Phone className="w-4 h-4 ml-1.5" />
                 קביעת תור
               </Link>
             </Button>
@@ -98,10 +98,10 @@ export const Header = () => {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="lg:hidden p-2 rounded-lg hover:bg-muted transition-colors"
+            className="lg:hidden p-2.5 rounded-xl hover:bg-muted transition-colors"
             aria-label="תפריט"
           >
-            {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
 
@@ -114,12 +114,12 @@ export const Header = () => {
               exit={{ opacity: 0, height: 0 }}
               className="lg:hidden overflow-hidden"
             >
-              <div className="py-4 border-t border-border space-y-1">
+              <div className="py-4 border-t border-border/50 space-y-1">
                 {navLinks.map((link) => (
                   <Link
                     key={link.href}
                     to={link.href}
-                    className={`block px-4 py-3 rounded-lg text-base font-medium transition-colors ${
+                    className={`block px-4 py-3 rounded-xl text-base font-medium transition-colors ${
                       location.pathname === link.href
                         ? "bg-accent text-accent-foreground"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -128,25 +128,25 @@ export const Header = () => {
                     {link.label}
                   </Link>
                 ))}
-                <div className="pt-4 px-4 space-y-2">
+                <div className="pt-4 px-4 space-y-3">
                   {user && isStaff ? (
                     <Button variant="outline" className="w-full" asChild>
                       <Link to="/admin">
-                        <Settings className="w-4 h-4 ml-2" />
+                        <Settings className="w-4 h-4 ml-1.5" />
                         ניהול
                       </Link>
                     </Button>
                   ) : (
                     <Button variant="ghost" className="w-full" asChild>
                       <Link to="/auth">
-                        <Settings className="w-4 h-4 ml-2" />
+                        <Settings className="w-4 h-4 ml-1.5" />
                         כניסת צוות
                       </Link>
                     </Button>
                   )}
-                  <Button variant="default" className="w-full shadow-teal" asChild>
+                  <Button className="w-full" asChild>
                     <Link to="/book">
-                      <Phone className="w-4 h-4 ml-2" />
+                      <Phone className="w-4 h-4 ml-1.5" />
                       קביעת תור
                     </Link>
                   </Button>

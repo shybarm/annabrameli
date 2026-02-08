@@ -61,14 +61,14 @@ const Updates = () => {
       <SchemaMarkup type="medicalWebPage" />
 
       {/* Hero */}
-      <section className="gradient-hero py-16 md:py-24">
+      <section className="gradient-hero py-20 md:py-28">
         <div className="container-medical">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="max-w-3xl"
           >
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
+            <h1 className="font-bold text-foreground mb-6">
               עדכונים אחרונים באלרגיה
             </h1>
             <p className="text-lg text-muted-foreground leading-relaxed">
@@ -79,11 +79,11 @@ const Updates = () => {
       </section>
 
       {/* Updates List */}
-      <section className="py-16 md:py-24">
+      <section className="section-spacing-lg">
         <div className="container-medical">
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
             {updates.map((update, index) => (
-              <UpdateCard key={update.title} {...update} delay={index * 0.1} />
+              <UpdateCard key={update.title} {...update} delay={index * 0.08} />
             ))}
           </div>
 
@@ -92,7 +92,7 @@ const Updates = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="mt-12 bg-accent/50 rounded-2xl p-6 md:p-8 text-center"
+            className="mt-14 bg-surface rounded-2xl p-7 md:p-9 text-center border border-border/60"
           >
             <p className="text-muted-foreground">
               כל מאמר כולל תאריך פרסום, מקור רפואי מוסמך, תקציר בשפה פשוטה והמלצות פרקטיות.

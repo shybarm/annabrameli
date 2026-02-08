@@ -4,68 +4,85 @@
 
 @layer base {
   :root {
-    /* Medical Teal & Sand Color Palette */
-    --background: 40 33% 98%;
-    --foreground: 195 30% 15%;
+    /* Premium Medical Palette — calm teal + warm coral accent */
+    --background: 0 0% 100%;
+    --foreground: 210 20% 16%;
 
     --card: 0 0% 100%;
-    --card-foreground: 195 30% 15%;
+    --card-foreground: 210 20% 16%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 195 30% 15%;
+    --popover-foreground: 210 20% 16%;
 
-    /* Primary: Soft Teal */
-    --primary: 174 62% 40%;
+    /* Primary: Clinical Teal */
+    --primary: 174 58% 38%;
     --primary-foreground: 0 0% 100%;
 
     /* Secondary: Warm Sand */
-    --secondary: 35 35% 92%;
-    --secondary-foreground: 195 30% 20%;
+    --secondary: 38 30% 94%;
+    --secondary-foreground: 210 20% 20%;
 
-    --muted: 35 20% 94%;
-    --muted-foreground: 195 15% 45%;
+    --muted: 210 10% 96%;
+    --muted-foreground: 210 12% 50%;
 
-    /* Accent: Light Teal */
-    --accent: 174 50% 94%;
-    --accent-foreground: 174 62% 30%;
+    /* Accent: Light Teal tint */
+    --accent: 174 40% 95%;
+    --accent-foreground: 174 58% 28%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 35 25% 88%;
-    --input: 35 25% 88%;
-    --ring: 174 62% 40%;
+    --border: 210 15% 91%;
+    --input: 210 15% 91%;
+    --ring: 174 58% 38%;
 
     --radius: 0.75rem;
 
-    /* Custom Medical Colors */
-    --teal-50: 174 55% 97%;
-    --teal-100: 174 55% 92%;
-    --teal-200: 174 55% 82%;
-    --teal-300: 174 55% 65%;
-    --teal-400: 174 60% 48%;
-    --teal-500: 174 62% 40%;
-    --teal-600: 174 65% 32%;
-    --teal-700: 174 65% 25%;
+    /* Surface: subtle tinted backgrounds for sections */
+    --surface: 174 20% 97%;
+    --surface-warm: 38 30% 97%;
 
+    /* Coral Accent — CTA emphasis */
+    --coral-50: 12 90% 97%;
+    --coral-100: 12 85% 93%;
+    --coral-200: 10 80% 85%;
+    --coral-300: 10 78% 72%;
+    --coral-400: 8 75% 62%;
+    --coral-500: 6 72% 55%;
+    --coral-600: 4 68% 48%;
+    --coral-700: 2 65% 40%;
+
+    /* Teal palette */
+    --teal-50: 174 40% 97%;
+    --teal-100: 174 40% 93%;
+    --teal-200: 174 42% 84%;
+    --teal-300: 174 45% 68%;
+    --teal-400: 174 55% 50%;
+    --teal-500: 174 58% 38%;
+    --teal-600: 174 60% 30%;
+    --teal-700: 174 60% 24%;
+
+    /* Sand palette */
     --sand-50: 40 40% 98%;
     --sand-100: 38 35% 95%;
     --sand-200: 35 30% 90%;
     --sand-300: 33 25% 82%;
     --sand-400: 30 20% 70%;
 
-    /* Gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(var(--teal-50)) 0%, hsl(var(--sand-100)) 50%, hsl(var(--background)) 100%);
-    --gradient-card: linear-gradient(180deg, hsl(var(--card)) 0%, hsl(var(--sand-50)) 100%);
-    --gradient-teal: linear-gradient(135deg, hsl(var(--teal-500)) 0%, hsl(var(--teal-600)) 100%);
+    /* Gradients — refined */
+    --gradient-hero: linear-gradient(165deg, hsl(174 40% 97%) 0%, hsl(38 35% 97%) 40%, hsl(0 0% 100%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(174 20% 98%) 100%);
+    --gradient-teal: linear-gradient(135deg, hsl(174 58% 38%) 0%, hsl(174 60% 30%) 100%);
 
-    /* Shadows - Apple-like subtle shadows */
-    --shadow-sm: 0 1px 2px 0 hsl(var(--foreground) / 0.04);
-    --shadow-md: 0 4px 12px -2px hsl(var(--foreground) / 0.06), 0 2px 6px -2px hsl(var(--foreground) / 0.03);
-    --shadow-lg: 0 12px 24px -4px hsl(var(--foreground) / 0.08), 0 4px 8px -2px hsl(var(--foreground) / 0.03);
-    --shadow-xl: 0 24px 48px -8px hsl(var(--foreground) / 0.1), 0 12px 16px -6px hsl(var(--foreground) / 0.04);
-    --shadow-teal: 0 8px 24px -4px hsl(var(--teal-500) / 0.2);
-    --shadow-glass: 0 8px 32px -4px hsl(var(--foreground) / 0.08);
+    /* Shadows — refined, more subtle */
+    --shadow-sm: 0 1px 3px 0 hsl(210 20% 16% / 0.04);
+    --shadow-md: 0 4px 16px -4px hsl(210 20% 16% / 0.06), 0 2px 4px -2px hsl(210 20% 16% / 0.03);
+    --shadow-lg: 0 12px 32px -8px hsl(210 20% 16% / 0.08), 0 4px 8px -4px hsl(210 20% 16% / 0.03);
+    --shadow-xl: 0 24px 48px -12px hsl(210 20% 16% / 0.1), 0 8px 16px -8px hsl(210 20% 16% / 0.04);
+    --shadow-teal: 0 8px 24px -4px hsl(174 58% 38% / 0.18);
+    --shadow-coral: 0 8px 24px -4px hsl(6 72% 55% / 0.18);
+    --shadow-glass: 0 8px 32px -4px hsl(210 20% 16% / 0.06);
+    --shadow-hover: 0 16px 40px -8px hsl(210 20% 16% / 0.12), 0 6px 12px -4px hsl(210 20% 16% / 0.04);
 
     /* Sidebar */
     --sidebar-background: 0 0% 98%;
@@ -79,46 +96,54 @@
   }
 
   .dark {
-    --background: 195 25% 10%;
-    --foreground: 40 20% 95%;
+    --background: 210 20% 8%;
+    --foreground: 40 15% 93%;
 
-    --card: 195 20% 14%;
-    --card-foreground: 40 20% 95%;
+    --card: 210 18% 12%;
+    --card-foreground: 40 15% 93%;
 
-    --popover: 195 20% 14%;
-    --popover-foreground: 40 20% 95%;
+    --popover: 210 18% 12%;
+    --popover-foreground: 40 15% 93%;
 
-    --primary: 174 55% 50%;
-    --primary-foreground: 195 30% 10%;
+    --primary: 174 50% 48%;
+    --primary-foreground: 210 20% 8%;
 
-    --secondary: 195 15% 20%;
-    --secondary-foreground: 40 20% 90%;
+    --secondary: 210 12% 18%;
+    --secondary-foreground: 40 15% 88%;
 
-    --muted: 195 15% 18%;
-    --muted-foreground: 40 15% 60%;
+    --muted: 210 12% 16%;
+    --muted-foreground: 210 10% 55%;
 
-    --accent: 174 40% 18%;
-    --accent-foreground: 174 55% 70%;
+    --accent: 174 35% 16%;
+    --accent-foreground: 174 50% 68%;
 
     --destructive: 0 62% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 195 15% 22%;
-    --input: 195 15% 22%;
-    --ring: 174 55% 50%;
+    --border: 210 12% 20%;
+    --input: 210 12% 20%;
+    --ring: 174 50% 48%;
 
-    --teal-50: 174 30% 15%;
-    --teal-100: 174 35% 20%;
-    --teal-200: 174 40% 25%;
-    --teal-500: 174 55% 50%;
-    --teal-600: 174 50% 45%;
+    --surface: 210 15% 10%;
+    --surface-warm: 210 12% 11%;
 
-    --sand-50: 195 20% 12%;
-    --sand-100: 195 18% 15%;
+    --coral-50: 12 40% 12%;
+    --coral-100: 12 45% 16%;
+    --coral-500: 8 70% 58%;
+    --coral-600: 6 65% 52%;
 
-    --gradient-hero: linear-gradient(135deg, hsl(var(--teal-50)) 0%, hsl(var(--background)) 100%);
-    --gradient-card: linear-gradient(180deg, hsl(var(--card)) 0%, hsl(195 18% 12%) 100%);
-    --gradient-teal: linear-gradient(135deg, hsl(var(--teal-500)) 0%, hsl(var(--teal-600)) 100%);
+    --teal-50: 174 25% 12%;
+    --teal-100: 174 30% 16%;
+    --teal-200: 174 35% 22%;
+    --teal-500: 174 50% 48%;
+    --teal-600: 174 48% 42%;
+
+    --sand-50: 210 15% 10%;
+    --sand-100: 210 12% 13%;
+
+    --gradient-hero: linear-gradient(165deg, hsl(174 25% 12%) 0%, hsl(210 20% 8%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(210 18% 12%) 0%, hsl(210 15% 10%) 100%);
+    --gradient-teal: linear-gradient(135deg, hsl(174 50% 48%) 0%, hsl(174 48% 42%) 100%);
 
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
@@ -134,28 +159,41 @@
 @layer base {
   * {
     @apply border-border;
-    /* Smooth scrolling on iOS */
     -webkit-overflow-scrolling: touch;
   }
 
   html {
     direction: rtl;
-    /* Prevent pull-to-refresh on mobile */
     overscroll-behavior: none;
+    scroll-behavior: smooth;
   }
 
   body {
     @apply bg-background text-foreground font-heebo antialiased;
-    /* Safe area padding for iOS */
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-heebo font-bold tracking-tight;
+    @apply font-heebo font-bold;
+    letter-spacing: -0.015em;
+    line-height: 1.2;
   }
 
-  /* iOS safe area utilities */
+  h1 {
+    @apply text-[32px] md:text-[42px] lg:text-[52px];
+    line-height: 1.12;
+  }
+
+  h2 {
+    @apply text-[24px] md:text-[30px] lg:text-[36px];
+    line-height: 1.18;
+  }
+
+  p {
+    line-height: 1.7;
+  }
+
   .safe-area-inset-top {
     padding-top: env(safe-area-inset-top);
   }
@@ -167,7 +205,15 @@
 
 @layer components {
   .container-medical {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+    @apply max-w-[1160px] mx-auto px-5 sm:px-6 lg:px-8;
+  }
+
+  .section-spacing {
+    @apply py-16 md:py-20 lg:py-24;
+  }
+
+  .section-spacing-lg {
+    @apply py-20 md:py-24 lg:py-28;
   }
 
   .gradient-hero {
@@ -182,6 +228,14 @@
     background: var(--gradient-teal);
   }
 
+  .bg-surface {
+    background-color: hsl(var(--surface));
+  }
+
+  .bg-surface-warm {
+    background-color: hsl(var(--surface-warm));
+  }
+
   .shadow-medical {
     box-shadow: var(--shadow-lg);
   }
@@ -190,8 +244,26 @@
     box-shadow: var(--shadow-teal);
   }
 
+  .shadow-coral {
+    box-shadow: var(--shadow-coral);
+  }
+
+  .shadow-hover {
+    box-shadow: var(--shadow-hover);
+  }
+
   .text-balance {
     text-wrap: balance;
+  }
+
+  /* Premium card with hover lift */
+  .card-hover {
+    @apply transition-all duration-300 ease-out;
+  }
+
+  .card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-hover);
   }
 }
 
@@ -220,7 +292,6 @@
     animation: slideOutRight 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   }
 
-  /* Apple-style spring animation for mobile interactions */
   .spring-bounce {
     transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
@@ -229,15 +300,14 @@
     transform: scale(0.97);
   }
 
-  /* Glass morphism effect */
   .glass {
-    background: hsl(var(--background) / 0.8);
+    background: hsl(var(--background) / 0.85);
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
   }
 
   .glass-light {
-    background: hsl(0 0% 100% / 0.7);
+    background: hsl(0 0% 100% / 0.75);
     backdrop-filter: blur(24px) saturate(180%);
     -webkit-backdrop-filter: blur(24px) saturate(180%);
   }
@@ -248,7 +318,6 @@
     -webkit-backdrop-filter: blur(16px);
   }
 
-  /* Smooth transitions for mobile */
   .transition-smooth {
     transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
   }
@@ -257,100 +326,53 @@
     transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
-  /* Touch-friendly tap highlight */
   .tap-highlight {
     -webkit-tap-highlight-color: hsl(var(--primary) / 0.1);
   }
 
   @keyframes fadeUp {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 
   @keyframes scaleIn {
-    from {
-      opacity: 0;
-      transform: scale(0.95);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
   }
 
   @keyframes slideRight {
-    from {
-      opacity: 0;
-      transform: translateX(-20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
   }
 
   @keyframes slideInRight {
-    from {
-      opacity: 0;
-      transform: translateX(100%);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
+    from { opacity: 0; transform: translateX(100%); }
+    to { opacity: 1; transform: translateX(0); }
   }
 
   @keyframes slideOutRight {
-    from {
-      opacity: 1;
-      transform: translateX(0);
-    }
-    to {
-      opacity: 0;
-      transform: translateX(100%);
-    }
+    from { opacity: 1; transform: translateX(0); }
+    to { opacity: 0; transform: translateX(100%); }
   }
 
   @keyframes overlayFadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 
   @keyframes overlayFadeOut {
-    from {
-      opacity: 1;
-    }
-    to {
-      opacity: 0;
-    }
+    from { opacity: 1; }
+    to { opacity: 0; }
   }
 
   @keyframes tutorialPulse {
-    0%, 100% {
-      box-shadow: 0 0 0 3px hsl(var(--primary) / 0.4);
-    }
-    50% {
-      box-shadow: 0 0 0 8px hsl(var(--primary) / 0.2);
-    }
+    0%, 100% { box-shadow: 0 0 0 3px hsl(var(--primary) / 0.4); }
+    50% { box-shadow: 0 0 0 8px hsl(var(--primary) / 0.2); }
   }
 }
 
@@ -360,13 +382,12 @@
   z-index: 60 !important;
   animation: tutorialPulse 1.5s ease-in-out infinite;
   border-radius: var(--radius);
-  outline: 4px solid hsl(174 62% 40%);
+  outline: 4px solid hsl(174 58% 38%);
   outline-offset: 6px;
-  box-shadow: 0 0 30px 10px hsl(174 62% 50% / 0.5);
+  box-shadow: 0 0 30px 10px hsl(174 58% 48% / 0.5);
   background-color: hsl(var(--card)) !important;
 }
 
-/* Overlay that sits between the page and highlighted element */
 .tutorial-overlay {
   position: fixed;
   inset: 0;
@@ -377,12 +398,12 @@
 
 @keyframes tutorialPulse {
   0%, 100% {
-    outline-color: hsl(174 62% 40%);
-    box-shadow: 0 0 20px 5px hsl(174 62% 50% / 0.4);
+    outline-color: hsl(174 58% 38%);
+    box-shadow: 0 0 20px 5px hsl(174 58% 48% / 0.4);
   }
   50% {
-    outline-color: hsl(174 62% 55%);
-    box-shadow: 0 0 40px 15px hsl(174 62% 50% / 0.6);
+    outline-color: hsl(174 58% 52%);
+    box-shadow: 0 0 40px 15px hsl(174 58% 48% / 0.6);
   }
 }
 

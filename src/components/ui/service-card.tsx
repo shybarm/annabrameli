@@ -21,18 +21,18 @@ export const ServiceCard = ({ icon: Icon, title, description, href, delay = 0 }:
     >
       <Link
         to={href}
-        className="group block h-full p-6 rounded-2xl bg-card border border-border hover:border-primary/30 hover:shadow-medical transition-all duration-300"
+        className="group block h-full p-7 rounded-2xl bg-card border border-border/60 hover:border-primary/30 card-hover"
       >
-        <div className="w-14 h-14 rounded-xl bg-accent flex items-center justify-center mb-5 group-hover:bg-primary/10 transition-colors">
+        <div className="w-14 h-14 rounded-2xl bg-accent flex items-center justify-center mb-5 group-hover:bg-primary/10 transition-colors duration-200">
           <Icon className="w-7 h-7 text-primary" />
         </div>
-        <h3 className="text-lg font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
+        <h3 className="text-lg font-semibold text-foreground mb-2.5 group-hover:text-primary transition-colors">
           {title}
         </h3>
-        <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+        <p className="text-sm text-muted-foreground leading-relaxed mb-5">
           {description}
         </p>
-        <div className="flex items-center gap-2 text-primary text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center gap-2 text-primary text-sm font-medium opacity-0 group-hover:opacity-100 transition-all duration-200 translate-x-2 group-hover:translate-x-0">
           <span>קרא עוד</span>
           <ArrowLeft className="w-4 h-4" />
         </div>
