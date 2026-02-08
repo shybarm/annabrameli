@@ -959,6 +959,48 @@ export type Database = {
           },
         ]
       }
+      medical_updates: {
+        Row: {
+          created_at: string
+          fetched_at: string
+          id: string
+          is_published: boolean
+          published_date: string
+          pubmed_id: string | null
+          source: string
+          source_url: string | null
+          summary_he: string
+          title: string
+          title_he: string
+        }
+        Insert: {
+          created_at?: string
+          fetched_at?: string
+          id?: string
+          is_published?: boolean
+          published_date: string
+          pubmed_id?: string | null
+          source: string
+          source_url?: string | null
+          summary_he: string
+          title: string
+          title_he: string
+        }
+        Update: {
+          created_at?: string
+          fetched_at?: string
+          id?: string
+          is_published?: boolean
+          published_date?: string
+          pubmed_id?: string | null
+          source?: string
+          source_url?: string | null
+          summary_he?: string
+          title?: string
+          title_he?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string
