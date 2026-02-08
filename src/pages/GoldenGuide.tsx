@@ -468,12 +468,12 @@ const GoldenGuide = () => {
           <h2 className="text-xl md:text-2xl font-bold text-foreground mb-5">קריאה נוספת</h2>
           <div className="grid sm:grid-cols-2 gap-4">
             {[
+              { to: "/guides/זכויות-ילד-אלרגי-ישראל", label: "זכויות של ילד אלרגי בישראל" },
+              { to: "/guides/בדיקות-אלרגיה-ילדים-ישראל", label: "בדיקות אלרגיה לילדים – מדריך מלא" },
               { to: "/blog/פריחה-אחרי-במבה-לתינוק", label: "פריחה אחרי במבה – מתי זו אלרגיה?" },
               { to: "/blog/אטופיק-דרמטיטיס-תינוקות", label: "אטופיק דרמטיטיס בתינוקות – מדריך טיפול" },
-              { to: "/blog/שיעול-לילי-אלרגיה-או-אסתמה", label: "שיעול לילי – אלרגיה או אסתמה?" },
               { to: "/services", label: "בדיקות אלרגיה ושירותים נוספים" },
               { to: "/about", label: "אודות ד״ר אנה ברמלי" },
-              { to: "/contact", label: "יצירת קשר וקביעת תור" },
             ].map((link) => (
               <Link
                 key={link.to}
