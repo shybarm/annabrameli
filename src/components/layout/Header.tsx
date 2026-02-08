@@ -9,7 +9,8 @@ const navLinks = [
   { href: "/", label: "ראשי" },
   { href: "/about", label: "אודות" },
   { href: "/services", label: "שירותים" },
-  { href: "/updates", label: "עדכונים אחרונים" },
+  { href: "/blog", label: "מאמרים" },
+  { href: "/updates", label: "עדכונים" },
   { href: "/faq", label: "שאלות ותשובות" },
   { href: "/contact", label: "יצירת קשר" },
 ];
