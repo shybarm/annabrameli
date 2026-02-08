@@ -665,6 +665,20 @@ const DrAnnaBrameli = () => {
           </div>
         </section>
 
+        {/* Internal SEO Link */}
+        <section className="py-8 md:py-12">
+          <div className="container-medical">
+            <div className="max-w-3xl mx-auto text-center">
+              <p className="text-muted-foreground">
+                למידע נוסף על הרקע המקצועי, ההשכלה וההתמחויות של ד״ר אנה ברמלי — בקרו בעמוד{" "}
+                <Link to="/whois" className="text-primary hover:underline font-medium">
+                  מי היא ד״ר אנה ברמלי
+                </Link>.
+              </p>
+            </div>
+          </div>
+        </section>
+
         {/* H2 — CTA Section */}
         <section className="py-16 md:py-24 bg-primary/5">
           <div className="container-medical">
