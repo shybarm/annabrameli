@@ -2,53 +2,19 @@ import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
 import { UpdateCard } from "@/components/ui/update-card";
 import { SchemaMarkup } from "@/components/seo/SchemaMarkup";
-
-// TODO: Replace mock data with external medical API integration
-// This data should be fetched from an external medical news API
-// Example API endpoints to consider:
-// - PubMed API
-// - Medical News Today API
-// - Custom aggregated medical news feed
-const updates = [
-  {
-    title: "מחקר חדש: טיפול חשיפה מוקדם לבוטנים מפחית סיכון לאלרגיה",
-    date: "דצמבר 2024",
-    source: "Journal of Allergy and Clinical Immunology",
-    summary: "מחקר ארוך טווח שנערך על פני 10 שנים מראה כי חשיפה מוקדמת לבוטנים בתינוקות (מגיל 4-6 חודשים) עשויה להפחית משמעותית את הסיכון לפתח אלרגיה לבוטנים בהמשך החיים. המחקר כלל 1,000 תינוקות בסיכון גבוה והציג ירידה של 80% בשיעורי האלרגיה.",
-  },
-  {
-    title: "הנחיות עדכניות לטיפול באנפילקסיס בילדים",
-    date: "נובמבר 2024",
-    source: "EAACI (European Academy of Allergy)",
-    summary: "הנחיות חדשות מדגישות את החשיבות של מתן אדרנלין מיידי והכשרת הורים ומטפלים לזיהוי מוקדם של תסמינים. ההנחיות כוללות פרוטוקול מעודכן לבתי ספר וגני ילדים.",
-  },
-  {
-    title: "פריצת דרך בהבנת מנגנוני האלרגיה למזון",
-    date: "אוקטובר 2024",
-    source: "Nature Immunology",
-    summary: "חוקרים זיהו תאי חיסון חדשים המעורבים בתגובה האלרגית למזון. התגלית פותחת דלת לטיפולים חדשניים שיכולים לכוון את התגובה החיסונית ולהפחית את חומרת האלרגיה.",
-  },
-  {
-    title: "מחקר: עלייה בשכיחות אלרגיות עונתיות עקב שינויי אקלים",
-    date: "ספטמבר 2024",
-    source: "The Lancet Planetary Health",
-    summary: "מחקר גלובלי מראה כי שינויי האקלים מובילים לעונת אבקנים ארוכה יותר ואינטנסיבית יותר, מה שמחמיר את תסמיני האלרגיה העונתית באוכלוסייה. ההמלצה היא להתחיל טיפול מונע מוקדם יותר בעונה.",
-  },
-  {
-    title: "טיפול חדשני באסתמה אלרגית: תוצאות מבטיחות",
-    date: "אוגוסט 2024",
-    source: "New England Journal of Medicine",
-    summary: "תרופה ביולוגית חדשה הראתה יעילות גבוהה בטיפול באסתמה אלרגית קשה בילדים, עם הפחתה משמעותית בהתקפים ושיפור באיכות החיים. התרופה צפויה לקבל אישור FDA בקרוב.",
-  },
-  {
-    title: "מדריך חדש: ניהול אלרגיות במערכת החינוך",
-    date: "יולי 2024",
-    source: "משרד הבריאות",
-    summary: "משרד הבריאות פרסם מדריך מקיף לניהול אלרגיות בבתי ספר וגני ילדים, הכולל הנחיות לצוות החינוכי, פרוטוקול חירום ודרכי תקשורת עם ההורים.",
-  },
-];
+import { useMedicalUpdates } from "@/hooks/useMedicalUpdates";
+import { Loader2 } from "lucide-react";
 
 const Updates = () => {
+  const { data: updates, isLoading } = useMedicalUpdates();
+
+  // Format date to Hebrew month
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const months = ["ינואר", "פברואר", "מרץ", "אפריל", "מאי", "יוני", "יולי", "אוגוסט", "ספטמבר", "אוקטובר", "נובמבר", "דצמבר"];
+    return `${months[date.getMonth()]} ${date.getFullYear()}`;
+  };
+
   return (
     <>
       <Helmet>
@@ -81,11 +47,31 @@ const Updates = () => {
       {/* Updates List */}
       <section className="section-spacing-lg">
         <div className="container-medical">
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {updates.map((update, index) => (
-              <UpdateCard key={update.title} {...update} delay={index * 0.08} />
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-20">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : updates && updates.length > 0 ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {updates.map((update, index) => (
+                <UpdateCard
+                  key={update.id}
+                  title={update.title_he}
+                  date={formatDate(update.published_date)}
+                  source={update.source}
+                  summary={update.summary_he}
+                  link={update.source_url || undefined}
+                  delay={index * 0.08}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-20">
+              <p className="text-muted-foreground text-lg">
+                עדכונים חדשים ייטענו בקרוב. המערכת מעדכנת מידע חדש באופן אוטומטי.
+              </p>
+            </div>
+          )}
 
           {/* Info Box */}
           <motion.div
@@ -97,7 +83,7 @@ const Updates = () => {
             <p className="text-muted-foreground">
               כל מאמר כולל תאריך פרסום, מקור רפואי מוסמך, תקציר בשפה פשוטה והמלצות פרקטיות.
               <br />
-              <span className="text-sm">המידע מתעדכן באופן שוטף ממקורות רפואיים מוסמכים.</span>
+              <span className="text-sm">המידע מתעדכן באופן אוטומטי ממקורות רפואיים מוסמכים (PubMed).</span>
             </p>
           </motion.div>
         </div>

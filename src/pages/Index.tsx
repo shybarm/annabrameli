@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { ServiceCard } from "@/components/ui/service-card";
 import { UpdateCard } from "@/components/ui/update-card";
 import { SchemaMarkup } from "@/components/seo/SchemaMarkup";
+import { useMedicalUpdates } from "@/hooks/useMedicalUpdates";
 import drAnnaImage from "@/assets/dr-anna-brameli.jpeg";
 
 const services = [
@@ -61,30 +62,11 @@ const services = [
   },
 ];
 
-// TODO: Replace mock data with external medical API integration
-const latestUpdates = [
-  {
-    title: "מחקר חדש: טיפול חשיפה מוקדם לבוטנים מפחית סיכון לאלרגיה",
-    date: "דצמבר 2024",
-    source: "Journal of Allergy",
-    summary: "מחקר ארוך טווח מראה כי חשיפה מוקדמת לבוטנים בתינוקות עשויה להפחית משמעותית את הסיכון לפתח אלרגיה לבוטנים בהמשך החיים.",
-    link: "#",
-  },
-  {
-    title: "הנחיות עדכניות לטיפול באנפילקסיס בילדים",
-    date: "נובמבר 2024",
-    source: "EAACI",
-    summary: "הנחיות חדשות מדגישות את החשיבות של מתן אדרנלין מיידי והכשרת הורים ומטפלים לזיהוי מוקדם של תסמינים.",
-    link: "#",
-  },
-  {
-    title: "פריצת דרך בהבנת מנגנוני האלרגיה למזון",
-    date: "אוקטובר 2024",
-    source: "Nature Immunology",
-    summary: "חוקרים זיהו תאי חיסון חדשים המעורבים בתגובה האלרגית, מה שפותח דלת לטיפולים חדשניים.",
-    link: "#",
-  },
-];
+const formatDate = (dateStr: string) => {
+  const date = new Date(dateStr);
+  const months = ["ינואר", "פברואר", "מרץ", "אפריל", "מאי", "יוני", "יולי", "אוגוסט", "ספטמבר", "אוקטובר", "נובמבר", "דצמבר"];
+  return `${months[date.getMonth()]} ${date.getFullYear()}`;
+};
 
 const whyChooseReasons = [
   "מומחיות באבחון וטיפול באלרגיות בילדים ובמבוגרים",
@@ -95,6 +77,8 @@ const whyChooseReasons = [
 ];
 
 const Index = () => {
+  const { data: latestUpdates } = useMedicalUpdates(3);
+
   return (
     <>
       <Helmet>
@@ -278,8 +262,16 @@ const Index = () => {
           </motion.div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {latestUpdates.map((update, index) => (
-              <UpdateCard key={update.title} {...update} delay={index * 0.08} />
+            {(latestUpdates || []).map((update, index) => (
+              <UpdateCard
+                key={update.id}
+                title={update.title_he}
+                date={formatDate(update.published_date)}
+                source={update.source}
+                summary={update.summary_he}
+                link={update.source_url || undefined}
+                delay={index * 0.08}
+              />
             ))}
           </div>
 
