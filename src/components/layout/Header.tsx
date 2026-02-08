@@ -9,8 +9,7 @@ const navLinks = [
   { href: "/", label: "ראשי" },
   { href: "/about", label: "אודות" },
   { href: "/services", label: "שירותים" },
-  { href: "/blog", label: "מאמרים" },
-  { href: "/updates", label: "עדכונים" },
+  { href: "/guides/טעימות-ראשונות-אלרגנים", label: "מדריכים", matchPrefix: "/guides" },
   { href: "/faq", label: "שאלות ותשובות" },
   { href: "/contact", label: "יצירת קשר" },
 ];
@@ -61,7 +60,7 @@ export const Header = () => {
                 key={link.href}
                 to={link.href}
                 className={`relative px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                  location.pathname === link.href
+                  location.pathname === link.href || (link.matchPrefix && location.pathname.startsWith(link.matchPrefix))
                     ? "text-primary bg-accent"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 }`}
@@ -121,7 +120,7 @@ export const Header = () => {
                     key={link.href}
                     to={link.href}
                     className={`block px-4 py-3 rounded-xl text-base font-medium transition-colors ${
-                      location.pathname === link.href
+                      location.pathname === link.href || (link.matchPrefix && location.pathname.startsWith(link.matchPrefix))
                         ? "bg-accent text-accent-foreground"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted"
                     }`}

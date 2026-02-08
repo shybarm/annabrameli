@@ -31,6 +31,9 @@ export const Footer = () => {
               {[
                 { href: "/about", label: "אודות" },
                 { href: "/services", label: "שירותים" },
+                { href: "/guides/טעימות-ראשונות-אלרגנים", label: "מדריך טעימות ראשונות" },
+                { href: "/guides/בדיקות-אלרגיה-ילדים-ישראל", label: "מדריך בדיקות אלרגיה" },
+                { href: "/guides/זכויות-ילד-אלרגי-ישראל", label: "זכויות ילד אלרגי" },
                 { href: "/faq", label: "שאלות ותשובות" },
                 { href: "/contact", label: "יצירת קשר" },
                 { href: "/book", label: "קביעת תור" },
@@ -127,6 +130,12 @@ export const Footer = () => {
               className="text-xs text-muted-foreground hover:text-primary transition-colors"
             >
               אבטחת מידע
+            </Link>
+            <Link
+              to="/blog"
+              className="text-xs text-muted-foreground hover:text-primary transition-colors"
+            >
+              מאמרים ומשאבים
             </Link>
           </div>
           <div className="flex flex-col md:flex-row justify-between items-center gap-3">

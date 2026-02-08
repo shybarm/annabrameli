@@ -14,7 +14,10 @@ import {
   Flower2,
   Sparkles,
   Baby,
-  AlertTriangle
+  AlertTriangle,
+  ShieldCheck,
+  TestTube2,
+  School,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ServiceCard } from "@/components/ui/service-card";
@@ -74,6 +77,32 @@ const whyChooseReasons = [
   "גישה אנושית ורגישה למטופלים ולמשפחות",
   "התמחות נוספת באימונולוגיה ומחלות זיהומיות ילדים",
   "זמינות גבוהה וקשר ישיר עם הרופאה",
+];
+const goldenGuides = [
+  {
+    icon: Baby,
+    title: "טעימות ראשונות",
+    subtitle: "מדריך חשיפה לאלרגנים לתינוקות",
+    description: "במבה, טחינה, ביצים וחלב – מתי להתחיל, איך לזהות תגובה, ומתי לנשום.",
+    href: "/guides/טעימות-ראשונות-אלרגנים",
+    badge: "מדריך מקיף",
+  },
+  {
+    icon: TestTube2,
+    title: "בדיקות אלרגיה",
+    subtitle: "איזה בדיקה מתאימה, מתי ואיפה",
+    description: "תבחיני עור, דם, מבחן מאכל – עלויות, השוואת פרטי/ציבורי, ומה לצפות.",
+    href: "/guides/בדיקות-אלרגיה-ילדים-ישראל",
+    badge: "מדריך בדיקות",
+  },
+  {
+    icon: School,
+    title: "זכויות ילד אלרגי",
+    subtitle: "גן, בית ספר וצהרונים",
+    description: "מה מגיע לילד שלכם, איך לדרוש התאמות, וצ׳קליסט מוכן להורדה.",
+    href: "/guides/זכויות-ילד-אלרגי-ישראל",
+    badge: "מדריך זכויות",
+  },
 ];
 
 const Index = () => {
@@ -244,8 +273,56 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Latest Updates Section */}
+      {/* Golden Guides Section */}
       <section className="section-spacing-lg bg-surface-warm">
+        <div className="container-medical">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-14"
+          >
+            <h2 className="font-bold text-foreground mb-4">
+              מדריכים להורים
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              כל מה שצריך לדעת על אלרגיות אצל ילדים – בשפה פשוטה, מבוססת מחקר, ומותאמת להורים ישראליים.
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-5">
+            {goldenGuides.map((guide, index) => (
+              <motion.div
+                key={guide.href}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <Link
+                  to={guide.href}
+                  className="block h-full bg-card rounded-2xl border border-border/60 p-6 md:p-7 card-hover group"
+                >
+                  <span className="inline-block text-[10px] font-medium text-primary bg-accent px-2.5 py-0.5 rounded-full mb-4">
+                    {guide.badge}
+                  </span>
+                  <div className="w-11 h-11 rounded-xl bg-accent flex items-center justify-center mb-4">
+                    <guide.icon className="w-5 h-5 text-primary" />
+                  </div>
+                  <h3 className="text-lg font-bold text-foreground mb-1 group-hover:text-primary transition-colors">
+                    {guide.title}
+                  </h3>
+                  <p className="text-sm font-medium text-primary/80 mb-3">{guide.subtitle}</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{guide.description}</p>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Latest Updates Section */}
+      <section className="section-spacing-lg">
         <div className="container-medical">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
