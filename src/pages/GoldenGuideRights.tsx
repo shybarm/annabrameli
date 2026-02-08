@@ -319,13 +319,34 @@ const GoldenGuideRights = () => {
               { to: "/guides/בדיקות-אלרגיה-ילדים-ישראל", label: "בדיקות אלרגיה לילדים בישראל" },
               { to: "/services", label: "השירותים שלנו – בדיקות וייעוץ" },
               { to: "/about", label: "אודות ד״ר אנה ברמלי" },
-              { to: "/blog", label: "מאמרים נוספים בבלוג" },
-              { to: "/contact", label: "יצירת קשר וקביעת תור" },
             ].map((link) => (
               <Link
                 key={link.to}
                 to={link.to}
                 className="flex items-center gap-2 bg-card rounded-xl p-4 border border-border/60 card-hover group text-sm"
+              >
+                <ArrowRight className="w-4 h-4 text-primary flex-shrink-0" />
+                <span className="text-foreground group-hover:text-primary transition-colors font-medium">{link.label}</span>
+              </Link>
+            ))}
+          </div>
+        </motion.section>
+
+        {/* Satellite articles hub */}
+        <motion.section initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-12">
+          <h2 className="text-xl md:text-2xl font-bold text-foreground mb-5">הרחבות חשובות להורים</h2>
+          <div className="grid sm:grid-cols-2 gap-3">
+            {[
+              { to: "/knowledge/גן-יכול-לסרב-לילד-אלרגי", label: "האם גן יכול לסרב לילד אלרגי?" },
+              { to: "/knowledge/אפיפן-בגן-מי-אחראי", label: "אפיפן בגן – מי אחראי?" },
+              { to: "/knowledge/סייעת-רפואית-לילד-אלרגי", label: "סייעת רפואית – מי זכאי?" },
+              { to: "/knowledge/טיול-שנתי-ילד-אלרגי", label: "טיול שנתי עם ילד אלרגי" },
+              { to: "/knowledge/אישור-אלרגיה-למשרד-החינוך", label: "אישור אלרגיה למשרד החינוך" },
+            ].map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                className="flex items-center gap-2 bg-surface-warm rounded-xl p-4 border border-border/40 card-hover group text-sm"
               >
                 <ArrowRight className="w-4 h-4 text-primary flex-shrink-0" />
                 <span className="text-foreground group-hover:text-primary transition-colors font-medium">{link.label}</span>
