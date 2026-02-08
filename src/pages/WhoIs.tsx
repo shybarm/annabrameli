@@ -403,6 +403,20 @@ const WhoIs = () => {
           </div>
         </section>
 
+        {/* Internal SEO Link */}
+        <section className="py-8 md:py-12">
+          <div className="container-medical">
+            <div className="max-w-3xl mx-auto text-center">
+              <p className="text-muted-foreground">
+                לפרופיל המקצועי המלא, פרסומים ומידע על שירותי המרפאה — בקרו בעמוד{" "}
+                <Link to="/dr-anna-brameli" className="text-primary hover:underline font-medium">
+                  ד״ר אנה ברמלי – רופאת אלרגיה
+                </Link>.
+              </p>
+            </div>
+          </div>
+        </section>
+
         {/* CTA Section */}
         <section className="py-16 md:py-24 gradient-teal">
           <div className="container-medical">
