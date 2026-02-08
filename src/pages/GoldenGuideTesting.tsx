@@ -394,15 +394,36 @@ const GoldenGuideTesting = () => {
             {[
               { to: "/guides/טעימות-ראשונות-אלרגנים", label: "טעימות ראשונות – מדריך חשיפה לאלרגנים" },
               { to: "/guides/זכויות-ילד-אלרגי-ישראל", label: "זכויות של ילד אלרגי בישראל" },
-              { to: "/blog/אטופיק-דרמטיטיס-תינוקות", label: "אטופיק דרמטיטיס – מדריך טיפול" },
               { to: "/services", label: "השירותים שלנו – בדיקות וייעוץ" },
               { to: "/about", label: "אודות ד״ר אנה ברמלי" },
-              { to: "/contact", label: "יצירת קשר וקביעת תור" },
             ].map((link) => (
               <Link
                 key={link.to}
                 to={link.to}
                 className="flex items-center gap-2 bg-card rounded-xl p-4 border border-border/60 card-hover group text-sm"
+              >
+                <ArrowRight className="w-4 h-4 text-primary flex-shrink-0" />
+                <span className="text-foreground group-hover:text-primary transition-colors font-medium">{link.label}</span>
+              </Link>
+            ))}
+          </div>
+        </motion.section>
+
+        {/* Satellite articles hub */}
+        <motion.section initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-12">
+          <h2 className="text-xl md:text-2xl font-bold text-foreground mb-5">הרחבות חשובות להורים</h2>
+          <div className="grid sm:grid-cols-2 gap-3">
+            {[
+              { to: "/knowledge/תבחיני-עור-כואב-לילדים", label: "תבחיני עור – האם זה כואב?" },
+              { to: "/knowledge/בדיקת-דם-לאלרגיה-ילדים", label: "בדיקת דם לאלרגיה – מתי מספיקה?" },
+              { to: "/knowledge/תגר-מזון-איך-זה-נראה", label: "תגר מזון – איך זה נראה בפועל?" },
+              { to: "/knowledge/בדיקה-חיובית-בלי-תסמינים", label: "בדיקה חיובית בלי תסמינים" },
+              { to: "/knowledge/בדיקות-אלרגיה-פרטי-או-קופה", label: "פרטי או קופה – מתי זה משנה?" },
+            ].map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                className="flex items-center gap-2 bg-surface-warm rounded-xl p-4 border border-border/40 card-hover group text-sm"
               >
                 <ArrowRight className="w-4 h-4 text-primary flex-shrink-0" />
                 <span className="text-foreground group-hover:text-primary transition-colors font-medium">{link.label}</span>

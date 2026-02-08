@@ -60,6 +60,16 @@ import RednessAroundMouth from "./pages/knowledge/RednessAroundMouth";
 import BambaAt4Months from "./pages/knowledge/BambaAt4Months";
 import VomitingAfterTahini from "./pages/knowledge/VomitingAfterTahini";
 import DaysBetweenAllergens from "./pages/knowledge/DaysBetweenAllergens";
+import GardenRefusal from "./pages/knowledge/GardenRefusal";
+import EpiPenResponsibility from "./pages/knowledge/EpiPenResponsibility";
+import MedicalAide from "./pages/knowledge/MedicalAide";
+import SchoolTrip from "./pages/knowledge/SchoolTrip";
+import AllergyCertificate from "./pages/knowledge/AllergyCertificate";
+import SkinPrickPain from "./pages/knowledge/SkinPrickPain";
+import BloodTestAllergy from "./pages/knowledge/BloodTestAllergy";
+import OralFoodChallenge from "./pages/knowledge/OralFoodChallenge";
+import PositiveWithoutSymptoms from "./pages/knowledge/PositiveWithoutSymptoms";
+import PrivateVsPublic from "./pages/knowledge/PrivateVsPublic";
 
 // Layout for public pages
 const PublicLayout = ({ children }: { children: React.ReactNode }) => (
@@ -116,6 +126,18 @@ const App = () => (
               <Route path="/knowledge/במבה-גיל-4-חודשים" element={<PublicLayout><BambaAt4Months /></PublicLayout>} />
               <Route path="/knowledge/הקאה-אחרי-טחינה" element={<PublicLayout><VomitingAfterTahini /></PublicLayout>} />
               <Route path="/knowledge/כמה-ימים-בין-אלרגנים" element={<PublicLayout><DaysBetweenAllergens /></PublicLayout>} />
+              {/* Rights cluster satellites */}
+              <Route path="/knowledge/גן-יכול-לסרב-לילד-אלרגי" element={<PublicLayout><GardenRefusal /></PublicLayout>} />
+              <Route path="/knowledge/אפיפן-בגן-מי-אחראי" element={<PublicLayout><EpiPenResponsibility /></PublicLayout>} />
+              <Route path="/knowledge/סייעת-רפואית-לילד-אלרגי" element={<PublicLayout><MedicalAide /></PublicLayout>} />
+              <Route path="/knowledge/טיול-שנתי-ילד-אלרגי" element={<PublicLayout><SchoolTrip /></PublicLayout>} />
+              <Route path="/knowledge/אישור-אלרגיה-למשרד-החינוך" element={<PublicLayout><AllergyCertificate /></PublicLayout>} />
+              {/* Testing cluster satellites */}
+              <Route path="/knowledge/תבחיני-עור-כואב-לילדים" element={<PublicLayout><SkinPrickPain /></PublicLayout>} />
+              <Route path="/knowledge/בדיקת-דם-לאלרגיה-ילדים" element={<PublicLayout><BloodTestAllergy /></PublicLayout>} />
+              <Route path="/knowledge/תגר-מזון-איך-זה-נראה" element={<PublicLayout><OralFoodChallenge /></PublicLayout>} />
+              <Route path="/knowledge/בדיקה-חיובית-בלי-תסמינים" element={<PublicLayout><PositiveWithoutSymptoms /></PublicLayout>} />
+              <Route path="/knowledge/בדיקות-אלרגיה-פרטי-או-קופה" element={<PublicLayout><PrivateVsPublic /></PublicLayout>} />
               {/* Auth */}
               <Route path="/auth" element={<Auth />} />
               
