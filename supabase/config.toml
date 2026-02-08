@@ -65,3 +65,9 @@ verify_jwt = false
 
 [functions.send-appointment-confirmation]
 verify_jwt = false
+
+[functions.sync-medical-updates]
+verify_jwt = false
+
+[functions.reset-staff-mfa]
+verify_jwt = false
