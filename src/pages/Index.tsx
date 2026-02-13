@@ -18,6 +18,7 @@ import {
   ShieldCheck,
   TestTube2,
   School,
+  HelpCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ServiceCard } from "@/components/ui/service-card";
@@ -29,13 +30,13 @@ import drAnnaImage from "@/assets/dr-anna-brameli.jpeg";
 const services = [
   {
     icon: Apple,
-    title: "אלרגיה למזון",
+    title: "אבחון וטיפול באלרגיה למזון בילדים",
     description: "אבחון וטיפול באלרגיות למזון בילדים ובמבוגרים, כולל בדיקות תגר מבוקרות.",
     href: "/services#food-allergy",
   },
   {
     icon: Wind,
-    title: "אסתמה אלרגית",
+    title: "מומחית לאסתמה אלרגית וקוצר נשימה",
     description: "אבחון אסתמה שמקורה באלרגיות, בדיקות תפקודי ריאות וטיפול מתקדם.",
     href: "/services#asthma",
   },
@@ -47,7 +48,7 @@ const services = [
   },
   {
     icon: Pill,
-    title: "אלרגיה לתרופות",
+    title: "בדיקת אלרגיה לתרופות ואנטיביוטיקה",
     description: "אבחון תגובות אלרגיות לתרופות, בדיקות ותגר תרופתי מבוקר.",
     href: "/services#drug-allergy",
   },
@@ -105,6 +106,34 @@ const goldenGuides = [
   },
 ];
 
+const faqItems = [
+  {
+    question: "מתי כדאי לקחת ילד לבדיקת אלרגיה?",
+    answer: "מומלץ לקבוע תור ברגע שעולה חשד לתגובה אלרגית למזון, עקיצה או פריחה לא מוסברת. אבחון מוקדם אצל רופא אלרגיה מומחה מונע סיכונים מיותרים ומעניק שקט נפשי להורים.",
+  },
+  {
+    question: "מה ההבדל בין אלרגיה לרגישות למזון?",
+    answer: "אלרגיה היא תגובה של מערכת החיסון שעלולה להיות מסכנת חיים, בעוד רגישות קשורה לרוב למערכת העיכול. ד״ר אנה ברמלי מבצעת מבחני תגר (Food Challenge) מדויקים להבחנה בין השניים.",
+  },
+  {
+    question: "איך מתבצעת בדיקת אלרגיה (טסטים)?",
+    answer: "הבדיקה מתבצעת לרוב באמצעות תבחיני עור (Prick Tests) או בדיקות דם (RAST). התוצאות מתקבלות תוך דקות ספורות במרפאה.",
+  },
+];
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": faqItems.map((item) => ({
+    "@type": "Question",
+    "name": item.question,
+    "acceptedAnswer": {
+      "@type": "Answer",
+      "text": item.answer,
+    },
+  })),
+};
+
 const Index = () => {
   const { data: latestUpdates } = useMedicalUpdates(3);
 
@@ -118,6 +147,9 @@ const Index = () => {
         />
       </Helmet>
       <SchemaMarkup type="physician" />
+      <Helmet>
+        <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
+      </Helmet>
 
       {/* Hero Section */}
       <section className="relative gradient-hero overflow-hidden">
@@ -361,6 +393,63 @@ const Index = () => {
             <Button variant="outline" size="lg" asChild>
               <Link to="/updates">
                 לכל העדכונים
+                <ArrowLeft className="w-4 h-4 mr-2" />
+              </Link>
+            </Button>
+          </motion.div>
+        </div>
+      </section>
+
+
+      {/* FAQ Section */}
+      <section className="section-spacing-lg bg-surface">
+        <div className="container-medical">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-14"
+          >
+            <h2 className="font-bold text-foreground mb-4">
+              שאלות נפוצות
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              תשובות לשאלות שהורים שואלים הכי הרבה – בשפה פשוטה ומבוססת מחקר.
+            </p>
+          </motion.div>
+
+          <div className="max-w-3xl mx-auto space-y-5">
+            {faqItems.map((item, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                className="bg-card rounded-2xl border border-border/60 p-6 md:p-7"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="w-9 h-9 rounded-xl bg-accent flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <HelpCircle className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-foreground mb-2">{item.question}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{item.answer}</p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-center mt-12"
+          >
+            <Button variant="outline" size="lg" asChild>
+              <Link to="/faq">
+                לכל השאלות והתשובות
                 <ArrowLeft className="w-4 h-4 mr-2" />
               </Link>
             </Button>
