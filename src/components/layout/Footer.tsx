@@ -110,6 +110,13 @@ export const Footer = () => {
           </div>
         </div>
 
+        {/* Areas Served */}
+        <div className="mt-10 pt-8 border-t border-border">
+          <p className="text-xs text-muted-foreground leading-relaxed text-center max-w-2xl mx-auto">
+            מרפאת האלרגיה של ד״ר אנה ברמלי ממוקמת בהוד השרון ומספקת שירות לתושבי כפר סבא, רעננה, פתח תקווה, הרצליה ואזור השרון.
+          </p>
+        </div>
+
         {/* Legal Links */}
         <div className="mt-10 pt-8 border-t border-border">
           <div className="flex flex-wrap justify-center gap-6 mb-5">
