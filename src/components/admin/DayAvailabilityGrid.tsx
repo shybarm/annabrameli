@@ -116,11 +116,11 @@ export function DayAvailabilityGrid({
         </h3>
         <div className="flex items-center gap-3 text-xs">
           <span className="flex items-center gap-1">
-            <span className="w-3 h-3 rounded bg-green-100 border border-green-300" />
+            <span className="w-3 h-3 rounded bg-primary/10 border border-primary/30" />
             פנוי
           </span>
           <span className="flex items-center gap-1">
-            <span className="w-3 h-3 rounded bg-red-100 border border-red-300" />
+            <span className="w-3 h-3 rounded bg-destructive/10 border border-destructive/30" />
             תפוס
           </span>
         </div>
@@ -141,8 +141,8 @@ export function DayAvailabilityGrid({
                 "relative p-2 rounded-lg border text-sm transition-all",
                 "hover:shadow-md hover:scale-[1.02] active:scale-[0.98]",
                 "focus:outline-none focus:ring-2 focus:ring-primary/50",
-                isAvailable && !isTaken && "bg-green-50 border-green-200 hover:bg-green-100 hover:border-green-300",
-                isTaken && "bg-red-50 border-red-200 hover:bg-red-100 hover:border-red-300",
+                isAvailable && !isTaken && "bg-primary/5 border-primary/20 hover:bg-primary/10 hover:border-primary/30",
+                isTaken && "bg-destructive/5 border-destructive/20 hover:bg-destructive/10 hover:border-destructive/30",
                 !isAvailable && !isTaken && "bg-muted/50 border-border opacity-50 cursor-not-allowed"
               )}
               disabled={!isAvailable && !isTaken}
@@ -160,7 +160,7 @@ export function DayAvailabilityGrid({
                 </div>
               ) : isAvailable ? (
                 <div className="mt-1">
-                  <Badge variant="outline" className="text-[10px] px-1 py-0 bg-green-100 text-green-700 border-green-300">
+                  <Badge variant="outline" className="text-[10px] px-1 py-0 bg-primary/10 text-primary border-primary/30">
                     פנוי
                   </Badge>
                 </div>

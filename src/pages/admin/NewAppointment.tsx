@@ -166,9 +166,9 @@ export default function NewAppointment() {
                   </Button>
                 </>
               ) : (
-                <div className="flex items-center justify-between p-4 bg-medical-50 rounded-lg border border-medical-200">
+                <div className="flex items-center justify-between p-4 bg-primary/5 rounded-lg border border-primary/20">
                   <div className="flex items-center gap-3">
-                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-medical-200 text-medical-700 font-medium">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/15 text-primary font-medium">
                       {selectedPatient.first_name.charAt(0)}{selectedPatient.last_name.charAt(0)}
                     </div>
                     <div>
