@@ -280,17 +280,17 @@ export default function AppointmentsList() {
         {/* List View - Today's Appointments */}
         {viewMode === 'list' && (
           <>
-          <Card data-tutorial="appointments-list" className="border-2 border-medical-200 bg-medical-50/30">
+          <Card data-tutorial="appointments-list" className="border-2 border-primary/20 bg-primary/5">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-medical-600" />
+              <Calendar className="h-5 w-5 text-primary" />
               תורים להיום - {format(today, 'EEEE, d בMMMM', { locale: he })}
             </CardTitle>
           </CardHeader>
           <CardContent>
             {todayLoading ? (
               <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-medical-600" />
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
               </div>
             ) : getTodayAppointments().length > 0 ? (
               <div className="space-y-3">
@@ -311,7 +311,7 @@ export default function AppointmentsList() {
                     <div className="flex items-start gap-3">
                       <div className={cn(
                         "flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-lg flex-shrink-0",
-                        isNewPatient ? "bg-amber-200 text-amber-700" : "bg-medical-100 text-medical-700"
+                        isNewPatient ? "bg-amber-200 text-amber-700" : "bg-primary/15 text-primary"
                       )}>
                         <Clock className="h-5 w-5 sm:h-6 sm:w-6" />
                       </div>
@@ -320,7 +320,7 @@ export default function AppointmentsList() {
                           <p className="font-semibold text-base sm:text-lg">
                             {apt.patients?.first_name} {apt.patients?.last_name}
                           </p>
-                          <p className="text-lg sm:text-xl font-bold text-medical-700">
+                          <p className="text-lg sm:text-xl font-bold text-primary">
                             {format(new Date(apt.scheduled_at), 'HH:mm')}
                           </p>
                         </div>
@@ -416,7 +416,7 @@ export default function AppointmentsList() {
           <CardContent>
             {weekLoading ? (
               <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-medical-600" />
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
               </div>
             ) : (
               <>
@@ -431,14 +431,14 @@ export default function AppointmentsList() {
                         key={day.toISOString()}
                         className={cn(
                           "min-w-[140px] flex-shrink-0 p-3 rounded-lg border snap-start",
-                          isToday ? 'border-medical-500 bg-medical-50' : 'border-gray-200'
+                          isToday ? 'border-primary bg-primary/5' : 'border-border'
                         )}
                       >
                         <div className="text-center mb-2">
                           <p className="text-xs text-muted-foreground">
                             {format(day, 'EEEE', { locale: he })}
                           </p>
-                          <p className={cn("text-lg font-semibold", isToday && "text-medical-700")}>
+                          <p className={cn("text-lg font-semibold", isToday && "text-primary")}>
                             {format(day, 'd')}
                           </p>
                         </div>
@@ -489,14 +489,14 @@ export default function AppointmentsList() {
                         key={day.toISOString()}
                         className={cn(
                           "min-h-[120px] p-2 rounded-lg border",
-                          isToday ? 'border-medical-500 bg-medical-50' : 'border-gray-200'
+                          isToday ? 'border-primary bg-primary/5' : 'border-border'
                         )}
                       >
                         <div className="text-center mb-2">
                           <p className="text-xs text-muted-foreground">
                             {format(day, 'EEEE', { locale: he })}
                           </p>
-                          <p className={cn("text-lg font-semibold", isToday && "text-medical-700")}>
+                          <p className={cn("text-lg font-semibold", isToday && "text-primary")}>
                             {format(day, 'd')}
                           </p>
                         </div>
@@ -623,7 +623,7 @@ export default function AppointmentsList() {
                     >
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
-                          <span className="text-lg font-bold text-medical-700">
+                          <span className="text-lg font-bold text-primary">
                             {format(new Date(apt.scheduled_at), 'HH:mm')}
                           </span>
                           <span className="font-medium">
