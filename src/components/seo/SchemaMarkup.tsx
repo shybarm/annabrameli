@@ -8,32 +8,41 @@ export const SchemaMarkup = ({ type = "physician" }: SchemaMarkupProps) => {
   const physicianSchema = {
     "@context": "https://schema.org",
     "@type": "Physician",
-    name: "ד״ר אנה ברמלי",
-    alternateName: "Dr. Anna Brameli",
-    description: "מומחית לאלרגיה ואימונולוגיה עם ניסיון רב באבחון וטיפול באלרגיות בילדים ומבוגרים",
-    medicalSpecialty: ["Allergy and Immunology", "Pediatrics"],
-    availableService: [
+    "name": "ד״ר אנה ברמלי - מומחית לאלרגיה ואימונולוגיה",
+    "image": "https://ihaveallergy.com/logo.png",
+    "@id": "https://ihaveallergy.com",
+    "url": "https://ihaveallergy.com",
+    "telephone": "054-580-8008",
+    "priceRange": "$$",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "טבס 3",
+      "addressLocality": "הוד השרון",
+      "postalCode": "4501303",
+      "addressCountry": "IL",
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": 32.1524,
+      "longitude": 34.8947,
+    },
+    "openingHoursSpecification": [
       {
-        "@type": "MedicalProcedure",
-        name: "אבחון אלרגיות",
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Sunday"],
+        "opens": "08:00",
+        "closes": "19:00",
       },
       {
-        "@type": "MedicalProcedure",
-        name: "בדיקות עור",
-      },
-      {
-        "@type": "MedicalProcedure",
-        name: "טיפול באסתמה אלרגית",
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": "Friday",
+        "opens": "08:00",
+        "closes": "13:00",
       },
     ],
-    telephone: "+972-54-580-8008",
-    address: {
-      "@type": "PostalAddress",
-      streetAddress: "טבס 3",
-      addressLocality: "הוד השרון",
-      addressCountry: "IL",
-    },
-    image: "/dr-anna-brameli.jpeg",
+    "medicalSpecialty": "AllergyAndImmunology",
+    "knowsLanguage": ["he", "en"],
+    "description": "מומחית לאלרגיה ואימונולוגיה לילדים ומבוגרים בהוד השרון. אבחון וטיפול באלרגיות למזון, אסתמה, ואלרגיה לתרופות.",
   };
 
   const medicalWebPageSchema = {
