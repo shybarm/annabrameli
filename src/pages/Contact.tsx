@@ -74,11 +74,12 @@ const Contact = () => {
   return (
     <>
       <Helmet>
-        <title>יצירת קשר וקביעת תור | ד״ר אנה ברמלי</title>
+        <title>יצירת קשר וקביעת תור | ד״ר אנה ברמלי – מרפאת אלרגיה בהוד השרון</title>
         <meta 
           name="description" 
-          content="קביעת תור לד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה. טלפון: 054-580-8008, כתובת: טבס 3, הוד השרון." 
+          content="קביעת תור במרפאת אלרגיה של ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה. טלפון: 054-580-8008, כתובת: טבס 3, הוד השרון. ייעוץ אלרגיה פרטי." 
         />
+        <link rel="canonical" href="https://ihaveallergy.com/contact" />
       </Helmet>
       <SchemaMarkup type="physician" />
 
@@ -276,20 +277,18 @@ const Contact = () => {
                 </div>
               </div>
 
-              {/* Map Placeholder */}
-              <div className="bg-surface rounded-2xl overflow-hidden h-64 flex items-center justify-center border border-border/60">
-                <div className="text-center">
-                  <MapPin className="w-10 h-10 text-muted-foreground/50 mx-auto mb-3" />
-                  <p className="text-muted-foreground font-medium">טבס 3, הוד השרון</p>
-                  <a
-                    href="https://maps.google.com/?q=טבס+3+הוד+השרון"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary text-sm hover:underline mt-2 inline-block"
-                  >
-                    פתח במפות Google
-                  </a>
-                </div>
+              {/* Google Maps Embed */}
+              <div className="bg-surface rounded-2xl overflow-hidden h-64 border border-border/60">
+                <iframe
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3379.8!2d34.8947!3d32.1524!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2z15jXkdehIDMsINeU15XXkyDXlNep16jXldefLCDXmdep16jXkNec!5e0!3m2!1she!2sil!4v1"
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="מרפאת אלרגיה — ד״ר אנה ברמלי, טבס 3, הוד השרון"
+                ></iframe>
               </div>
             </motion.div>
           </div>

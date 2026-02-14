@@ -58,6 +58,7 @@ const About = () => {
           name="description"
           content="היכרות עם ד״ר אנה ברמלי, רופאה מומחית לאלרגיה ואימונולוגיה בעלת ניסיון קליני רחב. מידע על השכלה, ניסיון מקצועי, והגישה הטיפולית."
         />
+        <link rel="canonical" href="https://ihaveallergy.com/about" />
       </Helmet>
       <SchemaMarkup type="physician" />
 
