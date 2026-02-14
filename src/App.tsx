@@ -70,6 +70,7 @@ import BloodTestAllergy from "./pages/knowledge/BloodTestAllergy";
 import OralFoodChallenge from "./pages/knowledge/OralFoodChallenge";
 import PositiveWithoutSymptoms from "./pages/knowledge/PositiveWithoutSymptoms";
 import PrivateVsPublic from "./pages/knowledge/PrivateVsPublic";
+import AllergyPillar from "./pages/AllergyPillar";
 
 // Layout for public pages
 const PublicLayout = ({ children }: { children: React.ReactNode }) => (
@@ -120,6 +121,7 @@ const App = () => (
               <Route path="/guides/טעימות-ראשונות-אלרגנים" element={<PublicLayout><GoldenGuide /></PublicLayout>} />
               <Route path="/guides/זכויות-ילד-אלרגי-ישראל" element={<PublicLayout><GoldenGuideRights /></PublicLayout>} />
               <Route path="/guides/בדיקות-אלרגיה-ילדים-ישראל" element={<PublicLayout><GoldenGuideTesting /></PublicLayout>} />
+              <Route path="/guides/אלרגיה-מדריך-מקיף" element={<PublicLayout><AllergyPillar /></PublicLayout>} />
               {/* Knowledge satellite articles */}
               <Route path="/knowledge/פריחה-אחרי-במבה" element={<PublicLayout><RashAfterBamba /></PublicLayout>} />
               <Route path="/knowledge/אודם-סביב-הפה-אחרי-אלרגן" element={<PublicLayout><RednessAroundMouth /></PublicLayout>} />
