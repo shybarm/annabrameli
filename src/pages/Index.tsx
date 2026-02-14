@@ -145,6 +145,7 @@ const Index = () => {
           name="description" 
           content="ד״ר אנה ברמלי – מומחית לאלרגיה ואימונולוגיה | אבחון וטיפול בילדים ובמבוגרים. קביעת תור מהירה, מידע מקצועי, ומדריכים שיעזרו לכם להבין ולנהל אלרגיות בצורה בטוחה." 
         />
+        <link rel="canonical" href="https://ihaveallergy.com/" />
       </Helmet>
       <SchemaMarkup type="physician" />
       <Helmet>

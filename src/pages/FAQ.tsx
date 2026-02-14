@@ -213,6 +213,7 @@ const FAQ = () => {
           name="description" 
           content="תשובות מקצועיות לשאלות נפוצות על אלרגיות: אלרגיה למזון, לחלב, לבוטנים, לתרופות, לדבורים, אסתמה, אנפילקסיס ובדיקות אלרגיה." 
         />
+        <link rel="canonical" href="https://ihaveallergy.com/faq" />
       </Helmet>
       <SchemaMarkup type="medicalWebPage" />
 
