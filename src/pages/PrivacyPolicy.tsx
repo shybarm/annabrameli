@@ -12,6 +12,7 @@ const PrivacyPolicy = () => {
       <Helmet>
         <title>מדיניות פרטיות | iHaveAllergy</title>
         <meta name="description" content="מדיניות הפרטיות של iHaveAllergy - איסוף מידע, שימוש במידע וזכויות המשתמש" />
+        <link rel="canonical" href="https://ihaveallergy.com/privacy" />
       </Helmet>
 
       <div className="container-medical py-16">
