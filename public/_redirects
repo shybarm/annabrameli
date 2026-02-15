@@ -1,3 +1,8 @@
+# Force HTTPS and non-www canonical domain
+http://www.ihaveallergy.com/*    https://ihaveallergy.com/:splat    301!
+https://www.ihaveallergy.com/*   https://ihaveallergy.com/:splat    301!
+http://ihaveallergy.com/*        https://ihaveallergy.com/:splat    301!
+
 # SPA fallback - serve index.html for all routes so React Router handles them
 # This is required for Lovable publish (Netlify-compatible) to work with client-side routing
 /*    /index.html   200

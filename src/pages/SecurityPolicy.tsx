@@ -6,6 +6,7 @@ const SecurityPolicy = () => {
       <Helmet>
         <title>אבטחת מידע | iHaveAllergy</title>
         <meta name="description" content="מדיניות אבטחת המידע של iHaveAllergy - אמצעי אבטחה ואחריות" />
+        <link rel="canonical" href="https://ihaveallergy.com/security" />
       </Helmet>
 
       <div className="container-medical py-16">

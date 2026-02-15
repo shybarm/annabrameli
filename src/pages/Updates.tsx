@@ -23,6 +23,7 @@ const Updates = () => {
           name="description" 
           content="עדכונים אחרונים וחידושים בעולם האלרגיה - מחקרים, הנחיות חדשות וסקירות רפואיות מסוכמות בשפה פשוטה וברורה להורים." 
         />
+        <link rel="canonical" href="https://ihaveallergy.com/updates" />
       </Helmet>
       <SchemaMarkup type="medicalWebPage" />
 

@@ -6,6 +6,7 @@ const AccessibilityStatement = () => {
       <Helmet>
         <title>הצהרת נגישות | iHaveAllergy</title>
         <meta name="description" content="הצהרת הנגישות של iHaveAllergy - התאמות נגישות ויצירת קשר" />
+        <link rel="canonical" href="https://ihaveallergy.com/accessibility" />
       </Helmet>
 
       <div className="container-medical py-16">
