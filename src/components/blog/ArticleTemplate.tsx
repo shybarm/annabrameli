@@ -7,6 +7,41 @@ import { ArticleCTA } from "./ArticleCTA";
 import { FAQAccordion } from "@/components/ui/faq-accordion";
 import type { BlogArticle } from "@/data/blog-articles";
 import { blogArticles, blogCategories } from "@/data/blog-articles";
+import React from "react";
+
+/**
+ * Parses plain-text content and converts inline links like
+ * "link text (/some/path)" into clickable <Link> elements.
+ */
+function renderContentWithLinks(content: string): React.ReactNode[] {
+  // Match patterns like "link text (/path)" or "link text (/path)."
+  const linkRegex = /([^\n(]+?)\s*\((\/(blog|guides|knowledge|about|services|contact|faq)[^\s)]*)\)/g;
+  const parts: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = linkRegex.exec(content)) !== null) {
+    // Add text before the match
+    if (match.index > lastIndex) {
+      parts.push(content.slice(lastIndex, match.index));
+    }
+    const linkText = match[1].trim();
+    const linkPath = match[2];
+    parts.push(
+      <Link key={match.index} to={linkPath} className="text-primary hover:underline font-medium">
+        {linkText}
+      </Link>
+    );
+    lastIndex = match.index + match[0].length;
+  }
+
+  // Add remaining text
+  if (lastIndex < content.length) {
+    parts.push(content.slice(lastIndex));
+  }
+
+  return parts;
+}
 
 interface ArticleTemplateProps {
   article: BlogArticle;
@@ -125,7 +160,7 @@ export const ArticleTemplate = ({ article }: ArticleTemplateProps) => {
           >
             <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4">{section.title}</h2>
             <div className="text-muted-foreground leading-relaxed whitespace-pre-line prose-content">
-              {section.content}
+              {renderContentWithLinks(section.content)}
             </div>
 
             {/* CTA after "when-see-doctor" section */}
