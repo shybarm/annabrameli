@@ -12,5 +12,6 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /*?category=
 
 Sitemap: https://ihaveallergy.com/sitemap.xml
