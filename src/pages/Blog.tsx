@@ -30,6 +30,7 @@ const Blog = () => {
           content="מאמרים רפואיים מבוססי ראיות על אלרגיה בילדים: תסמינים, אבחון, טיפול, וזכויות. נכתבו ונסקרו על ידי ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה."
         />
         <link rel="canonical" href="https://ihaveallergy.com/blog" />
+        {activeCategory && <meta name="robots" content="noindex, follow" />}
       </Helmet>
 
       <section className="gradient-hero py-16 md:py-20">
