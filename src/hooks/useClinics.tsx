@@ -157,12 +157,35 @@ export function useUpdateClinic() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['clinics'] });
+      queryClient.invalidateQueries({ queryKey: ['clinic', data.id] });
       toast({ title: 'המרפאה עודכנה בהצלחה' });
     },
     onError: (error) => {
       toast({ title: 'שגיאה בעדכון המרפאה', description: error.message, variant: 'destructive' });
+    },
+  });
+}
+
+export function useDeleteClinic() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('clinics')
+        .update({ is_active: false })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['clinics'] });
+      queryClient.invalidateQueries({ queryKey: ['clinic'] });
+      toast({ title: 'המרפאה נמחקה בהצלחה' });
+    },
+    onError: (error) => {
+      toast({ title: 'שגיאה במחיקת המרפאה', description: error.message, variant: 'destructive' });
     },
   });
 }

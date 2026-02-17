@@ -17,7 +17,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useClinicContext } from '@/contexts/ClinicContext';
-import { useClinic, useUpdateClinic, Clinic } from '@/hooks/useClinics';
+import { useClinic, useUpdateClinic, useDeleteClinic, Clinic } from '@/hooks/useClinics';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 interface ReminderSchedule {
   id: string;
@@ -103,6 +104,18 @@ export default function SettingsPage() {
   const { selectedClinicId } = useClinicContext();
   const { data: currentClinic, isLoading: loadingClinic } = useClinic(selectedClinicId ?? undefined);
   const updateClinic = useUpdateClinic();
+  const deleteClinic = useDeleteClinic();
+
+  const handleDeleteClinic = () => {
+    if (!selectedClinicId) return;
+    deleteClinic.mutate(selectedClinicId, {
+      onSuccess: () => {
+        // Reset selected clinic
+        localStorage.removeItem('selectedClinicId');
+        window.location.reload();
+      },
+    });
+  };
   
   // Form state for clinic settings
   const [clinicForm, setClinicForm] = useState({
@@ -458,13 +471,41 @@ export default function SettingsPage() {
                 />
               </div>
             </div>
-            <Button 
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
-              onClick={handleSaveClinicInfo}
-              disabled={updateClinic.isPending}
-            >
-              {updateClinic.isPending ? 'שומר...' : 'שמור שינויים'}
-            </Button>
+            <div className="flex items-center gap-3">
+              <Button 
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
+                onClick={handleSaveClinicInfo}
+                disabled={updateClinic.isPending}
+              >
+                {updateClinic.isPending ? 'שומר...' : 'שמור שינויים'}
+              </Button>
+              
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" size="sm">
+                    <Trash2 className="h-4 w-4 ml-1" />
+                    מחק מרפאה
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent dir="rtl">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>מחיקת מרפאה</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      האם אתה בטוח שברצונך למחוק את המרפאה "{currentClinic?.name}"? פעולה זו תבטל את הפעילות של המרפאה.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>ביטול</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDeleteClinic}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      {deleteClinic.isPending ? 'מוחק...' : 'מחק'}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
           </CardContent>
         </Card>
 
