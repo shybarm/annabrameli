@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { ChevronLeft, ArrowRight } from "lucide-react";
 import { AuthorBadge } from "@/components/blog/AuthorBadge";
 import { ArticleCTA } from "@/components/blog/ArticleCTA";
+import { buildMedicalPageSchema, buildBreadcrumbSchema } from "@/utils/medicalSchema";
 
 export interface KnowledgeArticleProps {
   slug: string;
@@ -20,32 +21,19 @@ export const KnowledgeArticleLayout = ({
   children,
   relatedArticles = [],
 }: KnowledgeArticleProps) => {
-  const articleSchema = {
-    "@context": "https://schema.org",
-    "@type": "MedicalWebPage",
+  const canonicalUrl = `https://ihaveallergy.com/knowledge/${slug}`;
+  const articleSchema = buildMedicalPageSchema({
     headline: title,
     description: metaDescription,
     datePublished: "2026-02-08",
     dateModified: "2026-02-08",
-    author: {
-      "@type": "Physician",
-      name: "ד״ר אנה ברמלי",
-      url: "https://ihaveallergy.com/about",
-    },
-    publisher: { "@type": "Organization", name: "ihaveallergy.com" },
-    specialty: "Allergy and Immunology",
-    audience: { "@type": "MedicalAudience", audienceType: "Patient" },
-  };
-
-  const breadcrumbSchema = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      { "@type": "ListItem", position: 1, name: "ראשי", item: "https://ihaveallergy.com/" },
-      { "@type": "ListItem", position: 2, name: "מדריכים", item: "https://ihaveallergy.com/guides/טעימות-ראשונות-אלרגנים" },
-      { "@type": "ListItem", position: 3, name: title },
-    ],
-  };
+    canonicalUrl,
+  });
+  const breadcrumbSchema = buildBreadcrumbSchema([
+    { name: "ראשי", item: "https://ihaveallergy.com/" },
+    { name: "מדריכים", item: "https://ihaveallergy.com/guides/טעימות-ראשונות-אלרגנים" },
+    { name: title },
+  ]);
 
   return (
     <>

@@ -1,4 +1,5 @@
 import { Helmet } from "react-helmet-async";
+import { buildMedicalPageSchema, buildBreadcrumbSchema, buildFaqSchema } from "@/utils/medicalSchema";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -123,55 +124,26 @@ const faqs = [
 ];
 
 const GoldenGuide = () => {
-  const faqSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: faqs.map((faq) => ({
-      "@type": "Question",
-      name: faq.question,
-      acceptedAnswer: { "@type": "Answer", text: faq.answer },
-    })),
-  };
+  const faqSchema = buildFaqSchema(faqs);
 
-  const articleSchema = {
-    "@context": "https://schema.org",
-    "@type": "MedicalWebPage",
-    headline:
-      "טעימות ראשונות בישראל: איך לחשוף תינוק לאלרגנים (במבה, טחינה, ביצים וחלב)",
-    description:
-      "מדריך רפואי מקיף להורים ישראליים: איך להתחיל טעימות ראשונות של אלרגנים נפוצים לתינוקות, מתי להיבהל ומתי לנשום, מבוסס מחקר LEAP וההנחיות הישראליות.",
+  const articleSchema = buildMedicalPageSchema({
+    headline: "טעימות ראשונות בישראל: איך לחשוף תינוק לאלרגנים (במבה, טחינה, ביצים וחלב)",
+    description: "מדריך רפואי מקיף להורים ישראליים: איך להתחיל טעימות ראשונות של אלרגנים נפוצים לתינוקות, מתי להיבהל ומתי לנשום, מבוסס מחקר LEAP וההנחיות הישראליות.",
     datePublished: "2026-02-08",
     dateModified: "2026-02-08",
-    author: {
-      "@type": "Physician",
-      name: "ד״ר אנה ברמלי",
-      alternateName: "Dr. Anna Brameli",
-      medicalSpecialty: ["Allergy and Immunology", "Pediatrics"],
-      url: "https://ihaveallergy.com/about",
-    },
-    publisher: { "@type": "Organization", name: "ihaveallergy.com" },
-    specialty: "Allergy and Immunology",
-    audience: { "@type": "MedicalAudience", audienceType: "Patient" },
+    canonicalUrl: "https://ihaveallergy.com/guides/טעימות-ראשונות-אלרגנים",
     about: {
       "@type": "MedicalCondition",
       name: "Food Allergy in Infants",
       alternateName: "אלרגיה למזון בתינוקות",
     },
-  };
+  });
 
-  const breadcrumbSchema = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      { "@type": "ListItem", position: 1, name: "ראשי", item: "https://ihaveallergy.com/" },
-      { "@type": "ListItem", position: 2, name: "בלוג", item: "https://ihaveallergy.com/blog" },
-      {
-        "@type": "ListItem",
-        position: 3,
-        name: "טעימות ראשונות – מדריך אלרגנים לתינוקות",
-      },
-    ],
-  };
+  const breadcrumbSchema = buildBreadcrumbSchema([
+    { name: "ראשי", item: "https://ihaveallergy.com/" },
+    { name: "בלוג", item: "https://ihaveallergy.com/blog" },
+    { name: "טעימות ראשונות – מדריך אלרגנים לתינוקות" },
+  ]);
 
   return (
     <>

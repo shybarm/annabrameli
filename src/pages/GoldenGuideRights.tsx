@@ -1,4 +1,5 @@
 import { Helmet } from "react-helmet-async";
+import { buildMedicalPageSchema, buildBreadcrumbSchema, buildFaqSchema } from "@/utils/medicalSchema";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -98,45 +99,21 @@ const faqs = [
 ];
 
 const GoldenGuideRights = () => {
-  const faqSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: faqs.map((faq) => ({
-      "@type": "Question",
-      name: faq.question,
-      acceptedAnswer: { "@type": "Answer", text: faq.answer },
-    })),
-  };
+  const faqSchema = buildFaqSchema(faqs);
 
-  const articleSchema = {
-    "@context": "https://schema.org",
-    "@type": "MedicalWebPage",
+  const articleSchema = buildMedicalPageSchema({
     headline: "זכויות של ילד אלרגי בישראל: גן, בית ספר וצהרונים",
-    description:
-      "מדריך מקיף להורים: מהן הזכויות של ילד עם אלרגיה למזון במערכת החינוך הישראלית, איך לדרוש התאמות, ומתי לפנות לגורמים נוספים.",
+    description: "מדריך מקיף להורים: מהן הזכויות של ילד עם אלרגיה למזון במערכת החינוך הישראלית, איך לדרוש התאמות, ומתי לפנות לגורמים נוספים.",
     datePublished: "2026-02-08",
     dateModified: "2026-02-08",
-    author: {
-      "@type": "Physician",
-      name: "ד״ר אנה ברמלי",
-      alternateName: "Dr. Anna Brameli",
-      medicalSpecialty: ["Allergy and Immunology", "Pediatrics"],
-      url: "https://ihaveallergy.com/about",
-    },
-    publisher: { "@type": "Organization", name: "ihaveallergy.com" },
-    specialty: "Allergy and Immunology",
-    audience: { "@type": "MedicalAudience", audienceType: "Patient" },
-  };
+    canonicalUrl: "https://ihaveallergy.com/guides/זכויות-ילד-אלרגי-ישראל",
+  });
 
-  const breadcrumbSchema = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      { "@type": "ListItem", position: 1, name: "ראשי", item: "https://ihaveallergy.com/" },
-      { "@type": "ListItem", position: 2, name: "מדריכים", item: "https://ihaveallergy.com/blog" },
-      { "@type": "ListItem", position: 3, name: "זכויות ילד אלרגי" },
-    ],
-  };
+  const breadcrumbSchema = buildBreadcrumbSchema([
+    { name: "ראשי", item: "https://ihaveallergy.com/" },
+    { name: "מדריכים", item: "https://ihaveallergy.com/blog" },
+    { name: "זכויות ילד אלרגי" },
+  ]);
 
   return (
     <>
