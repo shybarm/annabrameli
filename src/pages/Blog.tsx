@@ -31,6 +31,18 @@ const Blog = () => {
         />
         <link rel="canonical" href="https://ihaveallergy.com/blog" />
         {activeCategory && <meta name="robots" content="noindex, follow" />}
+
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://ihaveallergy.com/blog" />
+        <meta property="og:title" content="בלוג אלרגיה לילדים | ד״ר אנה ברמלי – מומחית לאלרגיה ואימונולוגיה" />
+        <meta property="og:description" content="מאמרים רפואיים מבוססי ראיות על אלרגיה בילדים: תסמינים, אבחון, טיפול, וזכויות. נכתבו ונסקרו על ידי ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה." />
+        <meta property="og:image" content="https://ihaveallergy.com/og-logo.png" />
+        <meta property="og:locale" content="he_IL" />
+
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="בלוג אלרגיה לילדים | ד״ר אנה ברמלי – מומחית לאלרגיה ואימונולוגיה" />
+        <meta name="twitter:description" content="מאמרים רפואיים מבוססי ראיות על אלרגיה בילדים: תסמינים, אבחון, טיפול, וזכויות. נכתבו ונסקרו על ידי ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה." />
+        <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png" />
       </Helmet>
 
       <section className="gradient-hero py-16 md:py-20">
