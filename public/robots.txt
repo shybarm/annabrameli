@@ -12,6 +12,15 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /auth
+Disallow: /intake/
+Disallow: /join/
+Disallow: /patient-invite/
+Disallow: /portal
+Disallow: /verify-booking
+Disallow: /verify-email
+Disallow: /magic
 Disallow: /*?category=
 
 Sitemap: https://ihaveallergy.com/sitemap.xml

@@ -54,7 +54,14 @@ function formatHebrewDate(dateStr: string): string {
 }
 
 export const ArticleTemplate = ({ article }: ArticleTemplateProps) => {
-  const relatedArticles = blogArticles.filter((a) => article.relatedSlugs.includes(a.slug));
+  // Find related articles; fall back to same-category articles if slugs don't match
+  let relatedArticles = blogArticles.filter((a) => article.relatedSlugs.includes(a.slug));
+  if (relatedArticles.length < 3) {
+    const sameCat = blogArticles.filter(
+      (a) => a.category === article.category && a.slug !== article.slug && !relatedArticles.some((r) => r.slug === a.slug)
+    );
+    relatedArticles = [...relatedArticles, ...sameCat].slice(0, 6);
+  }
   const category = blogCategories[article.category];
 
   const faqSchema = {
@@ -70,21 +77,29 @@ export const ArticleTemplate = ({ article }: ArticleTemplateProps) => {
   const articleSchema = {
     "@context": "https://schema.org",
     "@type": "MedicalWebPage",
+    "@id": `https://ihaveallergy.com/blog/${article.slug}`,
+    url: `https://ihaveallergy.com/blog/${article.slug}`,
     headline: article.title,
+    name: article.metaTitle,
     description: article.metaDescription,
     datePublished: article.publishedAt,
     dateModified: article.updatedAt,
+    inLanguage: "he-IL",
+    isPartOf: { "@id": "https://ihaveallergy.com/#website" },
     author: {
       "@type": "Physician",
       name: "ד״ר אנה ברמלי",
       url: "https://ihaveallergy.com/about",
     },
     publisher: {
-      "@type": "Organization",
-      name: "ihaveallergy.com",
+      "@id": "https://ihaveallergy.com/#organization",
     },
     specialty: "Allergy and Immunology",
     audience: { "@type": "MedicalAudience", audienceType: "Patient" },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": `https://ihaveallergy.com/blog/${article.slug}`,
+    },
   };
 
   const breadcrumbSchema = {
@@ -93,8 +108,7 @@ export const ArticleTemplate = ({ article }: ArticleTemplateProps) => {
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "ראשי", item: "https://ihaveallergy.com/" },
       { "@type": "ListItem", position: 2, name: "בלוג", item: "https://ihaveallergy.com/blog" },
-      { "@type": "ListItem", position: 3, name: category.label, item: `https://ihaveallergy.com/blog?category=${article.category}` },
-      { "@type": "ListItem", position: 4, name: article.title },
+      { "@type": "ListItem", position: 3, name: article.title, item: `https://ihaveallergy.com/blog/${article.slug}` },
     ],
   };
 

@@ -19,12 +19,14 @@ import {
   TestTube2,
   School,
   HelpCircle,
+  Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ServiceCard } from "@/components/ui/service-card";
 import { UpdateCard } from "@/components/ui/update-card";
 import { SchemaMarkup } from "@/components/seo/SchemaMarkup";
 import { useMedicalUpdates } from "@/hooks/useMedicalUpdates";
+import { blogArticles } from "@/data/blog-articles";
 import drAnnaImage from "@/assets/dr-anna-brameli.jpeg";
 
 const services = [
@@ -451,6 +453,70 @@ const Index = () => {
             <Button variant="outline" size="lg" asChild>
               <Link to="/faq">
                 לכל השאלות והתשובות
+                <ArrowLeft className="w-4 h-4 mr-2" />
+              </Link>
+            </Button>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Blog Articles Section — Internal Linking Hub */}
+      <section className="section-spacing-lg bg-surface-warm">
+        <div className="container-medical">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-14"
+          >
+            <h2 className="font-bold text-foreground mb-4">
+              מאמרים על אלרגיה בילדים
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              מידע רפואי מהימן ומבוסס ראיות, נכתב ונסקר על ידי ד״ר אנה ברמלי.
+            </p>
+          </motion.div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {blogArticles.slice(0, 6).map((article, index) => (
+              <motion.div
+                key={article.slug}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.08 }}
+              >
+                <Link
+                  to={`/blog/${article.slug}`}
+                  className="block bg-card rounded-2xl p-6 border border-border/60 h-full card-hover group"
+                >
+                  <span className="inline-block text-xs font-medium text-primary bg-accent px-3 py-1 rounded-full mb-4">
+                    {article.categoryLabel}
+                  </span>
+                  <h3 className="text-base font-semibold text-foreground mb-3 group-hover:text-primary transition-colors leading-snug">
+                    {article.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                    {article.metaDescription}
+                  </p>
+                  <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <Clock className="w-3.5 h-3.5" />
+                    {article.readingTime} דקות קריאה
+                  </span>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-center mt-12"
+          >
+            <Button variant="outline" size="lg" asChild>
+              <Link to="/blog">
+                לכל המאמרים
                 <ArrowLeft className="w-4 h-4 mr-2" />
               </Link>
             </Button>
