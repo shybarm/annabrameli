@@ -31,6 +31,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Helmet } from 'react-helmet-async';
 import { ClinicSelector } from './ClinicSelector';
 import { useClinicContext } from '@/contexts/ClinicContext';
 import { useClinics } from '@/hooks/useClinics';
@@ -183,6 +184,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         "min-h-screen transition-colors duration-500",
         hasMultipleClinics ? clinicTheme.bg : "bg-background"
       )} dir="rtl">
+        <Helmet>
+          <meta name="robots" content="noindex, nofollow" />
+        </Helmet>
         {/* Mobile header - Apple-style glass effect */}
       <header className="lg:hidden fixed top-0 left-0 right-0 h-14 glass-light border-b border-border/50 z-50 flex items-center justify-between px-4 safe-area-inset-top">
         <Button 
