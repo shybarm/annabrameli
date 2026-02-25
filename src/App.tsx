@@ -9,6 +9,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ChatWidget } from "@/components/chat/ChatWidget";
 import { AccessibilityMenu } from "@/components/AccessibilityMenu";
+import { SiteWideSchema } from "@/components/seo/SiteWideSchema";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Services from "./pages/Services";
@@ -103,6 +104,7 @@ const App = () => (
           <Sonner />
           <AccessibilityMenu />
           <BrowserRouter>
+            <SiteWideSchema />
             <Routes>
               {/* Public routes */}
               <Route path="/" element={<PublicLayout><Index /></PublicLayout>} />
