@@ -40,8 +40,17 @@ export const KnowledgeArticleLayout = ({
       <Helmet>
         <title>{title} | ד״ר אנה ברמלי</title>
         <meta name="description" content={metaDescription} />
-        <link rel="canonical" href={`https://ihaveallergy.com/knowledge/${slug}`} />
+        <link rel="canonical" href={canonicalUrl} />
         <meta name="robots" content="index, follow" />
+        <meta property="og:type" content="article" />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:title" content={`${title} | ד״ר אנה ברמלי`} />
+        <meta property="og:description" content={metaDescription} />
+        <meta property="og:image" content="https://ihaveallergy.com/og-logo.png" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={`${title} | ד״ר אנה ברמלי`} />
+        <meta name="twitter:description" content={metaDescription} />
+        <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png" />
         <script type="application/ld+json">{JSON.stringify(articleSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
       </Helmet>

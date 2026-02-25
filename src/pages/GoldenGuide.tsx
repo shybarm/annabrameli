@@ -154,6 +154,17 @@ const GoldenGuide = () => {
           content="מדריך רפואי מקיף להורים: איך לחשוף תינוק לבמבה, טחינה, ביצים וחלב בבטחה. מתי להתחיל, איך לזהות אלרגיה, ומתי לפנות לרופא. מבוסס מחקר LEAP."
         />
         <link rel="canonical" href="https://ihaveallergy.com/guides/טעימות-ראשונות-אלרגנים" />
+        <meta property="og:type" content="article" />
+        <meta property="og:url" content="https://ihaveallergy.com/guides/טעימות-ראשונות-אלרגנים" />
+        <meta property="og:title" content="טעימות ראשונות לתינוקות: מדריך חשיפה לאלרגנים בישראל | ד״ר אנה ברמלי" />
+        <meta property="og:description" content="מדריך רפואי מקיף להורים: איך לחשוף תינוק לבמבה, טחינה, ביצים וחלב בבטחה." />
+        <meta property="og:image" content="https://ihaveallergy.com/og-logo.png" />
+        <meta property="article:published_time" content="2026-02-08" />
+        <meta property="article:modified_time" content="2026-02-08" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="טעימות ראשונות לתינוקות: מדריך חשיפה לאלרגנים בישראל | ד״ר אנה ברמלי" />
+        <meta name="twitter:description" content="מדריך רפואי מקיף להורים: איך לחשוף תינוק לבמבה, טחינה, ביצים וחלב בבטחה." />
+        <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png" />
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(articleSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
