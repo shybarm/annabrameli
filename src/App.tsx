@@ -1,3 +1,4 @@
+import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -95,7 +96,26 @@ const queryClient = new QueryClient({
 // Set the query client reference for auth signOut to clear cache
 setQueryClientRef(queryClient);
 
-const App = () => (
+/**
+ * Removes platform-injected twitter:image tags that lack data-rh="true".
+ * Ensures only the Helmet-managed twitter:image survives in the DOM.
+ */
+function useCleanPlatformMeta() {
+  React.useEffect(() => {
+    const cleanup = () => {
+      document.head
+        .querySelectorAll('meta[name="twitter:image"]:not([data-rh="true"])')
+        .forEach((el) => el.remove());
+    };
+    cleanup();
+    const timer = setTimeout(cleanup, 150);
+    return () => clearTimeout(timer);
+  }, []);
+}
+
+const App = () => {
+  useCleanPlatformMeta();
+  return (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <ClinicProvider>
@@ -196,6 +216,7 @@ const App = () => (
       </ClinicProvider>
     </AuthProvider>
   </QueryClientProvider>
-);
+  );
+};
 
 export default App;
