@@ -7,6 +7,7 @@ import { ArticleCTA } from "./ArticleCTA";
 import { FAQAccordion } from "@/components/ui/faq-accordion";
 import type { BlogArticle } from "@/data/blog-articles";
 import { blogArticles, blogCategories } from "@/data/blog-articles";
+import { buildMedicalPageSchema, buildBreadcrumbSchema, buildFaqSchema } from "@/utils/medicalSchema";
 import React from "react";
 
 /**
@@ -64,53 +65,20 @@ export const ArticleTemplate = ({ article }: ArticleTemplateProps) => {
   }
   const category = blogCategories[article.category];
 
-  const faqSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: article.faqs.map((faq) => ({
-      "@type": "Question",
-      name: faq.question,
-      acceptedAnswer: { "@type": "Answer", text: faq.answer },
-    })),
-  };
-
-  const articleSchema = {
-    "@context": "https://schema.org",
-    "@type": "MedicalWebPage",
-    "@id": `https://ihaveallergy.com/blog/${article.slug}`,
-    url: `https://ihaveallergy.com/blog/${article.slug}`,
+  const canonicalUrl = `https://ihaveallergy.com/blog/${article.slug}`;
+  const faqSchema = buildFaqSchema(article.faqs);
+  const articleSchema = buildMedicalPageSchema({
     headline: article.title,
-    name: article.metaTitle,
     description: article.metaDescription,
     datePublished: article.publishedAt,
     dateModified: article.updatedAt,
-    inLanguage: "he-IL",
-    isPartOf: { "@id": "https://ihaveallergy.com/#website" },
-    author: {
-      "@type": "Physician",
-      name: "ד״ר אנה ברמלי",
-      url: "https://ihaveallergy.com/about",
-    },
-    publisher: {
-      "@id": "https://ihaveallergy.com/#organization",
-    },
-    specialty: "Allergy and Immunology",
-    audience: { "@type": "MedicalAudience", audienceType: "Patient" },
-    mainEntityOfPage: {
-      "@type": "WebPage",
-      "@id": `https://ihaveallergy.com/blog/${article.slug}`,
-    },
-  };
-
-  const breadcrumbSchema = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      { "@type": "ListItem", position: 1, name: "ראשי", item: "https://ihaveallergy.com/" },
-      { "@type": "ListItem", position: 2, name: "בלוג", item: "https://ihaveallergy.com/blog" },
-      { "@type": "ListItem", position: 3, name: article.title, item: `https://ihaveallergy.com/blog/${article.slug}` },
-    ],
-  };
+    canonicalUrl,
+  });
+  const breadcrumbSchema = buildBreadcrumbSchema([
+    { name: "ראשי", item: "https://ihaveallergy.com/" },
+    { name: "בלוג", item: "https://ihaveallergy.com/blog" },
+    { name: article.title, item: canonicalUrl },
+  ]);
 
   return (
     <>
