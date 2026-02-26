@@ -11,7 +11,9 @@ interface RelatedMedicalArticlesProps {
 
 /**
  * Renders 3 related articles from the same category (excluding current).
+ * Falls back to newest articles across all categories if insufficient same-category matches.
  * Uses static <Link> elements for full crawlability.
+ * Ordering is deterministic: same-category newest first, then fallback newest first.
  */
 export const RelatedMedicalArticles = ({
   currentSlug,
@@ -21,14 +23,33 @@ export const RelatedMedicalArticles = ({
   let articles: BlogArticle[];
 
   if (overrideSlugs && overrideSlugs.length > 0) {
+    // Deduplicate and exclude current page
+    const seen = new Set<string>();
     articles = overrideSlugs
+      .filter((s) => {
+        if (s === currentSlug || seen.has(s)) return false;
+        seen.add(s);
+        return true;
+      })
       .map((s) => blogArticles.find((a) => a.slug === s))
-      .filter((a): a is BlogArticle => !!a && a.slug !== currentSlug)
+      .filter((a): a is BlogArticle => !!a)
       .slice(0, 3);
   } else {
+    // Same category, newest first (deterministic by publishedAt desc, then slug asc)
     articles = blogArticles
       .filter((a) => a.category === category && a.slug !== currentSlug)
+      .sort((a, b) => b.publishedAt.localeCompare(a.publishedAt) || a.slug.localeCompare(b.slug))
       .slice(0, 3);
+  }
+
+  // Fallback: fill from newest articles across all categories if < 3
+  if (articles.length < 3) {
+    const usedSlugs = new Set([currentSlug, ...articles.map((a) => a.slug)]);
+    const fallback = blogArticles
+      .filter((a) => !usedSlugs.has(a.slug))
+      .sort((a, b) => b.publishedAt.localeCompare(a.publishedAt) || a.slug.localeCompare(b.slug))
+      .slice(0, 3 - articles.length);
+    articles = [...articles, ...fallback];
   }
 
   if (articles.length === 0) return null;
