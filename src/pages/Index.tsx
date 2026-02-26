@@ -469,6 +469,80 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Knowledge Center — Authority Internal Linking Hub */}
+      <section className="section-spacing-lg">
+        <div className="container-medical">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-14"
+          >
+            <h2 className="font-bold text-foreground mb-4">
+              מרכז הידע באלרגיה לילדים
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              המדריכים המקיפים ביותר בעברית על אלרגיות בילדים – מידע רפואי מהימן, מבוסס ראיות, ונכתב על ידי מומחית.
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {[
+              {
+                to: "/אלרגיה-בילדים-מדריך-מלא",
+                title: "אלרגיה בילדים – מדריך מלא להורים",
+                summary: "כל מה שצריך לדעת: מתסמינים ואבחון, דרך טיפול ומניעה, ועד ניהול חיי יומיום וזכויות במערכת החינוך.",
+              },
+              {
+                to: "/guides/אלרגיה-מדריך-מקיף",
+                title: "אלרגיה – המדריך המקיף בעברית",
+                summary: "סקירה רפואית מעמיקה של כל סוגי האלרגיה: מזון, נשימתית, עורית, תרופתית – אבחון, טיפול ומניעה.",
+              },
+              {
+                to: "/guides/טעימות-ראשונות-אלרגנים",
+                title: "טעימות ראשונות – חשיפה לאלרגנים",
+                summary: "במבה, טחינה, ביצים וחלב – מתי להתחיל, איך לזהות תגובה, ומה עושים אם הילד מגיב.",
+              },
+              {
+                to: "/guides/בדיקות-אלרגיה-ילדים-ישראל",
+                title: "בדיקות אלרגיה לילדים בישראל",
+                summary: "תבחיני עור, בדיקות דם, תגר מזון – מה כל בדיקה בודקת, עלויות, והשוואה בין פרטי לקופת חולים.",
+              },
+              {
+                to: "/guides/זכויות-ילד-אלרגי-ישראל",
+                title: "זכויות הילד האלרגי בישראל",
+                summary: "מה מגיע לילד אלרגי בגן ובבית הספר, איך לדרוש התאמות, וצ׳קליסט מוכן להורדה.",
+              },
+              {
+                to: "/blog/אלרגיה-או-רגישות-למזון-מה-ההבדל",
+                title: "אלרגיה או רגישות למזון – מה ההבדל?",
+                summary: "ההבדל הקריטי שכל הורה חייב להכיר: תגובה חיסונית מול אי-סבילות, ומתי באמת צריך לדאוג.",
+              },
+            ].map((item, index) => (
+              <motion.div
+                key={item.to}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.08 }}
+              >
+                <Link
+                  to={item.to}
+                  className="block h-full bg-card rounded-2xl border border-border/60 p-6 card-hover group"
+                >
+                  <h3 className="text-base font-semibold text-foreground mb-2 group-hover:text-primary transition-colors leading-snug">
+                    {item.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {item.summary}
+                  </p>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Blog Articles Section — Internal Linking Hub */}
       <section className="section-spacing-lg bg-surface-warm">
         <div className="container-medical">

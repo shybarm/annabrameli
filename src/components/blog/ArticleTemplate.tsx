@@ -5,6 +5,7 @@ import { Clock, Calendar, ChevronLeft, ArrowRight } from "lucide-react";
 import { AuthorBadge } from "./AuthorBadge";
 import { ArticleCTA } from "./ArticleCTA";
 import { FAQAccordion } from "@/components/ui/faq-accordion";
+import { RelatedMedicalArticles } from "@/components/blog/RelatedMedicalArticles";
 import type { BlogArticle } from "@/data/blog-articles";
 import { blogArticles, blogCategories } from "@/data/blog-articles";
 import { buildMedicalPageSchema, buildBreadcrumbSchema, buildFaqSchema } from "@/utils/medicalSchema";
@@ -172,6 +173,9 @@ export const ArticleTemplate = ({ article }: ArticleTemplateProps) => {
             <FAQAccordion items={article.faqs} />
           </section>
         )}
+
+        {/* Same-category related articles component */}
+        <RelatedMedicalArticles currentSlug={article.slug} category={article.category} />
 
         {/* Bottom CTA */}
         <ArticleCTA variant="section" />
