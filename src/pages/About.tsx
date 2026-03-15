@@ -54,14 +54,14 @@ const About = () => {
   return (
     <>
       <Helmet>
-        <title>אודות ד״ר אנה ברמלי | מומחית לאלרגיה ואימונולוגיה</title>
+        <title>אודות ד״ר אנה ברמלי | רקע מקצועי, השכלה וגישה טיפולית</title>
         <meta
           name="description"
           content="היכרות עם ד״ר אנה ברמלי, רופאה מומחית לאלרגיה ואימונולוגיה בעלת ניסיון קליני רחב. מידע על השכלה, ניסיון מקצועי, והגישה הטיפולית."
         />
         <link rel="canonical" href="https://ihaveallergy.com/about" />
       </Helmet>
-      <SchemaMarkup type="physician" />
+      <SchemaMarkup type="medicalWebPage" />
 
       {/* Hero Section */}
       <section className="gradient-hero py-20 md:py-28">
