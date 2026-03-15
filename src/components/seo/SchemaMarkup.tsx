@@ -1,7 +1,7 @@
 import { Helmet } from "react-helmet-async";
 
 interface SchemaMarkupProps {
-  type?: "physician" | "medicalWebPage";
+  type?: "physician" | "medicalWebPage" | "contactPage";
 }
 
 export const SchemaMarkup = ({ type = "physician" }: SchemaMarkupProps) => {
@@ -61,7 +61,32 @@ export const SchemaMarkup = ({ type = "physician" }: SchemaMarkupProps) => {
     },
   };
 
-  const schema = type === "physician" ? physicianSchema : medicalWebPageSchema;
+  const contactPageSchema = {
+    "@context": "https://schema.org",
+    "@type": "ContactPage",
+    name: "יצירת קשר וקביעת תור | ד״ר אנה ברמלי",
+    description: "קביעת תור במרפאת אלרגיה של ד״ר אנה ברמלי. טלפון: 054-580-8008, כתובת: טבס 3, הוד השרון.",
+    url: "https://ihaveallergy.com/contact",
+    mainEntity: {
+      "@type": "Physician",
+      name: "ד״ר אנה ברמלי",
+      telephone: "+972-54-580-8008",
+      address: {
+        "@type": "PostalAddress",
+        streetAddress: "טבס 3",
+        addressLocality: "הוד השרון",
+        addressCountry: "IL",
+      },
+    },
+  };
+
+  const schemas: Record<string, object> = {
+    physician: physicianSchema,
+    medicalWebPage: medicalWebPageSchema,
+    contactPage: contactPageSchema,
+  };
+
+  const schema = schemas[type] || physicianSchema;
 
   return (
     <Helmet>
