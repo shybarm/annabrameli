@@ -23,6 +23,7 @@ http://ihaveallergy.com/*        https://ihaveallergy.com/:splat    301!
 /guides/זכויות-ילד-אלרגי-ישראל          /index.html   200
 /guides/בדיקות-אלרגיה-ילדים-ישראל       /index.html   200
 /guides/אלרגיה-מדריך-מקיף               /index.html   200
+/אלרגיה-בילדים-מדריך-מלא                /index.html   200
 
 # Blog articles — explicit only
 /blog/פריחה-אחרי-במבה-לתינוק                    /index.html   200

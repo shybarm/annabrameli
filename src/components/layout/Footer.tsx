@@ -30,6 +30,7 @@ export const Footer = () => {
             <ul className="space-y-2.5">
               {[
                 { href: "/about", label: "אודות" },
+                { href: "/dr-anna-brameli", label: "ד״ר אנה ברמלי – פרופיל מקצועי" },
                 { href: "/services", label: "שירותים" },
                 { href: "/guides/טעימות-ראשונות-אלרגנים", label: "מדריך טעימות ראשונות" },
                 { href: "/guides/בדיקות-אלרגיה-ילדים-ישראל", label: "מדריך בדיקות אלרגיה" },

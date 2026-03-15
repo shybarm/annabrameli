@@ -40,15 +40,26 @@ const physicianSchema = {
   alternateName: "Dr. Anna Brameli",
   description: "ד״ר אנה ברמלי היא רופאת אלרגיה ואלרגולוגית בקליניקה פרטית בישראל. מומחית באבחון וטיפול באלרגיות מזון ועונתיות, בדיקות IgE ואימונותרפיה.",
   medicalSpecialty: ["Allergy and Immunology", "Pediatrics"],
-  url: "https://ihaveallergy.com",
+  url: "https://ihaveallergy.com/dr-anna-brameli",
   telephone: "+972-54-580-8008",
   address: {
     "@type": "PostalAddress",
     streetAddress: "טבס 3",
     addressLocality: "הוד השרון",
+    postalCode: "4501303",
     addressCountry: "IL"
   },
-  image: "/dr-anna-brameli.jpeg",
+  geo: {
+    "@type": "GeoCoordinates",
+    latitude: 32.1524,
+    longitude: 34.8947
+  },
+  image: "https://ihaveallergy.com/og-logo.png",
+  sameAs: [
+    "https://ihaveallergy.com/about",
+    "https://ihaveallergy.com/whois"
+  ],
+  knowsLanguage: ["he", "en"],
   availableService: [
     { "@type": "MedicalProcedure", name: "בדיקות עור (Skin Prick Tests)" },
     { "@type": "MedicalProcedure", name: "בדיקות דם IgE" },

@@ -1,4 +1,5 @@
 import { Helmet } from "react-helmet-async";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { GraduationCap, Award, Heart, Stethoscope, BookOpen, Users } from "lucide-react";
 import { SchemaMarkup } from "@/components/seo/SchemaMarkup";
@@ -84,6 +85,9 @@ const About = () => {
               <p className="text-lg text-muted-foreground leading-relaxed">
                 עבודתה משלבת מחקר קליני, גישה אנושית והבנה עמוקה של מערכת החיסון. הגישה הטיפולית מבוססת על הקשבה, התאמה
                 אישית והעברת ידע למטופלים ולמשפחותיהם.
+              </p>
+              <p className="text-lg text-muted-foreground leading-relaxed mt-4">
+                למידע נוסף על הרקע המקצועי, ההשכלה והפעילות הקלינית של ד״ר ברמלי, ניתן לבקר ב<Link to="/dr-anna-brameli" className="text-primary hover:underline font-medium">דף הפרופיל המקצועי של ד״ר אנה ברמלי</Link>.
               </p>
             </motion.div>
 

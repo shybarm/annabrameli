@@ -27,8 +27,8 @@ export function IdleTimeoutProvider({ children, isStaff }: IdleTimeoutProviderPr
   const [countdown, setCountdown] = useState(WARNING_COUNTDOWN_SECONDS);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   
-  const idleTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const countdownIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const logoutDeadlineRef = useRef<number | null>(null);
   const isLoggingOutRef = useRef(false);
   
