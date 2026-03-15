@@ -248,7 +248,7 @@ export const ChatWidget = () => {
                         className="shadow-teal"
                         asChild
                       >
-                        <Link to="/guest-booking">
+                        <Link to="/book">
                           <Calendar className="w-4 h-4 ml-2" />
                           קביעת תור לאבחון
                         </Link>
