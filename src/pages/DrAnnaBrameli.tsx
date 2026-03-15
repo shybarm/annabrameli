@@ -55,10 +55,7 @@ const physicianSchema = {
     longitude: 34.8947
   },
   image: "https://ihaveallergy.com/og-logo.png",
-  sameAs: [
-    "https://ihaveallergy.com/about",
-    "https://ihaveallergy.com/whois"
-  ],
+  sameAs: [],
   knowsLanguage: ["he", "en"],
   availableService: [
     { "@type": "MedicalProcedure", name: "בדיקות עור (Skin Prick Tests)" },

@@ -81,7 +81,7 @@ const Contact = () => {
         />
         <link rel="canonical" href="https://ihaveallergy.com/contact" />
       </Helmet>
-      <SchemaMarkup type="physician" />
+      <SchemaMarkup type="medicalWebPage" />
 
       {/* Hero */}
       <section className="gradient-hero py-20 md:py-28">
