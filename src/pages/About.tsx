@@ -85,6 +85,9 @@ const About = () => {
                 עבודתה משלבת מחקר קליני, גישה אנושית והבנה עמוקה של מערכת החיסון. הגישה הטיפולית מבוססת על הקשבה, התאמה
                 אישית והעברת ידע למטופלים ולמשפחותיהם.
               </p>
+              <p className="text-lg text-muted-foreground leading-relaxed mt-4">
+                למידע נוסף על הרקע המקצועי, ההשכלה והפעילות הקלינית של ד״ר ברמלי, ניתן לבקר ב<Link to="/dr-anna-brameli" className="text-primary hover:underline font-medium">דף הפרופיל המקצועי של ד״ר אנה ברמלי</Link>.
+              </p>
             </motion.div>
 
             <motion.div
