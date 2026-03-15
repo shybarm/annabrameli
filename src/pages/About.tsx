@@ -73,9 +73,9 @@ const About = () => {
               transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             >
               <h1 className="font-bold text-foreground mb-6">
-                ד״ר אנה ברמלי
+                אודות ד״ר אנה ברמלי
                 <span className="block text-primary mt-3 text-[22px] md:text-[28px] lg:text-[32px]">
-                  מומחית לאלרגיה ואימונולוגיה
+                  רקע מקצועי, השכלה וגישה טיפולית
                 </span>
               </h1>
               <p className="text-lg text-muted-foreground leading-relaxed mb-6">
