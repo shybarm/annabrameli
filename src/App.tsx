@@ -83,6 +83,7 @@ const PublicLayout = ({ children }: { children: React.ReactNode }) => (
     <main className="flex-1">{children}</main>
     <Footer />
     <ChatWidget />
+    <ChatAutoOpen />
   </div>
 );
 
