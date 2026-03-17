@@ -48,6 +48,16 @@ export const ChatWidget = () => {
     scrollToBottom();
   }, [messages]);
 
+  // Expose global API for ChatAutoOpen and external integrations
+  useEffect(() => {
+    window.openChatWidget = () => setIsOpen(true);
+    window.toggleChatWidget = (open?: boolean) => setIsOpen(open ?? true);
+    return () => {
+      delete window.openChatWidget;
+      delete window.toggleChatWidget;
+    };
+  }, []);
+
   const handleSend = async () => {
     if (!inputValue.trim() || isLoading) return;
 
