@@ -9,6 +9,7 @@ import { ClinicProvider } from "@/contexts/ClinicContext";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ChatWidget } from "@/components/chat/ChatWidget";
+import ChatAutoOpen from "@/components/chat/ChatAutoOpen";
 import { AccessibilityMenu } from "@/components/AccessibilityMenu";
 import { SiteWideSchema } from "@/components/seo/SiteWideSchema";
 import Index from "./pages/Index";
