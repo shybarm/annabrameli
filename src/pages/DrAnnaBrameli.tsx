@@ -1,5 +1,6 @@
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
+import { ResearchPublicationsSection, ExpertAuthorityCard } from "@/components/ExpertAuthority";
 import { 
   GraduationCap, 
   Award, 
@@ -54,7 +55,10 @@ const physicianSchema = {
     longitude: 34.8947
   },
   image: "https://ihaveallergy.com/og-logo.png",
-  sameAs: [],
+  sameAs: [
+    "https://medicine.vumc.org/department-directory/Anna-Brameli",
+    "https://pubmed.ncbi.nlm.nih.gov/?term=Brameli+A",
+  ],
   knowsLanguage: ["he", "en"],
   availableService: [
     { "@type": "MedicalProcedure", name: "בדיקות עור (Skin Prick Tests)" },
@@ -626,6 +630,18 @@ const DrAnnaBrameli = () => {
                 </blockquote>
                 <p className="text-sm text-muted-foreground/70 mt-2">- משפחת כהן, הוד השרון</p>
               </motion.div>
+            </div>
+          </div>
+        </section>
+
+        {/* H2 - מחקר ופרסומים */}
+        <ResearchPublicationsSection />
+
+        {/* Expert Authority Card - sidebar-style on desktop */}
+        <section className="py-8 md:py-12">
+          <div className="container-medical">
+            <div className="max-w-md mx-auto">
+              <ExpertAuthorityCard />
             </div>
           </div>
         </section>

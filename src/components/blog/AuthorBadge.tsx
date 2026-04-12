@@ -18,7 +18,7 @@ export const AuthorBadge = ({ compact = false }: AuthorBadgeProps) => {
           loading="lazy"
         />
         <span>נכתב ונסקר רפואית על ידי{" "}
-          <Link to="/about" className="text-primary hover:underline font-medium">
+          <Link to="/dr-anna-brameli" className="text-primary hover:underline font-medium">
             ד״ר אנה ברמלי
           </Link>
         </span>
@@ -38,11 +38,14 @@ export const AuthorBadge = ({ compact = false }: AuthorBadgeProps) => {
       />
       <div>
         <p className="text-sm text-muted-foreground mb-1">נכתב ונסקר רפואית על ידי</p>
-        <Link to="/about" className="text-lg font-semibold text-foreground hover:text-primary transition-colors">
+        <Link to="/dr-anna-brameli" className="text-lg font-semibold text-foreground hover:text-primary transition-colors">
           ד״ר אנה ברמלי
         </Link>
         <p className="text-sm text-muted-foreground mt-1">
           מומחית לאלרגיה ואימונולוגיה | רופאת ילדים
+        </p>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          Vanderbilt University Medical Center | מרכז שניידר לרפואת ילדים
         </p>
       </div>
     </div>
