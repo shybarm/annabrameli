@@ -42,6 +42,9 @@ export default function GeoOptimizationPage() {
             <TabsTrigger value="toolkit" className="text-xs rounded-lg gap-1">
               <Layout className="h-3 w-3" />תבניות ובדיקה
             </TabsTrigger>
+            <TabsTrigger value="transform" className="text-xs rounded-lg gap-1">
+              <Microscope className="h-3 w-3" />טרנספורמציה
+            </TabsTrigger>
             <TabsTrigger value="execution" className="text-xs rounded-lg gap-1">
               <CalendarDays className="h-3 w-3" />תוכנית 90 יום
             </TabsTrigger>
@@ -52,6 +55,7 @@ export default function GeoOptimizationPage() {
           <TabsContent value="clusters" className="mt-4"><GeoSprint4Clusters /></TabsContent>
           <TabsContent value="scoring" className="mt-4"><GeoSprint5Scoring /></TabsContent>
           <TabsContent value="toolkit" className="mt-4"><GeoTemplatesAndChecklist /></TabsContent>
+          <TabsContent value="transform" className="mt-4"><GeoContentTransform /></TabsContent>
           <TabsContent value="execution" className="mt-4"><GeoSprint6Planner /></TabsContent>
         </Tabs>
       </div>
