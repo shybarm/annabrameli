@@ -33,12 +33,6 @@ export interface TopicCluster {
   summary: string;
 }
 
-function verdict(d: number): TopicCluster['coverageVerdict'] {
-  if (d >= 75) return 'comprehensive';
-  if (d >= 50) return 'moderate';
-  if (d >= 25) return 'thin';
-  return 'minimal';
-}
 
 export const TOPIC_CLUSTERS: TopicCluster[] = [
   {
