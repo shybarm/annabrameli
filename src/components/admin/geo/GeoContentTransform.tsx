@@ -188,12 +188,15 @@ function WorkflowTab({
 // ── Detail dialog ──
 function TransformDetail({
   transform, open, onClose, workflow, onWorkflowChange,
+  checklist, onChecklistToggle,
 }: {
   transform: ContentTransform | null;
   open: boolean;
   onClose: () => void;
   workflow: PageWorkflow | null;
   onWorkflowChange: (w: PageWorkflow) => void;
+  checklist: Record<string, boolean>;
+  onChecklistToggle: (itemId: string, checked: boolean) => void;
 }) {
   if (!transform || !workflow) return null;
   const brief = WORKSPACE_BRIEFS.find(b => b.id === transform.pageId);
@@ -217,11 +220,12 @@ function TransformDetail({
         </DialogHeader>
 
         <Tabs defaultValue="workflow" className="mt-4" dir="rtl">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="workflow" className="text-xs">מעקב</TabsTrigger>
             <TabsTrigger value="diagnosis" className="text-xs">אבחון</TabsTrigger>
             <TabsTrigger value="structure" className="text-xs">מבנה GEO</TabsTrigger>
             <TabsTrigger value="draft" className="text-xs">טיוטה</TabsTrigger>
+            <TabsTrigger value="checklist" className="text-xs">צ׳קליסט</TabsTrigger>
             <TabsTrigger value="changelog" className="text-xs">מה השתנה</TabsTrigger>
           </TabsList>
 
@@ -236,6 +240,12 @@ function TransformDetail({
           </TabsContent>
           <TabsContent value="draft" className="mt-4">
             <DraftTab draft={transform.draft} />
+          </TabsContent>
+          <TabsContent value="checklist" className="mt-4">
+            <PrePublishChecklist
+              checkedItems={checklist}
+              onToggle={onChecklistToggle}
+            />
           </TabsContent>
           <TabsContent value="changelog" className="mt-4">
             <ChangeLogTab changeLog={transform.changeLog} />
