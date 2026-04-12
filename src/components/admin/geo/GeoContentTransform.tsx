@@ -387,6 +387,8 @@ export function GeoContentTransform() {
         onClose={() => setSelected(null)}
         workflow={selected ? workflows[selected.pageId] : null}
         onWorkflowChange={(w) => selected && updateWorkflow(selected.pageId, w)}
+        checklist={selected ? (checklists[selected.pageId] || {}) : {}}
+        onChecklistToggle={(itemId, checked) => selected && toggleChecklistItem(selected.pageId, itemId, checked)}
       />
     </div>
   );
