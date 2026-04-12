@@ -11,7 +11,7 @@ import {
   ExecutionTask, Phase, TaskStatus,
 } from '@/data/geo-sprint6-data';
 import {
-  CalendarDays, Target, TrendingUp, ArrowUp, ArrowRight, ArrowDown,
+  CalendarDays, Target, ArrowUp, ArrowRight, ArrowDown,
   Clock, Link2, CheckCircle2, Circle, Loader2, Ban, Users, Zap,
   BarChart3, ChevronRight,
 } from 'lucide-react';
