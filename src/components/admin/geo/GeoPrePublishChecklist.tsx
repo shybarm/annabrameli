@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, AlertCircle, ShieldCheck } from 'lucide-react';
