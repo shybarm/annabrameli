@@ -24,38 +24,17 @@ export interface GeoPage {
   lastAudited: string;
 }
 
-export interface TopicCluster {
-  id: string;
-  nameHe: string;
-  nameEn: string;
-  pillarPath: string;
-  satellites: string[];
-  completeness: number;  // 0-100
-  missingTopics: string[];
-  color: string;
-}
-
 export interface EntitySignal {
   id: string;
   entity: string;
   type: 'physician' | 'organization' | 'condition' | 'procedure' | 'location';
-  consistency: number; // 0-100
+  consistency: number;
   pagesPresent: number;
   pagesTotal: number;
   issues: string[];
 }
 
-export interface SprintTask {
-  id: string;
-  title: string;
-  description: string;
-  pagePath: string;
-  category: 'entity' | 'structure' | 'content' | 'schema' | 'linking' | 'answer-format';
-  effort: 'small' | 'medium' | 'large';
-  impact: 'high' | 'medium' | 'low';
-  sprint: number;
-  status: 'todo' | 'in-progress' | 'done' | 'blocked';
-}
+// TopicCluster and SprintTask types moved to geo-sprint4-data.ts and geo-sprint6-data.ts
 
 export interface PageTemplate {
   id: string;
@@ -343,78 +322,7 @@ export const GEO_PAGES: GeoPage[] = [
   })),
 ];
 
-// ── Topic Clusters ─────────────────────────────────────────────────────
-
-export const TOPIC_CLUSTERS: TopicCluster[] = [
-  {
-    id: 'children-allergy',
-    nameHe: 'אלרגיה בילדים',
-    nameEn: 'Children Allergy',
-    pillarPath: '/אלרגיה-בילדים-מדריך-מלא',
-    satellites: ['/guides/טעימות-ראשונות-אלרגנים'],
-    completeness: 75,
-    missingTopics: ['אלרגיה לחלב — מדריך הורים', 'אלרגיה לביצה — מה עושים', 'אנפילקסיס בילדים — סימנים ותגובה'],
-    color: 'hsl(205, 50%, 60%)',
-  },
-  {
-    id: 'food-introduction',
-    nameHe: 'החשפה למזונות אלרגניים',
-    nameEn: 'Food Introduction',
-    pillarPath: '/guides/טעימות-ראשונות-אלרגנים',
-    satellites: [
-      '/knowledge/פריחה-אחרי-במבה',
-      '/knowledge/אודם-סביב-הפה-אחרי-אלרגן',
-      '/knowledge/במבה-גיל-4-חודשים',
-      '/knowledge/הקאה-אחרי-טחינה',
-      '/knowledge/כמה-ימים-בין-אלרגנים',
-    ],
-    completeness: 85,
-    missingTopics: ['אלרגנים נסתרים במזון תעשייתי', 'תזמון החשפה — לוח עדכני 2026'],
-    color: 'hsl(140, 40%, 55%)',
-  },
-  {
-    id: 'rights',
-    nameHe: 'זכויות ילד אלרגי',
-    nameEn: 'Allergy Child Rights',
-    pillarPath: '/guides/זכויות-ילד-אלרגי-ישראל',
-    satellites: [
-      '/knowledge/גן-יכול-לסרב-לילד-אלרגי',
-      '/knowledge/אפיפן-בגן-מי-אחראי',
-      '/knowledge/סייעת-רפואית-לילד-אלרגי',
-      '/knowledge/טיול-שנתי-ילד-אלרגי',
-      '/knowledge/אישור-אלרגיה-למשרד-החינוך',
-    ],
-    completeness: 90,
-    missingTopics: ['ביטוח בריאות וכיסוי אלרגיה'],
-    color: 'hsl(330, 30%, 58%)',
-  },
-  {
-    id: 'testing',
-    nameHe: 'בדיקות אלרגיה',
-    nameEn: 'Allergy Testing',
-    pillarPath: '/guides/בדיקות-אלרגיה-ילדים-ישראל',
-    satellites: [
-      '/knowledge/תבחיני-עור-כואב-לילדים',
-      '/knowledge/בדיקת-דם-לאלרגיה-ילדים',
-      '/knowledge/תגר-מזון-איך-זה-נראה',
-      '/knowledge/בדיקה-חיובית-בלי-תסמינים',
-      '/knowledge/בדיקות-אלרגיה-פרטי-או-קופה',
-    ],
-    completeness: 88,
-    missingTopics: ['בדיקות אלרגיה חדשות 2026', 'Component Resolved Diagnostics (CRD)'],
-    color: 'hsl(45, 60%, 55%)',
-  },
-  {
-    id: 'entity',
-    nameHe: 'ישות רפואית',
-    nameEn: 'Medical Entity',
-    pillarPath: '/dr-anna-brameli',
-    satellites: ['/whois', '/about'],
-    completeness: 60,
-    missingTopics: ['דף פרסומים מקצועיים', 'דף מדיה והופעות'],
-    color: 'hsl(270, 35%, 60%)',
-  },
-];
+// Topic clusters moved to geo-sprint4-data.ts (richer model with intent mapping)
 
 // ── Entity Signals ─────────────────────────────────────────────────────
 
@@ -551,62 +459,4 @@ export const PAGE_TEMPLATES: PageTemplate[] = [
   },
 ];
 
-// ── Sprint Tasks ───────────────────────────────────────────────────────
-
-export const SPRINT_TASKS: SprintTask[] = [
-  // Sprint 1 — Entity & Authority Foundation
-  {
-    id: 's1-1', title: 'Add citation-ready bio to /dr-anna-brameli', description: 'Write a 150-word professional bio paragraph that AI systems can directly quote.', pagePath: '/dr-anna-brameli', category: 'entity', effort: 'small', impact: 'high', sprint: 1, status: 'todo',
-  },
-  {
-    id: 's1-2', title: 'Add At-a-Glance card to /dr-anna-brameli', description: 'Structured card: Name, Specialty, Board Cert, Location, Languages.', pagePath: '/dr-anna-brameli', category: 'entity', effort: 'small', impact: 'high', sprint: 1, status: 'todo',
-  },
-  {
-    id: 's1-3', title: 'Standardize physician name across all pages', description: 'Ensure ד״ר אנה ברמלי / Dr. Anna Brameli is consistent everywhere.', pagePath: '*', category: 'entity', effort: 'medium', impact: 'high', sprint: 1, status: 'todo',
-  },
-  {
-    id: 's1-4', title: 'Expand sameAs in Physician schema', description: 'Add medical registry, LinkedIn, and health portal links.', pagePath: '/dr-anna-brameli', category: 'schema', effort: 'small', impact: 'medium', sprint: 1, status: 'todo',
-  },
-  {
-    id: 's1-5', title: 'Add author credentials to About page', description: 'List board certifications, fellowships, and institutional affiliations.', pagePath: '/about', category: 'entity', effort: 'small', impact: 'high', sprint: 1, status: 'todo',
-  },
-  // Sprint 2 — Answer Formatting
-  {
-    id: 's2-1', title: 'Add TL;DR answer boxes to all satellite articles', description: 'Add a highlighted 1-2 sentence answer at the top of each /knowledge/* page.', pagePath: '/knowledge/*', category: 'answer-format', effort: 'large', impact: 'high', sprint: 2, status: 'todo',
-  },
-  {
-    id: 's2-2', title: 'Reformat homepage FAQ to answer-first', description: 'Each FAQ answer should start with a direct 1-sentence answer.', pagePath: '/', category: 'answer-format', effort: 'medium', impact: 'high', sprint: 2, status: 'todo',
-  },
-  {
-    id: 's2-3', title: 'Add Key Takeaway boxes to pillar guide', description: 'Add highlighted summary boxes after each major section.', pagePath: '/אלרגיה-בילדים-מדריך-מלא', category: 'content', effort: 'medium', impact: 'medium', sprint: 2, status: 'todo',
-  },
-  {
-    id: 's2-4', title: 'Add "Related Questions" to satellite articles', description: 'Add 2-3 related questions with FAQPage schema at the bottom.', pagePath: '/knowledge/*', category: 'schema', effort: 'large', impact: 'medium', sprint: 2, status: 'todo',
-  },
-  // Sprint 3 — Structure & Linking
-  {
-    id: 's3-1', title: 'Add MedicalProcedure schema to /services', description: 'Wrap each service in proper MedicalProcedure structured data.', pagePath: '/services', category: 'schema', effort: 'medium', impact: 'medium', sprint: 3, status: 'todo',
-  },
-  {
-    id: 's3-2', title: 'Create missing satellite: אלרגיה לחלב — מדריך הורים', description: 'New article for the children-allergy cluster.', pagePath: '/knowledge/אלרגיה-לחלב-מדריך-הורים', category: 'content', effort: 'large', impact: 'high', sprint: 3, status: 'todo',
-  },
-  {
-    id: 's3-3', title: 'Create missing satellite: אלרגיה לביצה — מה עושים', description: 'New article for the children-allergy cluster.', pagePath: '/knowledge/אלרגיה-לביצה', category: 'content', effort: 'large', impact: 'high', sprint: 3, status: 'todo',
-  },
-  {
-    id: 's3-4', title: 'Strengthen internal links in pillar guide', description: 'Ensure every satellite article is linked from the pillar page with anchor text.', pagePath: '/אלרגיה-בילדים-מדריך-מלא', category: 'linking', effort: 'small', impact: 'medium', sprint: 3, status: 'todo',
-  },
-  {
-    id: 's3-5', title: 'Add LocalBusiness schema to /contact', description: 'Structured data with address, phone, hours, geo coordinates.', pagePath: '/contact', category: 'schema', effort: 'small', impact: 'medium', sprint: 3, status: 'todo',
-  },
-  // Sprint 4 — Gap Closing
-  {
-    id: 's4-1', title: 'Create publications page', description: 'New page listing professional publications and conference talks for entity authority.', pagePath: '/publications', category: 'entity', effort: 'medium', impact: 'high', sprint: 4, status: 'todo',
-  },
-  {
-    id: 's4-2', title: 'Add comparison table to testing guide', description: 'Table comparing skin prick, blood test, and food challenge.', pagePath: '/guides/בדיקות-אלרגיה-ילדים-ישראל', category: 'content', effort: 'medium', impact: 'medium', sprint: 4, status: 'todo',
-  },
-  {
-    id: 's4-3', title: 'Create anaphylaxis emergency guide', description: 'High-impact missing content: אנפילקסיס בילדים — סימנים ותגובה.', pagePath: '/knowledge/אנפילקסיס-בילדים', category: 'content', effort: 'large', impact: 'high', sprint: 4, status: 'todo',
-  },
-];
+// Sprint tasks moved to geo-sprint6-data.ts (90-day execution planner)

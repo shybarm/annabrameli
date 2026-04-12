@@ -1,9 +1,12 @@
-import { GEO_PAGES, ENTITY_SIGNALS, TOPIC_CLUSTERS, SPRINT_TASKS } from '@/data/geo-data';
+import { GEO_PAGES, ENTITY_SIGNALS } from '@/data/geo-data';
+import { TOPIC_CLUSTERS } from '@/data/geo-sprint4-data';
+import { SCORED_PAGES } from '@/data/geo-sprint5-data';
+import { EXECUTION_TASKS } from '@/data/geo-sprint6-data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Brain, Target, Shield, Link2, FileText, AlertTriangle, CheckCircle, TrendingUp 
+import {
+  Brain, Target, Shield, Link2, FileText, AlertTriangle, CheckCircle, TrendingUp,
 } from 'lucide-react';
 
 function scoreColor(score: number) {
@@ -12,22 +15,24 @@ function scoreColor(score: number) {
   return 'text-destructive';
 }
 
-
 export function GeoDashboard() {
-  const avgGeo = Math.round(GEO_PAGES.reduce((s, p) => s + p.geoScore, 0) / GEO_PAGES.length);
+  // Sprint 5 average (1-10 scale → display as x10 for percentage feel)
+  const avgGeoScore = SCORED_PAGES.length
+    ? Math.round((SCORED_PAGES.reduce((s, p) => s + p.weightedScore, 0) / SCORED_PAGES.length) * 10)
+    : 0;
   const avgEntity = Math.round(ENTITY_SIGNALS.reduce((s, e) => s + e.consistency, 0) / ENTITY_SIGNALS.length);
-  const avgCluster = Math.round(TOPIC_CLUSTERS.reduce((s, c) => s + c.completeness, 0) / TOPIC_CLUSTERS.length);
+  const avgCluster = Math.round(TOPIC_CLUSTERS.reduce((s, c) => s + c.coverageDepth, 0) / TOPIC_CLUSTERS.length);
   const criticalPages = GEO_PAGES.filter(p => p.geoScore < 55).length;
-  const completedTasks = SPRINT_TASKS.filter(t => t.status === 'done').length;
-  const totalTasks = SPRINT_TASKS.length;
+  const completedTasks = EXECUTION_TASKS.filter(t => t.status === 'done').length;
+  const totalTasks = EXECUTION_TASKS.length;
 
   const stats = [
-    { label: 'ציון GEO ממוצע', value: avgGeo, icon: Brain, suffix: '/100' },
+    { label: 'ציון GEO ממוצע', value: avgGeoScore, icon: Brain, suffix: '/100' },
     { label: 'עקביות ישות', value: avgEntity, icon: Target, suffix: '/100' },
-    { label: 'שלמות אשכולות', value: avgCluster, icon: Link2, suffix: '%' },
+    { label: 'כיסוי אשכולות', value: avgCluster, icon: Link2, suffix: '%' },
     { label: 'דפים קריטיים', value: criticalPages, icon: AlertTriangle, suffix: '' },
     { label: 'דפים באתר', value: GEO_PAGES.length, icon: FileText, suffix: '' },
-    { label: 'משימות הושלמו', value: completedTasks, icon: CheckCircle, suffix: `/${totalTasks}` },
+    { label: 'תוכנית 90 יום', value: completedTasks, icon: CheckCircle, suffix: `/${totalTasks}` },
   ];
 
   const topPriority = GEO_PAGES
@@ -114,21 +119,20 @@ export function GeoDashboard() {
       {/* Cluster Completeness */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">שלמות אשכולות נושאיים</CardTitle>
+          <CardTitle className="text-base">כיסוי אשכולות נושאיים</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            {TOPIC_CLUSTERS.map(cluster => (
+            {TOPIC_CLUSTERS.slice(0, 10).map(cluster => (
               <div key={cluster.id} className="p-4 rounded-xl border border-border/50 text-center">
-                <div
-                  className="w-10 h-10 rounded-full mx-auto mb-2 flex items-center justify-center text-white font-bold text-sm"
-                  style={{ backgroundColor: cluster.color }}
-                >
-                  {cluster.completeness}%
+                <div className={`w-10 h-10 rounded-full mx-auto mb-2 flex items-center justify-center font-bold text-sm ${
+                  cluster.coverageDepth >= 60 ? 'bg-primary text-primary-foreground' : 'bg-destructive/20 text-destructive'
+                }`}>
+                  {cluster.coverageDepth}%
                 </div>
                 <p className="text-sm font-medium">{cluster.nameHe}</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {cluster.satellites.length} מאמרים • {cluster.missingTopics.length} חסרים
+                  {cluster.pages.filter(p => p.role !== 'missing').length} דפים • {cluster.pages.filter(p => p.role === 'missing').length} חסרים
                 </p>
               </div>
             ))}
