@@ -6,7 +6,8 @@ import { GeoSprint5Scoring } from '@/components/admin/geo/GeoSprint5Scoring';
 import { GeoTemplatesAndChecklist } from '@/components/admin/geo/GeoTemplatesAndChecklist';
 import { GeoSprint6Planner } from '@/components/admin/geo/GeoSprint6Planner';
 import { GeoWorkspace } from '@/components/admin/geo/GeoWorkspace';
-import { Brain, BarChart3, Layers, Target, Layout, CalendarDays, PenLine } from 'lucide-react';
+import { GeoContentTransform } from '@/components/admin/geo/GeoContentTransform';
+import { Brain, BarChart3, Layers, Target, Layout, CalendarDays, PenLine, Microscope } from 'lucide-react';
 
 export default function GeoOptimizationPage() {
   return (
