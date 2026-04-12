@@ -39,6 +39,7 @@ export default function GeoOptimizationPage() {
             <TabsTrigger value="sprints" className="text-xs rounded-lg">ספרינטים</TabsTrigger>
             <TabsTrigger value="checklist" className="text-xs rounded-lg">רשימת בדיקה</TabsTrigger>
             <TabsTrigger value="sprint4" className="text-xs rounded-lg">🗺️ Sprint 4</TabsTrigger>
+            <TabsTrigger value="sprint5" className="text-xs rounded-lg">⚡ Sprint 5</TabsTrigger>
           </TabsList>
 
           <TabsContent value="dashboard" className="mt-4"><GeoDashboard /></TabsContent>
@@ -50,6 +51,7 @@ export default function GeoOptimizationPage() {
           <TabsContent value="sprints" className="mt-4"><GeoSprintPlanner /></TabsContent>
           <TabsContent value="checklist" className="mt-4"><GeoChecklist /></TabsContent>
           <TabsContent value="sprint4" className="mt-4"><GeoSprint4Clusters /></TabsContent>
+          <TabsContent value="sprint5" className="mt-4"><GeoSprint5Scoring /></TabsContent>
         </Tabs>
       </div>
     </AdminLayout>
