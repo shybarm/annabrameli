@@ -17,6 +17,15 @@ export const RECOMMENDATION_STATUS_CONFIG: Record<RecommendationStatus, { label:
   rejected: { label: 'נדחה',    color: 'bg-destructive/10 text-destructive' },
 };
 
+// ── Version type labels ──
+export type VersionType = 'original' | 'working_draft' | 'applied';
+
+export const VERSION_TYPE_CONFIG: Record<VersionType, { label: string; color: string; description: string }> = {
+  original:      { label: 'גרסה מקורית',      color: 'bg-muted text-muted-foreground',     description: 'התוכן המקורי לפני כל שינוי' },
+  working_draft: { label: 'טיוטת עבודה',       color: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300', description: 'עריכות ידניות שטרם הוחלו' },
+  applied:       { label: 'גרסה מוחלת אחרונה', color: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300', description: 'הגרסה האחרונה שהוחלה מהמלצות' },
+};
+
 // ── A single editable recommendation ──
 export interface EditableRecommendation {
   id: string;
@@ -35,6 +44,9 @@ export interface LivePageContent {
   pageId: string;
   sections: LiveSection[];
   history: ContentSnapshot[];     // for revert
+  currentVersion: VersionType;    // which version is currently displayed
+  lastAppliedAt?: string;         // when the last apply happened
+  appliedSections?: LiveSection[];  // snapshot of the last applied state
 }
 
 export interface LiveSection {
@@ -47,15 +59,15 @@ export interface ContentSnapshot {
   timestamp: string;
   label: string;
   sections: LiveSection[];
+  versionType: VersionType;
 }
 
 // ── Initialize live content from the static transforms ──
 export function initializeLiveContent(pageId: string): LivePageContent {
   const transform = CONTENT_TRANSFORMS.find(t => t.pageId === pageId);
   if (!transform) {
-    return { pageId, sections: [], history: [] };
+    return { pageId, sections: [], history: [], currentVersion: 'original' };
   }
-  // Start with a copy of the draft as "current live content"
   const sections: LiveSection[] = transform.draft.map(d => ({
     heading: d.heading,
     tag: d.tag,
@@ -64,10 +76,12 @@ export function initializeLiveContent(pageId: string): LivePageContent {
   return {
     pageId,
     sections,
+    currentVersion: 'original',
     history: [{
       timestamp: new Date().toISOString(),
       label: 'גרסה מקורית',
       sections: JSON.parse(JSON.stringify(sections)),
+      versionType: 'original',
     }],
   };
 }
