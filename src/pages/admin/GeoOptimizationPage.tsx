@@ -3,15 +3,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { GeoDashboard } from '@/components/admin/geo/GeoDashboard';
 import { GeoPageAudit } from '@/components/admin/geo/GeoPageAudit';
 import { GeoEntityLayer } from '@/components/admin/geo/GeoEntityLayer';
-import { GeoTopicClusters } from '@/components/admin/geo/GeoTopicClusters';
-import { GeoPageTemplates } from '@/components/admin/geo/GeoPageTemplates';
-import { GeoScoringEngine } from '@/components/admin/geo/GeoScoringEngine';
-import { GeoSprintPlanner } from '@/components/admin/geo/GeoSprintPlanner';
-import { GeoChecklist } from '@/components/admin/geo/GeoChecklist';
 import { GeoSprint4Clusters } from '@/components/admin/geo/GeoSprint4Clusters';
 import { GeoSprint5Scoring } from '@/components/admin/geo/GeoSprint5Scoring';
+import { GeoTemplatesAndChecklist } from '@/components/admin/geo/GeoTemplatesAndChecklist';
 import { GeoSprint6Planner } from '@/components/admin/geo/GeoSprint6Planner';
-import { Brain } from 'lucide-react';
+import { Brain, BarChart3, FileSearch, Shield, Layers, Target, Layout, CalendarDays } from 'lucide-react';
 
 export default function GeoOptimizationPage() {
   return (
@@ -23,38 +19,44 @@ export default function GeoOptimizationPage() {
             <Brain className="h-6 w-6 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-foreground">GEO Optimization</h1>
-            <p className="text-sm text-muted-foreground">מערכת אופטימיזציה למנועי AI — ihaveallergy.com</p>
+            <h1 className="text-xl font-bold text-foreground">GEO Operating System</h1>
+            <p className="text-sm text-muted-foreground">אופטימיזציה למנועי AI — ihaveallergy.com</p>
           </div>
         </div>
 
-        {/* Tabs */}
+        {/* Unified Tabs */}
         <Tabs defaultValue="dashboard" className="w-full">
           <TabsList className="w-full flex-wrap h-auto gap-1 bg-muted/30 p-1.5 rounded-xl">
-            <TabsTrigger value="dashboard" className="text-xs rounded-lg">סקירה</TabsTrigger>
-            <TabsTrigger value="pages" className="text-xs rounded-lg">ביקורת דפים</TabsTrigger>
-            <TabsTrigger value="entity" className="text-xs rounded-lg">שכבת ישויות</TabsTrigger>
-            <TabsTrigger value="clusters" className="text-xs rounded-lg">אשכולות</TabsTrigger>
-            <TabsTrigger value="templates" className="text-xs rounded-lg">תבניות</TabsTrigger>
-            <TabsTrigger value="scoring" className="text-xs rounded-lg">ציון GEO</TabsTrigger>
-            <TabsTrigger value="sprints" className="text-xs rounded-lg">ספרינטים</TabsTrigger>
-            <TabsTrigger value="checklist" className="text-xs rounded-lg">רשימת בדיקה</TabsTrigger>
-            <TabsTrigger value="sprint4" className="text-xs rounded-lg">🗺️ Sprint 4</TabsTrigger>
-            <TabsTrigger value="sprint5" className="text-xs rounded-lg">⚡ Sprint 5</TabsTrigger>
-            <TabsTrigger value="sprint6" className="text-xs rounded-lg">📋 Sprint 6</TabsTrigger>
+            <TabsTrigger value="dashboard" className="text-xs rounded-lg gap-1">
+              <BarChart3 className="h-3 w-3" />סקירה
+            </TabsTrigger>
+            <TabsTrigger value="pages" className="text-xs rounded-lg gap-1">
+              <FileSearch className="h-3 w-3" />ביקורת דפים
+            </TabsTrigger>
+            <TabsTrigger value="entity" className="text-xs rounded-lg gap-1">
+              <Shield className="h-3 w-3" />ישויות וסמכות
+            </TabsTrigger>
+            <TabsTrigger value="clusters" className="text-xs rounded-lg gap-1">
+              <Layers className="h-3 w-3" />אשכולות ותוכן
+            </TabsTrigger>
+            <TabsTrigger value="scoring" className="text-xs rounded-lg gap-1">
+              <Target className="h-3 w-3" />ציון GEO
+            </TabsTrigger>
+            <TabsTrigger value="toolkit" className="text-xs rounded-lg gap-1">
+              <Layout className="h-3 w-3" />תבניות ובדיקה
+            </TabsTrigger>
+            <TabsTrigger value="execution" className="text-xs rounded-lg gap-1">
+              <CalendarDays className="h-3 w-3" />תוכנית 90 יום
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="dashboard" className="mt-4"><GeoDashboard /></TabsContent>
           <TabsContent value="pages" className="mt-4"><GeoPageAudit /></TabsContent>
           <TabsContent value="entity" className="mt-4"><GeoEntityLayer /></TabsContent>
-          <TabsContent value="clusters" className="mt-4"><GeoTopicClusters /></TabsContent>
-          <TabsContent value="templates" className="mt-4"><GeoPageTemplates /></TabsContent>
-          <TabsContent value="scoring" className="mt-4"><GeoScoringEngine /></TabsContent>
-          <TabsContent value="sprints" className="mt-4"><GeoSprintPlanner /></TabsContent>
-          <TabsContent value="checklist" className="mt-4"><GeoChecklist /></TabsContent>
-          <TabsContent value="sprint4" className="mt-4"><GeoSprint4Clusters /></TabsContent>
-          <TabsContent value="sprint5" className="mt-4"><GeoSprint5Scoring /></TabsContent>
-          <TabsContent value="sprint6" className="mt-4"><GeoSprint6Planner /></TabsContent>
+          <TabsContent value="clusters" className="mt-4"><GeoSprint4Clusters /></TabsContent>
+          <TabsContent value="scoring" className="mt-4"><GeoSprint5Scoring /></TabsContent>
+          <TabsContent value="toolkit" className="mt-4"><GeoTemplatesAndChecklist /></TabsContent>
+          <TabsContent value="execution" className="mt-4"><GeoSprint6Planner /></TabsContent>
         </Tabs>
       </div>
     </AdminLayout>
