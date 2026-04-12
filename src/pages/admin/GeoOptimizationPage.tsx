@@ -8,6 +8,7 @@ import { GeoPageTemplates } from '@/components/admin/geo/GeoPageTemplates';
 import { GeoScoringEngine } from '@/components/admin/geo/GeoScoringEngine';
 import { GeoSprintPlanner } from '@/components/admin/geo/GeoSprintPlanner';
 import { GeoChecklist } from '@/components/admin/geo/GeoChecklist';
+import { GeoSprint1Dashboard } from '@/components/admin/geo/GeoSprint1Dashboard';
 import { Brain } from 'lucide-react';
 
 export default function GeoOptimizationPage() {
@@ -26,8 +27,9 @@ export default function GeoOptimizationPage() {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="dashboard" className="w-full">
+        <Tabs defaultValue="sprint1" className="w-full">
           <TabsList className="w-full flex-wrap h-auto gap-1 bg-muted/30 p-1.5 rounded-xl">
+            <TabsTrigger value="sprint1" className="text-xs rounded-lg font-semibold">🚀 Sprint 1</TabsTrigger>
             <TabsTrigger value="dashboard" className="text-xs rounded-lg">סקירה</TabsTrigger>
             <TabsTrigger value="pages" className="text-xs rounded-lg">ביקורת דפים</TabsTrigger>
             <TabsTrigger value="entity" className="text-xs rounded-lg">שכבת ישויות</TabsTrigger>
@@ -38,6 +40,7 @@ export default function GeoOptimizationPage() {
             <TabsTrigger value="checklist" className="text-xs rounded-lg">רשימת בדיקה</TabsTrigger>
           </TabsList>
 
+          <TabsContent value="sprint1" className="mt-4"><GeoSprint1Dashboard /></TabsContent>
           <TabsContent value="dashboard" className="mt-4"><GeoDashboard /></TabsContent>
           <TabsContent value="pages" className="mt-4"><GeoPageAudit /></TabsContent>
           <TabsContent value="entity" className="mt-4"><GeoEntityLayer /></TabsContent>
