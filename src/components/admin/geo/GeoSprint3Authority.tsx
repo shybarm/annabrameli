@@ -12,7 +12,7 @@ import { Progress } from '@/components/ui/progress';
 import {
   Shield, Target, Eye, Globe, Fingerprint,
   CheckCircle, AlertCircle, XCircle, ChevronDown, ChevronRight,
-  ExternalLink, Bot,
+  Bot,
 } from 'lucide-react';
 
 // ── Helpers ───────────────────────────────────────────────────────────
