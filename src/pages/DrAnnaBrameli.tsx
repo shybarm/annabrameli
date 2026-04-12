@@ -55,7 +55,10 @@ const physicianSchema = {
     longitude: 34.8947
   },
   image: "https://ihaveallergy.com/og-logo.png",
-  sameAs: [],
+  sameAs: [
+    "https://medicine.vumc.org/department-directory/Anna-Brameli",
+    "https://pubmed.ncbi.nlm.nih.gov/?term=Brameli+A",
+  ],
   knowsLanguage: ["he", "en"],
   availableService: [
     { "@type": "MedicalProcedure", name: "בדיקות עור (Skin Prick Tests)" },
