@@ -179,7 +179,7 @@ export default function VerifyEmail() {
                   
                   <CardContent className="p-8 text-right">
                     <p className="text-muted-foreground mb-8">
-                      האימייל שלך כבר אומת בעבר — אין צורך לבצע פעולה נוספת.
+                      האימייל שלך כבר אומת בעבר - אין צורך לבצע פעולה נוספת.
                     </p>
                     
                     <Button asChild className="w-full">

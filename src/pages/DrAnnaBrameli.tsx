@@ -121,7 +121,7 @@ const faqSchema = {
       name: "האם מטופלים ילדים מקבלים טיפול בקליניקה?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "כן — יש ניסיון רב בטיפול אלרגיות מזון ואטופיק דרמטיטיס אצל תינוקות וילדים."
+        text: "כן - יש ניסיון רב בטיפול אלרגיות מזון ואטופיק דרמטיטיס אצל תינוקות וילדים."
       }
     },
     {
@@ -153,7 +153,7 @@ const faqSchema = {
       name: "כמה זמן לוקח לקבל תוצאות בדיקות אלרגיה?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "בדיקות עור — תוצאה תוך 15-20 דקות. בדיקות דם — בדרך כלל 3-7 ימי עבודה בהתאם למעבדה."
+        text: "בדיקות עור - תוצאה תוך 15-20 דקות. בדיקות דם - בדרך כלל 3-7 ימי עבודה בהתאם למעבדה."
       }
     },
     {
@@ -202,7 +202,7 @@ const allergyTestFaqs = [
   },
   {
     question: "כמה זמן לוקח לקבל תוצאות בדיקות אלרגיה?",
-    answer: "בדיקות עור — תוצאה תוך 15-20 דקות. בדיקות דם — בדרך כלל 3-7 ימי עבודה בהתאם למעבדה."
+    answer: "בדיקות עור - תוצאה תוך 15-20 דקות. בדיקות דם - בדרך כלל 3-7 ימי עבודה בהתאם למעבדה."
   },
   {
     question: "האם בדיקות אלרגיה בטוחות לתינוקות וילדים?",
@@ -266,7 +266,7 @@ const services = {
 const faqs = [
   {
     question: "מתי כדאי לפנות לרופא אלרגיה?",
-    answer: "כאשר תסמינים חוזרים (עקיצות, פריחות, נשימה צפופה), תגובות לאחר מזון/תרופות או בילדים עם בעיות עור/נשימה — מומלץ לאבחן מוקדם."
+    answer: "כאשר תסמינים חוזרים (עקיצות, פריחות, נשימה צפופה), תגובות לאחר מזון/תרופות או בילדים עם בעיות עור/נשימה - מומלץ לאבחן מוקדם."
   },
   {
     question: "אילו בדיקות מבוצעות בקליניקה הפרטית?",
@@ -278,7 +278,7 @@ const faqs = [
   },
   {
     question: "האם מטופלים ילדים מקבלים טיפול בקליניקה?",
-    answer: "כן — יש ניסיון רב בטיפול אלרגיות מזון ואטופיק דרמטיטיס אצל תינוקות וילדים."
+    answer: "כן - יש ניסיון רב בטיפול אלרגיות מזון ואטופיק דרמטיטיס אצל תינוקות וילדים."
   },
   {
     question: "איך מתבצעת אימונותרפיה ומה מתאים לה?",
@@ -290,7 +290,7 @@ const internalResources = [
   { title: "מתי לבצע בדיקות אלרגיה בילדים", href: "/services" },
   { title: "הבנת תוצאות בדיקות IgE", href: "/faq" },
   { title: "אימונותרפיה: יתרונות, סיכונים ותהליך", href: "/services" },
-  { title: "אלרגיות עונתיות — מניעה וטיפול", href: "/updates" },
+  { title: "אלרגיות עונתיות - מניעה וטיפול", href: "/updates" },
 ];
 
 const DrAnnaBrameli = () => {
@@ -299,10 +299,10 @@ const DrAnnaBrameli = () => {
       <Header />
       <main className="flex-1">
         <Helmet>
-          <title>ד״ר אנה ברמלי — רופאת אלרגיה ואלרגולוגית | קליניקה פרטית בישראל</title>
+          <title>ד״ר אנה ברמלי - רופאת אלרגיה ואלרגולוגית | קליניקה פרטית בישראל</title>
           <meta 
             name="description" 
-            content="ד״ר אנה ברמלי — רופאת אלרגיה פרטית בישראל. אבחון, בדיקות וטיפול מותאם. קבעו תור ב-ihaveallergy.com." 
+            content="ד״ר אנה ברמלי - רופאת אלרגיה פרטית בישראל. אבחון, בדיקות וטיפול מותאם. קבעו תור ב-ihaveallergy.com." 
           />
           <meta name="keywords" content="ד״ר אנה ברמלי, אלרגיה, אלרגולוג, קליניקה פרטית, בדיקות אלרגיה, אימונותרפיה, אלרגיות מזון, אסתמה" />
           <link rel="canonical" href="https://ihaveallergy.com/dr-anna-brameli" />
@@ -373,7 +373,7 @@ const DrAnnaBrameli = () => {
           </div>
         </section>
 
-        {/* H2 — מי היא ד״ר אנה ברמלי */}
+        {/* H2 - מי היא ד״ר אנה ברמלי */}
         <section className="py-16 md:py-24 bg-card">
           <div className="container-medical">
             <motion.div
@@ -388,7 +388,7 @@ const DrAnnaBrameli = () => {
             </motion.div>
 
             <div className="grid lg:grid-cols-2 gap-12">
-              {/* H3 — השכלה והכשרות */}
+              {/* H3 - השכלה והכשרות */}
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
@@ -411,7 +411,7 @@ const DrAnnaBrameli = () => {
                 </div>
               </motion.div>
 
-              {/* H3 — ניסיון קליני */}
+              {/* H3 - ניסיון קליני */}
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 whileInView={{ opacity: 1, x: 0 }}
@@ -450,7 +450,7 @@ const DrAnnaBrameli = () => {
           </div>
         </section>
 
-        {/* H2 — תחומי התמחות ושירותים */}
+        {/* H2 - תחומי התמחות ושירותים */}
         <section className="py-16 md:py-24">
           <div className="container-medical">
             <motion.div
@@ -464,7 +464,7 @@ const DrAnnaBrameli = () => {
               </h2>
             </motion.div>
 
-            {/* H3 — בדיקות ואבחון */}
+            {/* H3 - בדיקות ואבחון */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -487,7 +487,7 @@ const DrAnnaBrameli = () => {
               </div>
             </motion.div>
 
-            {/* H3 — טיפולים ושלבי טיפול */}
+            {/* H3 - טיפולים ושלבי טיפול */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -510,7 +510,7 @@ const DrAnnaBrameli = () => {
               </div>
             </motion.div>
 
-            {/* H3 — אוכלוסיות ומצבים מיוחדים */}
+            {/* H3 - אוכלוסיות ומצבים מיוחדים */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -534,7 +534,7 @@ const DrAnnaBrameli = () => {
           </div>
         </section>
 
-        {/* H2 — גישת הטיפול */}
+        {/* H2 - גישת הטיפול */}
         <section className="py-16 md:py-24 bg-card">
           <div className="container-medical">
             <motion.div
@@ -558,7 +558,7 @@ const DrAnnaBrameli = () => {
           </div>
         </section>
 
-        {/* H2 — ניסיון, הישגים והמלצות (E-E-A-T) */}
+        {/* H2 - ניסיון, הישגים והמלצות (E-E-A-T) */}
         <section className="py-16 md:py-24">
           <div className="container-medical">
             <motion.div
@@ -573,7 +573,7 @@ const DrAnnaBrameli = () => {
             </motion.div>
 
             <div className="grid md:grid-cols-3 gap-8">
-              {/* H3 — ניסיון מקצועי */}
+              {/* H3 - ניסיון מקצועי */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -591,7 +591,7 @@ const DrAnnaBrameli = () => {
                 </ul>
               </motion.div>
 
-              {/* H3 — אישורים ורישיונות */}
+              {/* H3 - אישורים ורישיונות */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -606,12 +606,12 @@ const DrAnnaBrameli = () => {
                 <ul className="space-y-2 text-muted-foreground">
                   <li>• רישיון רפואה ישראלי מס׳ 132226</li>
                   <li>• ECFMG Certification מס׳ 0-829-897-8</li>
-                  <li>• מומחית ברפואת ילדים — משרד הבריאות</li>
+                  <li>• מומחית ברפואת ילדים - משרד הבריאות</li>
                   <li>• חברות באגודות מקצועיות בישראל ובארה״ב</li>
                 </ul>
               </motion.div>
 
-              {/* H3 — עדויות מטופלים */}
+              {/* H3 - עדויות מטופלים */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -626,13 +626,13 @@ const DrAnnaBrameli = () => {
                 <blockquote className="text-muted-foreground italic border-r-2 border-primary pr-4">
                   ״ד״ר ברמלי הקשיבה, הסבירה בסבלנות וסייעה לנו להבין את האלרגיות של הילד שלנו. הטיפול שינה את חיינו.״
                 </blockquote>
-                <p className="text-sm text-muted-foreground/70 mt-2">— משפחת כהן, הוד השרון</p>
+                <p className="text-sm text-muted-foreground/70 mt-2">- משפחת כהן, הוד השרון</p>
               </motion.div>
             </div>
           </div>
         </section>
 
-        {/* H2 — שאלות נפוצות (FAQ) */}
+        {/* H2 - שאלות נפוצות (FAQ) */}
         <section className="py-16 md:py-24 bg-muted/50">
           <div className="container-medical">
             <motion.div
@@ -678,7 +678,7 @@ const DrAnnaBrameli = () => {
           <div className="container-medical">
             <div className="max-w-3xl mx-auto text-center">
               <p className="text-muted-foreground">
-                למידע נוסף על הרקע המקצועי, ההשכלה וההתמחויות של ד״ר אנה ברמלי — בקרו בעמוד{" "}
+                למידע נוסף על הרקע המקצועי, ההשכלה וההתמחויות של ד״ר אנה ברמלי - בקרו בעמוד{" "}
                 <Link to="/whois" className="text-primary hover:underline font-medium">
                   מי היא ד״ר אנה ברמלי
                 </Link>.
@@ -687,7 +687,7 @@ const DrAnnaBrameli = () => {
           </div>
         </section>
 
-        {/* H2 — CTA Section */}
+        {/* H2 - CTA Section */}
         <section className="py-16 md:py-24 bg-primary/5">
           <div className="container-medical">
             <motion.div
@@ -707,7 +707,7 @@ const DrAnnaBrameli = () => {
               </div>
 
               <div className="grid md:grid-cols-2 gap-8">
-                {/* H3 — כיצד לקבוע תור */}
+                {/* H3 - כיצד לקבוע תור */}
                 <div className="bg-card rounded-xl p-6 border border-border">
                   <h3 className="text-lg font-bold text-foreground mb-4">כיצד לקבוע תור פרטי</h3>
                   <div className="space-y-3 text-muted-foreground mb-6">
@@ -732,7 +732,7 @@ const DrAnnaBrameli = () => {
                   </Button>
                 </div>
 
-                {/* H3 — מה להביא לפגישה */}
+                {/* H3 - מה להביא לפגישה */}
                 <div className="bg-card rounded-xl p-6 border border-border">
                   <h3 className="text-lg font-bold text-foreground mb-4">מה להביא לפגישה הראשונה</h3>
                   <ul className="space-y-3 text-muted-foreground">
@@ -759,7 +759,7 @@ const DrAnnaBrameli = () => {
           </div>
         </section>
 
-        {/* H2 — פרטי קשר ומיקום */}
+        {/* H2 - פרטי קשר ומיקום */}
         <section className="py-16 md:py-24">
           <div className="container-medical">
             <motion.div
@@ -845,7 +845,7 @@ const DrAnnaBrameli = () => {
           </div>
         </section>
 
-        {/* H2 — משאבים וקישורים פנימיים */}
+        {/* H2 - משאבים וקישורים פנימיים */}
         <section className="py-16 md:py-24 bg-card">
           <div className="container-medical">
             <motion.div
@@ -897,7 +897,7 @@ const DrAnnaBrameli = () => {
           </div>
         </section>
 
-        {/* H2 — שאלות נפוצות על בדיקות אלרגיה */}
+        {/* H2 - שאלות נפוצות על בדיקות אלרגיה */}
         <section className="py-16 md:py-24">
           <div className="container-medical">
             <motion.div

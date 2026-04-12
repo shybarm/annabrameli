@@ -235,7 +235,7 @@ export function GeoSprint6Planner() {
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
                 <CalendarDays className="h-4 w-4 text-primary" />
-                ציר זמן — 12 שבועות
+                ציר זמן - 12 שבועות
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -263,7 +263,7 @@ export function GeoSprint6Planner() {
                             {t.title.slice(0, 30)}…
                           </Badge>
                         )) : (
-                          <span className="text-xs text-muted-foreground italic">—</span>
+                          <span className="text-xs text-muted-foreground italic">-</span>
                         )}
                       </div>
                       <div className="w-12 text-center shrink-0">

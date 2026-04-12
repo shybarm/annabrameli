@@ -1,4 +1,4 @@
-/* ─── Sprint 5 — GEO Scoring Engine ─── */
+/* ─── Sprint 5 - GEO Scoring Engine ─── */
 
 export type ScoreDimension =
   | 'answerClarity'
@@ -107,7 +107,7 @@ export const SCORED_PAGES: ScoredPage[] = [
   mkPage('home', '/', 'עמוד הבית', 'homepage',
     [
       { score: 6, working: ['כותרת ברורה', 'מבנה סקציות'], missing: ['תשובה ישירה לשאלה "מה זה אלרגיה בילדים"'], fixes: ['הוסף פסקת TL;DR מעל ה-fold'], impact: 'שיפור סיכוי לציטוט כתשובה מרכזית' },
-      { score: 5, working: ['מיקוד באלרגיה'], missing: ['ספציפיות — הדף רחב מדי'], fixes: ['הגדר intent ראשי: שער כניסה לנושא אלרגיה בילדים'], impact: 'AI יבין שזה hub ולא דף תוכן' },
+      { score: 5, working: ['מיקוד באלרגיה'], missing: ['ספציפיות - הדף רחב מדי'], fixes: ['הגדר intent ראשי: שער כניסה לנושא אלרגיה בילדים'], impact: 'AI יבין שזה hub ולא דף תוכן' },
       { score: 7, working: ['שם הרופאה מופיע'], missing: ['תעודות רפואיות בולטות'], fixes: ['הוסף badge מומחיות מעל ה-fold'], impact: 'חיזוק E-E-A-T signal' },
       { score: 5, working: ['שם מופיע'], missing: ['תמונה מקצועית, credentials בולטים'], fixes: ['הוסף AuthorBadge עם תמונה ותואר'], impact: 'זיהוי מומחה מידי' },
       { score: 4, working: ['מבנה HTML סביר'], missing: ['בלוקים מובנים לחילוץ'], fixes: ['הוסף definition box, FAQ schema, key-facts'], impact: 'גידול משמעותי בסיכוי ציטוט' },
@@ -125,7 +125,7 @@ export const SCORED_PAGES: ScoredPage[] = [
     ['high-value-weak-format'],
   ),
 
-  mkPage('about', '/about', 'אודות — ד"ר אנה ברמלי', 'about',
+  mkPage('about', '/about', 'אודות - ד"ר אנה ברמלי', 'about',
     [
       { score: 7, working: ['סיפור אישי ברור'], missing: ['תשובה ישירה: "מיהי ד"ר אנה ברמלי"'], fixes: ['פתח ב-1 משפט ישיר מי היא ומה המומחיות'], impact: 'תשובה ברורה לשאילתת AI' },
       { score: 8, working: ['ממוקד באלרגיה ואימונולוגיה'], missing: [], fixes: [], impact: '' },
@@ -188,7 +188,7 @@ export const SCORED_PAGES: ScoredPage[] = [
     [],
   ),
 
-  mkPage('allergy-pillar', '/אלרגיה-בילדים-מדריך-מלא', 'אלרגיה בילדים — מדריך מלא', 'guide',
+  mkPage('allergy-pillar', '/אלרגיה-בילדים-מדריך-מלא', 'אלרגיה בילדים - מדריך מלא', 'guide',
     [
       { score: 7, working: ['מדריך מקיף', 'מבנה ברור'], missing: ['TL;DR בראש'], fixes: ['הוסף פסקת סיכום 2-3 משפטים בראש'], impact: 'תשובה מיידית ל-AI' },
       { score: 9, working: ['ספציפי לאלרגיה בילדים'], missing: [], fixes: [], impact: '' },
@@ -295,7 +295,7 @@ export const SCORED_PAGES: ScoredPage[] = [
       { score: 6, working: ['שם מופיע'], missing: ['AuthorBadge בולט'], fixes: ['הגדל AuthorBadge'], impact: 'authority' },
       { score: 8, working: ['רשימות, מבנה ברור'], missing: [], fixes: [], impact: '' },
       { score: 6, working: ['קישור ל-pillar'], missing: ['קישורים ל-garden-refusal, medical-aide'], fixes: ['הוסף 2 internal links'], impact: 'cluster' },
-      { score: 9, working: ['ייחודי ביותר — אין מתחרים'], missing: [], fixes: [], impact: '' },
+      { score: 9, working: ['ייחודי ביותר - אין מתחרים'], missing: [], fixes: [], impact: '' },
       { score: 5, working: ['CTA כללי'], missing: ['CTA: "צריך אישור רפואי?"'], fixes: ['CTA ספציפי'], impact: 'conversion' },
       { score: 8, working: ['עקבי'], missing: [], fixes: [], impact: '' },
       { score: 6, working: ['פעיל'], missing: ['reviewed date'], fixes: ['הוסף תאריך'], impact: 'freshness' },

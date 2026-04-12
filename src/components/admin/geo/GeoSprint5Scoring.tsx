@@ -290,10 +290,10 @@ export function GeoSprint5Scoring() {
           <StrategicList title="מוכנים לציטוט AI ראשונים" icon={Star} pages={getAICitableFirst()}
             accent="text-purple-600 dark:text-purple-400"
             description="דפים שהכי קרובים למצב שבו AI יצטט אותם. שיפורים קטנים = impact גדול." />
-          <StrategicList title="ערך נושאי גבוה — פורמט חלש" icon={TrendingUp} pages={getHighValueWeakFormat()}
+          <StrategicList title="ערך נושאי גבוה - פורמט חלש" icon={TrendingUp} pages={getHighValueWeakFormat()}
             accent="text-amber-600 dark:text-amber-400"
             description="תוכן חזק, מבנה לא מותאם. שכתוב מבני ישפר אותם משמעותית." />
-          <StrategicList title="דפים רחבים מדי — צריכים צמצום" icon={Target} pages={getOverbroadPages()}
+          <StrategicList title="דפים רחבים מדי - צריכים צמצום" icon={Target} pages={getOverbroadPages()}
             accent="text-destructive"
             description="דפים שמנסים לכסות יותר מדי. פיצול לדפים ממוקדים ישפר דירוג." />
         </TabsContent>

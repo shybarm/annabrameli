@@ -166,7 +166,7 @@ function CoverageDepthPanel() {
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
           <TrendingUp className="h-5 w-5 text-primary" />
-          עומק כיסוי נושאי — AI Coverage Depth
+          עומק כיסוי נושאי - AI Coverage Depth
         </CardTitle>
         <p className="text-xs text-muted-foreground">
           האם האתר נראה כמקור מקיף בעיני מערכות AI? ציון גבוה = סיכוי גבוה יותר להיות מצוטט.
@@ -192,7 +192,7 @@ function CoverageDepthPanel() {
           <p className="text-xs font-semibold text-destructive mb-1">⚠️ פערים קריטיים</p>
           <ul className="text-xs text-muted-foreground space-y-0.5">
             {sorted.filter(c => c.coverageVerdict === 'minimal' || c.coverageVerdict === 'thin').map(c => (
-              <li key={c.id}>• {c.nameHe} — {c.summary}</li>
+              <li key={c.id}>• {c.nameHe} - {c.summary}</li>
             ))}
           </ul>
         </div>

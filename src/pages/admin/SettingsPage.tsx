@@ -534,7 +534,7 @@ export default function SettingsPage() {
                             value={dayHours.open} 
                             onChange={(val) => updateDayHours(day, 'open', val)} 
                           />
-                          <span className="text-sm text-muted-foreground">—</span>
+                          <span className="text-sm text-muted-foreground">-</span>
                           <TimeSelect 
                             value={dayHours.close} 
                             onChange={(val) => updateDayHours(day, 'close', val)} 

@@ -96,7 +96,7 @@ export function GeoDashboard() {
           </CardContent>
         </Card>
 
-        {/* Entity Health — integrated from Entity Layer */}
+        {/* Entity Health - integrated from Entity Layer */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
@@ -139,7 +139,7 @@ export function GeoDashboard() {
       {/* Weakest Clusters */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">פערי כיסוי — אשכולות חלשים</CardTitle>
+          <CardTitle className="text-base">פערי כיסוי - אשכולות חלשים</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">

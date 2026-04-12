@@ -198,11 +198,11 @@ export const useWorkSessions = () => {
 };
 
 export const calculateHours = (start: string | null, end: string | null): string => {
-  if (!start || !end) return "—";
+  if (!start || !end) return "-";
   const [sh, sm] = start.split(":").map(Number);
   const [eh, em] = end.split(":").map(Number);
   const totalMinutes = (eh * 60 + em) - (sh * 60 + sm);
-  if (totalMinutes < 0) return "—";
+  if (totalMinutes < 0) return "-";
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
   return `${hours}h ${minutes}m`;

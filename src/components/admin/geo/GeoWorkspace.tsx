@@ -24,7 +24,7 @@ function ScoreArrow({ from, to }: { from: number; to: number }) {
   const toColor = 'text-emerald-600 dark:text-emerald-400';
   return (
     <div className="flex items-center gap-2">
-      <span className={`text-2xl font-bold ${fromColor}`}>{from || '—'}</span>
+      <span className={`text-2xl font-bold ${fromColor}`}>{from || '-'}</span>
       <ArrowRight className="h-5 w-5 text-muted-foreground" />
       <span className={`text-2xl font-bold ${toColor}`}>{to}</span>
       <span className="text-xs text-muted-foreground">/10</span>
@@ -245,7 +245,7 @@ export function GeoWorkspace() {
     <div className="space-y-6">
       {/* Header */}
       <div className="p-4 rounded-xl bg-gradient-to-l from-primary/10 to-transparent border border-primary/20">
-        <h2 className="text-base font-bold text-foreground mb-1">GEO Workspace — תוכניות שכתוב</h2>
+        <h2 className="text-base font-bold text-foreground mb-1">GEO Workspace - תוכניות שכתוב</h2>
         <p className="text-xs text-muted-foreground">
           לכל דף: ציון GEO נוכחי, בעיות מזוהות, כותרת ו-meta מוצעים, פתיחת answer-first, מבנה דף, FAQ, קישורים פנימיים ושיפורי אמון.
           לחץ על דף לצפייה בתוכנית המלאה.

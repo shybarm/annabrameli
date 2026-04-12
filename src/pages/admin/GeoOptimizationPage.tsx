@@ -20,7 +20,7 @@ export default function GeoOptimizationPage() {
           </div>
           <div>
             <h1 className="text-xl font-bold text-foreground">GEO Operating System</h1>
-            <p className="text-sm text-muted-foreground">אופטימיזציה למנועי AI — ihaveallergy.com</p>
+            <p className="text-sm text-muted-foreground">אופטימיזציה למנועי AI - ihaveallergy.com</p>
           </div>
         </div>
 

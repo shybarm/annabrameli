@@ -20,9 +20,9 @@ export interface ExecutionTask {
 }
 
 export const PHASE_META: Record<Phase, { title: string; titleHe: string; weeks: string; color: string; goal: string }> = {
-  1: { title: 'Foundation', titleHe: 'יסודות', weeks: '1–4', color: 'primary', goal: 'חיזוק מבנה בסיסי, אמינות מומחה, ובהירות מסרים — מ-6.0 ל-6.8' },
-  2: { title: 'Content Structure', titleHe: 'מבנה תוכן', weeks: '5–8', color: 'amber', goal: 'שכתוב תבניות, מאמרים, ודפי שירות — מ-6.8 ל-7.4' },
-  3: { title: 'Authority & Expansion', titleHe: 'סמכות והרחבה', weeks: '9–12', color: 'emerald', goal: 'אשכולות חסרים, דפי השוואה, ומעגל GEO חודשי — מ-7.4 ל-8.0' },
+  1: { title: 'Foundation', titleHe: 'יסודות', weeks: '1–4', color: 'primary', goal: 'חיזוק מבנה בסיסי, אמינות מומחה, ובהירות מסרים - מ-6.0 ל-6.8' },
+  2: { title: 'Content Structure', titleHe: 'מבנה תוכן', weeks: '5–8', color: 'amber', goal: 'שכתוב תבניות, מאמרים, ודפי שירות - מ-6.8 ל-7.4' },
+  3: { title: 'Authority & Expansion', titleHe: 'סמכות והרחבה', weeks: '9–12', color: 'emerald', goal: 'אשכולות חסרים, דפי השוואה, ומעגל GEO חודשי - מ-7.4 ל-8.0' },
 };
 
 export const OWNER_LABELS: Record<TaskOwner, { label: string; color: string }> = {
@@ -45,7 +45,7 @@ export const EXECUTION_TASKS: ExecutionTask[] = [
   },
   {
     id: 'p1-02', phase: 1, week: 1, daysEstimate: 3,
-    title: 'חיזוק דף אודות — ביוגרפיה מומחית',
+    title: 'חיזוק דף אודות - ביוגרפיה מומחית',
     description: 'הוספת קטע credentials מובנה, ניסיון מקצועי, התמחויות, ושורת סמכות רפואית ברורה.',
     owner: 'content', difficulty: 'medium', impact: 'high', dependency: null,
     estimatedOutcome: 'Expert Visibility מ-4 ל-7; דף אודות הופך למקור ציטוט עיקרי',
@@ -54,14 +54,14 @@ export const EXECUTION_TASKS: ExecutionTask[] = [
   {
     id: 'p1-03', phase: 1, week: 1, daysEstimate: 1,
     title: 'אחידות שם מומחה בכל הדפים',
-    description: 'סריקה והחלפה: שם מלא + תואר + התמחות — זהה בכל byline, כותרת, ו-footer.',
+    description: 'סריקה והחלפה: שם מלא + תואר + התמחות - זהה בכל byline, כותרת, ו-footer.',
     owner: 'seo', difficulty: 'easy', impact: 'high', dependency: null,
     estimatedOutcome: 'Entity Consistency מ-6 ל-9; AI מזהה ישות אחת ברורה',
     status: 'todo',
   },
   {
     id: 'p1-04', phase: 1, week: 2, daysEstimate: 2,
-    title: 'ארכיטקטורת אמון — פוטר ודפים משפטיים',
+    title: 'ארכיטקטורת אמון - פוטר ודפים משפטיים',
     description: 'הוספת שורת אמון בפוטר: רישיון, כתובת, טלפון, שעות. עדכון דפי פרטיות ונגישות.',
     owner: 'dev', difficulty: 'easy', impact: 'medium', dependency: null,
     estimatedOutcome: 'Medical Trust מ-6 ל-7; אותות אמינות גלויים לכל דף',
@@ -69,7 +69,7 @@ export const EXECUTION_TASKS: ExecutionTask[] = [
   },
   {
     id: 'p1-05', phase: 1, week: 2, daysEstimate: 2,
-    title: 'חידוד meta titles ו-descriptions — 10 דפים מרכזיים',
+    title: 'חידוד meta titles ו-descriptions - 10 דפים מרכזיים',
     description: 'כתיבת title < 60 תווים עם מילת מפתח + שם מומחה. Description < 160 תווים עם תשובה ישירה.',
     owner: 'seo', difficulty: 'easy', impact: 'medium', dependency: 'p1-01',
     estimatedOutcome: 'Extractability מ-5 ל-7; שיפור CTR ממנועי חיפוש',
@@ -77,7 +77,7 @@ export const EXECUTION_TASKS: ExecutionTask[] = [
   },
   {
     id: 'p1-06', phase: 1, week: 3, daysEstimate: 3,
-    title: 'שכתוב 5 דפים מרכזיים — answer-first',
+    title: 'שכתוב 5 דפים מרכזיים - answer-first',
     description: 'דף הבית, אודות, FAQ, בדיקות אלרגיה, אלרגיה למזון אצל תינוקות. תשובה ישירה בפסקה ראשונה.',
     owner: 'content', difficulty: 'medium', impact: 'high', dependency: 'p1-01',
     estimatedOutcome: 'ציון GEO ממוצע עולה מ-6.0 ל-6.5 על 5 דפים מרכזיים',
@@ -93,7 +93,7 @@ export const EXECUTION_TASKS: ExecutionTask[] = [
   },
   {
     id: 'p1-08', phase: 1, week: 4, daysEstimate: 2,
-    title: 'ביקורת רפואית — חותמת סקירה על 10 מאמרים',
+    title: 'ביקורת רפואית - חותמת סקירה על 10 מאמרים',
     description: 'הוספת AuthorBadge עם תאריך סקירה אחרון ושם הרופא/ה הסוקר/ת.',
     owner: 'medical', difficulty: 'easy', impact: 'high', dependency: 'p1-03',
     estimatedOutcome: 'Medical Trust מ-6 ל-8; AI מזהה תוכן שנסקר רפואית',
@@ -103,7 +103,7 @@ export const EXECUTION_TASKS: ExecutionTask[] = [
   // Phase 2: Content Structure (Weeks 5-8)
   {
     id: 'p2-01', phase: 2, week: 5, daysEstimate: 3,
-    title: 'פריסת תבניות תוכן — 7 סוגי דף',
+    title: 'פריסת תבניות תוכן - 7 סוגי דף',
     description: 'הטמעת תבניות: מצב רפואי, סימפטום, שירות, FAQ, ביו מומחה, השוואה, הדרכת הורים.',
     owner: 'dev', difficulty: 'medium', impact: 'high', dependency: 'p1-06',
     estimatedOutcome: 'כל דף חדש נולד עם מבנה GEO-ready; Extractability בסיס 7+',
@@ -111,7 +111,7 @@ export const EXECUTION_TASKS: ExecutionTask[] = [
   },
   {
     id: 'p2-02', phase: 2, week: 5, daysEstimate: 4,
-    title: 'שכתוב דפי שירות — 4 דפים',
+    title: 'שכתוב דפי שירות - 4 דפים',
     description: 'בדיקות עור, אתגרי מזון, ייעוץ אלרגיה, מעקב אטופיק. מבנה: מה, למי, מתי, למה אצלנו.',
     owner: 'content', difficulty: 'medium', impact: 'high', dependency: 'p2-01',
     estimatedOutcome: 'Conversion Clarity מ-4 ל-7; דפי שירות הופכים ל-answer sources',
@@ -143,7 +143,7 @@ export const EXECUTION_TASKS: ExecutionTask[] = [
   },
   {
     id: 'p2-06', phase: 2, week: 8, daysEstimate: 3,
-    title: 'חיזוק קישור פנימי — רשת אשכולות',
+    title: 'חיזוק קישור פנימי - רשת אשכולות',
     description: 'כל pillar page מקשר ל-3+ supporting pages ולהפך. הוספת "קרא עוד" contextual links.',
     owner: 'seo', difficulty: 'medium', impact: 'medium', dependency: 'p2-03',
     estimatedOutcome: 'Internal Linking מ-4 ל-7; AI מנווט בין דפים קשורים',
@@ -177,7 +177,7 @@ export const EXECUTION_TASKS: ExecutionTask[] = [
   },
   {
     id: 'p3-04', phase: 3, week: 10, daysEstimate: 2,
-    title: 'איחוד מותג וישות — דומיין יחיד',
+    title: 'איחוד מותג וישות - דומיין יחיד',
     description: 'הפניית כל הגרסאות לדומיין קנוני, אחידות שם בכל הפלטפורמות, og:image אחיד.',
     owner: 'brand', difficulty: 'easy', impact: 'medium', dependency: 'p1-03',
     estimatedOutcome: 'Entity Consistency 9+; AI מזהה ישות מותגית אחת',
@@ -185,7 +185,7 @@ export const EXECUTION_TASKS: ExecutionTask[] = [
   },
   {
     id: 'p3-05', phase: 3, week: 11, daysEstimate: 2,
-    title: 'תכנון תוכן חודשי — update signals',
+    title: 'תכנון תוכן חודשי - update signals',
     description: 'לוח שנה: מאמר חדש/עדכון כל שבועיים, סקירת dateModified, תוכן עונתי.',
     owner: 'content', difficulty: 'easy', impact: 'medium', dependency: null,
     estimatedOutcome: 'Update Readiness מ-4 ל-7; AI רואה אתר פעיל ומתעדכן',

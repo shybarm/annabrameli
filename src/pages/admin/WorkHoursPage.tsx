@@ -96,22 +96,22 @@ const WorkHoursPage = () => {
 
   // Format hours in Hebrew
   const formatHoursHe = (start: string | null, end: string | null): string => {
-    if (!start || !end) return "—";
+    if (!start || !end) return "-";
     const [sh, sm] = start.split(":").map(Number);
     const [eh, em] = end.split(":").map(Number);
     const totalMinutes = (eh * 60 + em) - (sh * 60 + sm);
-    if (totalMinutes < 0) return "—";
+    if (totalMinutes < 0) return "-";
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
     return `${hours} שעות ${minutes > 0 ? `ו-${minutes} דק׳` : ''}`;
   };
 
   const formatHoursShort = (start: string | null, end: string | null): string => {
-    if (!start || !end) return "—";
+    if (!start || !end) return "-";
     const [sh, sm] = start.split(":").map(Number);
     const [eh, em] = end.split(":").map(Number);
     const totalMinutes = (eh * 60 + em) - (sh * 60 + sm);
-    if (totalMinutes < 0) return "—";
+    if (totalMinutes < 0) return "-";
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
     return `${hours}:${minutes.toString().padStart(2, '0')}`;
@@ -185,11 +185,11 @@ const WorkHoursPage = () => {
                   <div className="flex flex-wrap items-center gap-4 sm:gap-6 mb-3 sm:mb-4">
                     <div>
                       <p className="text-[10px] sm:text-xs text-muted-foreground">כניסה</p>
-                      <p className="text-lg sm:text-xl font-bold" dir="ltr">{session.start_time?.substring(0, 5) || "—"}</p>
+                      <p className="text-lg sm:text-xl font-bold" dir="ltr">{session.start_time?.substring(0, 5) || "-"}</p>
                     </div>
                     <div>
                       <p className="text-[10px] sm:text-xs text-muted-foreground">יציאה</p>
-                      <p className="text-lg sm:text-xl font-bold" dir="ltr">{session.end_time?.substring(0, 5) || "—"}</p>
+                      <p className="text-lg sm:text-xl font-bold" dir="ltr">{session.end_time?.substring(0, 5) || "-"}</p>
                     </div>
                     <div>
                       <p className="text-[10px] sm:text-xs text-muted-foreground">סה״כ</p>
@@ -259,7 +259,7 @@ const WorkHoursPage = () => {
                               {formatHoursShort(s.start_time, s.end_time)}
                             </p>
                             <p className="text-[10px] text-muted-foreground" dir="ltr">
-                              {s.start_time?.substring(0, 5) || '—'} - {s.end_time?.substring(0, 5) || '—'}
+                              {s.start_time?.substring(0, 5) || '-'} - {s.end_time?.substring(0, 5) || '-'}
                             </p>
                           </div>
                         }
@@ -308,8 +308,8 @@ const WorkHoursPage = () => {
                             <td className="py-3">
                               {format(new Date(s.date), "EEEE, d בMMMM", { locale: he })}
                             </td>
-                            <td className="py-3" dir="ltr">{s.start_time?.substring(0, 5) || "—"}</td>
-                            <td className="py-3" dir="ltr">{s.end_time?.substring(0, 5) || "—"}</td>
+                            <td className="py-3" dir="ltr">{s.start_time?.substring(0, 5) || "-"}</td>
+                            <td className="py-3" dir="ltr">{s.end_time?.substring(0, 5) || "-"}</td>
                             <td className="py-3 font-medium text-primary">
                               {formatHoursHe(s.start_time, s.end_time)}
                             </td>

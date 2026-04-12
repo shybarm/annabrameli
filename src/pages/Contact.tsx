@@ -95,7 +95,7 @@ const Contact = () => {
               יצירת קשר וקביעת תור
             </h1>
             <p className="text-lg text-muted-foreground leading-relaxed">
-              נשמח לעזור — פנו אלינו לקביעת תור לאבחון מקצועי או לכל שאלה. אנו מתחייבים לחזור אליכם בהקדם האפשרי.
+              נשמח לעזור - פנו אלינו לקביעת תור לאבחון מקצועי או לכל שאלה. אנו מתחייבים לחזור אליכם בהקדם האפשרי.
             </p>
           </motion.div>
         </div>
@@ -287,7 +287,7 @@ const Contact = () => {
                   allowFullScreen
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
-                  title="מרפאת אלרגיה — ד״ר אנה ברמלי, טבס 3, הוד השרון"
+                  title="מרפאת אלרגיה - ד״ר אנה ברמלי, טבס 3, הוד השרון"
                 ></iframe>
               </div>
             </motion.div>
