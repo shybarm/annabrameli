@@ -1,5 +1,6 @@
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
+import { ResearchPublicationsSection, ExpertAuthorityCard } from "@/components/ExpertAuthority";
 import { 
   GraduationCap, 
   Award, 
