@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import {
-  Sparkles, FileText, Eye, PenLine, Info, ChevronDown, ChevronRight,
+  Sparkles, FileText, Eye, PenLine, ChevronDown, ChevronRight,
   CheckCircle, AlertCircle, Lightbulb, Copy, RotateCcw,
 } from 'lucide-react';
 
