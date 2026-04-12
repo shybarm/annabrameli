@@ -24,6 +24,16 @@ export interface GeoPage {
   lastAudited: string;
 }
 
+export interface EntitySignal {
+  id: string;
+  entity: string;
+  type: 'physician' | 'organization' | 'condition' | 'procedure' | 'location';
+  consistency: number;
+  pagesPresent: number;
+  pagesTotal: number;
+  issues: string[];
+}
+
 // TopicCluster and SprintTask types moved to geo-sprint4-data.ts and geo-sprint6-data.ts
 
 export interface PageTemplate {
