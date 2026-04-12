@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 
 import { DiagnosisTab, StructureTab, DraftTab, ChangeLogTab } from './GeoTransformTabs';
+import { PrePublishChecklist } from './GeoPrePublishChecklist';
 import {
   AlertTriangle, ArrowRight, Calendar, FileText, Filter,
   Microscope, PenLine, RefreshCw, StickyNote, User, Zap,
