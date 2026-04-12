@@ -75,6 +75,7 @@ import PositiveWithoutSymptoms from "./pages/knowledge/PositiveWithoutSymptoms";
 import PrivateVsPublic from "./pages/knowledge/PrivateVsPublic";
 import AllergyPillar from "./pages/AllergyPillar";
 import AllergyChildrenGuide from "./pages/AllergyChildrenGuide";
+import GeoOptimizationPage from "./pages/admin/GeoOptimizationPage";
 
 // Layout for public pages
 const PublicLayout = ({ children }: { children: React.ReactNode }) => (
@@ -212,6 +213,7 @@ const App = () => {
               <Route path="/admin/doctor-diary" element={<DoctorDiaryPage />} />
               <Route path="/admin/work-hours" element={<WorkHoursPage />} />
               <Route path="/admin/cancellations" element={<CancellationsReport />} />
+              <Route path="/admin/geo" element={<GeoOptimizationPage />} />
               
               <Route path="*" element={<NotFound />} />
             </Routes>

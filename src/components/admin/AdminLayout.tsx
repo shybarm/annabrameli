@@ -29,6 +29,7 @@ import {
   BookOpen,
   Clock,
   XCircle,
+  Brain,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Helmet } from 'react-helmet-async';
@@ -60,6 +61,7 @@ const navItems: NavItem[] = [
   { href: '/admin/team', icon: UsersRound, label: 'צוות', requiredPermission: 'canViewTeam' },
   { href: '/admin/work-hours', icon: Clock, label: 'שעות עבודה', requiredPermission: 'canViewWorkHours' },
   { href: '/admin/settings', icon: Settings, label: 'הגדרות', requiredPermission: 'canViewSettings' },
+  { href: '/admin/geo', icon: Brain, label: 'GEO', adminOnly: true },
 ];
 
 export function AdminLayout({ children }: AdminLayoutProps) {
