@@ -3,6 +3,10 @@ import {
   CONTENT_TRANSFORMS, WORKFLOW_STATUS_CONFIG, PRIORITY_CONFIG,
   type ContentTransform, type WorkflowStatus, type PriorityLevel,
 } from '@/data/geo-content-transforms';
+import {
+  initializeLiveContent, initializeRecommendations,
+  type LivePageContent, type EditableRecommendation,
+} from '@/data/geo-live-content';
 import { WORKSPACE_BRIEFS } from '@/data/geo-workspace-briefs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -12,14 +16,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 
-import { DiagnosisTab, StructureTab, DraftTab, ChangeLogTab } from './GeoTransformTabs';
+import { DiagnosisTab, StructureTab } from './GeoTransformTabs';
 import { PrePublishChecklist } from './GeoPrePublishChecklist';
+import { GeoLiveEditor } from './GeoLiveEditor';
 import {
   AlertTriangle, ArrowRight, Calendar, FileText, Filter,
   Microscope, PenLine, RefreshCw, StickyNote, User, Zap,
 } from 'lucide-react';
 
-// ── Local workflow state (persisted in-session via useState) ──
+// ── Local workflow state ──
 interface PageWorkflow {
   status: WorkflowStatus;
   priority: PriorityLevel;
@@ -44,7 +49,6 @@ const DEFAULT_WORKFLOWS: WorkflowMap = Object.fromEntries(
   })
 );
 
-// ── Status filter options ──
 const ALL_STATUSES: WorkflowStatus[] = [
   'not_reviewed', 'rewrite_needed', 'in_progress', 'medical_review',
   'approved', 'ready_to_publish', 'published', 're_audit',
@@ -60,7 +64,6 @@ function PriorityBadge({ priority }: { priority: PriorityLevel }) {
   return <Badge className={`text-[10px] ${cfg.color}`}>{cfg.label}</Badge>;
 }
 
-// ── Transform card with workflow info ──
 function TransformCard({
   transform, workflow, onClick,
 }: {
@@ -116,7 +119,6 @@ function TransformCard({
   );
 }
 
-// ── Workflow panel inside the detail dialog ──
 function WorkflowTab({
   workflow, onChange,
 }: {
@@ -126,7 +128,6 @@ function WorkflowTab({
   return (
     <div className="space-y-5" dir="rtl">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {/* Status */}
         <div className="space-y-1.5">
           <label className="text-xs font-semibold text-muted-foreground">סטטוס</label>
           <Select value={workflow.status} onValueChange={(v) => onChange({ ...workflow, status: v as WorkflowStatus })}>
@@ -138,7 +139,6 @@ function WorkflowTab({
             </SelectContent>
           </Select>
         </div>
-        {/* Priority */}
         <div className="space-y-1.5">
           <label className="text-xs font-semibold text-muted-foreground">עדיפות</label>
           <Select value={workflow.priority} onValueChange={(v) => onChange({ ...workflow, priority: v as PriorityLevel })}>
@@ -150,45 +150,28 @@ function WorkflowTab({
             </SelectContent>
           </Select>
         </div>
-        {/* Owner */}
         <div className="space-y-1.5">
           <label className="text-xs font-semibold text-muted-foreground">אחראי</label>
-          <Input
-            className="text-xs"
-            placeholder="שם האחראי..."
-            value={workflow.owner}
-            onChange={(e) => onChange({ ...workflow, owner: e.target.value })}
-          />
+          <Input className="text-xs" placeholder="שם האחראי..." value={workflow.owner} onChange={(e) => onChange({ ...workflow, owner: e.target.value })} />
         </div>
-        {/* Last reviewed */}
         <div className="space-y-1.5">
           <label className="text-xs font-semibold text-muted-foreground">תאריך בדיקה אחרון</label>
-          <Input
-            type="date"
-            className="text-xs"
-            value={workflow.lastReviewed}
-            onChange={(e) => onChange({ ...workflow, lastReviewed: e.target.value })}
-          />
+          <Input type="date" className="text-xs" value={workflow.lastReviewed} onChange={(e) => onChange({ ...workflow, lastReviewed: e.target.value })} />
         </div>
       </div>
-      {/* Notes */}
       <div className="space-y-1.5">
         <label className="text-xs font-semibold text-muted-foreground">הערות</label>
-        <Textarea
-          className="text-xs min-h-[80px]"
-          placeholder="הערות לצוות התוכן או לרופאה..."
-          value={workflow.notes}
-          onChange={(e) => onChange({ ...workflow, notes: e.target.value })}
-        />
+        <Textarea className="text-xs min-h-[80px]" placeholder="הערות לצוות התוכן או לרופאה..." value={workflow.notes} onChange={(e) => onChange({ ...workflow, notes: e.target.value })} />
       </div>
     </div>
   );
 }
 
-// ── Detail dialog ──
 function TransformDetail({
   transform, open, onClose, workflow, onWorkflowChange,
   checklist, onChecklistToggle,
+  liveContent, recommendations,
+  onLiveContentUpdate, onRecommendationsUpdate,
 }: {
   transform: ContentTransform | null;
   open: boolean;
@@ -197,10 +180,16 @@ function TransformDetail({
   onWorkflowChange: (w: PageWorkflow) => void;
   checklist: Record<string, boolean>;
   onChecklistToggle: (itemId: string, checked: boolean) => void;
+  liveContent: LivePageContent | null;
+  recommendations: EditableRecommendation[];
+  onLiveContentUpdate: (content: LivePageContent) => void;
+  onRecommendationsUpdate: (recs: EditableRecommendation[]) => void;
 }) {
-  if (!transform || !workflow) return null;
+  if (!transform || !workflow || !liveContent) return null;
   const brief = WORKSPACE_BRIEFS.find(b => b.id === transform.pageId);
   if (!brief) return null;
+
+  const appliedCount = recommendations.filter(r => r.status === 'applied').length;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -213,22 +202,34 @@ function TransformDetail({
                 <p className="truncate">{brief.suggestedTitle}</p>
                 <StatusBadge status={workflow.status} />
                 <PriorityBadge priority={workflow.priority} />
+                {appliedCount > 0 && (
+                  <Badge className="text-[9px] bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+                    {appliedCount} הוחלו
+                  </Badge>
+                )}
               </div>
               <p className="text-xs font-mono text-muted-foreground font-normal">{brief.pagePath}</p>
             </div>
           </DialogTitle>
         </DialogHeader>
 
-        <Tabs defaultValue="workflow" className="mt-4" dir="rtl">
-          <TabsList className="grid w-full grid-cols-6">
+        <Tabs defaultValue="editor" className="mt-4" dir="rtl">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="editor" className="text-xs">עריכה חיה</TabsTrigger>
             <TabsTrigger value="workflow" className="text-xs">מעקב</TabsTrigger>
             <TabsTrigger value="diagnosis" className="text-xs">אבחון</TabsTrigger>
             <TabsTrigger value="structure" className="text-xs">מבנה GEO</TabsTrigger>
-            <TabsTrigger value="draft" className="text-xs">טיוטה</TabsTrigger>
             <TabsTrigger value="checklist" className="text-xs">צ׳קליסט</TabsTrigger>
-            <TabsTrigger value="changelog" className="text-xs">מה השתנה</TabsTrigger>
           </TabsList>
 
+          <TabsContent value="editor" className="mt-4">
+            <GeoLiveEditor
+              liveContent={liveContent}
+              recommendations={recommendations}
+              onLiveContentUpdate={onLiveContentUpdate}
+              onRecommendationsUpdate={onRecommendationsUpdate}
+            />
+          </TabsContent>
           <TabsContent value="workflow" className="mt-4">
             <WorkflowTab workflow={workflow} onChange={onWorkflowChange} />
           </TabsContent>
@@ -238,17 +239,8 @@ function TransformDetail({
           <TabsContent value="structure" className="mt-4">
             <StructureTab transform={transform} />
           </TabsContent>
-          <TabsContent value="draft" className="mt-4">
-            <DraftTab draft={transform.draft} />
-          </TabsContent>
           <TabsContent value="checklist" className="mt-4">
-            <PrePublishChecklist
-              checkedItems={checklist}
-              onToggle={onChecklistToggle}
-            />
-          </TabsContent>
-          <TabsContent value="changelog" className="mt-4">
-            <ChangeLogTab changeLog={transform.changeLog} />
+            <PrePublishChecklist checkedItems={checklist} onToggle={onChecklistToggle} />
           </TabsContent>
         </Tabs>
       </DialogContent>
@@ -263,6 +255,29 @@ export function GeoContentTransform() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [checklists, setChecklists] = useState<Record<string, Record<string, boolean>>>({});
 
+  // Live content and recommendations state per page
+  const [liveContents, setLiveContents] = useState<Record<string, LivePageContent>>({});
+  const [allRecommendations, setAllRecommendations] = useState<Record<string, EditableRecommendation[]>>({});
+
+  // Lazy-initialize live content for a page
+  const getLiveContent = useCallback((pageId: string): LivePageContent => {
+    if (!liveContents[pageId]) {
+      const content = initializeLiveContent(pageId);
+      setLiveContents(prev => ({ ...prev, [pageId]: content }));
+      return content;
+    }
+    return liveContents[pageId];
+  }, [liveContents]);
+
+  const getRecommendations = useCallback((pageId: string): EditableRecommendation[] => {
+    if (!allRecommendations[pageId]) {
+      const recs = initializeRecommendations(pageId);
+      setAllRecommendations(prev => ({ ...prev, [pageId]: recs }));
+      return recs;
+    }
+    return allRecommendations[pageId];
+  }, [allRecommendations]);
+
   const updateWorkflow = useCallback((pageId: string, updated: PageWorkflow) => {
     setWorkflows(prev => ({ ...prev, [pageId]: updated }));
   }, []);
@@ -274,6 +289,14 @@ export function GeoContentTransform() {
     }));
   }, []);
 
+  const updateLiveContent = useCallback((pageId: string, content: LivePageContent) => {
+    setLiveContents(prev => ({ ...prev, [pageId]: content }));
+  }, []);
+
+  const updateRecommendations = useCallback((pageId: string, recs: EditableRecommendation[]) => {
+    setAllRecommendations(prev => ({ ...prev, [pageId]: recs }));
+  }, []);
+
   const filtered = statusFilter === 'all'
     ? CONTENT_TRANSFORMS
     : CONTENT_TRANSFORMS.filter(t => workflows[t.pageId]?.status === statusFilter);
@@ -281,7 +304,6 @@ export function GeoContentTransform() {
   const totalBlockers = CONTENT_TRANSFORMS.reduce((s, t) => s + t.diagnosis.geoBlockers.length, 0);
   const totalChanges = CONTENT_TRANSFORMS.reduce((s, t) => s + t.changeLog.length, 0);
 
-  // Status counts for filter bar
   const statusCounts = ALL_STATUSES.reduce((acc, s) => {
     acc[s] = CONTENT_TRANSFORMS.filter(t => workflows[t.pageId]?.status === s).length;
     return acc;
@@ -293,10 +315,10 @@ export function GeoContentTransform() {
       <div className="p-4 rounded-xl bg-gradient-to-l from-purple-500/10 to-transparent border border-purple-500/20">
         <h2 className="text-base font-bold text-foreground mb-1 flex items-center gap-2">
           <Microscope className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-          Content Transformation - סביבת עבודה
+          Content Transformation - עריכה חיה
         </h2>
         <p className="text-xs text-muted-foreground">
-          אבחון, מבנה, טיוטה, שינויים ומעקב ביצוע לכל דף. ניהול סטטוס, עדיפות ואחראים.
+          עריכה ישירה, אישור שינויים, והחלה על הדף. כל שינוי ניתן לעריכה לפני החלה ולביטול לאחר מכן.
         </p>
       </div>
 
@@ -306,7 +328,7 @@ export function GeoContentTransform() {
           <CardContent className="p-4 flex flex-col items-center text-center gap-1">
             <PenLine className="h-5 w-5 text-primary" />
             <span className="text-2xl font-bold text-foreground">{CONTENT_TRANSFORMS.length}</span>
-            <span className="text-xs text-muted-foreground">טיוטות</span>
+            <span className="text-xs text-muted-foreground">דפים</span>
           </CardContent>
         </Card>
         <Card className="border-border/50">
@@ -389,6 +411,10 @@ export function GeoContentTransform() {
         onWorkflowChange={(w) => selected && updateWorkflow(selected.pageId, w)}
         checklist={selected ? (checklists[selected.pageId] || {}) : {}}
         onChecklistToggle={(itemId, checked) => selected && toggleChecklistItem(selected.pageId, itemId, checked)}
+        liveContent={selected ? getLiveContent(selected.pageId) : null}
+        recommendations={selected ? getRecommendations(selected.pageId) : []}
+        onLiveContentUpdate={(content) => selected && updateLiveContent(selected.pageId, content)}
+        onRecommendationsUpdate={(recs) => selected && updateRecommendations(selected.pageId, recs)}
       />
     </div>
   );
