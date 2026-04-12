@@ -634,6 +634,18 @@ const DrAnnaBrameli = () => {
           </div>
         </section>
 
+        {/* H2 - מחקר ופרסומים */}
+        <ResearchPublicationsSection />
+
+        {/* Expert Authority Card - sidebar-style on desktop */}
+        <section className="py-8 md:py-12">
+          <div className="container-medical">
+            <div className="max-w-md mx-auto">
+              <ExpertAuthorityCard />
+            </div>
+          </div>
+        </section>
+
         {/* H2 - שאלות נפוצות (FAQ) */}
         <section className="py-16 md:py-24 bg-muted/50">
           <div className="container-medical">
