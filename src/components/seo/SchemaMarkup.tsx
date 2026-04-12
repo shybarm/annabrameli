@@ -16,7 +16,6 @@ export const SchemaMarkup = ({ type = "physician" }: SchemaMarkupProps) => {
     "priceRange": "$$",
     "address": {
       "@type": "PostalAddress",
-      "streetAddress": "טבס 3",
       "addressLocality": "הוד השרון",
       "postalCode": "4501303",
       "addressCountry": "IL",
@@ -65,7 +64,7 @@ export const SchemaMarkup = ({ type = "physician" }: SchemaMarkupProps) => {
     "@context": "https://schema.org",
     "@type": "ContactPage",
     name: "יצירת קשר וקביעת תור | ד״ר אנה ברמלי",
-    description: "קביעת תור במרפאת אלרגיה של ד״ר אנה ברמלי. טלפון: 054-580-8008, כתובת: טבס 3, הוד השרון.",
+    description: "קביעת תור במרפאת אלרגיה של ד״ר אנה ברמלי. טלפון: 054-580-8008, כתובת: הוד השרון.",
     url: "https://ihaveallergy.com/contact",
     mainEntity: {
       "@type": "Physician",
@@ -73,7 +72,6 @@ export const SchemaMarkup = ({ type = "physician" }: SchemaMarkupProps) => {
       telephone: "+972-54-580-8008",
       address: {
         "@type": "PostalAddress",
-        streetAddress: "טבס 3",
         addressLocality: "הוד השרון",
         addressCountry: "IL",
       },
