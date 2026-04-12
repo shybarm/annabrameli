@@ -63,10 +63,11 @@ export const EXPERT_PROFILE = {
   ] satisfies ExpertCredential[],
 
   training: [
-    { period: '2006-2013', role: 'M.D.', institution: 'אוניברסיטת בן גוריון בנגב', institutionEn: 'Ben-Gurion University of the Negev', country: 'IL' as const },
-    { period: '2015-2020', role: 'התמחות ברפואת ילדים', institution: 'מרכז שניידר לרפואת ילדים', institutionEn: 'Schneider Children\'s Medical Center', country: 'IL' as const },
-    { period: '2022-2024', role: 'תת-התמחות באלרגיה ואימונולוגיה', institution: 'Vanderbilt University Medical Center', institutionEn: 'Vanderbilt University Medical Center', country: 'US' as const },
     { period: '2024-2025', role: 'תת-התמחות במחלות זיהומיות ילדים', institution: 'Vanderbilt University Medical Center', institutionEn: 'Vanderbilt University Medical Center', country: 'US' as const },
+    { period: '2022-2024', role: 'תת-התמחות באלרגיה ואימונולוגיה', institution: 'Vanderbilt University Medical Center', institutionEn: 'Vanderbilt University Medical Center', country: 'US' as const },
+    { period: '2020-2022', role: 'רופאה בכירה במכון לאלרגיה ואימונולוגיה קלינית', institution: 'מרכז שניידר לרפואת ילדים', institutionEn: 'Schneider Children\'s Medical Center', country: 'IL' as const },
+    { period: '2015-2020', role: 'התמחות ברפואת ילדים', institution: 'מרכז שניידר לרפואת ילדים', institutionEn: 'Schneider Children\'s Medical Center', country: 'IL' as const },
+    { period: '2006-2013', role: 'M.D.', institution: 'אוניברסיטת בן גוריון בנגב', institutionEn: 'Ben-Gurion University of the Negev', country: 'IL' as const },
   ] satisfies TrainingRecord[],
 
   vanderbiltProfileUrl: 'https://medicine.vumc.org/department-directory/Anna-Brameli',

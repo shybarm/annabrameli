@@ -226,14 +226,9 @@ const allergyTestFaqs = [
 
 const education = [
   {
-    period: "2006-2013",
-    title: "לימודי רפואה M.D.",
-    institution: "אוניברסיטת בן גוריון בנגב, הפקולטה למדעי הבריאות"
-  },
-  {
-    period: "2015-2020",
-    title: "התמחות ברפואת ילדים",
-    institution: "מרכז שניידר לרפואת ילדים, פתח תקווה"
+    period: "2024-2025",
+    title: "תת-התמחות במחלות זיהומיות ילדים",
+    institution: "Vanderbilt University Medical Center, Nashville, TN"
   },
   {
     period: "2022-2024",
@@ -241,9 +236,19 @@ const education = [
     institution: "Vanderbilt University Medical Center, Nashville, TN"
   },
   {
-    period: "2024-2025",
-    title: "תת-התמחות במחלות זיהומיות ילדים",
-    institution: "Vanderbilt University Medical Center, Nashville, TN"
+    period: "2020-2022",
+    title: "רופאה בכירה במכון לאלרגיה ואימונולוגיה קלינית",
+    institution: "מרכז שניידר לרפואת ילדים, פתח תקווה"
+  },
+  {
+    period: "2015-2020",
+    title: "התמחות ברפואת ילדים",
+    institution: "מרכז שניידר לרפואת ילדים, פתח תקווה"
+  },
+  {
+    period: "2006-2013",
+    title: "לימודי רפואה M.D.",
+    institution: "אוניברסיטת בן גוריון בנגב, הפקולטה למדעי הבריאות"
   },
 ];
 
