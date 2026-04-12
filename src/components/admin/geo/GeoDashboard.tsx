@@ -12,11 +12,6 @@ function scoreColor(score: number) {
   return 'text-destructive';
 }
 
-function scoreBg(score: number) {
-  if (score >= 75) return 'bg-emerald-500';
-  if (score >= 55) return 'bg-amber-500';
-  return 'bg-destructive';
-}
 
 export function GeoDashboard() {
   const avgGeo = Math.round(GEO_PAGES.reduce((s, p) => s + p.geoScore, 0) / GEO_PAGES.length);

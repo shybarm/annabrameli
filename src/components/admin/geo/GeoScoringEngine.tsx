@@ -1,6 +1,6 @@
 import { GEO_PAGES, GEO_WEIGHTS } from '@/data/geo-data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
+
 import { Badge } from '@/components/ui/badge';
 import { Brain, Info } from 'lucide-react';
 
