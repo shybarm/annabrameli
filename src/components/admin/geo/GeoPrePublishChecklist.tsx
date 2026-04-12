@@ -98,12 +98,11 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 interface PrePublishChecklistProps {
-  pageId: string;
   checkedItems: Record<string, boolean>;
   onToggle: (itemId: string, checked: boolean) => void;
 }
 
-export function PrePublishChecklist({ pageId, checkedItems, onToggle }: PrePublishChecklistProps) {
+export function PrePublishChecklist({ checkedItems, onToggle }: PrePublishChecklistProps) {
   const totalRequired = CHECKLIST_ITEMS.filter(i => i.alwaysRequired).length;
   const checkedRequired = CHECKLIST_ITEMS.filter(i => i.alwaysRequired && checkedItems[i.id]).length;
   const totalChecked = CHECKLIST_ITEMS.filter(i => checkedItems[i.id]).length;
