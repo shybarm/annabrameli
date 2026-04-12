@@ -9,13 +9,13 @@ import { Layout, List, FileCode, ClipboardCheck, Shield, Brain, FileText, Link2,
 interface CheckItem { id: string; text: string; category: string; }
 
 const CHECKLIST: CheckItem[] = [
-  // Entity & Authority — allergy-specific
+  // Entity & Authority - allergy-specific
   { id: 'e1', text: 'Physician schema עם sameAs: פנקס רופאים, LinkedIn, פורטלי בריאות', category: 'entity' },
   { id: 'e2', text: 'שם ד״ר אנה ברמלי אחיד (עברית + אנגלית) בכל דף רפואי', category: 'entity' },
   { id: 'e3', text: 'AuthorBadge עם "מומחית לאלרגיה ואימונולוגיה" + קישור לביו בכל מאמר', category: 'entity' },
   { id: 'e4', text: 'LocalBusiness schema בדף יצירת קשר עם כתובת הוד השרון + GeoCoordinates', category: 'entity' },
   { id: 'e5', text: 'medicalSpecialty: AllergyAndImmunology בכל MedicalWebPage schema', category: 'entity' },
-  // Answer format — allergy Q&A
+  // Answer format - allergy Q&A
   { id: 'a1', text: 'TL;DR box בראש כל מאמר ידע (לדוגמה: "פריחה אחרי במבה לרוב אינה אלרגיה")', category: 'answer' },
   { id: 'a2', text: 'תשובות FAQ מתחילות ב-1 משפט ישיר לפני הרחבה (answer-first)', category: 'answer' },
   { id: 'a3', text: 'Key Takeaway boxes במדריכים מקיפים (pillar guides)', category: 'answer' },
@@ -26,17 +26,17 @@ const CHECKLIST: CheckItem[] = [
   { id: 's2', text: 'תוכן עניינים מקושר במדריכים מעל 1500 מילים', category: 'structure' },
   { id: 's3', text: 'טבלאות השוואה: בדיקת עור vs דם, פרטי vs ציבורי, אלרגיה vs רגישות', category: 'structure' },
   { id: 's4', text: 'רשימות סימני אזהרה (red flags) בכל מאמר תסמינים', category: 'structure' },
-  // Schema — medical
+  // Schema - medical
   { id: 'sc1', text: 'MedicalWebPage schema בכל דף רפואי (author, reviewer, dateModified)', category: 'schema' },
   { id: 'sc2', text: 'FAQPage schema בכל דף עם שאלות נפוצות', category: 'schema' },
   { id: 'sc3', text: 'BreadcrumbList schema בכל דף', category: 'schema' },
   { id: 'sc4', text: 'MedicalProcedure schema בדפי שירות (בדיקת עור, אתגר מזון, ייעוץ)', category: 'schema' },
-  // Internal linking — cluster-aware
+  // Internal linking - cluster-aware
   { id: 'l1', text: 'כל מאמר ידע מקושר לדף Pillar של האשכול שלו', category: 'linking' },
   { id: 'l2', text: 'לפחות 2 קישורים פנימיים לפי הקשר רפואי (לא "לחצו כאן")', category: 'linking' },
   { id: 'l3', text: '"מאמרים קשורים" (3 קישורים) בתחתית כל מאמר ידע', category: 'linking' },
   { id: 'l4', text: 'anchor text תיאורי: "בדיקת עור לאלרגיה" ולא "קרא עוד"', category: 'linking' },
-  // Medical trust — allergy-specific
+  // Medical trust - allergy-specific
   { id: 't1', text: 'disclaimer רפואי: "אין להחליף ייעוץ רפואי מקצועי" בתחתית כל מאמר', category: 'trust' },
   { id: 't2', text: 'תאריך פרסום + "נבדק רפואית על ידי ד״ר ברמלי" + תאריך סקירה', category: 'trust' },
   { id: 't3', text: 'הפניות למחקרים (LEAP study, מדריכי AAP) כשרלוונטי', category: 'trust' },

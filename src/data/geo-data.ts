@@ -1,6 +1,6 @@
 /**
  * GEO data models and site audit data for ihaveallergy.com
- * — a physician-led pediatric allergy clinic.
+ * - a physician-led pediatric allergy clinic.
  */
 
 // ── Types ──
@@ -46,7 +46,7 @@ export interface PageTemplate {
   usedBy: string[];
 }
 
-// ── Scoring Weights (legacy — Sprint 5 uses 10-dimension model) ──
+// ── Scoring Weights (legacy - Sprint 5 uses 10-dimension model) ──
 
 export const GEO_WEIGHTS = {
   entitySignal: 0.20,
@@ -93,7 +93,7 @@ export const GEO_PAGES: GeoPage[] = [
     entitySignalScore: 60, answerReadiness: 40, structureScore: 55, trustScore: 70,
     status: 'needs-work', priority: 'high',
     issues: [
-      'H1 גנרי — לא ממוקד ישות',
+      'H1 גנרי - לא ממוקד ישות',
       'חסרה רשימת credentials (הסמכות, התמחויות)',
       'חסר snippet "מיהי ד״ר ברמלי" בראש הדף',
     ],
@@ -112,7 +112,7 @@ export const GEO_PAGES: GeoPage[] = [
     issues: [
       'HTML לא ייחודי (מגבלת SPA)',
       'חסרה פסקת סיכום snippet-ready',
-      'sameAs דל — חסרים פנקס רופאים, LinkedIn',
+      'sameAs דל - חסרים פנקס רופאים, LinkedIn',
     ],
     opportunities: [
       'הוסף כרטיס "במבט חטוף" עם עובדות מפתח',
@@ -149,7 +149,7 @@ export const GEO_PAGES: GeoPage[] = [
   },
   {
     id: 'pillar-allergy', path: '/אלרגיה-בילדים-מדריך-מלא',
-    titleHe: 'אלרגיה בילדים — מדריך מלא', titleEn: 'Children Allergy Complete Guide',
+    titleHe: 'אלרגיה בילדים - מדריך מלא', titleEn: 'Children Allergy Complete Guide',
     type: 'pillar', cluster: 'children-allergy', geoScore: 75,
     entitySignalScore: 72, answerReadiness: 70, structureScore: 80, trustScore: 85,
     status: 'optimized', priority: 'medium',
@@ -159,7 +159,7 @@ export const GEO_PAGES: GeoPage[] = [
   },
   {
     id: 'guide-first-tastes', path: '/guides/טעימות-ראשונות-אלרגנים',
-    titleHe: 'טעימות ראשונות — אלרגנים', titleEn: 'First Tastes — Allergens Guide',
+    titleHe: 'טעימות ראשונות - אלרגנים', titleEn: 'First Tastes - Allergens Guide',
     type: 'guide', cluster: 'food-introduction', geoScore: 72,
     entitySignalScore: 68, answerReadiness: 65, structureScore: 78, trustScore: 80,
     status: 'optimized', priority: 'low',
@@ -245,12 +245,12 @@ export const GEO_PAGES: GeoPage[] = [
     entitySignalScore: 60, answerReadiness: 73, structureScore: 70, trustScore: 76,
     status: 'needs-work', priority: 'medium',
     issues: ['חסרה הפניה לחוק חינוך מיוחד', 'חסר טופס/מכתב לדוגמה'],
-    opportunities: ['הוסף ציטוט חוק + מספר סעיף', 'הוסף "מה לכתוב לגן" — תבנית מכתב'],
+    opportunities: ['הוסף ציטוט חוק + מספר סעיף', 'הוסף "מה לכתוב לגן" - תבנית מכתב'],
     lastAudited: '2026-04-12',
   },
   {
     id: 'k-epipen', path: '/knowledge/אפיפן-בגן-מי-אחראי',
-    titleHe: 'אפיפן בגן — מי אחראי', titleEn: 'EpiPen responsibility',
+    titleHe: 'אפיפן בגן - מי אחראי', titleEn: 'EpiPen responsibility',
     type: 'satellite', cluster: 'rights', geoScore: 64,
     entitySignalScore: 58, answerReadiness: 68, structureScore: 66, trustScore: 74,
     status: 'needs-work', priority: 'medium',
@@ -270,7 +270,7 @@ export const GEO_PAGES: GeoPage[] = [
   },
   {
     id: 'k-school-trip', path: '/knowledge/טיול-שנתי-ילד-אלרגי',
-    titleHe: 'טיול שנתי — ילד אלרגי', titleEn: 'School trip allergy',
+    titleHe: 'טיול שנתי - ילד אלרגי', titleEn: 'School trip allergy',
     type: 'satellite', cluster: 'rights', geoScore: 61,
     entitySignalScore: 55, answerReadiness: 65, structureScore: 62, trustScore: 75,
     status: 'needs-work', priority: 'medium',
@@ -290,7 +290,7 @@ export const GEO_PAGES: GeoPage[] = [
   },
   {
     id: 'k-skin-prick', path: '/knowledge/תבחיני-עור-כואב-לילדים',
-    titleHe: 'תבחיני עור — כואב לילדים?', titleEn: 'Skin prick pain',
+    titleHe: 'תבחיני עור - כואב לילדים?', titleEn: 'Skin prick pain',
     type: 'satellite', cluster: 'testing', geoScore: 71,
     entitySignalScore: 65, answerReadiness: 78, structureScore: 72, trustScore: 80,
     status: 'optimized', priority: 'low',
@@ -310,7 +310,7 @@ export const GEO_PAGES: GeoPage[] = [
   },
   {
     id: 'k-food-challenge', path: '/knowledge/תגר-מזון-איך-זה-נראה',
-    titleHe: 'תגר מזון — איך זה נראה', titleEn: 'Oral food challenge',
+    titleHe: 'תגר מזון - איך זה נראה', titleEn: 'Oral food challenge',
     type: 'satellite', cluster: 'testing', geoScore: 70,
     entitySignalScore: 66, answerReadiness: 74, structureScore: 72, trustScore: 80,
     status: 'optimized', priority: 'low',
@@ -325,7 +325,7 @@ export const GEO_PAGES: GeoPage[] = [
     entitySignalScore: 62, answerReadiness: 75, structureScore: 68, trustScore: 78,
     status: 'needs-work', priority: 'medium',
     issues: ['חסר הסבר על sensitization vs clinical allergy', 'חסר צעד הבא ברור'],
-    opportunities: ['הוסף "מה ההבדל בין רגישות לאלרגיה קלינית"', 'הוסף "מה לעשות עכשיו" — 3 צעדים'],
+    opportunities: ['הוסף "מה ההבדל בין רגישות לאלרגיה קלינית"', 'הוסף "מה לעשות עכשיו" - 3 צעדים'],
     lastAudited: '2026-04-12',
   },
   {
@@ -362,7 +362,7 @@ export const ENTITY_SIGNALS: EntitySignal[] = [
   },
   {
     id: 'clinic',
-    entity: 'ihaveallergy.com — מרפאת אלרגיה',
+    entity: 'ihaveallergy.com - מרפאת אלרגיה',
     type: 'organization',
     consistency: 65,
     pagesPresent: 12, pagesTotal: 28,
@@ -373,7 +373,7 @@ export const ENTITY_SIGNALS: EntitySignal[] = [
     ],
     fixes: [
       'הוסף Organization schema ל-footer',
-      'אחד שם מותג: "מרפאת iHaveAllergy — ד״ר אנה ברמלי"',
+      'אחד שם מותג: "מרפאת iHaveAllergy - ד״ר אנה ברמלי"',
       'הוסף LocalBusiness JSON-LD לדף Contact',
     ],
   },
@@ -415,18 +415,18 @@ export const ENTITY_SIGNALS: EntitySignal[] = [
 export const PAGE_TEMPLATES: PageTemplate[] = [
   {
     id: 'satellite-article',
-    nameHe: 'מאמר ידע — תסמין / שאלת הורה',
+    nameHe: 'מאמר ידע - תסמין / שאלת הורה',
     nameEn: 'Knowledge Article',
     description: 'מאמר answer-first לשאלה ספציפית של הורה. ממוקד בתשובה ישירה, סימני אזהרה, וצעד הבא.',
     sections: [
-      'TL;DR — תשובה ב-1-2 משפטים',
+      'TL;DR - תשובה ב-1-2 משפטים',
       'תשובה רפואית מלאה (300-500 מילים)',
       'מתי לפנות לרופא אלרגיה',
       'מה הורים צריכים לדעת',
       'שאלות קשורות (FAQ schema)',
       'AuthorBadge + disclaimer רפואי',
       'מאמרים קשורים (3 קישורים)',
-      'CTA — ייעוץ בוואטסאפ',
+      'CTA - ייעוץ בוואטסאפ',
     ],
     schemaType: 'MedicalWebPage + FAQPage',
     answerFormat: 'תשובה ישירה → הרחבה → פעולה',

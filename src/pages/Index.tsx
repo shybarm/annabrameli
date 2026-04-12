@@ -469,7 +469,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Knowledge Center — Authority Internal Linking Hub */}
+      {/* Knowledge Center - Authority Internal Linking Hub */}
       <section className="section-spacing-lg">
         <div className="container-medical">
           <motion.div
@@ -543,7 +543,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Blog Articles Section — Internal Linking Hub */}
+      {/* Blog Articles Section - Internal Linking Hub */}
       <section className="section-spacing-lg bg-surface-warm">
         <div className="container-medical">
           <motion.div

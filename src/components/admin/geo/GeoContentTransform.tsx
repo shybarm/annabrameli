@@ -36,7 +36,7 @@ function TransformCard({ transform }: { transform: ContentTransform; onClick: ()
           </div>
           <div className="flex items-center gap-2">
             <span className={`text-2xl font-bold ${brief.currentGeoScore >= 7 ? 'text-primary' : brief.currentGeoScore >= 5 ? 'text-amber-600' : brief.currentGeoScore === 0 ? 'text-muted-foreground' : 'text-destructive'}`}>
-              {brief.currentGeoScore || '—'}
+              {brief.currentGeoScore || '-'}
             </span>
             <ArrowRight className="h-4 w-4 text-muted-foreground" />
             <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{brief.targetGeoScore}</span>
@@ -85,7 +85,7 @@ function DiagnosisTab({ transform }: { transform: ContentTransform }) {
       {/* GEO Blockers */}
       <div className="space-y-2">
         <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
-          <Zap className="h-4 w-4 text-destructive" />חוסמי GEO — למה AI לא יצטט את הדף
+          <Zap className="h-4 w-4 text-destructive" />חוסמי GEO - למה AI לא יצטט את הדף
         </h4>
         {d.geoBlockers.map((b, i) => (
           <div key={i} className="flex items-start gap-2 text-xs p-2 rounded-lg bg-destructive/5 border border-destructive/20">
@@ -160,7 +160,7 @@ function DraftTab({ draft }: { draft: DraftSection[] }) {
     <div className="space-y-4">
       <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900">
         <p className="text-xs text-foreground">
-          <strong>שימו לב:</strong> זהו טיוטה מוצעת — לא טקסט סופי. התוכן מותאם ל-GEO (בהירות, אמון, extractability) וצריך עריכה רפואית ואישור ד״ר ברמלי לפני פרסום.
+          <strong>שימו לב:</strong> זהו טיוטה מוצעת - לא טקסט סופי. התוכן מותאם ל-GEO (בהירות, אמון, extractability) וצריך עריכה רפואית ואישור ד״ר ברמלי לפני פרסום.
         </p>
       </div>
       {draft.map((section, i) => (
@@ -282,7 +282,7 @@ export function GeoContentTransform() {
       <div className="p-4 rounded-xl bg-gradient-to-l from-purple-500/10 to-transparent border border-purple-500/20">
         <h2 className="text-base font-bold text-foreground mb-1 flex items-center gap-2">
           <Microscope className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-          Content Transformation — אבחון, מבנה, טיוטה ושינויים
+          Content Transformation - אבחון, מבנה, טיוטה ושינויים
         </h2>
         <p className="text-xs text-muted-foreground">
           לכל דף: אבחון מצב נוכחי, מבנה GEO-first מומלץ, טיוטה מותאמת לבהירות ואמון, ורשימת שינויים עם הסיבה לכל אחד.
