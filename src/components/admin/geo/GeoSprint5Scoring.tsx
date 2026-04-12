@@ -1,13 +1,8 @@
 import { useState, useMemo } from 'react';
 import {
-  SCORED_PAGES,
-  DIMENSION_META,
-  REC_LABEL_META,
-  getAICitableFirst,
-  getHighValueWeakFormat,
-  getOverbroadPages,
-  type ScoredPage,
-  type ScoreDimension,
+  SCORED_PAGES, DIMENSION_META, REC_LABEL_META,
+  getAICitableFirst, getHighValueWeakFormat, getOverbroadPages,
+  type ScoredPage, type ScoreDimension,
 } from '@/data/geo-sprint5-data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -16,19 +11,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import {
-  Award,
-  ChevronDown,
-  ChevronUp,
-  Filter,
-  Lightbulb,
-  Search,
-  Star,
-  Target,
-  TrendingUp,
-  Zap,
+  Award, ChevronDown, ChevronUp, Filter, Lightbulb, Search,
+  Star, Target, TrendingUp, Zap,
 } from 'lucide-react';
 
-/* ─── Score ring ─── */
 function ScoreRing({ value, size = 64 }: { value: number; size?: number }) {
   const r = size * 0.44;
   const circ = 2 * Math.PI * r;
@@ -38,16 +24,13 @@ function ScoreRing({ value, size = 64 }: { value: number; size?: number }) {
     : value >= 5.5 ? 'hsl(45, 93%, 47%)'
     : value >= 3.5 ? 'hsl(25, 95%, 53%)'
     : 'hsl(var(--destructive))';
-
   return (
     <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
       <svg viewBox={`0 0 ${size} ${size}`} className="w-full h-full -rotate-90">
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="hsl(var(--muted))" strokeWidth="4" />
-        <circle
-          cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color}
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color}
           strokeWidth="4" strokeDasharray={circ} strokeDashoffset={offset}
-          strokeLinecap="round" className="transition-all duration-700"
-        />
+          strokeLinecap="round" className="transition-all duration-700" />
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
         <span className="text-sm font-bold text-foreground">{value}</span>
@@ -56,7 +39,6 @@ function ScoreRing({ value, size = 64 }: { value: number; size?: number }) {
   );
 }
 
-/* ─── Overview Stats ─── */
 function OverviewStats() {
   const avg = Math.round(SCORED_PAGES.reduce((s, p) => s + p.weightedScore, 0) / SCORED_PAGES.length * 10) / 10;
   const quickWins = SCORED_PAGES.reduce((s, p) => s + p.recommendations.filter(r => r.label === 'quick-win').length, 0);
@@ -86,22 +68,18 @@ function OverviewStats() {
   );
 }
 
-/* ─── Dimension bar ─── */
 function DimBar({ dimension, score }: { dimension: ScoreDimension; score: number }) {
   const meta = DIMENSION_META[dimension];
   return (
     <div className="flex items-center gap-2">
       <span className="text-xs w-5 text-center">{meta.icon}</span>
       <span className="text-[11px] text-muted-foreground w-24 truncate">{meta.label}</span>
-      <div className="flex-1">
-        <Progress value={score * 10} className="h-1.5" />
-      </div>
+      <div className="flex-1"><Progress value={score * 10} className="h-1.5" /></div>
       <span className="text-[11px] font-bold text-foreground w-6 text-left">{score}</span>
     </div>
   );
 }
 
-/* ─── Page detail dialog ─── */
 function PageDetailDialog({ page, open, onClose }: { page: ScoredPage | null; open: boolean; onClose: () => void }) {
   if (!page) return null;
   return (
@@ -116,9 +94,7 @@ function PageDetailDialog({ page, open, onClose }: { page: ScoredPage | null; op
             </div>
           </DialogTitle>
         </DialogHeader>
-
         <div className="space-y-5 mt-2">
-          {/* All 10 dimensions */}
           {page.dimensions.map(d => {
             const meta = DIMENSION_META[d.dimension];
             return (
@@ -131,7 +107,6 @@ function PageDetailDialog({ page, open, onClose }: { page: ScoredPage | null; op
                   <span className="text-sm font-bold text-foreground">{d.score}/10</span>
                 </div>
                 <Progress value={d.score * 10} className="h-1.5" />
-
                 {d.working.length > 0 && (
                   <div>
                     <p className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 mb-0.5">✓ עובד</p>
@@ -150,25 +125,17 @@ function PageDetailDialog({ page, open, onClose }: { page: ScoredPage | null; op
                     {d.fixes.map((f, i) => <p key={i} className="text-xs text-muted-foreground">• {f}</p>)}
                   </div>
                 )}
-                {d.impact && (
-                  <p className="text-[10px] text-muted-foreground italic">
-                    💡 השפעה: {d.impact}
-                  </p>
-                )}
+                {d.impact && <p className="text-[10px] text-muted-foreground italic">💡 השפעה: {d.impact}</p>}
               </div>
             );
           })}
-
-          {/* Recommendations */}
           <div className="space-y-2">
             <h4 className="text-sm font-bold text-foreground">המלצות</h4>
             {page.recommendations.map((r, i) => {
               const rm = REC_LABEL_META[r.label];
               return (
                 <div key={i} className="flex items-start gap-2 p-2 rounded-lg bg-muted/20">
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold whitespace-nowrap ${rm.color} ${rm.bg}`}>
-                    {rm.label}
-                  </span>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold whitespace-nowrap ${rm.color} ${rm.bg}`}>{rm.label}</span>
                   <span className="text-xs text-foreground">{r.text}</span>
                 </div>
               );
@@ -180,13 +147,9 @@ function PageDetailDialog({ page, open, onClose }: { page: ScoredPage | null; op
   );
 }
 
-/* ─── Page Row ─── */
 function PageRow({ page, onClick }: { page: ScoredPage; onClick: () => void }) {
   return (
-    <Card
-      className="border-border/50 cursor-pointer hover:border-primary/40 transition-colors"
-      onClick={onClick}
-    >
+    <Card className="border-border/50 cursor-pointer hover:border-primary/40 transition-colors" onClick={onClick}>
       <CardContent className="p-4">
         <div className="flex items-start gap-4">
           <ScoreRing value={page.weightedScore} />
@@ -196,24 +159,15 @@ function PageRow({ page, onClick }: { page: ScoredPage; onClick: () => void }) {
               <Badge variant="outline" className="text-[10px]">{page.type}</Badge>
             </div>
             <p className="text-[11px] font-mono text-muted-foreground truncate">{page.path}</p>
-
-            {/* Mini dimension bars — top 3 weakest */}
             <div className="space-y-1">
-              {[...page.dimensions]
-                .sort((a, b) => a.score - b.score)
-                .slice(0, 3)
-                .map(d => <DimBar key={d.dimension} dimension={d.dimension} score={d.score} />)}
+              {[...page.dimensions].sort((a, b) => a.score - b.score).slice(0, 3).map(d =>
+                <DimBar key={d.dimension} dimension={d.dimension} score={d.score} />
+              )}
             </div>
-
-            {/* Recommendation badges */}
             <div className="flex gap-1.5 flex-wrap">
               {page.recommendations.map((r, i) => {
                 const rm = REC_LABEL_META[r.label];
-                return (
-                  <span key={i} className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${rm.color} ${rm.bg}`}>
-                    {rm.label}
-                  </span>
-                );
+                return <span key={i} className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${rm.color} ${rm.bg}`}>{rm.label}</span>;
               })}
             </div>
           </div>
@@ -223,27 +177,13 @@ function PageRow({ page, onClick }: { page: ScoredPage; onClick: () => void }) {
   );
 }
 
-/* ─── Strategic List ─── */
-function StrategicList({
-  title,
-  icon: Icon,
-  pages,
-  accent,
-  description,
-}: {
-  title: string;
-  icon: React.ElementType;
-  pages: ScoredPage[];
-  accent: string;
-  description: string;
+function StrategicList({ title, icon: Icon, pages, accent, description }: {
+  title: string; icon: React.ElementType; pages: ScoredPage[]; accent: string; description: string;
 }) {
   return (
     <Card className="border-border/50">
       <CardHeader className="pb-3">
-        <CardTitle className="text-base flex items-center gap-2">
-          <Icon className={`h-5 w-5 ${accent}`} />
-          {title}
-        </CardTitle>
+        <CardTitle className="text-base flex items-center gap-2"><Icon className={`h-5 w-5 ${accent}`} />{title}</CardTitle>
         <p className="text-xs text-muted-foreground">{description}</p>
       </CardHeader>
       <CardContent className="space-y-2">
@@ -258,11 +198,7 @@ function StrategicList({
             <div className="flex gap-1 flex-wrap justify-end">
               {p.recommendations.slice(0, 2).map((r, i) => {
                 const rm = REC_LABEL_META[r.label];
-                return (
-                  <span key={i} className={`text-[9px] px-1.5 py-0.5 rounded-full font-semibold ${rm.color} ${rm.bg}`}>
-                    {rm.label}
-                  </span>
-                );
+                return <span key={i} className={`text-[9px] px-1.5 py-0.5 rounded-full font-semibold ${rm.color} ${rm.bg}`}>{rm.label}</span>;
               })}
             </div>
           </div>
@@ -272,27 +208,20 @@ function StrategicList({
   );
 }
 
-/* ─── Weight breakdown ─── */
 function WeightBreakdown() {
   const dims = Object.entries(DIMENSION_META) as [ScoreDimension, typeof DIMENSION_META[ScoreDimension]][];
   const sorted = dims.sort((a, b) => b[1].weight - a[1].weight);
-
   return (
     <Card className="border-border/50">
       <CardHeader className="pb-3">
-        <CardTitle className="text-base flex items-center gap-2">
-          <Lightbulb className="h-5 w-5 text-primary" />
-          משקלות הציון — איך נבנה ה-GEO Score
-        </CardTitle>
+        <CardTitle className="text-base flex items-center gap-2"><Lightbulb className="h-5 w-5 text-primary" />משקלות הציון</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
         {sorted.map(([key, meta]) => (
           <div key={key} className="flex items-center gap-2">
             <span className="text-xs w-5 text-center">{meta.icon}</span>
             <span className="text-xs text-foreground flex-1">{meta.label}</span>
-            <div className="w-32">
-              <Progress value={meta.weight * (100 / 15)} className="h-1.5" />
-            </div>
+            <div className="w-32"><Progress value={meta.weight * (100 / 15)} className="h-1.5" /></div>
             <span className="text-xs font-bold text-foreground w-8 text-left">{meta.weight}%</span>
           </div>
         ))}
@@ -301,7 +230,6 @@ function WeightBreakdown() {
   );
 }
 
-/* ─── Main ─── */
 export function GeoSprint5Scoring() {
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
@@ -317,107 +245,60 @@ export function GeoSprint5Scoring() {
     let list = SCORED_PAGES;
     if (typeFilter !== 'all') list = list.filter(p => p.type === typeFilter);
     if (search) list = list.filter(p => p.titleHe.includes(search) || p.path.includes(search));
-    list = [...list].sort((a, b) =>
-      sortDir === 'asc' ? a.weightedScore - b.weightedScore : b.weightedScore - a.weightedScore,
-    );
+    list = [...list].sort((a, b) => sortDir === 'asc' ? a.weightedScore - b.weightedScore : b.weightedScore - a.weightedScore);
     return list;
   }, [search, typeFilter, sortDir]);
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="p-4 rounded-xl bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20">
-        <h3 className="text-sm font-bold text-foreground mb-1">
-          Sprint 5 — מנוע ציון GEO מתקדם
-        </h3>
-        <p className="text-xs text-muted-foreground leading-relaxed">
-          ניתוח כל דף ב-10 ממדים עם ציון משוקלל, המלצות ממוקדות, וזיהוי הזדמנויות אסטרטגיות.
-        </p>
-      </div>
-
       <OverviewStats />
 
       <Tabs defaultValue="pages" className="w-full">
         <TabsList className="w-full h-auto gap-1 bg-muted/30 p-1 rounded-xl flex-wrap">
           <TabsTrigger value="pages" className="text-xs rounded-lg">ניתוח דפים</TabsTrigger>
-          <TabsTrigger value="strategic" className="text-xs rounded-lg">הזדמנויות אסטרטגיות</TabsTrigger>
-          <TabsTrigger value="weights" className="text-xs rounded-lg">משקלות הציון</TabsTrigger>
+          <TabsTrigger value="strategic" className="text-xs rounded-lg">הזדמנויות</TabsTrigger>
+          <TabsTrigger value="weights" className="text-xs rounded-lg">משקלות</TabsTrigger>
         </TabsList>
 
-        {/* Pages tab */}
         <TabsContent value="pages" className="mt-4 space-y-4">
-          {/* Filters */}
           <div className="flex items-center gap-3 flex-wrap">
             <div className="relative flex-1 min-w-[200px]">
               <Search className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="חפש דף..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                className="pr-9 text-sm"
-              />
+              <Input placeholder="חפש דף..." value={search} onChange={e => setSearch(e.target.value)} className="pr-9 text-sm" />
             </div>
             <div className="flex gap-1 flex-wrap">
               {types.map(t => (
-                <button
-                  key={t}
-                  onClick={() => setTypeFilter(t)}
+                <button key={t} onClick={() => setTypeFilter(t)}
                   className={`text-[11px] px-2.5 py-1 rounded-full transition-colors ${
-                    typeFilter === t
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted/50 text-muted-foreground hover:bg-muted'
-                  }`}
-                >
+                    typeFilter === t ? 'bg-primary text-primary-foreground' : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+                  }`}>
                   {t === 'all' ? 'הכל' : t}
                 </button>
               ))}
             </div>
-            <button
-              onClick={() => setSortDir(d => (d === 'asc' ? 'desc' : 'asc'))}
-              className="flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-muted/50 text-muted-foreground hover:bg-muted"
-            >
-              {sortDir === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-              ציון
+            <button onClick={() => setSortDir(d => d === 'asc' ? 'desc' : 'asc')}
+              className="flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-muted/50 text-muted-foreground hover:bg-muted">
+              {sortDir === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}ציון
             </button>
           </div>
-
-          {/* Page list */}
           <div className="space-y-3">
-            {filtered.map(p => (
-              <PageRow key={p.id} page={p} onClick={() => setSelectedPage(p)} />
-            ))}
+            {filtered.map(p => <PageRow key={p.id} page={p} onClick={() => setSelectedPage(p)} />)}
           </div>
         </TabsContent>
 
-        {/* Strategic tab */}
         <TabsContent value="strategic" className="mt-4 space-y-4">
-          <StrategicList
-            title="דפים מוכנים לציטוט AI ראשונים"
-            icon={Star}
-            pages={getAICitableFirst()}
+          <StrategicList title="מוכנים לציטוט AI ראשונים" icon={Star} pages={getAICitableFirst()}
             accent="text-purple-600 dark:text-purple-400"
-            description="דפים שהכי קרובים למצב שבו מערכת AI תבחר לצטט אותם. עדיפות לשיפור קטנים שייצרו impact גדול."
-          />
-          <StrategicList
-            title="ערך נושאי גבוה — פורמט חלש"
-            icon={TrendingUp}
-            pages={getHighValueWeakFormat()}
+            description="דפים שהכי קרובים למצב שבו AI יצטט אותם. שיפורים קטנים = impact גדול." />
+          <StrategicList title="ערך נושאי גבוה — פורמט חלש" icon={TrendingUp} pages={getHighValueWeakFormat()}
             accent="text-amber-600 dark:text-amber-400"
-            description="דפים עם תוכן חזק אבל מבנה שלא מותאם לחילוץ. שכתוב מבני ישפר אותם משמעותית."
-          />
-          <StrategicList
-            title="דפים רחבים מדי — צריכים צמצום"
-            icon={Target}
-            pages={getOverbroadPages()}
+            description="תוכן חזק, מבנה לא מותאם. שכתוב מבני ישפר אותם משמעותית." />
+          <StrategicList title="דפים רחבים מדי — צריכים צמצום" icon={Target} pages={getOverbroadPages()}
             accent="text-destructive"
-            description="דפים שמנסים לכסות יותר מדי. פיצול לדפים ממוקדים ישפר ספציפיות ודירוג."
-          />
+            description="דפים שמנסים לכסות יותר מדי. פיצול לדפים ממוקדים ישפר דירוג." />
         </TabsContent>
 
-        {/* Weights tab */}
-        <TabsContent value="weights" className="mt-4">
-          <WeightBreakdown />
-        </TabsContent>
+        <TabsContent value="weights" className="mt-4"><WeightBreakdown /></TabsContent>
       </Tabs>
 
       <PageDetailDialog page={selectedPage} open={!!selectedPage} onClose={() => setSelectedPage(null)} />
