@@ -44,7 +44,7 @@ const physicianSchema = {
   telephone: "+972-54-580-8008",
   address: {
     "@type": "PostalAddress",
-    streetAddress: "טבס 3",
+    streetAddress: "הוד השרון",
     addressLocality: "הוד השרון",
     postalCode: "4501303",
     addressCountry: "IL"
@@ -74,7 +74,7 @@ const localBusinessSchema = {
   telephone: "+972-54-580-8008",
   address: {
     "@type": "PostalAddress",
-    streetAddress: "טבס 3",
+    streetAddress: "הוד השרון",
     addressLocality: "הוד השרון",
     addressCountry: "IL"
   },
@@ -787,7 +787,7 @@ const DrAnnaBrameli = () => {
                     </div>
                     <div>
                       <h3 className="font-semibold text-foreground">כתובת הקליניקה</h3>
-                      <p className="text-muted-foreground">טבס 3, הוד השרון</p>
+                      <p className="text-muted-foreground">הוד השרון</p>
                     </div>
                   </div>
 

@@ -25,8 +25,8 @@ const contactInfo = [
   {
     icon: MapPin,
     title: "כתובת",
-    value: "טבס 3, הוד השרון",
-    href: "https://maps.google.com/?q=טבס+3+הוד+השרון",
+    value: "הוד השרון",
+    href: "https://maps.google.com/?q=הוד+השרון",
   },
 ];
 
@@ -77,7 +77,7 @@ const Contact = () => {
         <title>יצירת קשר וקביעת תור | ד״ר אנה ברמלי – מרפאת אלרגיה בהוד השרון</title>
         <meta 
           name="description" 
-          content="קביעת תור במרפאת אלרגיה של ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה. טלפון: 054-580-8008, כתובת: טבס 3, הוד השרון. ייעוץ אלרגיה פרטי." 
+          content="קביעת תור במרפאת אלרגיה של ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה. טלפון: 054-580-8008, כתובת: הוד השרון. ייעוץ אלרגיה פרטי." 
         />
         <link rel="canonical" href="https://ihaveallergy.com/contact" />
       </Helmet>
@@ -287,7 +287,7 @@ const Contact = () => {
                   allowFullScreen
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
-                  title="מרפאת אלרגיה - ד״ר אנה ברמלי, טבס 3, הוד השרון"
+                  title="מרפאת אלרגיה - ד״ר אנה ברמלי, הוד השרון"
                 ></iframe>
               </div>
             </motion.div>
