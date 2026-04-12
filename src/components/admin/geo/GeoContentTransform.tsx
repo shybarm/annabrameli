@@ -261,9 +261,17 @@ export function GeoContentTransform() {
   const [selected, setSelected] = useState<ContentTransform | null>(null);
   const [workflows, setWorkflows] = useState<WorkflowMap>(DEFAULT_WORKFLOWS);
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [checklists, setChecklists] = useState<Record<string, Record<string, boolean>>>({});
 
   const updateWorkflow = useCallback((pageId: string, updated: PageWorkflow) => {
     setWorkflows(prev => ({ ...prev, [pageId]: updated }));
+  }, []);
+
+  const toggleChecklistItem = useCallback((pageId: string, itemId: string, checked: boolean) => {
+    setChecklists(prev => ({
+      ...prev,
+      [pageId]: { ...(prev[pageId] || {}), [itemId]: checked },
+    }));
   }, []);
 
   const filtered = statusFilter === 'all'
