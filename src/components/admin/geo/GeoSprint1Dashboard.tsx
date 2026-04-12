@@ -5,14 +5,13 @@ import {
 } from '@/data/geo-sprint1-data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
 import {
-  Search, ChevronDown, ChevronUp, TrendingUp, AlertTriangle,
+  Search, TrendingUp, AlertTriangle,
   CheckCircle, Target, Sparkles, ArrowUp, ArrowRight, ArrowDown,
 } from 'lucide-react';
 
