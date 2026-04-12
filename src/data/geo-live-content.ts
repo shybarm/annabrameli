@@ -5,9 +5,10 @@
  */
 
 import { CONTENT_TRANSFORMS } from './geo-content-transforms';
+import { CURRENT_PAGE_CONTENT } from './geo-current-page-content';
 
-// ── Recommendation status per change item ──
 export type RecommendationStatus = 'draft' | 'edited' | 'approved' | 'applied' | 'rejected';
+export type EditableField = 'heading' | 'content';
 
 export const RECOMMENDATION_STATUS_CONFIG: Record<RecommendationStatus, { label: string; color: string }> = {
   draft:    { label: 'טיוטה',   color: 'bg-muted text-muted-foreground' },
@@ -17,36 +18,35 @@ export const RECOMMENDATION_STATUS_CONFIG: Record<RecommendationStatus, { label:
   rejected: { label: 'נדחה',    color: 'bg-destructive/10 text-destructive' },
 };
 
-// ── Version type labels ──
 export type VersionType = 'original' | 'working_draft' | 'applied';
 
 export const VERSION_TYPE_CONFIG: Record<VersionType, { label: string; color: string; description: string }> = {
-  original:      { label: 'גרסה מקורית',      color: 'bg-muted text-muted-foreground',     description: 'התוכן המקורי לפני כל שינוי' },
-  working_draft: { label: 'טיוטת עבודה',       color: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300', description: 'עריכות ידניות שטרם הוחלו' },
+  original:      { label: 'גרסה מקורית',      color: 'bg-muted text-muted-foreground', description: 'התוכן הנוכחי של הדף לפני החלה' },
+  working_draft: { label: 'טיוטת עבודה',       color: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300', description: 'עריכות שנשמרו אך עדיין לא הוחלו' },
   applied:       { label: 'גרסה מוחלת אחרונה', color: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300', description: 'הגרסה האחרונה שהוחלה מהמלצות' },
 };
 
-// ── A single editable recommendation ──
 export interface EditableRecommendation {
   id: string;
-  sectionIndex: number;           // which draft section this targets
-  area: string;                   // from ChangeLogItem.area
-  originalBefore: string;         // immutable original "before"
-  originalAfter: string;          // immutable original "after" 
-  editedAfter: string;            // user-editable version of "after"
+  sectionIndex: number;
+  sectionHeading: string;
+  targetField: EditableField;
+  area: string;
+  originalBefore: string;
+  originalAfter: string;
+  editedAfter: string;
   reason: string;
   status: RecommendationStatus;
   appliedAt?: string;
 }
 
-// ── Live page content: the actual content sections ──
 export interface LivePageContent {
   pageId: string;
   sections: LiveSection[];
-  history: ContentSnapshot[];     // for revert
-  currentVersion: VersionType;    // which version is currently displayed
-  lastAppliedAt?: string;         // when the last apply happened
-  appliedSections?: LiveSection[];  // snapshot of the last applied state
+  history: ContentSnapshot[];
+  currentVersion: VersionType;
+  lastAppliedAt?: string;
+  appliedSections?: LiveSection[];
 }
 
 export interface LiveSection {
@@ -62,17 +62,32 @@ export interface ContentSnapshot {
   versionType: VersionType;
 }
 
-// ── Initialize live content from the static transforms ──
-export function initializeLiveContent(pageId: string): LivePageContent {
+function cloneSections(sections: LiveSection[]): LiveSection[] {
+  return JSON.parse(JSON.stringify(sections));
+}
+
+function buildCurrentSections(pageId: string): LiveSection[] {
   const transform = CONTENT_TRANSFORMS.find(t => t.pageId === pageId);
-  if (!transform) {
-    return { pageId, sections: [], history: [], currentVersion: 'original' };
+  const currentSections = CURRENT_PAGE_CONTENT[pageId];
+
+  if (currentSections) {
+    return cloneSections(currentSections);
   }
-  const sections: LiveSection[] = transform.draft.map(d => ({
-    heading: d.heading,
-    tag: d.tag,
-    content: d.content,
+
+  if (!transform) {
+    return [];
+  }
+
+  return transform.draft.map((section, index) => ({
+    heading: index === 0 ? 'דף חדש - טרם פורסם' : section.heading,
+    tag: section.tag,
+    content: '',
   }));
+}
+
+export function initializeLiveContent(pageId: string): LivePageContent {
+  const sections = buildCurrentSections(pageId);
+
   return {
     pageId,
     sections,
@@ -80,24 +95,39 @@ export function initializeLiveContent(pageId: string): LivePageContent {
     history: [{
       timestamp: new Date().toISOString(),
       label: 'גרסה מקורית',
-      sections: JSON.parse(JSON.stringify(sections)),
+      sections: cloneSections(sections),
       versionType: 'original',
     }],
   };
 }
 
-// ── Initialize editable recommendations from static changeLog ──
 export function initializeRecommendations(pageId: string): EditableRecommendation[] {
   const transform = CONTENT_TRANSFORMS.find(t => t.pageId === pageId);
   if (!transform) return [];
-  return transform.changeLog.map((item, i) => ({
-    id: `${pageId}-rec-${i}`,
-    sectionIndex: Math.min(i, (transform.draft.length || 1) - 1),
-    area: item.area,
-    originalBefore: item.before,
-    originalAfter: item.after,
-    editedAfter: item.after,
-    reason: item.reason,
-    status: 'draft' as RecommendationStatus,
-  }));
+
+  const currentSections = buildCurrentSections(pageId);
+
+  return transform.changeLog.map((item, i) => {
+    const sectionIndex = Math.min(i, (transform.draft.length || 1) - 1);
+    const draftSection = transform.draft[sectionIndex];
+    const currentSection = currentSections[sectionIndex] || draftSection;
+    const targetField: EditableField = draftSection.content?.trim() ? 'content' : 'heading';
+    const originalAfter = targetField === 'heading' ? draftSection.heading : draftSection.content;
+    const originalBefore = targetField === 'heading'
+      ? currentSection?.heading || ''
+      : currentSection?.content || '';
+
+    return {
+      id: `${pageId}-rec-${i}`,
+      sectionIndex,
+      sectionHeading: draftSection.heading || `סקציה ${sectionIndex + 1}`,
+      targetField,
+      area: item.area,
+      originalBefore,
+      originalAfter,
+      editedAfter: originalAfter,
+      reason: item.reason,
+      status: 'draft' as RecommendationStatus,
+    };
+  });
 }
