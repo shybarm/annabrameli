@@ -1,13 +1,11 @@
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { GeoDashboard } from '@/components/admin/geo/GeoDashboard';
-import { GeoPageAudit } from '@/components/admin/geo/GeoPageAudit';
-import { GeoEntityLayer } from '@/components/admin/geo/GeoEntityLayer';
 import { GeoSprint4Clusters } from '@/components/admin/geo/GeoSprint4Clusters';
 import { GeoSprint5Scoring } from '@/components/admin/geo/GeoSprint5Scoring';
 import { GeoTemplatesAndChecklist } from '@/components/admin/geo/GeoTemplatesAndChecklist';
 import { GeoSprint6Planner } from '@/components/admin/geo/GeoSprint6Planner';
-import { Brain, BarChart3, FileSearch, Shield, Layers, Target, Layout, CalendarDays } from 'lucide-react';
+import { Brain, BarChart3, Layers, Target, Layout, CalendarDays } from 'lucide-react';
 
 export default function GeoOptimizationPage() {
   return (
@@ -24,20 +22,14 @@ export default function GeoOptimizationPage() {
           </div>
         </div>
 
-        {/* Unified Tabs */}
+        {/* 5 unified tabs */}
         <Tabs defaultValue="dashboard" className="w-full">
           <TabsList className="w-full flex-wrap h-auto gap-1 bg-muted/30 p-1.5 rounded-xl">
             <TabsTrigger value="dashboard" className="text-xs rounded-lg gap-1">
               <BarChart3 className="h-3 w-3" />סקירה
             </TabsTrigger>
-            <TabsTrigger value="pages" className="text-xs rounded-lg gap-1">
-              <FileSearch className="h-3 w-3" />ביקורת דפים
-            </TabsTrigger>
-            <TabsTrigger value="entity" className="text-xs rounded-lg gap-1">
-              <Shield className="h-3 w-3" />ישויות וסמכות
-            </TabsTrigger>
             <TabsTrigger value="clusters" className="text-xs rounded-lg gap-1">
-              <Layers className="h-3 w-3" />אשכולות ותוכן
+              <Layers className="h-3 w-3" />אשכולות
             </TabsTrigger>
             <TabsTrigger value="scoring" className="text-xs rounded-lg gap-1">
               <Target className="h-3 w-3" />ציון GEO
@@ -51,8 +43,6 @@ export default function GeoOptimizationPage() {
           </TabsList>
 
           <TabsContent value="dashboard" className="mt-4"><GeoDashboard /></TabsContent>
-          <TabsContent value="pages" className="mt-4"><GeoPageAudit /></TabsContent>
-          <TabsContent value="entity" className="mt-4"><GeoEntityLayer /></TabsContent>
           <TabsContent value="clusters" className="mt-4"><GeoSprint4Clusters /></TabsContent>
           <TabsContent value="scoring" className="mt-4"><GeoSprint5Scoring /></TabsContent>
           <TabsContent value="toolkit" className="mt-4"><GeoTemplatesAndChecklist /></TabsContent>

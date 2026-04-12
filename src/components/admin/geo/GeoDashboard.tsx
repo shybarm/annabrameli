@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import {
-  Brain, Target, Shield, Link2, FileText, AlertTriangle, CheckCircle, TrendingUp,
+  Brain, Target, Shield, FileText, AlertTriangle, CheckCircle, TrendingUp,
+  User, Building, MapPin, Stethoscope,
 } from 'lucide-react';
 
 function scoreColor(score: number) {
@@ -15,8 +16,11 @@ function scoreColor(score: number) {
   return 'text-destructive';
 }
 
+const iconMap: Record<string, any> = {
+  physician: User, organization: Building, location: MapPin, condition: Stethoscope, procedure: Stethoscope,
+};
+
 export function GeoDashboard() {
-  // Sprint 5 average (1-10 scale → display as x10 for percentage feel)
   const avgGeoScore = SCORED_PAGES.length
     ? Math.round((SCORED_PAGES.reduce((s, p) => s + p.weightedScore, 0) / SCORED_PAGES.length) * 10)
     : 0;
@@ -29,7 +33,7 @@ export function GeoDashboard() {
   const stats = [
     { label: 'ציון GEO ממוצע', value: avgGeoScore, icon: Brain, suffix: '/100' },
     { label: 'עקביות ישות', value: avgEntity, icon: Target, suffix: '/100' },
-    { label: 'כיסוי אשכולות', value: avgCluster, icon: Link2, suffix: '%' },
+    { label: 'כיסוי אשכולות', value: avgCluster, icon: TrendingUp, suffix: '%' },
     { label: 'דפים קריטיים', value: criticalPages, icon: AlertTriangle, suffix: '' },
     { label: 'דפים באתר', value: GEO_PAGES.length, icon: FileText, suffix: '' },
     { label: 'תוכנית 90 יום', value: completedTasks, icon: CheckCircle, suffix: `/${totalTasks}` },
@@ -38,6 +42,11 @@ export function GeoDashboard() {
   const topPriority = GEO_PAGES
     .filter(p => p.priority === 'high')
     .sort((a, b) => a.geoScore - b.geoScore)
+    .slice(0, 5);
+
+  // Weakest clusters
+  const weakClusters = [...TOPIC_CLUSTERS]
+    .sort((a, b) => a.coverageDepth - b.coverageDepth)
     .slice(0, 5);
 
   return (
@@ -87,43 +96,54 @@ export function GeoDashboard() {
           </CardContent>
         </Card>
 
-        {/* Entity Health */}
+        {/* Entity Health — integrated from Entity Layer */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <Shield className="h-4 w-4" />
-              בריאות ישויות
+              עקביות ישויות
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {ENTITY_SIGNALS.map(entity => (
-              <div key={entity.id} className="p-3 rounded-lg bg-muted/30">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm font-medium">{entity.entity}</p>
-                  <Badge variant={entity.consistency >= 75 ? 'default' : 'secondary'} className="text-xs">
-                    {entity.pagesPresent}/{entity.pagesTotal} דפים
-                  </Badge>
+            {ENTITY_SIGNALS.map(entity => {
+              const Icon = iconMap[entity.type] || Stethoscope;
+              return (
+                <div key={entity.id} className="p-3 rounded-lg bg-muted/30">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Icon className="h-4 w-4 text-muted-foreground" />
+                      <p className="text-sm font-medium">{entity.entity}</p>
+                    </div>
+                    <Badge variant={entity.consistency >= 75 ? 'default' : 'secondary'} className="text-xs">
+                      {entity.consistency}%
+                    </Badge>
+                  </div>
+                  <Progress value={entity.consistency} className="h-2 mb-2" />
+                  {entity.issues.length > 0 && (
+                    <p className="text-xs text-muted-foreground line-clamp-1">
+                      ⚠ {entity.issues[0]}
+                    </p>
+                  )}
+                  {entity.fixes.length > 0 && (
+                    <p className="text-xs text-emerald-600 dark:text-emerald-400 line-clamp-1 mt-0.5">
+                      ✓ {entity.fixes[0]}
+                    </p>
+                  )}
                 </div>
-                <Progress value={entity.consistency} className="h-2" />
-                {entity.issues.length > 0 && (
-                  <p className="text-xs text-muted-foreground mt-2 line-clamp-1">
-                    ⚠ {entity.issues[0]}
-                  </p>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </CardContent>
         </Card>
       </div>
 
-      {/* Cluster Completeness */}
+      {/* Weakest Clusters */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">כיסוי אשכולות נושאיים</CardTitle>
+          <CardTitle className="text-base">פערי כיסוי — אשכולות חלשים</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            {TOPIC_CLUSTERS.slice(0, 10).map(cluster => (
+            {weakClusters.map(cluster => (
               <div key={cluster.id} className="p-4 rounded-xl border border-border/50 text-center">
                 <div className={`w-10 h-10 rounded-full mx-auto mb-2 flex items-center justify-center font-bold text-sm ${
                   cluster.coverageDepth >= 60 ? 'bg-primary text-primary-foreground' : 'bg-destructive/20 text-destructive'
