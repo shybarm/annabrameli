@@ -9,6 +9,7 @@ import { GeoScoringEngine } from '@/components/admin/geo/GeoScoringEngine';
 import { GeoSprintPlanner } from '@/components/admin/geo/GeoSprintPlanner';
 import { GeoChecklist } from '@/components/admin/geo/GeoChecklist';
 import { GeoSprint4Clusters } from '@/components/admin/geo/GeoSprint4Clusters';
+import { GeoSprint5Scoring } from '@/components/admin/geo/GeoSprint5Scoring';
 import { Brain } from 'lucide-react';
 
 export default function GeoOptimizationPage() {
