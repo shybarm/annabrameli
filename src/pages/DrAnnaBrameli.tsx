@@ -44,7 +44,6 @@ const physicianSchema = {
   telephone: "+972-54-580-8008",
   address: {
     "@type": "PostalAddress",
-    streetAddress: "הוד השרון",
     addressLocality: "הוד השרון",
     postalCode: "4501303",
     addressCountry: "IL"
@@ -74,7 +73,6 @@ const localBusinessSchema = {
   telephone: "+972-54-580-8008",
   address: {
     "@type": "PostalAddress",
-    streetAddress: "הוד השרון",
     addressLocality: "הוד השרון",
     addressCountry: "IL"
   },

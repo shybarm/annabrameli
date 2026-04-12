@@ -17,7 +17,6 @@ export const SiteWideSchema = () => {
     email: "info@drbrameli.co.il",
     address: {
       "@type": "PostalAddress",
-      streetAddress: "הוד השרון",
       addressLocality: "הוד השרון",
       postalCode: "4501303",
       addressCountry: "IL",

@@ -16,7 +16,6 @@ export const SchemaMarkup = ({ type = "physician" }: SchemaMarkupProps) => {
     "priceRange": "$$",
     "address": {
       "@type": "PostalAddress",
-      "streetAddress": "הוד השרון",
       "addressLocality": "הוד השרון",
       "postalCode": "4501303",
       "addressCountry": "IL",
@@ -73,7 +72,6 @@ export const SchemaMarkup = ({ type = "physician" }: SchemaMarkupProps) => {
       telephone: "+972-54-580-8008",
       address: {
         "@type": "PostalAddress",
-        streetAddress: "הוד השרון",
         addressLocality: "הוד השרון",
         addressCountry: "IL",
       },
