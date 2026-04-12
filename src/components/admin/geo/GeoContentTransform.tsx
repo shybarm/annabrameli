@@ -56,6 +56,13 @@ function DiagnosisTab({ transform }: { transform: ContentTransform }) {
   const d = transform.diagnosis;
   return (
     <div className="space-y-5">
+      {/* Page Intent */}
+      <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
+        <h4 className="text-sm font-bold text-foreground flex items-center gap-2 mb-2">
+          <Target className="h-4 w-4 text-primary" />כוונת הדף
+        </h4>
+        <p className="text-xs text-foreground leading-relaxed" dir="rtl">{d.pageIntent}</p>
+      </div>
       {/* Strengths */}
       <div className="space-y-2">
         <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
