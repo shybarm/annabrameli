@@ -8,12 +8,33 @@ import {
   type LivePageContent,
   type LiveSection,
   type RecommendationStatus,
+  type VersionType,
   RECOMMENDATION_STATUS_CONFIG,
+  VERSION_TYPE_CONFIG,
 } from '@/data/geo-live-content';
 import {
-  Check, ChevronDown, ChevronUp, Edit3, Eye,
-  RotateCcw, Send, ShieldCheck, X,
+  Check, ChevronDown, ChevronUp, Clock, Edit3, Eye,
+  History, RotateCcw, Send, ShieldCheck, X,
 } from 'lucide-react';
+
+// ── Version label banner ──
+function VersionBanner({ version, lastAppliedAt }: { version: VersionType; lastAppliedAt?: string }) {
+  const cfg = VERSION_TYPE_CONFIG[version];
+  return (
+    <div className={`flex items-center justify-between gap-2 px-3 py-2 rounded-lg border text-xs ${cfg.color}`}>
+      <div className="flex items-center gap-2">
+        <Clock className="h-3.5 w-3.5" />
+        <span className="font-bold">{cfg.label}</span>
+        <span className="opacity-70">— {cfg.description}</span>
+      </div>
+      {lastAppliedAt && version === 'applied' && (
+        <span className="text-[10px] opacity-60">
+          {new Date(lastAppliedAt).toLocaleString('he-IL', { dateStyle: 'short', timeStyle: 'short' })}
+        </span>
+      )}
+    </div>
+  );
+}
 
 // ── Status badge ──
 function RecStatusBadge({ status }: { status: RecommendationStatus }) {
@@ -105,7 +126,7 @@ function RecommendationCard({
                 isApplied ? 'text-emerald-600 dark:text-emerald-400' : 'text-primary'
               }`}>
                 {isApplied ? <Check className="h-3 w-3" /> : <Edit3 className="h-3 w-3" />}
-                {isApplied ? 'הוחל בהצלחה' : 'גרסה מומלצת (ניתנת לעריכה)'}
+                {isApplied ? 'הוחל בהצלחה — התוכן עודכן בדף' : 'גרסה מומלצת (ניתנת לעריכה)'}
               </p>
               {isEditing ? (
                 <div className="space-y-2">
@@ -135,63 +156,40 @@ function RecommendationCard({
             💡 {rec.reason}
           </p>
 
+          {isApplied && rec.appliedAt && (
+            <p className="text-[10px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+              <Check className="h-3 w-3" />
+              הוחל ב-{new Date(rec.appliedAt).toLocaleString('he-IL', { dateStyle: 'short', timeStyle: 'short' })}
+            </p>
+          )}
+
           <Separator />
 
           {/* Action buttons */}
           <div className="flex items-center gap-1.5 flex-wrap">
             {!isApplied && !isRejected && (
               <>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-7 text-[11px] px-2"
-                  onClick={() => setIsEditing(true)}
-                >
+                <Button size="sm" variant="ghost" className="h-7 text-[11px] px-2" onClick={() => setIsEditing(true)}>
                   <Edit3 className="h-3 w-3 mr-1" /> ערוך
                 </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-7 text-[11px] px-2"
-                  onClick={() => onStatusChange(rec.id, 'approved')}
-                >
+                <Button size="sm" variant="ghost" className="h-7 text-[11px] px-2" onClick={() => onStatusChange(rec.id, 'approved')}>
                   <ShieldCheck className="h-3 w-3 mr-1" /> אשר
                 </Button>
-                <Button
-                  size="sm"
-                  variant="default"
-                  className="h-7 text-[11px] px-2"
-                  onClick={() => onApply(rec.id)}
-                >
+                <Button size="sm" variant="default" className="h-7 text-[11px] px-2" onClick={() => onApply(rec.id)}>
                   <Send className="h-3 w-3 mr-1" /> החל על הדף
                 </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-7 text-[11px] px-2 text-destructive hover:text-destructive"
-                  onClick={() => onStatusChange(rec.id, 'rejected')}
-                >
+                <Button size="sm" variant="ghost" className="h-7 text-[11px] px-2 text-destructive hover:text-destructive" onClick={() => onStatusChange(rec.id, 'rejected')}>
                   <X className="h-3 w-3 mr-1" /> דחה
                 </Button>
               </>
             )}
             {isApplied && (
-              <Button
-                size="sm"
-                variant="ghost"
-                className="h-7 text-[11px] px-2 text-amber-600"
-                onClick={() => onRevert(rec.id)}
-              >
-                <RotateCcw className="h-3 w-3 mr-1" /> בטל החלה
+              <Button size="sm" variant="ghost" className="h-7 text-[11px] px-2 text-amber-600" onClick={() => onRevert(rec.id)}>
+                <RotateCcw className="h-3 w-3 mr-1" /> בטל החלה ושחזר
               </Button>
             )}
             {isRejected && (
-              <Button
-                size="sm"
-                variant="ghost"
-                className="h-7 text-[11px] px-2"
-                onClick={() => onStatusChange(rec.id, 'draft')}
-              >
+              <Button size="sm" variant="ghost" className="h-7 text-[11px] px-2" onClick={() => onStatusChange(rec.id, 'draft')}>
                 <RotateCcw className="h-3 w-3 mr-1" /> החזר לטיוטה
               </Button>
             )}
@@ -242,12 +240,7 @@ function LiveSectionCard({
             </Badge>
           )}
         </div>
-        <Button
-          size="sm"
-          variant="ghost"
-          className="h-6 text-[10px] px-2"
-          onClick={() => setEditing(!editing)}
-        >
+        <Button size="sm" variant="ghost" className="h-6 text-[10px] px-2" onClick={() => setEditing(!editing)}>
           <Edit3 className="h-3 w-3 mr-1" /> {editing ? 'סגור' : 'ערוך'}
         </Button>
       </div>
@@ -262,27 +255,16 @@ function LiveSectionCard({
               dir="rtl"
             />
           )}
-          <Textarea
-            className="text-xs min-h-[80px]"
-            value={editContent}
-            onChange={e => setEditContent(e.target.value)}
-            dir="rtl"
-          />
-          <Button size="sm" className="h-6 text-[10px] px-2" onClick={save}>
-            שמור
-          </Button>
+          <Textarea className="text-xs min-h-[80px]" value={editContent} onChange={e => setEditContent(e.target.value)} dir="rtl" />
+          <Button size="sm" className="h-6 text-[10px] px-2" onClick={save}>שמור</Button>
         </div>
       ) : (
         <>
           {section.heading && (
-            <h3 className={`font-bold text-foreground ${section.tag === 'h1' ? 'text-base' : 'text-sm'}`}>
-              {section.heading}
-            </h3>
+            <h3 className={`font-bold text-foreground ${section.tag === 'h1' ? 'text-base' : 'text-sm'}`}>{section.heading}</h3>
           )}
           {section.content && (
-            <div className="text-xs text-foreground leading-relaxed whitespace-pre-wrap" dir="rtl">
-              {section.content}
-            </div>
+            <div className="text-xs text-foreground leading-relaxed whitespace-pre-wrap" dir="rtl">{section.content}</div>
           )}
         </>
       )}
@@ -309,6 +291,16 @@ export function GeoLiveEditor({
     liveContent.history[0]?.sections || liveContent.sections
   );
 
+  // Derive current version type from state
+  const deriveVersionType = (content: LivePageContent): VersionType => {
+    const hasApplied = content.lastAppliedAt != null;
+    const origSections = content.history[0]?.sections;
+    if (!origSections) return 'original';
+    const isOriginal = JSON.stringify(content.sections) === JSON.stringify(origSections);
+    if (isOriginal) return 'original';
+    return hasApplied ? 'applied' : 'working_draft';
+  };
+
   // ── Edit recommendation text ──
   const handleEditRec = (id: string, newText: string) => {
     onRecommendationsUpdate(
@@ -330,31 +322,33 @@ export function GeoLiveEditor({
     const rec = recommendations.find(r => r.id === id);
     if (!rec) return;
 
-    // Snapshot before applying
     const snapshot = {
       timestamp: new Date().toISOString(),
       label: `לפני החלת "${rec.area}"`,
       sections: JSON.parse(JSON.stringify(liveContent.sections)),
+      versionType: deriveVersionType(liveContent) as VersionType,
     };
 
     const updatedSections = [...liveContent.sections];
     const idx = Math.min(rec.sectionIndex, updatedSections.length - 1);
     if (idx >= 0 && updatedSections[idx]) {
-      updatedSections[idx] = {
-        ...updatedSections[idx],
-        content: rec.editedAfter,
-      };
+      updatedSections[idx] = { ...updatedSections[idx], content: rec.editedAfter };
     }
 
-    onLiveContentUpdate({
+    const now = new Date().toISOString();
+    const updated: LivePageContent = {
       ...liveContent,
       sections: updatedSections,
       history: [...liveContent.history, snapshot],
-    });
+      currentVersion: 'applied',
+      lastAppliedAt: now,
+      appliedSections: JSON.parse(JSON.stringify(updatedSections)),
+    };
 
+    onLiveContentUpdate(updated);
     onRecommendationsUpdate(
       recommendations.map(r =>
-        r.id === id ? { ...r, status: 'applied', appliedAt: new Date().toISOString() } : r
+        r.id === id ? { ...r, status: 'applied', appliedAt: now } : r
       )
     );
   };
@@ -369,10 +363,13 @@ export function GeoLiveEditor({
       const updatedSections = [...liveContent.sections];
       updatedSections[idx] = { ...originalSections[idx] };
 
-      onLiveContentUpdate({
+      const hasOtherApplied = recommendations.some(r => r.id !== id && r.status === 'applied');
+      const updated: LivePageContent = {
         ...liveContent,
         sections: updatedSections,
-      });
+        currentVersion: hasOtherApplied ? 'applied' : 'original',
+      };
+      onLiveContentUpdate(updated);
     }
 
     onRecommendationsUpdate(
@@ -391,6 +388,7 @@ export function GeoLiveEditor({
       timestamp: new Date().toISOString(),
       label: `לפני החלת ${approved.length} שינויים`,
       sections: JSON.parse(JSON.stringify(liveContent.sections)),
+      versionType: deriveVersionType(liveContent) as VersionType,
     };
 
     const updatedSections = [...liveContent.sections];
@@ -401,26 +399,34 @@ export function GeoLiveEditor({
       }
     });
 
-    onLiveContentUpdate({
+    const now = new Date().toISOString();
+    const updated: LivePageContent = {
       ...liveContent,
       sections: updatedSections,
       history: [...liveContent.history, snapshot],
-    });
+      currentVersion: 'applied',
+      lastAppliedAt: now,
+      appliedSections: JSON.parse(JSON.stringify(updatedSections)),
+    };
 
+    onLiveContentUpdate(updated);
     onRecommendationsUpdate(
       recommendations.map(r =>
-        r.status === 'approved' ? { ...r, status: 'applied', appliedAt: new Date().toISOString() } : r
+        r.status === 'approved' ? { ...r, status: 'applied', appliedAt: now } : r
       )
     );
   };
 
-  // ── Full page revert ──
+  // ── Full page revert to original ──
   const handleFullRevert = () => {
-    if (liveContent.history.length < 2) return;
-    const previous = liveContent.history[liveContent.history.length - 1];
+    if (liveContent.history.length < 1) return;
+    const original = liveContent.history[0]; // always the original
     onLiveContentUpdate({
       ...liveContent,
-      sections: JSON.parse(JSON.stringify(previous.sections)),
+      sections: JSON.parse(JSON.stringify(original.sections)),
+      currentVersion: 'original',
+      lastAppliedAt: undefined,
+      appliedSections: undefined,
     });
     onRecommendationsUpdate(
       recommendations.map(r =>
@@ -435,6 +441,7 @@ export function GeoLiveEditor({
       timestamp: new Date().toISOString(),
       label: `עריכה ידנית - סקציה ${index + 1}`,
       sections: JSON.parse(JSON.stringify(liveContent.sections)),
+      versionType: deriveVersionType(liveContent) as VersionType,
     };
     const updatedSections = [...liveContent.sections];
     updatedSections[index] = updated;
@@ -442,6 +449,7 @@ export function GeoLiveEditor({
       ...liveContent,
       sections: updatedSections,
       history: [...liveContent.history, snapshot],
+      currentVersion: 'working_draft',
     });
   };
 
@@ -455,9 +463,13 @@ export function GeoLiveEditor({
   const approvedCount = recommendations.filter(r => r.status === 'approved').length;
   const appliedCount = recommendations.filter(r => r.status === 'applied').length;
   const totalCount = recommendations.length;
+  const currentVersion = deriveVersionType(liveContent);
 
   return (
     <div className="space-y-4" dir="rtl">
+      {/* Version banner */}
+      <VersionBanner version={currentVersion} lastAppliedAt={liveContent.lastAppliedAt} />
+
       {/* View mode & stats */}
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-1 bg-muted/30 rounded-lg p-0.5">
@@ -479,22 +491,13 @@ export function GeoLiveEditor({
         <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
           <span>{appliedCount}/{totalCount} הוחלו</span>
           {approvedCount > 0 && (
-            <Button
-              size="sm"
-              className="h-6 text-[10px] px-2"
-              onClick={handleApplyAllApproved}
-            >
+            <Button size="sm" className="h-6 text-[10px] px-2" onClick={handleApplyAllApproved}>
               <Send className="h-3 w-3 mr-1" /> החל {approvedCount} מאושרים
             </Button>
           )}
-          {liveContent.history.length > 1 && (
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-6 text-[10px] px-2"
-              onClick={handleFullRevert}
-            >
-              <RotateCcw className="h-3 w-3 mr-1" /> שחזר גרסה קודמת
+          {currentVersion !== 'original' && (
+            <Button size="sm" variant="outline" className="h-6 text-[10px] px-2" onClick={handleFullRevert}>
+              <RotateCcw className="h-3 w-3 mr-1" /> שחזר לגרסה מקורית
             </Button>
           )}
         </div>
@@ -564,14 +567,10 @@ export function GeoLiveEditor({
                 )}
               </div>
               {section.heading && (
-                <h3 className={`font-bold text-foreground mb-1 ${section.tag === 'h1' ? 'text-base' : 'text-sm'}`}>
-                  {section.heading}
-                </h3>
+                <h3 className={`font-bold text-foreground mb-1 ${section.tag === 'h1' ? 'text-base' : 'text-sm'}`}>{section.heading}</h3>
               )}
               {section.content && (
-                <div className="text-xs text-foreground leading-relaxed whitespace-pre-wrap" dir="rtl">
-                  {section.content}
-                </div>
+                <div className="text-xs text-foreground leading-relaxed whitespace-pre-wrap" dir="rtl">{section.content}</div>
               )}
             </div>
           ))}
@@ -580,14 +579,20 @@ export function GeoLiveEditor({
           {liveContent.history.length > 1 && (
             <>
               <Separator />
-              <div className="space-y-1">
-                <h4 className="text-xs font-bold text-muted-foreground">היסטוריית גרסאות</h4>
-                {liveContent.history.map((snap, i) => (
-                  <div key={i} className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                    <span className="font-mono">{new Date(snap.timestamp).toLocaleTimeString('he-IL')}</span>
-                    <span>{snap.label}</span>
-                  </div>
-                ))}
+              <div className="space-y-1.5">
+                <h4 className="text-xs font-bold text-muted-foreground flex items-center gap-1.5">
+                  <History className="h-3.5 w-3.5" /> היסטוריית גרסאות
+                </h4>
+                {[...liveContent.history].reverse().map((snap, i) => {
+                  const vCfg = VERSION_TYPE_CONFIG[snap.versionType || 'original'];
+                  return (
+                    <div key={i} className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                      <span className="font-mono">{new Date(snap.timestamp).toLocaleTimeString('he-IL')}</span>
+                      <Badge className={`text-[9px] ${vCfg.color}`}>{vCfg.label}</Badge>
+                      <span>{snap.label}</span>
+                    </div>
+                  );
+                })}
               </div>
             </>
           )}
