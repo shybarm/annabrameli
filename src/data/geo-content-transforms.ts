@@ -32,6 +32,36 @@ export interface ChangeLogItem {
   reason: string;
 }
 
+export type WorkflowStatus =
+  | 'not_reviewed'
+  | 'rewrite_needed'
+  | 'in_progress'
+  | 'medical_review'
+  | 'approved'
+  | 'ready_to_publish'
+  | 'published'
+  | 're_audit';
+
+export type PriorityLevel = 'critical' | 'high' | 'medium' | 'low';
+
+export const WORKFLOW_STATUS_CONFIG: Record<WorkflowStatus, { label: string; color: string }> = {
+  not_reviewed:      { label: 'לא נבדק',         color: 'bg-muted text-muted-foreground' },
+  rewrite_needed:    { label: 'דרוש שכתוב',       color: 'bg-destructive/10 text-destructive border-destructive/30' },
+  in_progress:       { label: 'בעבודה',           color: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 border-amber-300 dark:border-amber-700' },
+  medical_review:    { label: 'לבדיקה רפואית',    color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 border-purple-300 dark:border-purple-700' },
+  approved:          { label: 'אושר',             color: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700' },
+  ready_to_publish:  { label: 'מוכן לפרסום',      color: 'bg-primary/10 text-primary border-primary/30' },
+  published:         { label: 'פורסם',             color: 'bg-emerald-600 text-white dark:bg-emerald-700' },
+  re_audit:          { label: 'לבדיקה חוזרת',     color: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 border-amber-300 dark:border-amber-700' },
+};
+
+export const PRIORITY_CONFIG: Record<PriorityLevel, { label: string; color: string }> = {
+  critical: { label: 'קריטי',  color: 'bg-destructive text-destructive-foreground' },
+  high:     { label: 'גבוה',   color: 'bg-amber-500 text-white' },
+  medium:   { label: 'בינוני', color: 'bg-primary/20 text-primary' },
+  low:      { label: 'נמוך',   color: 'bg-muted text-muted-foreground' },
+};
+
 export interface ContentTransform {
   pageId: string;
   diagnosis: ContentDiagnosis;
