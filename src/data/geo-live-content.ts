@@ -4,7 +4,7 @@
  * which the transformation system reads from and writes to.
  */
 
-import { type DraftSection, type ChangeLogItem, CONTENT_TRANSFORMS } from './geo-content-transforms';
+import { CONTENT_TRANSFORMS } from './geo-content-transforms';
 
 // ── Recommendation status per change item ──
 export type RecommendationStatus = 'draft' | 'edited' | 'approved' | 'applied' | 'rejected';
