@@ -5,7 +5,8 @@ import { GeoSprint4Clusters } from '@/components/admin/geo/GeoSprint4Clusters';
 import { GeoSprint5Scoring } from '@/components/admin/geo/GeoSprint5Scoring';
 import { GeoTemplatesAndChecklist } from '@/components/admin/geo/GeoTemplatesAndChecklist';
 import { GeoSprint6Planner } from '@/components/admin/geo/GeoSprint6Planner';
-import { Brain, BarChart3, Layers, Target, Layout, CalendarDays } from 'lucide-react';
+import { GeoWorkspace } from '@/components/admin/geo/GeoWorkspace';
+import { Brain, BarChart3, Layers, Target, Layout, CalendarDays, PenLine } from 'lucide-react';
 
 export default function GeoOptimizationPage() {
   return (
@@ -28,6 +29,9 @@ export default function GeoOptimizationPage() {
             <TabsTrigger value="dashboard" className="text-xs rounded-lg gap-1">
               <BarChart3 className="h-3 w-3" />סקירה
             </TabsTrigger>
+            <TabsTrigger value="workspace" className="text-xs rounded-lg gap-1">
+              <PenLine className="h-3 w-3" />תוכניות שכתוב
+            </TabsTrigger>
             <TabsTrigger value="clusters" className="text-xs rounded-lg gap-1">
               <Layers className="h-3 w-3" />אשכולות
             </TabsTrigger>
@@ -43,6 +47,7 @@ export default function GeoOptimizationPage() {
           </TabsList>
 
           <TabsContent value="dashboard" className="mt-4"><GeoDashboard /></TabsContent>
+          <TabsContent value="workspace" className="mt-4"><GeoWorkspace /></TabsContent>
           <TabsContent value="clusters" className="mt-4"><GeoSprint4Clusters /></TabsContent>
           <TabsContent value="scoring" className="mt-4"><GeoSprint5Scoring /></TabsContent>
           <TabsContent value="toolkit" className="mt-4"><GeoTemplatesAndChecklist /></TabsContent>

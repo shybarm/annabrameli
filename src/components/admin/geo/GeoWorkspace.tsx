@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import {
-  WORKSPACE_BRIEFS, type RewriteBrief, type SectionSpec, type FaqItem, type LinkSuggestion,
+  WORKSPACE_BRIEFS, type RewriteBrief,
 } from '@/data/geo-workspace-briefs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 import {
