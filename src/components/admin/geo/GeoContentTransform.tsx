@@ -10,6 +10,7 @@ import {
 import { usePageContentUpdater } from '@/contexts/PageContentContext';
 import { WORKSPACE_BRIEFS } from '@/data/geo-workspace-briefs';
 import { usePageContentPersistence } from '@/hooks/usePageContentPersistence';
+import { useGeoRescan, type GeoScanResult } from '@/hooks/useGeoRescan';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Progress } from '@/components/ui/progress';
 
 import { DiagnosisTab, StructureTab } from './GeoTransformTabs';
 import { PrePublishChecklist } from './GeoPrePublishChecklist';
@@ -25,6 +27,7 @@ import { GeoLiveEditor } from './GeoLiveEditor';
 import {
   AlertTriangle, ArrowRight, Calendar, FileText, Filter, Save,
   Microscope, PenLine, RefreshCw, StickyNote, User, Zap, Loader2,
+  CheckCircle2, XCircle, TrendingUp,
 } from 'lucide-react';
 
 // ── Local workflow state ──
@@ -68,16 +71,18 @@ function PriorityBadge({ priority }: { priority: PriorityLevel }) {
 }
 
 function TransformCard({
-  transform, workflow, onClick,
+  transform, workflow, onClick, scanResult,
 }: {
   transform: ContentTransform;
   workflow: PageWorkflow;
   onClick: () => void;
+  scanResult?: GeoScanResult | null;
 }) {
   const brief = WORKSPACE_BRIEFS.find(b => b.id === transform.pageId);
   if (!brief) return null;
-  const blockers = transform.diagnosis.geoBlockers.length;
+  const blockers = scanResult?.blockers?.length ?? transform.diagnosis.geoBlockers.length;
   const changes = transform.changeLog.length;
+  const currentScore = scanResult?.overallScore ?? brief.currentGeoScore;
 
   return (
     <Card
@@ -91,13 +96,19 @@ function TransformCard({
               <StatusBadge status={workflow.status} />
               <PriorityBadge priority={workflow.priority} />
               <Badge variant="outline" className="text-[10px]">{brief.pageType}</Badge>
+              {scanResult && (
+                <Badge className="text-[9px] bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 gap-1">
+                  <CheckCircle2 className="h-2.5 w-2.5" />
+                  נסרק
+                </Badge>
+              )}
             </div>
             <h3 className="text-sm font-bold text-foreground">{brief.suggestedTitle}</h3>
             <p className="text-[11px] font-mono text-muted-foreground mt-0.5">{brief.pagePath}</p>
           </div>
           <div className="flex items-center gap-2">
-            <span className={`text-2xl font-bold ${brief.currentGeoScore >= 7 ? 'text-primary' : brief.currentGeoScore >= 5 ? 'text-amber-600' : brief.currentGeoScore === 0 ? 'text-muted-foreground' : 'text-destructive'}`}>
-              {brief.currentGeoScore || '-'}
+            <span className={`text-2xl font-bold ${currentScore >= 7 ? 'text-primary' : currentScore >= 5 ? 'text-amber-600' : currentScore === 0 ? 'text-muted-foreground' : 'text-destructive'}`}>
+              {currentScore || '-'}
             </span>
             <ArrowRight className="h-4 w-4 text-muted-foreground" />
             <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{brief.targetGeoScore}</span>
@@ -107,11 +118,14 @@ function TransformCard({
           <span className="flex items-center gap-1"><AlertTriangle className="h-3 w-3 text-destructive" />{blockers} חוסמי GEO</span>
           <span className="flex items-center gap-1"><FileText className="h-3 w-3" />{transform.draft.length} סקציות</span>
           <span className="flex items-center gap-1"><RefreshCw className="h-3 w-3" />{changes} שינויים</span>
+          {scanResult?.scannedAt && (
+            <span className="flex items-center gap-1">
+              <Calendar className="h-3 w-3" />
+              נסרק: {new Date(scanResult.scannedAt).toLocaleDateString('he-IL')}
+            </span>
+          )}
           {workflow.owner && (
             <span className="flex items-center gap-1"><User className="h-3 w-3" />{workflow.owner}</span>
-          )}
-          {workflow.lastReviewed && (
-            <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{workflow.lastReviewed}</span>
           )}
           {workflow.notes && (
             <span className="flex items-center gap-1"><StickyNote className="h-3 w-3" />הערה</span>
@@ -170,12 +184,102 @@ function WorkflowTab({
   );
 }
 
+// ── Scan Results Panel ──
+function ScanResultsPanel({ scanResult, previousScore }: { scanResult: GeoScanResult; previousScore: number }) {
+  const dims = scanResult.dimensions;
+  const dimArray = Array.isArray(dims) ? dims : Object.entries(dims).map(([key, val]) => ({ ...val, dimension: key }));
+  const scoreDiff = scanResult.overallScore - previousScore;
+
+  return (
+    <div className="space-y-4" dir="rtl">
+      {/* Score header */}
+      <div className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-l from-primary/10 to-transparent border border-primary/20">
+        <div className="text-center">
+          <div className="text-3xl font-bold text-foreground">{scanResult.overallScore}</div>
+          <div className="text-[10px] text-muted-foreground">ציון GEO</div>
+        </div>
+        {previousScore > 0 && (
+          <div className={`flex items-center gap-1 text-sm font-bold ${scoreDiff > 0 ? 'text-emerald-600' : scoreDiff < 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
+            <TrendingUp className="h-4 w-4" />
+            {scoreDiff > 0 ? '+' : ''}{scoreDiff.toFixed(1)}
+            <span className="text-xs font-normal text-muted-foreground mr-1">מהסריקה הקודמת ({previousScore})</span>
+          </div>
+        )}
+        <div className="text-[10px] text-muted-foreground mr-auto">
+          נסרק: {new Date(scanResult.scannedAt).toLocaleString('he-IL')}
+        </div>
+      </div>
+
+      {/* Dimensions */}
+      <div className="space-y-2">
+        <h4 className="text-sm font-bold text-foreground">ציון לפי ממד</h4>
+        {dimArray.map((d: any, i: number) => (
+          <div key={d.dimension || i} className="p-3 rounded-lg border border-border/50 bg-card space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-foreground">{d.dimension || `ממד ${i + 1}`}</span>
+              <span className="text-xs font-bold text-foreground">{d.score}/10</span>
+            </div>
+            <Progress value={d.score * 10} className="h-1.5" />
+            {d.working?.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {d.working.map((w: string, j: number) => (
+                  <span key={j} className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">✓ {w}</span>
+                ))}
+              </div>
+            )}
+            {d.missing?.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {d.missing.map((m: string, j: number) => (
+                  <span key={j} className="text-[10px] px-1.5 py-0.5 rounded bg-destructive/10 text-destructive">✗ {m}</span>
+                ))}
+              </div>
+            )}
+            {d.fixes?.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {d.fixes.map((f: string, j: number) => (
+                  <span key={j} className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary">🔧 {f}</span>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Blockers */}
+      {scanResult.blockers.length > 0 && (
+        <div className="p-3 rounded-lg border border-destructive/30 bg-destructive/5 space-y-1">
+          <h4 className="text-xs font-bold text-destructive flex items-center gap-1">
+            <XCircle className="h-3.5 w-3.5" />חוסמי GEO ({scanResult.blockers.length})
+          </h4>
+          {scanResult.blockers.map((b, i) => (
+            <p key={i} className="text-xs text-muted-foreground">• {b}</p>
+          ))}
+        </div>
+      )}
+
+      {/* Recommendations */}
+      {scanResult.recommendations.length > 0 && (
+        <div className="space-y-2">
+          <h4 className="text-sm font-bold text-foreground">המלצות</h4>
+          {scanResult.recommendations.map((r, i) => (
+            <div key={i} className="flex items-start gap-2 p-2 rounded-lg bg-muted/20">
+              <Badge variant="outline" className="text-[10px] shrink-0">{r.label}</Badge>
+              <span className="text-xs text-foreground">{r.text}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function TransformDetail({
   transform, open, onClose, workflow, onWorkflowChange,
   checklist, onChecklistToggle,
   liveContent, recommendations,
   onLiveContentUpdate, onRecommendationsUpdate,
-  onSavePermanent, isSaving, onReAudit,
+  onSavePermanent, isSaving, onReAudit, isScanning,
+  scanResult,
 }: {
   transform: ContentTransform | null;
   open: boolean;
@@ -191,6 +295,8 @@ function TransformDetail({
   onSavePermanent: () => void;
   isSaving: boolean;
   onReAudit: () => void;
+  isScanning: boolean;
+  scanResult: GeoScanResult | null;
 }) {
   if (!transform || !workflow || !liveContent) return null;
   const brief = WORKSPACE_BRIEFS.find(b => b.id === transform.pageId);
@@ -214,6 +320,11 @@ function TransformDetail({
                     {appliedCount} הוחלו
                   </Badge>
                 )}
+                {scanResult && (
+                  <Badge className="text-[9px] bg-primary/10 text-primary gap-1">
+                    GEO {scanResult.overallScore}
+                  </Badge>
+                )}
               </div>
               <p className="text-xs font-mono text-muted-foreground font-normal">{brief.pagePath}</p>
             </div>
@@ -227,9 +338,10 @@ function TransformDetail({
             variant="outline"
             size="sm"
             className="gap-2"
+            disabled={isScanning}
           >
-            <RefreshCw className="h-4 w-4" />
-            בחינה מחדש
+            {isScanning ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+            {isScanning ? 'סורק...' : 'בחינה מחדש (AI)'}
           </Button>
           <Button
             onClick={onSavePermanent}
@@ -243,8 +355,12 @@ function TransformDetail({
         </div>
 
         <Tabs defaultValue="editor" className="mt-4" dir="rtl">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="editor" className="text-xs">עריכה חיה</TabsTrigger>
+            <TabsTrigger value="scan" className="text-xs gap-1">
+              סריקת GEO
+              {scanResult && <span className="text-[9px] bg-primary/20 px-1 rounded">{scanResult.overallScore}</span>}
+            </TabsTrigger>
             <TabsTrigger value="workflow" className="text-xs">מעקב</TabsTrigger>
             <TabsTrigger value="diagnosis" className="text-xs">אבחון</TabsTrigger>
             <TabsTrigger value="structure" className="text-xs">מבנה GEO</TabsTrigger>
@@ -258,6 +374,17 @@ function TransformDetail({
               onLiveContentUpdate={onLiveContentUpdate}
               onRecommendationsUpdate={onRecommendationsUpdate}
             />
+          </TabsContent>
+          <TabsContent value="scan" className="mt-4">
+            {scanResult ? (
+              <ScanResultsPanel scanResult={scanResult} previousScore={brief.currentGeoScore} />
+            ) : (
+              <div className="text-center py-12 space-y-3">
+                <RefreshCw className="h-8 w-8 text-muted-foreground mx-auto" />
+                <p className="text-sm text-muted-foreground">לחץ "בחינה מחדש (AI)" כדי לסרוק את הדף</p>
+                <p className="text-xs text-muted-foreground">הסריקה מנתחת את התוכן הנוכחי של הדף ומחשבת ציון GEO חדש</p>
+              </div>
+            )}
           </TabsContent>
           <TabsContent value="workflow" className="mt-4">
             <WorkflowTab workflow={workflow} onChange={onWorkflowChange} />
@@ -285,6 +412,7 @@ export function GeoContentTransform() {
   const [checklists, setChecklists] = useState<Record<string, Record<string, boolean>>>({});
   const { setSections: setPageContentSections } = usePageContentUpdater();
   const { savePage, loadAllOverrides, saving: isSavingPermanent } = usePageContentPersistence();
+  const { rescanPage, getScanResult, scanResults, scanning: isScanning } = useGeoRescan();
 
   // Load persisted overrides on mount
   useEffect(() => {
@@ -310,37 +438,59 @@ export function GeoContentTransform() {
     }));
     const ok = await savePage(selected.pageId, sections);
     if (ok) {
-      // Dispatch event so the 90-day planner can auto-complete matching tasks
       window.dispatchEvent(new CustomEvent('geo-page-saved', { detail: { pageId: selected.pageId } }));
     }
   }, [selected, liveContents, savePage]);
 
-  const handleReAudit = useCallback(() => {
+  const handleReAudit = useCallback(async () => {
     if (!selected) return;
-    // Reset recommendations to draft, set workflow to re_audit
     const pageId = selected.pageId;
-    const recs = initializeRecommendations(pageId);
-    setAllRecommendations(prev => ({ ...prev, [pageId]: recs }));
-    const content = initializeLiveContent(pageId);
-    setLiveContents(prev => ({ ...prev, [pageId]: content }));
-    setWorkflows(prev => ({
-      ...prev,
-      [pageId]: { ...prev[pageId], status: 're_audit' as WorkflowStatus, lastReviewed: new Date().toISOString().split('T')[0] },
-    }));
-  }, [selected]);
+    const content = liveContents[pageId] || initializeLiveContent(pageId);
+    const brief = WORKSPACE_BRIEFS.find(b => b.id === pageId);
 
-  const handleGeneralAudit = useCallback(() => {
-    CONTENT_TRANSFORMS.forEach(t => {
-      const recs = initializeRecommendations(t.pageId);
-      setAllRecommendations(prev => ({ ...prev, [t.pageId]: recs }));
-      const content = initializeLiveContent(t.pageId);
-      setLiveContents(prev => ({ ...prev, [t.pageId]: content }));
+    // Run real AI scan on current content
+    const result = await rescanPage(
+      pageId,
+      content.sections.map(s => ({ heading: s.heading, tag: s.tag, content: s.content })),
+      brief?.suggestedTitle,
+      brief?.pagePath,
+    );
+
+    if (result) {
+      // Update workflow with scan timestamp
       setWorkflows(prev => ({
         ...prev,
-        [t.pageId]: { ...prev[t.pageId], status: 're_audit' as WorkflowStatus, lastReviewed: new Date().toISOString().split('T')[0] },
+        [pageId]: {
+          ...prev[pageId],
+          status: 're_audit' as WorkflowStatus,
+          lastReviewed: new Date().toISOString().split('T')[0],
+        },
       }));
-    });
-  }, []);
+    }
+  }, [selected, liveContents, rescanPage]);
+
+  const handleGeneralAudit = useCallback(async () => {
+    for (const t of CONTENT_TRANSFORMS) {
+      const content = liveContents[t.pageId] || initializeLiveContent(t.pageId);
+      const brief = WORKSPACE_BRIEFS.find(b => b.id === t.pageId);
+
+      await rescanPage(
+        t.pageId,
+        content.sections.map(s => ({ heading: s.heading, tag: s.tag, content: s.content })),
+        brief?.suggestedTitle,
+        brief?.pagePath,
+      );
+
+      setWorkflows(prev => ({
+        ...prev,
+        [t.pageId]: {
+          ...prev[t.pageId],
+          status: 're_audit' as WorkflowStatus,
+          lastReviewed: new Date().toISOString().split('T')[0],
+        },
+      }));
+    }
+  }, [liveContents, rescanPage]);
 
   // Lazy-initialize live content for a page
   const getLiveContent = useCallback((pageId: string): LivePageContent => {
@@ -374,7 +524,6 @@ export function GeoContentTransform() {
 
   const updateLiveContent = useCallback((pageId: string, content: LivePageContent) => {
     setLiveContents(prev => ({ ...prev, [pageId]: content }));
-    // Push to the global PageContent context so actual pages update
     setPageContentSections(pageId, content.sections.map(s => ({
       heading: s.heading,
       tag: s.tag,
@@ -392,6 +541,7 @@ export function GeoContentTransform() {
 
   const totalBlockers = CONTENT_TRANSFORMS.reduce((s, t) => s + t.diagnosis.geoBlockers.length, 0);
   const totalChanges = CONTENT_TRANSFORMS.reduce((s, t) => s + t.changeLog.length, 0);
+  const scannedCount = Object.keys(scanResults).length;
 
   const statusCounts = ALL_STATUSES.reduce((acc, s) => {
     acc[s] = CONTENT_TRANSFORMS.filter(t => workflows[t.pageId]?.status === s).length;
@@ -407,12 +557,12 @@ export function GeoContentTransform() {
           Content Transformation - עריכה חיה
         </h2>
         <p className="text-xs text-muted-foreground">
-          עריכה ישירה, אישור שינויים, והחלה על הדף. כל שינוי ניתן לעריכה לפני החלה ולביטול לאחר מכן.
+          עריכה ישירה, סריקת GEO בזמן אמת עם AI, ושמירה קבועה. כל שינוי ניתן לעריכה לפני החלה.
         </p>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         <Card className="border-border/50">
           <CardContent className="p-4 flex flex-col items-center text-center gap-1">
             <PenLine className="h-5 w-5 text-primary" />
@@ -432,6 +582,13 @@ export function GeoContentTransform() {
             <RefreshCw className="h-5 w-5 text-amber-600 dark:text-amber-400" />
             <span className="text-2xl font-bold text-foreground">{totalChanges}</span>
             <span className="text-xs text-muted-foreground">שינויים</span>
+          </CardContent>
+        </Card>
+        <Card className="border-border/50">
+          <CardContent className="p-4 flex flex-col items-center text-center gap-1">
+            <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+            <span className="text-2xl font-bold text-foreground">{scannedCount}</span>
+            <span className="text-xs text-muted-foreground">נסרקו</span>
           </CardContent>
         </Card>
         <Card className="border-border/50">
@@ -485,6 +642,7 @@ export function GeoContentTransform() {
             transform={t}
             workflow={workflows[t.pageId]}
             onClick={() => setSelected(t)}
+            scanResult={getScanResult(t.pageId)}
           />
         ))}
         {filtered.length === 0 && (
@@ -507,13 +665,15 @@ export function GeoContentTransform() {
         onSavePermanent={handleSavePermanent}
         isSaving={isSavingPermanent}
         onReAudit={handleReAudit}
+        isScanning={isScanning}
+        scanResult={selected ? getScanResult(selected.pageId) : null}
       />
 
       {/* General audit button */}
       <div className="flex justify-center pt-4">
-        <Button variant="outline" className="gap-2" onClick={handleGeneralAudit}>
-          <RefreshCw className="h-4 w-4" />
-          בדיקה כללית – אתחול מחדש לכל הדפים
+        <Button variant="outline" className="gap-2" onClick={handleGeneralAudit} disabled={isScanning}>
+          {isScanning ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+          {isScanning ? 'סורק את כל הדפים...' : 'סריקת GEO כללית (AI) – כל הדפים'}
         </Button>
       </div>
     </div>
