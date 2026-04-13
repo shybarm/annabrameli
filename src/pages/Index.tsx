@@ -27,6 +27,7 @@ import { UpdateCard } from "@/components/ui/update-card";
 import { SchemaMarkup } from "@/components/seo/SchemaMarkup";
 import { useMedicalUpdates } from "@/hooks/useMedicalUpdates";
 import { blogArticles } from "@/data/blog-articles";
+import { usePageContent } from "@/contexts/PageContentContext";
 import drAnnaImage from "@/assets/dr-anna-brameli.jpeg";
 
 const services = [
@@ -138,6 +139,16 @@ const faqSchema = {
 
 const Index = () => {
   const { data: latestUpdates } = useMedicalUpdates(3);
+  const { getSection } = usePageContent('homepage');
+
+  // Read dynamic content from the page content store
+  const heroSection = getSection(0);
+  const heroSubSection = getSection(1);
+  const whySection = getSection(2);
+  const servicesSection = getSection(3);
+  const guidesSection = getSection(4);
+  const faqSection = getSection(5);
+  const ctaSection = getSection(6);
 
   return (
     <>
