@@ -221,8 +221,17 @@ function TransformDetail({
           </DialogTitle>
         </DialogHeader>
 
-        {/* Save permanently button */}
-        <div className="flex justify-end mt-2">
+        {/* Save & Re-audit buttons */}
+        <div className="flex justify-end gap-2 mt-2">
+          <Button
+            onClick={onReAudit}
+            variant="outline"
+            size="sm"
+            className="gap-2"
+          >
+            <RefreshCw className="h-4 w-4" />
+            בחינה מחדש
+          </Button>
           <Button
             onClick={onSavePermanent}
             disabled={isSaving || appliedCount === 0}
