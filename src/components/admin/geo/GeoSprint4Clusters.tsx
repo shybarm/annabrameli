@@ -10,16 +10,19 @@ import {
 
 import { usePageContentUpdater } from '@/contexts/PageContentContext';
 import { usePageContentPersistence } from '@/hooks/usePageContentPersistence';
+import { useClusterActions, type ClusterActionType } from '@/hooks/useClusterActions';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
 import { GeoLiveEditor } from './GeoLiveEditor';
 import {
   AlertTriangle, CheckCircle2, Circle, ExternalLink, Layers, Link2,
-  Target, TrendingUp, XCircle, PenLine, Save, Loader2,
+  Target, TrendingUp, XCircle, PenLine, Save, Loader2, Plus,
+  FileText, CalendarDays, Zap, ClipboardList,
 } from 'lucide-react';
 
 // Map cluster page paths to transform system pageIds
@@ -39,7 +42,7 @@ const roleOrder: ClusterPage['role'][] = ['pillar', 'supporting', 'weak', 'dupli
 const sortPages = (pages: ClusterPage[]) =>
   [...pages].sort((a, b) => roleOrder.indexOf(a.role) - roleOrder.indexOf(b.role));
 
-function OverviewStats() {
+function OverviewStats({ pendingActions, completedActions }: { pendingActions: number; completedActions: number }) {
   const totalPages = TOPIC_CLUSTERS.reduce((s, c) => s + c.pages.length, 0);
   const missing = TOPIC_CLUSTERS.reduce((s, c) => s + c.pages.filter(p => p.role === 'missing').length, 0);
   const weak = TOPIC_CLUSTERS.reduce((s, c) => s + c.pages.filter(p => p.role === 'weak').length, 0);
@@ -49,7 +52,7 @@ function OverviewStats() {
     { label: 'אשכולות', value: TOPIC_CLUSTERS.length, icon: Layers, accent: 'text-primary' },
     { label: 'סה"כ דפים', value: totalPages, icon: Target, accent: 'text-primary' },
     { label: 'דפים חסרים', value: missing, icon: XCircle, accent: 'text-destructive' },
-    { label: 'דפים חלשים', value: weak, icon: AlertTriangle, accent: 'text-amber-600 dark:text-amber-400' },
+    { label: 'פעולות בהמתנה', value: pendingActions, icon: ClipboardList, accent: 'text-amber-600 dark:text-amber-400' },
     { label: 'כיסוי ממוצע', value: `${avgCoverage}%`, icon: TrendingUp, accent: 'text-emerald-600 dark:text-emerald-400' },
   ];
 
@@ -92,11 +95,123 @@ function DepthRing({ value }: { value: number }) {
   );
 }
 
-function PageRow({ page, onTransform }: { page: ClusterPage; onTransform: (page: ClusterPage) => void }) {
-  const roleMeta = ROLE_META[page.role];
-  const intentMeta = INTENT_LABELS[page.intent];
+// ── Page Action Menu ──
+function PageActionMenu({
+  page,
+  clusterId,
+  onAction,
+  onTransform,
+}: {
+  page: ClusterPage;
+  clusterId: string;
+  onAction: (type: ClusterActionType, page: ClusterPage) => void;
+  onTransform: (page: ClusterPage) => void;
+}) {
+  const [showActions, setShowActions] = useState(false);
   const pageId = page.path ? getPageId(page.path) : null;
   const canTransform = page.role !== 'missing' && !!pageId;
+  const isMissing = page.role === 'missing';
+
+  const actionOptions: { type: ClusterActionType; label: string; icon: React.ReactNode; description: string; available: boolean }[] = [
+    {
+      type: 'add_internal_link',
+      label: 'הוסף קישור פנימי',
+      icon: <Link2 className="h-3.5 w-3.5" />,
+      description: page.linksMissing?.length ? `חבר ל: ${page.linksMissing.join(', ')}` : 'הוסף קישורים חסרים לדף',
+      available: !isMissing && (page.linksMissing?.length ?? 0) > 0,
+    },
+    {
+      type: 'assign_to_cluster',
+      label: 'שייך לאשכול',
+      icon: <Layers className="h-3.5 w-3.5" />,
+      description: 'סמן דף זה כשייך לאשכול הנוכחי',
+      available: !isMissing,
+    },
+    {
+      type: 'create_brief',
+      label: 'צור בריף כתיבה',
+      icon: <FileText className="h-3.5 w-3.5" />,
+      description: isMissing ? 'צור מסמך תכנון לדף חדש' : 'צור בריף שיפור לדף קיים',
+      available: true,
+    },
+    {
+      type: 'generate_draft',
+      label: 'צור טיוטה',
+      icon: <PenLine className="h-3.5 w-3.5" />,
+      description: 'צור טיוטת תוכן ראשונית בעזרת AI',
+      available: isMissing,
+    },
+    {
+      type: 'queue_to_sprint',
+      label: 'הוסף לתוכנית 90 יום',
+      icon: <CalendarDays className="h-3.5 w-3.5" />,
+      description: 'תזמן פעולה זו בתוכנית הביצוע',
+      available: true,
+    },
+  ];
+
+  return (
+    <div className="flex flex-col gap-1 shrink-0">
+      <div className="flex gap-1">
+        {canTransform && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1 text-[10px] h-7"
+            onClick={(e) => { e.stopPropagation(); onTransform(page); }}
+          >
+            <PenLine className="h-3 w-3" />
+            טרנספורמציה
+          </Button>
+        )}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="gap-1 text-[10px] h-7"
+          onClick={(e) => { e.stopPropagation(); setShowActions(!showActions); }}
+        >
+          <Zap className="h-3 w-3" />
+          פעולות
+        </Button>
+      </div>
+      {showActions && (
+        <div className="mt-1 p-2 rounded-lg border border-border/50 bg-card space-y-1 min-w-[220px]">
+          {actionOptions.filter(a => a.available).map(opt => (
+            <button
+              key={opt.type}
+              className="w-full flex items-start gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors text-right"
+              onClick={(e) => {
+                e.stopPropagation();
+                onAction(opt.type, page);
+                setShowActions(false);
+              }}
+            >
+              <span className="text-primary mt-0.5">{opt.icon}</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] font-semibold text-foreground">{opt.label}</p>
+                <p className="text-[10px] text-muted-foreground leading-tight">{opt.description}</p>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PageRow({
+  page,
+  clusterId,
+  onTransform,
+  onAction,
+}: {
+  page: ClusterPage;
+  clusterId: string;
+  onTransform: (page: ClusterPage) => void;
+  onAction: (type: ClusterActionType, page: ClusterPage) => void;
+}) {
+  const roleMeta = ROLE_META[page.role];
+  const intentMeta = INTENT_LABELS[page.intent];
 
   return (
     <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/20 hover:bg-muted/40 transition-colors border border-border/30">
@@ -132,21 +247,12 @@ function PageRow({ page, onTransform }: { page: ClusterPage; onTransform: (page:
           </div>
         )}
       </div>
-      {canTransform ? (
-        <Button
-          variant="outline"
-          size="sm"
-          className="shrink-0 gap-1 text-[10px] h-7"
-          onClick={() => onTransform(page)}
-        >
-          <PenLine className="h-3 w-3" />
-          טרנספורמציה
-        </Button>
-      ) : page.role !== 'missing' ? (
-        <span className="shrink-0 text-[10px] text-muted-foreground text-left">
-          טרם חובר לעדכון חי באתר
-        </span>
-      ) : null}
+      <PageActionMenu
+        page={page}
+        clusterId={clusterId}
+        onAction={onAction}
+        onTransform={onTransform}
+      />
     </div>
   );
 }
@@ -169,7 +275,6 @@ function ClusterPageEditor({
   const [recommendations, setRecommendations] = useState<EditableRecommendation[]>([]);
   const [initialized, setInitialized] = useState<string | null>(null);
 
-  // Re-initialize when a different page is selected
   if (open && pageId && initialized !== pageId) {
     const content = initializeLiveContent(pageId);
     const recs = initializeRecommendations(pageId);
@@ -178,7 +283,6 @@ function ClusterPageEditor({
     setInitialized(pageId);
   }
 
-  // Reset when closed
   if (!open && initialized) {
     setInitialized(null);
     setLiveContent(null);
@@ -236,7 +340,130 @@ function ClusterPageEditor({
   );
 }
 
-function ClusterCard({ cluster, onTransformPage }: { cluster: TopicCluster; onTransformPage: (page: ClusterPage) => void }) {
+// ── Create Brief Dialog ──
+function CreateBriefDialog({
+  page,
+  open,
+  onClose,
+  onSave,
+}: {
+  page: ClusterPage | null;
+  open: boolean;
+  onClose: () => void;
+  onSave: (brief: string) => void;
+}) {
+  const [briefContent, setBriefContent] = useState('');
+
+  if (!page) return null;
+
+  const template = page.role === 'missing'
+    ? `# בריף יצירת דף חדש\n\n## כותרת: ${page.titleHe}\n## כוונה: ${INTENT_LABELS[page.intent]?.label || page.intent}\n## הערות: ${page.notes || 'אין'}\n\n## מטרת הדף:\n[תאר את מטרת הדף]\n\n## קהל יעד:\nהורים לילדים אלרגיים\n\n## מבנה מוצע:\n- H1: ${page.titleHe}\n- H2: מהי הבעיה?\n- H2: מה לעשות?\n- H2: מתי לפנות לרופא?\n- FAQ\n\n## קישורים פנימיים:\n[רשום דפים קשורים]`
+    : `# בריף שיפור דף קיים\n\n## דף: ${page.titleHe}\n## נתיב: ${page.path}\n## ציון GEO נוכחי: ${page.geoScore}/10\n## הערות: ${page.notes || 'אין'}\n\n## בעיות לתיקון:\n[רשום בעיות]\n\n## שיפורים נדרשים:\n[רשום שיפורים]\n\n## קישורים חסרים:\n${page.linksMissing?.join('\n') || 'אין'}`;
+
+  return (
+    <Dialog open={open} onOpenChange={v => !v && onClose()}>
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto" dir="rtl">
+        <DialogHeader>
+          <DialogTitle className="text-base flex items-center gap-2">
+            <FileText className="h-4 w-4 text-primary" />
+            בריף: {page.titleHe}
+          </DialogTitle>
+        </DialogHeader>
+        <Textarea
+          className="min-h-[300px] text-xs font-mono"
+          value={briefContent || template}
+          onChange={e => setBriefContent(e.target.value)}
+        />
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" size="sm" onClick={onClose}>ביטול</Button>
+          <Button size="sm" className="gap-2" onClick={() => {
+            onSave(briefContent || template);
+            onClose();
+          }}>
+            <Save className="h-4 w-4" />
+            שמור בריף
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ── Action Log Panel ──
+function ActionLogPanel({ actions, onExecute, processing }: {
+  actions: ReturnType<typeof useClusterActions>['actions'];
+  onExecute: (id: string) => void;
+  processing: boolean;
+}) {
+  if (actions.length === 0) return null;
+
+  const statusColors: Record<string, string> = {
+    pending: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
+    in_progress: 'bg-primary/10 text-primary',
+    completed: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
+    failed: 'bg-destructive/10 text-destructive',
+  };
+
+  const statusLabels: Record<string, string> = {
+    pending: 'ממתין',
+    in_progress: 'מבצע...',
+    completed: 'הושלם',
+    failed: 'נכשל',
+  };
+
+  return (
+    <Card className="border-border/50">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base flex items-center gap-2">
+          <ClipboardList className="h-5 w-5 text-primary" />
+          יומן פעולות ({actions.length})
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-2 max-h-[300px] overflow-y-auto">
+        {actions.map(action => (
+          <div key={action.id} className="flex items-center gap-3 p-2 rounded-lg bg-muted/20 border border-border/30">
+            <Badge className={`text-[9px] shrink-0 ${statusColors[action.status]}`}>
+              {statusLabels[action.status]}
+            </Badge>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium text-foreground truncate">{action.pageTitle}</p>
+              <p className="text-[10px] text-muted-foreground">{action.metadata.actionLabel || action.type}</p>
+            </div>
+            {action.status === 'pending' && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-6 text-[10px] gap-1"
+                onClick={() => onExecute(action.id)}
+                disabled={processing}
+              >
+                {processing ? <Loader2 className="h-3 w-3 animate-spin" /> : <Zap className="h-3 w-3" />}
+                בצע
+              </Button>
+            )}
+            {action.completedAt && (
+              <span className="text-[9px] text-muted-foreground shrink-0">
+                {new Date(action.completedAt).toLocaleTimeString('he-IL')}
+              </span>
+            )}
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
+function ClusterCard({
+  cluster,
+  onTransformPage,
+  onAction,
+  clusterActions,
+}: {
+  cluster: TopicCluster;
+  onTransformPage: (page: ClusterPage) => void;
+  onAction: (type: ClusterActionType, page: ClusterPage, clusterId: string) => void;
+  clusterActions: number;
+}) {
   const [expanded, setExpanded] = useState(false);
   const v = COVERAGE_VERDICT_MAP[cluster.coverageVerdict];
   const missing = cluster.pages.filter(p => p.role === 'missing').length;
@@ -258,6 +485,12 @@ function ClusterCard({ cluster, onTransformPage }: { cluster: TopicCluster; onTr
                 <Badge variant="secondary" className="text-[10px] gap-1">
                   <PenLine className="h-2.5 w-2.5" />
                   {editableCount} ניתנים לעריכה
+                </Badge>
+              )}
+              {clusterActions > 0 && (
+                <Badge className="text-[9px] bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 gap-1">
+                  <ClipboardList className="h-2.5 w-2.5" />
+                  {clusterActions} פעולות
                 </Badge>
               )}
             </div>
@@ -285,7 +518,13 @@ function ClusterCard({ cluster, onTransformPage }: { cluster: TopicCluster; onTr
           <Progress value={cluster.coverageDepth} className="h-1.5" />
           <div className="space-y-2">
             {sortPages(cluster.pages).map((p, i) => (
-              <PageRow key={i} page={p} onTransform={onTransformPage} />
+              <PageRow
+                key={i}
+                page={p}
+                clusterId={cluster.id}
+                onTransform={onTransformPage}
+                onAction={(type, page) => onAction(type, page, cluster.id)}
+              />
             ))}
           </div>
         </CardContent>
@@ -408,10 +647,54 @@ function IntentMapPanel() {
 
 export function GeoSprint4Clusters() {
   const [editingPage, setEditingPage] = useState<ClusterPage | null>(null);
+  const [briefPage, setBriefPage] = useState<ClusterPage | null>(null);
+  const {
+    actions, addAction, executeAction, getActionsForCluster,
+    getPendingCount, getCompletedCount, processing, ACTION_LABELS,
+  } = useClusterActions();
+
+  const handleAction = useCallback((type: ClusterActionType, page: ClusterPage, clusterId: string) => {
+    if (type === 'create_brief') {
+      setBriefPage(page);
+      return;
+    }
+
+    const action = addAction(type, clusterId, page.titleHe, page.path || '', {
+      actionLabel: ACTION_LABELS[type],
+      intent: page.intent,
+      role: page.role,
+      linksMissing: page.linksMissing,
+    });
+
+    // Auto-execute immediately for simple actions
+    if (type === 'assign_to_cluster' || type === 'add_internal_link') {
+      executeAction(action.id);
+    }
+
+    // Dispatch event for sprint planner integration
+    if (type === 'queue_to_sprint') {
+      executeAction(action.id);
+    }
+  }, [addAction, executeAction, ACTION_LABELS]);
+
+  const handleSaveBrief = useCallback((briefContent: string) => {
+    if (!briefPage) return;
+    addAction('create_brief', '', briefPage.titleHe, briefPage.path || '', {
+      actionLabel: 'בריף כתיבה',
+      briefContent,
+    });
+  }, [briefPage, addAction]);
 
   return (
     <div className="space-y-6">
-      <OverviewStats />
+      <OverviewStats pendingActions={getPendingCount()} completedActions={getCompletedCount()} />
+
+      {/* Action log */}
+      <ActionLogPanel
+        actions={actions}
+        onExecute={executeAction}
+        processing={processing}
+      />
 
       <Tabs defaultValue="clusters" className="w-full">
         <TabsList className="w-full h-auto gap-1 bg-muted/30 p-1 rounded-xl flex-wrap">
@@ -426,6 +709,8 @@ export function GeoSprint4Clusters() {
               key={c.id}
               cluster={c}
               onTransformPage={setEditingPage}
+              onAction={handleAction}
+              clusterActions={getActionsForCluster(c.id).length}
             />
           ))}
         </TabsContent>
@@ -437,6 +722,13 @@ export function GeoSprint4Clusters() {
         page={editingPage}
         open={!!editingPage}
         onClose={() => setEditingPage(null)}
+      />
+
+      <CreateBriefDialog
+        page={briefPage}
+        open={!!briefPage}
+        onClose={() => setBriefPage(null)}
+        onSave={handleSaveBrief}
       />
     </div>
   );
