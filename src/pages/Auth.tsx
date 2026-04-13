@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Stethoscope, Mail, Lock, ArrowRight, ShieldAlert } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { MFAVerify } from '@/components/auth/MFAVerify';
 import { MFAEnroll } from '@/components/auth/MFAEnroll';
 
@@ -15,6 +16,8 @@ export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
   const [showMFAVerify, setShowMFAVerify] = useState(false);
   const [showMFAEnroll, setShowMFAEnroll] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
   const navigate = useNavigate();
   const { signIn, signUp, user, loading, rolesLoading, isStaff, isPatient, isAdmin, isDoctor, roles } = useAuth();
   const { needsMFAVerification, hasMFAEnabled, isLoading: mfaLoading, refreshMFAStatus } = useMFA();
@@ -276,7 +279,55 @@ export default function Auth() {
                   <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" disabled={isLoading}>
                     {isLoading ? 'מתחבר...' : 'התחבר'}
                   </Button>
+                  <button
+                    type="button"
+                    onClick={() => setShowForgotPassword(true)}
+                    className="w-full text-sm text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    שכחת סיסמה?
+                  </button>
                 </form>
+
+            {showForgotPassword && (
+              <div className="mt-4 pt-4 border-t space-y-3">
+                <Label htmlFor="forgot-email">הזן את כתובת האימייל שלך</Label>
+                <Input
+                  id="forgot-email"
+                  type="email"
+                  value={forgotEmail}
+                  onChange={(e) => setForgotEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  dir="ltr"
+                />
+                <Button
+                  className="w-full"
+                  variant="outline"
+                  disabled={isLoading || !forgotEmail}
+                  onClick={async () => {
+                    setIsLoading(true);
+                    const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
+                      redirectTo: `${window.location.origin}/reset-password`,
+                    });
+                    if (error) {
+                      toast({ title: 'שגיאה', description: error.message, variant: 'destructive' });
+                    } else {
+                      toast({ title: 'נשלח בהצלחה', description: 'קישור לאיפוס סיסמה נשלח לאימייל שלך' });
+                      setShowForgotPassword(false);
+                    }
+                    setIsLoading(false);
+                  }}
+                >
+                  {isLoading ? 'שולח...' : 'שלח קישור איפוס'}
+                </Button>
+                <button
+                  type="button"
+                  onClick={() => setShowForgotPassword(false)}
+                  className="w-full text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  חזרה להתחברות
+                </button>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
