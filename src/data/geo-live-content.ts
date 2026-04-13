@@ -74,6 +74,16 @@ function buildCurrentSections(pageId: string): LiveSection[] {
     return cloneSections(currentSections);
   }
 
+  // Support knowledge:slug pattern - build from static page content registry
+  if (pageId.startsWith('knowledge:')) {
+    const slug = pageId.replace('knowledge:', '');
+    // Return minimal structure for knowledge articles
+    return [
+      { heading: slug, tag: 'h1', content: '' },
+      { heading: '', tag: 'h2', content: '' },
+    ];
+  }
+
   if (!transform) {
     return [];
   }
