@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   CONTENT_TRANSFORMS, WORKFLOW_STATUS_CONFIG, PRIORITY_CONFIG,
   type ContentTransform, type WorkflowStatus, type PriorityLevel,
@@ -9,6 +9,8 @@ import {
 } from '@/data/geo-live-content';
 import { usePageContentUpdater } from '@/contexts/PageContentContext';
 import { WORKSPACE_BRIEFS } from '@/data/geo-workspace-briefs';
+import { usePageContentPersistence } from '@/hooks/usePageContentPersistence';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -21,8 +23,8 @@ import { DiagnosisTab, StructureTab } from './GeoTransformTabs';
 import { PrePublishChecklist } from './GeoPrePublishChecklist';
 import { GeoLiveEditor } from './GeoLiveEditor';
 import {
-  AlertTriangle, ArrowRight, Calendar, FileText, Filter,
-  Microscope, PenLine, RefreshCw, StickyNote, User, Zap,
+  AlertTriangle, ArrowRight, Calendar, FileText, Filter, Save,
+  Microscope, PenLine, RefreshCw, StickyNote, User, Zap, Loader2,
 } from 'lucide-react';
 
 // ── Local workflow state ──
@@ -173,6 +175,7 @@ function TransformDetail({
   checklist, onChecklistToggle,
   liveContent, recommendations,
   onLiveContentUpdate, onRecommendationsUpdate,
+  onSavePermanent, isSaving,
 }: {
   transform: ContentTransform | null;
   open: boolean;
@@ -185,6 +188,8 @@ function TransformDetail({
   recommendations: EditableRecommendation[];
   onLiveContentUpdate: (content: LivePageContent) => void;
   onRecommendationsUpdate: (recs: EditableRecommendation[]) => void;
+  onSavePermanent: () => void;
+  isSaving: boolean;
 }) {
   if (!transform || !workflow || !liveContent) return null;
   const brief = WORKSPACE_BRIEFS.find(b => b.id === transform.pageId);
@@ -213,6 +218,19 @@ function TransformDetail({
             </div>
           </DialogTitle>
         </DialogHeader>
+
+        {/* Save permanently button */}
+        <div className="flex justify-end mt-2">
+          <Button
+            onClick={onSavePermanent}
+            disabled={isSaving || appliedCount === 0}
+            className="gap-2"
+            size="sm"
+          >
+            {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+            {isSaving ? 'שומר...' : 'שמור קבוע ל-DB'}
+          </Button>
+        </div>
 
         <Tabs defaultValue="editor" className="mt-4" dir="rtl">
           <TabsList className="grid w-full grid-cols-5">
@@ -256,10 +274,32 @@ export function GeoContentTransform() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [checklists, setChecklists] = useState<Record<string, Record<string, boolean>>>({});
   const { setSections: setPageContentSections } = usePageContentUpdater();
+  const { savePage, loadAllOverrides, saving: isSavingPermanent } = usePageContentPersistence();
+
+  // Load persisted overrides on mount
+  useEffect(() => {
+    loadAllOverrides().then(overrides => {
+      for (const [pageId, sections] of Object.entries(overrides)) {
+        setPageContentSections(pageId, sections);
+      }
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Live content and recommendations state per page
   const [liveContents, setLiveContents] = useState<Record<string, LivePageContent>>({});
   const [allRecommendations, setAllRecommendations] = useState<Record<string, EditableRecommendation[]>>({});
+
+  const handleSavePermanent = useCallback(async () => {
+    if (!selected) return;
+    const content = liveContents[selected.pageId];
+    if (!content) return;
+    const sections = content.sections.map(s => ({
+      heading: s.heading,
+      tag: s.tag,
+      content: s.content,
+    }));
+    await savePage(selected.pageId, sections);
+  }, [selected, liveContents, savePage]);
 
   // Lazy-initialize live content for a page
   const getLiveContent = useCallback((pageId: string): LivePageContent => {
@@ -423,6 +463,8 @@ export function GeoContentTransform() {
         recommendations={selected ? getRecommendations(selected.pageId) : []}
         onLiveContentUpdate={(content) => selected && updateLiveContent(selected.pageId, content)}
         onRecommendationsUpdate={(recs) => selected && updateRecommendations(selected.pageId, recs)}
+        onSavePermanent={handleSavePermanent}
+        isSaving={isSavingPermanent}
       />
     </div>
   );

@@ -1052,6 +1052,36 @@ export type Database = {
           },
         ]
       }
+      page_content_overrides: {
+        Row: {
+          applied_by: string | null
+          created_at: string
+          id: string
+          page_id: string
+          sections: Json
+          updated_at: string
+          version_label: string | null
+        }
+        Insert: {
+          applied_by?: string | null
+          created_at?: string
+          id?: string
+          page_id: string
+          sections?: Json
+          updated_at?: string
+          version_label?: string | null
+        }
+        Update: {
+          applied_by?: string | null
+          created_at?: string
+          id?: string
+          page_id?: string
+          sections?: Json
+          updated_at?: string
+          version_label?: string | null
+        }
+        Relationships: []
+      }
       patient_documents: {
         Row: {
           ai_summary: string | null
