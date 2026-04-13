@@ -5,6 +5,7 @@ import { ChevronLeft, ArrowRight } from "lucide-react";
 import { AuthorBadge } from "@/components/blog/AuthorBadge";
 import { ArticleCTA } from "@/components/blog/ArticleCTA";
 import { buildMedicalPageSchema, buildBreadcrumbSchema } from "@/utils/medicalSchema";
+import { usePageContent } from "@/contexts/PageContentContext";
 
 export interface KnowledgeArticleProps {
   slug: string;
@@ -21,9 +22,13 @@ export const KnowledgeArticleLayout = ({
   children,
   relatedArticles = [],
 }: KnowledgeArticleProps) => {
+  const pageId = `knowledge:${slug}`;
+  const { getSection, hasOverride } = usePageContent(pageId);
+  const heroSection = getSection(0);
+  const dynamicTitle = (hasOverride && heroSection?.heading) || title;
   const canonicalUrl = `https://ihaveallergy.com/knowledge/${slug}`;
   const articleSchema = buildMedicalPageSchema({
-    headline: title,
+    headline: dynamicTitle,
     description: metaDescription,
     datePublished: "2026-02-08",
     dateModified: "2026-02-08",
