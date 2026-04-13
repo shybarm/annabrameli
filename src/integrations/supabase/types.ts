@@ -702,6 +702,120 @@ export type Database = {
           },
         ]
       }
+      geo_cluster_actions: {
+        Row: {
+          action_type: string
+          cluster_id: string
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          metadata: Json
+          page_path: string
+          page_title: string
+          status: string
+        }
+        Insert: {
+          action_type: string
+          cluster_id: string
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          metadata?: Json
+          page_path?: string
+          page_title: string
+          status?: string
+        }
+        Update: {
+          action_type?: string
+          cluster_id?: string
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          metadata?: Json
+          page_path?: string
+          page_title?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      geo_content_briefs: {
+        Row: {
+          brief_type: string
+          cluster_id: string
+          content: Json
+          created_at: string
+          created_by: string | null
+          id: string
+          page_path: string
+          page_title: string
+          updated_at: string
+        }
+        Insert: {
+          brief_type?: string
+          cluster_id?: string
+          content?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          page_path?: string
+          page_title: string
+          updated_at?: string
+        }
+        Update: {
+          brief_type?: string
+          cluster_id?: string
+          content?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          page_path?: string
+          page_title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      geo_scan_results: {
+        Row: {
+          blockers: Json
+          created_at: string
+          dimensions: Json
+          id: string
+          overall_score: number
+          page_id: string
+          recommendations: Json
+          scanned_at: string
+          strengths: Json
+          weaknesses: Json
+        }
+        Insert: {
+          blockers?: Json
+          created_at?: string
+          dimensions?: Json
+          id?: string
+          overall_score?: number
+          page_id: string
+          recommendations?: Json
+          scanned_at?: string
+          strengths?: Json
+          weaknesses?: Json
+        }
+        Update: {
+          blockers?: Json
+          created_at?: string
+          dimensions?: Json
+          id?: string
+          overall_score?: number
+          page_id?: string
+          recommendations?: Json
+          scanned_at?: string
+          strengths?: Json
+          weaknesses?: Json
+        }
+        Relationships: []
+      }
       guest_booking_requests: {
         Row: {
           appointment_type_id: string | null
