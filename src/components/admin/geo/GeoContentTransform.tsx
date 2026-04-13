@@ -7,6 +7,7 @@ import {
   initializeLiveContent, initializeRecommendations,
   type LivePageContent, type EditableRecommendation,
 } from '@/data/geo-live-content';
+import { usePageContentUpdater } from '@/contexts/PageContentContext';
 import { WORKSPACE_BRIEFS } from '@/data/geo-workspace-briefs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -254,6 +255,7 @@ export function GeoContentTransform() {
   const [workflows, setWorkflows] = useState<WorkflowMap>(DEFAULT_WORKFLOWS);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [checklists, setChecklists] = useState<Record<string, Record<string, boolean>>>({});
+  const { setSections: setPageContentSections } = usePageContentUpdater();
 
   // Live content and recommendations state per page
   const [liveContents, setLiveContents] = useState<Record<string, LivePageContent>>({});
@@ -291,7 +293,13 @@ export function GeoContentTransform() {
 
   const updateLiveContent = useCallback((pageId: string, content: LivePageContent) => {
     setLiveContents(prev => ({ ...prev, [pageId]: content }));
-  }, []);
+    // Push to the global PageContent context so actual pages update
+    setPageContentSections(pageId, content.sections.map(s => ({
+      heading: s.heading,
+      tag: s.tag,
+      content: s.content,
+    })));
+  }, [setPageContentSections]);
 
   const updateRecommendations = useCallback((pageId: string, recs: EditableRecommendation[]) => {
     setAllRecommendations(prev => ({ ...prev, [pageId]: recs }));

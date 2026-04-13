@@ -27,6 +27,7 @@ import { UpdateCard } from "@/components/ui/update-card";
 import { SchemaMarkup } from "@/components/seo/SchemaMarkup";
 import { useMedicalUpdates } from "@/hooks/useMedicalUpdates";
 import { blogArticles } from "@/data/blog-articles";
+import { usePageContent } from "@/contexts/PageContentContext";
 import drAnnaImage from "@/assets/dr-anna-brameli.jpeg";
 
 const services = [
@@ -138,6 +139,16 @@ const faqSchema = {
 
 const Index = () => {
   const { data: latestUpdates } = useMedicalUpdates(3);
+  const { getSection } = usePageContent('homepage');
+
+  // Read dynamic content from the page content store
+  const heroSection = getSection(0);
+  const heroSubSection = getSection(1);
+  const whySection = getSection(2);
+  const servicesSection = getSection(3);
+  const guidesSection = getSection(4);
+  const faqSection = getSection(5);
+  const ctaSection = getSection(6);
 
   return (
     <>
@@ -175,11 +186,11 @@ const Index = () => {
               className="order-2 lg:order-1"
             >
               <h1 className="font-bold text-foreground leading-[1.1] mb-6">
-                ד״ר אנה ברמלי
+                {heroSection?.heading || 'ד״ר אנה ברמלי'}
                 <span className="block text-primary mt-3 text-[26px] md:text-[34px] lg:text-[40px]">מומחית לאלרגיה ואימונולוגיה</span>
               </h1>
               <p className="text-lg md:text-xl text-muted-foreground leading-relaxed mb-10 max-w-lg">
-                אבחון וטיפול לילדים ולמבוגרים, בגישה מקצועית, רגישה ומבוססת ידע רפואי עדכני.
+                {heroSubSection?.content || 'אבחון וטיפול לילדים ולמבוגרים, בגישה מקצועית, רגישה ומבוססת ידע רפואי עדכני.'}
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button size="lg" asChild>
@@ -247,10 +258,10 @@ const Index = () => {
             className="text-center mb-14"
           >
             <h2 className="font-bold text-foreground mb-4">
-              מדוע לבחור בד״ר אנה ברמלי?
+              {whySection?.heading || 'מדוע לבחור בד״ר אנה ברמלי?'}
             </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              ד״ר ברמלי היא רופאה בכירה לאלרגיה ואימונולוגיה, בעלת ניסיון רב בליווי מטופלים במצבים חריפים וכרוניים.
+              {whySection?.content || 'ד״ר ברמלי היא רופאה בכירה לאלרגיה ואימונולוגיה, בעלת ניסיון רב בליווי מטופלים במצבים חריפים וכרוניים.'}
             </p>
           </motion.div>
 
@@ -284,10 +295,10 @@ const Index = () => {
             className="text-center mb-14"
           >
             <h2 className="font-bold text-foreground mb-4">
-              שירותים ואבחונים
+              {servicesSection?.heading || 'שירותים ואבחונים'}
             </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              מגוון רחב של שירותי אבחון וטיפול באלרגיות, מותאמים אישית לכל מטופל.
+              {servicesSection?.content || 'מגוון רחב של שירותי אבחון וטיפול באלרגיות, מותאמים אישית לכל מטופל.'}
             </p>
           </motion.div>
 
@@ -327,10 +338,10 @@ const Index = () => {
             className="text-center mb-14"
           >
             <h2 className="font-bold text-foreground mb-4">
-              מדריכים להורים
+              {guidesSection?.heading || 'מדריכים להורים'}
             </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              כל מה שצריך לדעת על אלרגיות אצל ילדים – בשפה פשוטה, מבוססת מחקר, ומותאמת להורים ישראליים.
+              {guidesSection?.content || 'כל מה שצריך לדעת על אלרגיות אצל ילדים – בשפה פשוטה, מבוססת מחקר, ומותאמת להורים ישראליים.'}
             </p>
           </motion.div>
 
@@ -620,10 +631,10 @@ const Index = () => {
             <div className="relative z-10">
               <AlertTriangle className="w-12 h-12 text-primary-foreground/70 mx-auto mb-6" />
               <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-primary-foreground mb-5 leading-tight">
-                מרגישים שהילד מגיב למזון, עקיצה או תרופה?
+                {ctaSection?.heading || 'מרגישים שהילד מגיב למזון, עקיצה או תרופה?'}
               </h2>
               <p className="text-primary-foreground/85 text-lg max-w-2xl mx-auto mb-10 leading-relaxed">
-                אל תחכו – קבעו תור לאבחון מקצועי. אבחון מוקדם ומדויק יכול לשנות את ההתנהלות היומיומית ולהעניק שקט נפשי.
+                {ctaSection?.content || 'אל תחכו – קבעו תור לאבחון מקצועי. אבחון מוקדם ומדויק יכול לשנות את ההתנהלות היומיומית ולהעניק שקט נפשי.'}
               </p>
               <Button size="lg" variant="secondary" className="shadow-lg" asChild>
                 <Link to="/book">
