@@ -7,6 +7,7 @@ import {
   initializeLiveContent, initializeRecommendations,
   type LivePageContent, type EditableRecommendation,
 } from '@/data/geo-live-content';
+import { usePageContentUpdater } from '@/contexts/PageContentContext';
 import { WORKSPACE_BRIEFS } from '@/data/geo-workspace-briefs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
