@@ -503,7 +503,16 @@ export function GeoContentTransform() {
         onRecommendationsUpdate={(recs) => selected && updateRecommendations(selected.pageId, recs)}
         onSavePermanent={handleSavePermanent}
         isSaving={isSavingPermanent}
+        onReAudit={handleReAudit}
       />
+
+      {/* General audit button */}
+      <div className="flex justify-center pt-4">
+        <Button variant="outline" className="gap-2" onClick={handleGeneralAudit}>
+          <RefreshCw className="h-4 w-4" />
+          בדיקה כללית – אתחול מחדש לכל הדפים
+        </Button>
+      </div>
     </div>
   );
 }
