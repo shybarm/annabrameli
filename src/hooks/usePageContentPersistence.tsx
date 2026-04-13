@@ -2,6 +2,16 @@ import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { CurrentPageSection } from '@/data/geo-current-page-content';
+import { WORKSPACE_BRIEFS } from '@/data/geo-workspace-briefs';
+
+function getPageLabel(pageId: string) {
+  if (pageId === 'homepage') return 'דף הבית';
+
+  const brief = WORKSPACE_BRIEFS.find((item) => item.id === pageId);
+  if (!brief) return pageId;
+
+  return brief.pagePath === '/' ? 'דף הבית' : brief.pagePath;
+}
 
 export function usePageContentPersistence() {
   const [saving, setSaving] = useState(false);
@@ -23,7 +33,7 @@ export function usePageContentPersistence() {
         }, { onConflict: 'page_id' });
 
       if (error) throw error;
-      toast.success(`תוכן הדף "${pageId}" נשמר לצמיתות`);
+      toast.success(`השינויים נשמרו לצמיתות עבור ${getPageLabel(pageId)}`);
       return true;
     } catch (err: any) {
       console.error('Failed to save page content:', err);
