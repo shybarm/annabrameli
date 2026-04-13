@@ -219,5 +219,6 @@ export const PAGE_TO_TASK_MAP: Record<string, string[]> = {
   'allergy-testing': ['p1-06', 'p2-02'],
   'first-foods': ['p1-06'],
   'bamba-reaction': ['p2-03'],
+  'knowledge:פריחה-אחרי-במבה': ['p2-03'],
   'blog:אלרגולוג-ילדים-הרצליה-הוד-השרון': ['p2-03'],
 };

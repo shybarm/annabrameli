@@ -2,6 +2,30 @@ import { createContext, useContext, useState, useCallback, useEffect, type React
 import { CURRENT_PAGE_CONTENT, type CurrentPageSection } from '@/data/geo-current-page-content';
 import { supabase } from '@/integrations/supabase/client';
 
+const PAGE_ID_ALIASES: Record<string, string[]> = {
+  'knowledge:פריחה-אחרי-במבה': ['bamba-reaction'],
+  'bamba-reaction': ['knowledge:פריחה-אחרי-במבה'],
+};
+
+function getPageIdCandidates(pageId: string) {
+  return [pageId, ...(PAGE_ID_ALIASES[pageId] ?? [])];
+}
+
+function getSectionsForPage(source: Record<string, CurrentPageSection[]>, pageId: string): CurrentPageSection[] {
+  for (const candidate of getPageIdCandidates(pageId)) {
+    const sections = source[candidate];
+    if (sections) {
+      return sections;
+    }
+  }
+
+  return [];
+}
+
+function hasOverrideForPage(overrides: PageContentOverrides, pageId: string) {
+  return getPageIdCandidates(pageId).some((candidate) => candidate in overrides);
+}
+
 interface PageContentOverrides {
   [pageId: string]: CurrentPageSection[];
 }
@@ -68,26 +92,35 @@ export function PageContentProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const getSections = useCallback((pageId: string): CurrentPageSection[] => {
-    return overrides[pageId] || CURRENT_PAGE_CONTENT[pageId] || [];
+    const overrideSections = getSectionsForPage(overrides, pageId);
+    if (overrideSections.length > 0) {
+      return overrideSections;
+    }
+
+    return getSectionsForPage(CURRENT_PAGE_CONTENT, pageId);
   }, [overrides]);
 
   const getSection = useCallback((pageId: string, sectionIndex: number): CurrentPageSection | undefined => {
-    const sections = overrides[pageId] || CURRENT_PAGE_CONTENT[pageId] || [];
+    const sections = getSections(pageId);
     return sections[sectionIndex];
-  }, [overrides]);
+  }, [getSections]);
 
   const setSections = useCallback((pageId: string, sections: CurrentPageSection[]) => {
     setOverrides(prev => ({ ...prev, [pageId]: sections }));
   }, []);
 
   const hasOverride = useCallback((pageId: string) => {
-    return pageId in overrides;
+    return hasOverrideForPage(overrides, pageId);
   }, [overrides]);
 
   const resetPage = useCallback((pageId: string) => {
     setOverrides(prev => {
       const next = { ...prev };
-      delete next[pageId];
+
+      for (const candidate of getPageIdCandidates(pageId)) {
+        delete next[candidate];
+      }
+
       return next;
     });
   }, []);
@@ -104,8 +137,8 @@ export function usePageContent(pageId: string) {
   if (!ctx) {
     // Fallback if not wrapped in provider
     return {
-      sections: CURRENT_PAGE_CONTENT[pageId] || [],
-      getSection: (index: number) => (CURRENT_PAGE_CONTENT[pageId] || [])[index],
+      sections: getSectionsForPage(CURRENT_PAGE_CONTENT, pageId),
+      getSection: (index: number) => getSectionsForPage(CURRENT_PAGE_CONTENT, pageId)[index],
       hasOverride: false,
     };
   }

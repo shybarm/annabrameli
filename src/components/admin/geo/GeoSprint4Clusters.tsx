@@ -27,24 +27,8 @@ const PATH_TO_PAGEID: Record<string, string> = {
   '/': 'homepage',
   '/about': 'about',
   '/services': 'allergy-testing',
-  '/אלרגיה-בילדים-מדריך-מלא': 'bamba-reaction',
   '/guides/טעימות-ראשונות-אלרגנים': 'first-foods',
-  '/knowledge/bamba-at-4-months': 'knowledge:bamba-at-4-months',
-  '/knowledge/rash-after-bamba': 'knowledge:rash-after-bamba',
-  '/knowledge/oral-food-challenge': 'knowledge:oral-food-challenge',
-  '/knowledge/blood-test-allergy': 'knowledge:blood-test-allergy',
-  '/knowledge/positive-without-symptoms': 'knowledge:positive-without-symptoms',
-  '/knowledge/days-between-allergens': 'knowledge:days-between-allergens',
-  '/knowledge/skin-prick-pain': 'knowledge:skin-prick-pain',
-  '/knowledge/vomiting-after-tahini': 'knowledge:vomiting-after-tahini',
-  '/knowledge/redness-around-mouth': 'knowledge:redness-around-mouth',
-  '/knowledge/garden-refusal': 'knowledge:garden-refusal',
-  '/knowledge/school-trip': 'knowledge:school-trip',
-  '/knowledge/allergy-certificate': 'knowledge:allergy-certificate',
-  '/knowledge/epipen-responsibility': 'knowledge:epipen-responsibility',
-  '/knowledge/medical-aide': 'knowledge:medical-aide',
-  '/knowledge/private-vs-public': 'knowledge:private-vs-public',
-  '/golden-guide-rights': 'knowledge:golden-guide-rights',
+  '/knowledge/פריחה-אחרי-במבה': 'bamba-reaction',
 };
 
 function getPageId(path: string): string | null {
@@ -148,7 +132,7 @@ function PageRow({ page, onTransform }: { page: ClusterPage; onTransform: (page:
           </div>
         )}
       </div>
-      {canTransform && (
+      {canTransform ? (
         <Button
           variant="outline"
           size="sm"
@@ -158,7 +142,11 @@ function PageRow({ page, onTransform }: { page: ClusterPage; onTransform: (page:
           <PenLine className="h-3 w-3" />
           טרנספורמציה
         </Button>
-      )}
+      ) : page.role !== 'missing' ? (
+        <span className="shrink-0 text-[10px] text-muted-foreground text-left">
+          טרם חובר לעדכון חי באתר
+        </span>
+      ) : null}
     </div>
   );
 }
