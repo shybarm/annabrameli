@@ -219,6 +219,19 @@ function TransformDetail({
           </DialogTitle>
         </DialogHeader>
 
+        {/* Save permanently button */}
+        <div className="flex justify-end mt-2">
+          <Button
+            onClick={onSavePermanent}
+            disabled={isSaving || appliedCount === 0}
+            className="gap-2"
+            size="sm"
+          >
+            {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+            {isSaving ? 'שומר...' : 'שמור קבוע ל-DB'}
+          </Button>
+        </div>
+
         <Tabs defaultValue="editor" className="mt-4" dir="rtl">
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="editor" className="text-xs">עריכה חיה</TabsTrigger>
