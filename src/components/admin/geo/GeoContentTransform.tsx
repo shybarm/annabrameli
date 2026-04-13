@@ -312,6 +312,33 @@ export function GeoContentTransform() {
     await savePage(selected.pageId, sections);
   }, [selected, liveContents, savePage]);
 
+  const handleReAudit = useCallback(() => {
+    if (!selected) return;
+    // Reset recommendations to draft, set workflow to re_audit
+    const pageId = selected.pageId;
+    const recs = initializeRecommendations(pageId);
+    setAllRecommendations(prev => ({ ...prev, [pageId]: recs }));
+    const content = initializeLiveContent(pageId);
+    setLiveContents(prev => ({ ...prev, [pageId]: content }));
+    setWorkflows(prev => ({
+      ...prev,
+      [pageId]: { ...prev[pageId], status: 're_audit' as WorkflowStatus, lastReviewed: new Date().toISOString().split('T')[0] },
+    }));
+  }, [selected]);
+
+  const handleGeneralAudit = useCallback(() => {
+    CONTENT_TRANSFORMS.forEach(t => {
+      const recs = initializeRecommendations(t.pageId);
+      setAllRecommendations(prev => ({ ...prev, [t.pageId]: recs }));
+      const content = initializeLiveContent(t.pageId);
+      setLiveContents(prev => ({ ...prev, [t.pageId]: content }));
+      setWorkflows(prev => ({
+        ...prev,
+        [t.pageId]: { ...prev[t.pageId], status: 're_audit' as WorkflowStatus, lastReviewed: new Date().toISOString().split('T')[0] },
+      }));
+    });
+  }, []);
+
   // Lazy-initialize live content for a page
   const getLiveContent = useCallback((pageId: string): LivePageContent => {
     if (!liveContents[pageId]) {
