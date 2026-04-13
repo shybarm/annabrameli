@@ -274,6 +274,28 @@ export function GeoContentTransform() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [checklists, setChecklists] = useState<Record<string, Record<string, boolean>>>({});
   const { setSections: setPageContentSections } = usePageContentUpdater();
+  const { savePage, loadAllOverrides, saving: isSavingPermanent } = usePageContentPersistence();
+
+  // Load persisted overrides on mount
+  useEffect(() => {
+    loadAllOverrides().then(overrides => {
+      for (const [pageId, sections] of Object.entries(overrides)) {
+        setPageContentSections(pageId, sections);
+      }
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleSavePermanent = useCallback(async () => {
+    if (!selected) return;
+    const content = liveContents[selected.pageId];
+    if (!content) return;
+    const sections = content.sections.map(s => ({
+      heading: s.heading,
+      tag: s.tag,
+      content: s.content,
+    }));
+    await savePage(selected.pageId, sections);
+  }, [selected, liveContents, savePage]);
 
   // Live content and recommendations state per page
   const [liveContents, setLiveContents] = useState<Record<string, LivePageContent>>({});
