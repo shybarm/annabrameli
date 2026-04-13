@@ -1,6 +1,7 @@
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { usePageContent } from "@/contexts/PageContentContext";
 import { 
   Apple, 
   Milk, 
@@ -164,10 +165,14 @@ const diagnosticServices = [
 ];
 
 const Services = () => {
+  const { getSection } = usePageContent('allergy-testing');
+  const heroSection = getSection(0);
+  const introSection = getSection(1);
+
   return (
     <>
       <Helmet>
-        <title>שירותים ומצבים רפואיים | ד״ר אנה ברמלי – מרפאת אלרגיה</title>
+        <title>{heroSection?.heading || 'שירותים ומצבים רפואיים'} | ד״ר אנה ברמלי – מרפאת אלרגיה</title>
         <meta 
           name="description" 
           content="ייעוץ אלרגיה ושירותי אבחון וטיפול: אלרגיה למזון, נזלת אלרגית, אימונותרפיה, אלרגיה לחיות מחמד, לאבק, לתרופות, אסתמה ואורטיקריה. מרפאת אלרגיה בהוד השרון." 
