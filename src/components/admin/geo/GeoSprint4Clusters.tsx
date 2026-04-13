@@ -181,12 +181,16 @@ function ClusterPageEditor({
   const [recommendations, setRecommendations] = useState<EditableRecommendation[]>([]);
 
   // Initialize when page changes
-  useState(() => {
-    if (pageId) {
-      setLiveContent(initializeLiveContent(pageId));
-      setRecommendations(initializeRecommendations(pageId));
-    }
-  });
+  const currentPageId = pageId;
+  useState(() => {});
+  // Use effect to re-initialize on page change
+  if (open && currentPageId && !liveContent) {
+    // Will trigger re-render with initialized content
+    setTimeout(() => {
+      setLiveContent(initializeLiveContent(currentPageId));
+      setRecommendations(initializeRecommendations(currentPageId));
+    }, 0);
+  }
 
   const handleSave = useCallback(async () => {
     if (!pageId || !liveContent) return;
