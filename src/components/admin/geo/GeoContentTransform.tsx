@@ -175,7 +175,7 @@ function TransformDetail({
   checklist, onChecklistToggle,
   liveContent, recommendations,
   onLiveContentUpdate, onRecommendationsUpdate,
-  onSavePermanent, isSaving,
+  onSavePermanent, isSaving, onReAudit,
 }: {
   transform: ContentTransform | null;
   open: boolean;
@@ -190,6 +190,7 @@ function TransformDetail({
   onRecommendationsUpdate: (recs: EditableRecommendation[]) => void;
   onSavePermanent: () => void;
   isSaving: boolean;
+  onReAudit: () => void;
 }) {
   if (!transform || !workflow || !liveContent) return null;
   const brief = WORKSPACE_BRIEFS.find(b => b.id === transform.pageId);
@@ -219,8 +220,17 @@ function TransformDetail({
           </DialogTitle>
         </DialogHeader>
 
-        {/* Save permanently button */}
-        <div className="flex justify-end mt-2">
+        {/* Save & Re-audit buttons */}
+        <div className="flex justify-end gap-2 mt-2">
+          <Button
+            onClick={onReAudit}
+            variant="outline"
+            size="sm"
+            className="gap-2"
+          >
+            <RefreshCw className="h-4 w-4" />
+            בחינה מחדש
+          </Button>
           <Button
             onClick={onSavePermanent}
             disabled={isSaving || appliedCount === 0}
@@ -300,6 +310,33 @@ export function GeoContentTransform() {
     }));
     await savePage(selected.pageId, sections);
   }, [selected, liveContents, savePage]);
+
+  const handleReAudit = useCallback(() => {
+    if (!selected) return;
+    // Reset recommendations to draft, set workflow to re_audit
+    const pageId = selected.pageId;
+    const recs = initializeRecommendations(pageId);
+    setAllRecommendations(prev => ({ ...prev, [pageId]: recs }));
+    const content = initializeLiveContent(pageId);
+    setLiveContents(prev => ({ ...prev, [pageId]: content }));
+    setWorkflows(prev => ({
+      ...prev,
+      [pageId]: { ...prev[pageId], status: 're_audit' as WorkflowStatus, lastReviewed: new Date().toISOString().split('T')[0] },
+    }));
+  }, [selected]);
+
+  const handleGeneralAudit = useCallback(() => {
+    CONTENT_TRANSFORMS.forEach(t => {
+      const recs = initializeRecommendations(t.pageId);
+      setAllRecommendations(prev => ({ ...prev, [t.pageId]: recs }));
+      const content = initializeLiveContent(t.pageId);
+      setLiveContents(prev => ({ ...prev, [t.pageId]: content }));
+      setWorkflows(prev => ({
+        ...prev,
+        [t.pageId]: { ...prev[t.pageId], status: 're_audit' as WorkflowStatus, lastReviewed: new Date().toISOString().split('T')[0] },
+      }));
+    });
+  }, []);
 
   // Lazy-initialize live content for a page
   const getLiveContent = useCallback((pageId: string): LivePageContent => {
@@ -465,7 +502,16 @@ export function GeoContentTransform() {
         onRecommendationsUpdate={(recs) => selected && updateRecommendations(selected.pageId, recs)}
         onSavePermanent={handleSavePermanent}
         isSaving={isSavingPermanent}
+        onReAudit={handleReAudit}
       />
+
+      {/* General audit button */}
+      <div className="flex justify-center pt-4">
+        <Button variant="outline" className="gap-2" onClick={handleGeneralAudit}>
+          <RefreshCw className="h-4 w-4" />
+          בדיקה כללית – אתחול מחדש לכל הדפים
+        </Button>
+      </div>
     </div>
   );
 }

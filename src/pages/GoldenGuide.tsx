@@ -2,6 +2,7 @@ import { Helmet } from "react-helmet-async";
 import { buildMedicalPageSchema, buildBreadcrumbSchema, buildFaqSchema } from "@/utils/medicalSchema";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { usePageContent } from "@/contexts/PageContentContext";
 import {
   ChevronLeft,
   AlertTriangle,
@@ -124,6 +125,10 @@ const faqs = [
 ];
 
 const GoldenGuide = () => {
+  const { getSection } = usePageContent('first-foods');
+  const heroSection = getSection(0);
+  const dynamicH1 = heroSection?.heading || 'טעימות ראשונות בישראל: איך לחשוף תינוק לאלרגנים';
+
   const faqSchema = buildFaqSchema(faqs);
 
   const articleSchema = buildMedicalPageSchema({
@@ -194,7 +199,7 @@ const GoldenGuide = () => {
             </span>
 
             <h1 className="font-bold text-foreground mb-6 text-balance">
-              טעימות ראשונות בישראל: איך לחשוף תינוק לאלרגנים
+              {dynamicH1}
               <span className="block text-primary mt-2 text-[22px] md:text-[28px] lg:text-[32px]">
                 במבה, טחינה, ביצים וחלב
               </span>
