@@ -285,6 +285,10 @@ export function GeoContentTransform() {
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Live content and recommendations state per page
+  const [liveContents, setLiveContents] = useState<Record<string, LivePageContent>>({});
+  const [allRecommendations, setAllRecommendations] = useState<Record<string, EditableRecommendation[]>>({});
+
   const handleSavePermanent = useCallback(async () => {
     if (!selected) return;
     const content = liveContents[selected.pageId];
@@ -296,10 +300,6 @@ export function GeoContentTransform() {
     }));
     await savePage(selected.pageId, sections);
   }, [selected, liveContents, savePage]);
-
-  // Live content and recommendations state per page
-  const [liveContents, setLiveContents] = useState<Record<string, LivePageContent>>({});
-  const [allRecommendations, setAllRecommendations] = useState<Record<string, EditableRecommendation[]>>({});
 
   // Lazy-initialize live content for a page
   const getLiveContent = useCallback((pageId: string): LivePageContent => {
@@ -463,6 +463,8 @@ export function GeoContentTransform() {
         recommendations={selected ? getRecommendations(selected.pageId) : []}
         onLiveContentUpdate={(content) => selected && updateLiveContent(selected.pageId, content)}
         onRecommendationsUpdate={(recs) => selected && updateRecommendations(selected.pageId, recs)}
+        onSavePermanent={handleSavePermanent}
+        isSaving={isSavingPermanent}
       />
     </div>
   );
