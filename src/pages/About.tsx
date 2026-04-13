@@ -84,14 +84,13 @@ const About = () => {
               transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             >
               <h1 className="font-bold text-foreground mb-6">
-                אודות ד״ר אנה ברמלי
+                {heroSection?.heading || 'אודות ד״ר אנה ברמלי'}
                 <span className="block text-primary mt-3 text-[22px] md:text-[28px] lg:text-[32px]">
                   רקע מקצועי, השכלה וגישה טיפולית
                 </span>
               </h1>
               <p className="text-lg text-muted-foreground leading-relaxed mb-6">
-                ד״ר ברמלי היא רופאה בכירה לאלרגיה ואימונולוגיה, בעלת ניסיון של שנים באבחון, טיפול ומניעה של מגוון רחב של
-                אלרגיות בילדים ובמבוגרים.
+                {introSection?.content || 'ד״ר ברמלי היא רופאה בכירה לאלרגיה ואימונולוגיה, בעלת ניסיון של שנים באבחון, טיפול ומניעה של מגוון רחב של אלרגיות בילדים ובמבוגרים.'}
               </p>
               <p className="text-lg text-muted-foreground leading-relaxed">
                 עבודתה משלבת מחקר קליני, גישה אנושית והבנה עמוקה של מערכת החיסון. הגישה הטיפולית מבוססת על הקשבה, התאמה
@@ -136,10 +135,9 @@ const About = () => {
             <div className="w-16 h-16 rounded-2xl bg-accent flex items-center justify-center mx-auto mb-8">
               <Heart className="w-8 h-8 text-primary" />
             </div>
-            <h2 className="font-bold text-foreground mb-6">הגישה המקצועית</h2>
+            <h2 className="font-bold text-foreground mb-6">{philosophySection?.heading || 'הגישה המקצועית'}</h2>
             <p className="text-lg text-muted-foreground leading-relaxed mb-6">
-              טיפול באלרגיה מתחיל בהקשבה. כל מטופל מביא איתו סיפור רפואי אחר, ולכן האבחון והטיפול מותאמים אישית בהתאם
-              לתסמינים, ההיסטוריה והצרכים של המשפחה.
+              {philosophySection?.content || 'טיפול באלרגיה מתחיל בהקשבה. כל מטופל מביא איתו סיפור רפואי אחר, ולכן האבחון והטיפול מותאמים אישית בהתאם לתסמינים, ההיסטוריה והצרכים של המשפחה.'}
             </p>
             <p className="text-lg text-muted-foreground leading-relaxed">
               אני מאמינה בשיתוף מלא של ההורים והמטופלים בתהליך הטיפולי, ובהעברת ידע שמאפשר להתמודד עם האלרגיה בביטחון
