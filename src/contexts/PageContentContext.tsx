@@ -36,7 +36,13 @@ export function PageContentProvider({ children }: { children: ReactNode }) {
             .select('page_id, sections');
 
           if (directError) throw directError;
-          rows = (directData ?? []) as Array<{ page_id: string; sections: CurrentPageSection[] }>;
+          rows = ((directData ?? []) as unknown[]).map((row) => {
+            const typedRow = row as { page_id: string; sections: CurrentPageSection[] };
+            return {
+              page_id: typedRow.page_id,
+              sections: typedRow.sections,
+            };
+          });
         }
 
         if (!isMounted || rows.length === 0) return;
