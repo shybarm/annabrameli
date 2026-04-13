@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -7,7 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  EXECUTION_TASKS, PHASE_META, OWNER_LABELS,
+  EXECUTION_TASKS, PHASE_META, OWNER_LABELS, PAGE_TO_TASK_MAP,
   ExecutionTask, Phase, TaskStatus,
 } from '@/data/geo-sprint6-data';
 import {
@@ -32,6 +32,24 @@ export function GeoSprint6Planner() {
   const [selectedTask, setSelectedTask] = useState<ExecutionTask | null>(null);
   const [phaseFilter, setPhaseFilter] = useState<'all' | Phase>('all');
   const [ownerFilter, setOwnerFilter] = useState<string>('all');
+
+  // Auto-complete tasks when pages are saved via the transform system
+  const handlePageSaved = useCallback((e: Event) => {
+    const pageId = (e as CustomEvent).detail?.pageId;
+    if (!pageId) return;
+    const taskIds = PAGE_TO_TASK_MAP[pageId];
+    if (!taskIds?.length) return;
+    setTasks(prev => prev.map(t =>
+      taskIds.includes(t.id) && t.status !== 'done'
+        ? { ...t, status: 'done' as TaskStatus }
+        : t
+    ));
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('geo-page-saved', handlePageSaved);
+    return () => window.removeEventListener('geo-page-saved', handlePageSaved);
+  }, [handlePageSaved]);
 
   const toggleStatus = (id: string) => {
     setTasks(prev => prev.map(t =>
