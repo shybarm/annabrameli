@@ -308,7 +308,11 @@ export function GeoContentTransform() {
       tag: s.tag,
       content: s.content,
     }));
-    await savePage(selected.pageId, sections);
+    const ok = await savePage(selected.pageId, sections);
+    if (ok) {
+      // Dispatch event so the 90-day planner can auto-complete matching tasks
+      window.dispatchEvent(new CustomEvent('geo-page-saved', { detail: { pageId: selected.pageId } }));
+    }
   }, [selected, liveContents, savePage]);
 
   const handleReAudit = useCallback(() => {

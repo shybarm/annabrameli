@@ -208,3 +208,16 @@ export const EXECUTION_TASKS: ExecutionTask[] = [
     status: 'todo',
   },
 ];
+
+/**
+ * Maps pageIds (from the transform system) to 90-day task IDs.
+ * When a page is saved to DB, matching tasks are auto-completed.
+ */
+export const PAGE_TO_TASK_MAP: Record<string, string[]> = {
+  'homepage': ['p1-01', 'p1-06'],
+  'about': ['p1-02', 'p1-06'],
+  'allergy-testing': ['p1-06', 'p2-02'],
+  'first-foods': ['p1-06'],
+  'bamba-reaction': ['p2-03'],
+  'blog:אלרגולוג-ילדים-הרצליה-הוד-השרון': ['p2-03'],
+};
