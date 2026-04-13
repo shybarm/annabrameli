@@ -175,6 +175,7 @@ function TransformDetail({
   checklist, onChecklistToggle,
   liveContent, recommendations,
   onLiveContentUpdate, onRecommendationsUpdate,
+  onSavePermanent, isSaving,
 }: {
   transform: ContentTransform | null;
   open: boolean;
@@ -187,6 +188,8 @@ function TransformDetail({
   recommendations: EditableRecommendation[];
   onLiveContentUpdate: (content: LivePageContent) => void;
   onRecommendationsUpdate: (recs: EditableRecommendation[]) => void;
+  onSavePermanent: () => void;
+  isSaving: boolean;
 }) {
   if (!transform || !workflow || !liveContent) return null;
   const brief = WORKSPACE_BRIEFS.find(b => b.id === transform.pageId);
