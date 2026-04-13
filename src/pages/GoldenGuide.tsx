@@ -125,6 +125,10 @@ const faqs = [
 ];
 
 const GoldenGuide = () => {
+  const { getSection } = usePageContent('first-foods');
+  const heroSection = getSection(0);
+  const dynamicH1 = heroSection?.heading || 'טעימות ראשונות בישראל: איך לחשוף תינוק לאלרגנים';
+
   const faqSchema = buildFaqSchema(faqs);
 
   const articleSchema = buildMedicalPageSchema({
