@@ -6,12 +6,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const DIMENSION_KEYS = [
-  'answerClarity', 'topicalSpecificity', 'medicalTrust', 'expertVisibility',
-  'extractability', 'internalLinking', 'snippetUniqueness', 'conversionClarity',
-  'entityConsistency', 'updateReadiness',
-];
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -32,7 +26,6 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY not configured");
     }
 
-    // Build content summary for AI analysis
     const contentText = sections.map((s: any) =>
       `[${s.tag}] ${s.heading}\n${s.content || ''}`
     ).join('\n\n');
@@ -93,8 +86,6 @@ Respond in valid JSON only. No markdown.`;
 
     const aiData = await aiResponse.json();
     let analysisText = aiData.choices?.[0]?.message?.content || '';
-    
-    // Strip markdown code fences if present
     analysisText = analysisText.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
 
     let analysis;
@@ -104,23 +95,44 @@ Respond in valid JSON only. No markdown.`;
       throw new Error("Failed to parse AI analysis response");
     }
 
-    // Save scan result to DB
+    const scannedAt = new Date().toISOString();
+
+    const scanResult = {
+      pageId,
+      scannedAt,
+      dimensions: analysis.dimensions || analysis,
+      overallScore: analysis.overallScore ?? 0,
+      blockers: analysis.blockers || [],
+      recommendations: analysis.recommendations || [],
+      strengths: analysis.strengths || [],
+      weaknesses: analysis.weaknesses || [],
+      persisted: false,
+    };
+
+    // Persist scan result to geo_scan_results table
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
 
-    // Upsert scan result into a geo_scan_results table (or use page_content_overrides metadata)
-    const scanResult = {
-      pageId,
-      scannedAt: new Date().toISOString(),
-      dimensions: analysis.dimensions || analysis,
-      overallScore: analysis.overallScore,
-      blockers: analysis.blockers || [],
-      recommendations: analysis.recommendations || [],
-      strengths: analysis.strengths || [],
-      weaknesses: analysis.weaknesses || [],
-    };
+    const { error: dbError } = await supabaseAdmin
+      .from("geo_scan_results")
+      .insert({
+        page_id: pageId,
+        overall_score: scanResult.overallScore,
+        dimensions: scanResult.dimensions,
+        blockers: scanResult.blockers,
+        recommendations: scanResult.recommendations,
+        strengths: scanResult.strengths,
+        weaknesses: scanResult.weaknesses,
+        scanned_at: scannedAt,
+      });
+
+    if (dbError) {
+      console.error("Failed to persist scan result:", dbError);
+    } else {
+      scanResult.persisted = true;
+    }
 
     return new Response(JSON.stringify(scanResult), {
       status: 200,
