@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   TOPIC_CLUSTERS, COVERAGE_VERDICT_MAP, ROLE_META, INTENT_LABELS,
   type TopicCluster, type ClusterPage, type IntentType,
