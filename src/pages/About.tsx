@@ -61,6 +61,8 @@ const About = () => {
   const heroSection = getSection(0);
   const introSection = getSection(1);
   const philosophySection = getSection(2);
+
+  return (
     <>
       <Helmet>
         <title>אודות ד״ר אנה ברמלי | רקע מקצועי, השכלה וגישה טיפולית</title>
