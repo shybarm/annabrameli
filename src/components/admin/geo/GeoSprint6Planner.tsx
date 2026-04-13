@@ -7,13 +7,14 @@ import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  EXECUTION_TASKS, PHASE_META, OWNER_LABELS, PAGE_TO_TASK_MAP,
-  ExecutionTask, Phase, TaskStatus,
+  PHASE_META, OWNER_LABELS, PAGE_TO_TASK_MAP,
+  type ExecutionTask, type Phase, type TaskStatus,
 } from '@/data/geo-sprint6-data';
+import { useGeoLiveData, useLiveExecutionTasks } from '@/hooks/useGeoLiveData';
 import {
   CalendarDays, Target, ArrowUp, ArrowRight, ArrowDown,
   Clock, Link2, CheckCircle2, Circle, Loader2, Ban, Users, Zap,
-  BarChart3, ChevronRight,
+  BarChart3, ChevronRight, Database,
 } from 'lucide-react';
 
 const STATUS_CFG: Record<TaskStatus, { icon: typeof Circle; label: string; cls: string }> = {
@@ -28,12 +29,20 @@ const IMPACT_CLS = { high: 'text-emerald-500', medium: 'text-amber-500', low: 't
 const DIFF_LABEL = { easy: 'קל', medium: 'בינוני', hard: 'מורכב' };
 
 export function GeoSprint6Planner() {
-  const [tasks, setTasks] = useState<ExecutionTask[]>(EXECUTION_TASKS);
+  const { sprintTasks, clusterActions } = useGeoLiveData();
+  const baseTasks = useLiveExecutionTasks(sprintTasks, clusterActions);
+  const [tasks, setTasks] = useState<ExecutionTask[]>([]);
   const [selectedTask, setSelectedTask] = useState<ExecutionTask | null>(null);
   const [phaseFilter, setPhaseFilter] = useState<'all' | Phase>('all');
   const [ownerFilter, setOwnerFilter] = useState<string>('all');
 
-  // Auto-complete tasks when pages are saved via the transform system
+  // Sync with live data
+  useEffect(() => {
+    setTasks(baseTasks);
+  }, [baseTasks]);
+
+  const hasDbTasks = sprintTasks.length > 0;
+
   const handlePageSaved = useCallback((e: Event) => {
     const pageId = (e as CustomEvent).detail?.pageId;
     if (!pageId) return;
@@ -65,16 +74,14 @@ export function GeoSprint6Planner() {
 
   const totalDone = tasks.filter(t => t.status === 'done').length;
   const totalTasks = tasks.length;
-  const overallProgress = Math.round((totalDone / totalTasks) * 100);
+  const overallProgress = totalTasks ? Math.round((totalDone / totalTasks) * 100) : 0;
 
-  // Score projection
   const phaseDone = (p: Phase) => {
     const pt = tasks.filter(t => t.phase === p);
     return pt.length ? Math.round((pt.filter(t => t.status === 'done').length / pt.length) * 100) : 0;
   };
   const projectedScore = 6 + (phaseDone(1) / 100) * 0.8 + (phaseDone(2) / 100) * 0.6 + (phaseDone(3) / 100) * 0.6;
 
-  // Owner workload
   const owners = Object.keys(OWNER_LABELS) as Array<keyof typeof OWNER_LABELS>;
   const ownerStats = owners.map(o => ({
     owner: o,
@@ -85,6 +92,14 @@ export function GeoSprint6Planner() {
 
   return (
     <div className="space-y-6">
+      {/* Data source indicator */}
+      {hasDbTasks && (
+        <div className="flex items-center gap-2 text-[10px] text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800">
+          <Database className="h-3 w-3" />
+          {sprintTasks.length} משימות מ-DB • {clusterActions.filter(a => a.status === 'completed').length} פעולות אשכול הושלמו
+        </div>
+      )}
+
       {/* Score Projection Banner */}
       <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
         <CardContent className="p-5">
@@ -127,17 +142,14 @@ export function GeoSprint6Planner() {
             >
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <Badge variant={p === 1 ? 'default' : 'secondary'} className="text-xs">
-                    Phase {p}
-                  </Badge>
+                  <Badge variant={p === 1 ? 'default' : 'secondary'} className="text-xs">Phase {p}</Badge>
                   <span className="text-xs text-muted-foreground">שבועות {meta.weeks}</span>
                 </div>
                 <h3 className="font-semibold text-sm">{meta.titleHe}</h3>
                 <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{meta.goal}</p>
                 <div className="mt-3">
                   <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                    <span>{done}/{pt.length}</span>
-                    <span>{pct}%</span>
+                    <span>{done}/{pt.length}</span><span>{pct}%</span>
                   </div>
                   <Progress value={pct} className="h-1.5" />
                 </div>
@@ -147,7 +159,6 @@ export function GeoSprint6Planner() {
         })}
       </div>
 
-      {/* Tabs: Board / Timeline / Workload */}
       <Tabs defaultValue="board" className="w-full">
         <TabsList className="w-full flex-wrap h-auto gap-1 bg-muted/30 p-1.5 rounded-xl">
           <TabsTrigger value="board" className="text-xs rounded-lg gap-1"><Target className="h-3 w-3" />לוח משימות</TabsTrigger>
@@ -155,28 +166,18 @@ export function GeoSprint6Planner() {
           <TabsTrigger value="workload" className="text-xs rounded-lg gap-1"><Users className="h-3 w-3" />עומס צוות</TabsTrigger>
         </TabsList>
 
-        {/* Board View */}
         <TabsContent value="board" className="mt-4 space-y-4">
-          {/* Owner filter */}
           <div className="flex flex-wrap gap-2">
-            <Badge
-              variant={ownerFilter === 'all' ? 'default' : 'outline'}
-              className="cursor-pointer text-xs"
-              onClick={() => setOwnerFilter('all')}
-            >הכל</Badge>
+            <Badge variant={ownerFilter === 'all' ? 'default' : 'outline'} className="cursor-pointer text-xs" onClick={() => setOwnerFilter('all')}>הכל</Badge>
             {owners.map(o => (
-              <Badge
-                key={o}
-                variant={ownerFilter === o ? 'default' : 'outline'}
+              <Badge key={o} variant={ownerFilter === o ? 'default' : 'outline'}
                 className={`cursor-pointer text-xs ${ownerFilter === o ? '' : OWNER_LABELS[o].color}`}
-                onClick={() => setOwnerFilter(ownerFilter === o ? 'all' : o)}
-              >
+                onClick={() => setOwnerFilter(ownerFilter === o ? 'all' : o)}>
                 {OWNER_LABELS[o].label} ({tasks.filter(t => t.owner === o).length})
               </Badge>
             ))}
           </div>
 
-          {/* Tasks grouped by phase */}
           {([1, 2, 3] as Phase[]).filter(p => phaseFilter === 'all' || phaseFilter === p).map(p => {
             const phaseTasks = filtered.filter(t => t.phase === p);
             if (!phaseTasks.length) return null;
@@ -194,45 +195,31 @@ export function GeoSprint6Planner() {
                     const StatusIcon = STATUS_CFG[task.status].icon;
                     const ImpactIcon = IMPACT_ICON[task.impact];
                     return (
-                      <div
-                        key={task.id}
-                        className={`p-3 rounded-lg border border-border/30 flex items-start gap-3 transition-all hover:bg-muted/30 ${task.status === 'done' ? 'opacity-60' : ''}`}
-                      >
-                        <Checkbox
-                          checked={task.status === 'done'}
-                          onCheckedChange={() => toggleStatus(task.id)}
-                          className="mt-0.5"
-                        />
+                      <div key={task.id}
+                        className={`p-3 rounded-lg border border-border/30 flex items-start gap-3 transition-all hover:bg-muted/30 ${task.status === 'done' ? 'opacity-60' : ''}`}>
+                        <Checkbox checked={task.status === 'done'} onCheckedChange={() => toggleStatus(task.id)} className="mt-0.5" />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-2">
-                            <p
-                              className={`text-sm font-medium cursor-pointer hover:text-primary transition-colors ${task.status === 'done' ? 'line-through' : ''}`}
-                              onClick={() => setSelectedTask(task)}
-                            >
-                              {task.title}
-                            </p>
+                            <p className={`text-sm font-medium cursor-pointer hover:text-primary transition-colors ${task.status === 'done' ? 'line-through' : ''}`}
+                              onClick={() => setSelectedTask(task)}>{task.title}</p>
                             <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={() => setSelectedTask(task)}>
                               <ChevronRight className="h-3.5 w-3.5" />
                             </Button>
                           </div>
                           <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{task.description}</p>
                           <div className="flex flex-wrap gap-1.5 mt-2">
-                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${OWNER_LABELS[task.owner].color}`}>
-                              {OWNER_LABELS[task.owner].label}
-                            </span>
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${OWNER_LABELS[task.owner].color}`}>{OWNER_LABELS[task.owner].label}</span>
                             <Badge variant="outline" className="text-[10px]">{DIFF_LABEL[task.difficulty]}</Badge>
                             <Badge variant="secondary" className="text-[10px] flex items-center gap-0.5">
                               <ImpactIcon className={`h-2.5 w-2.5 ${IMPACT_CLS[task.impact]}`} />
                               {task.impact === 'high' ? 'גבוה' : task.impact === 'medium' ? 'בינוני' : 'נמוך'}
                             </Badge>
                             <Badge variant="outline" className="text-[10px] flex items-center gap-0.5">
-                              <Clock className="h-2.5 w-2.5" />
-                              {task.daysEstimate}d
+                              <Clock className="h-2.5 w-2.5" />{task.daysEstimate}d
                             </Badge>
                             {task.dependency && (
                               <Badge variant="outline" className="text-[10px] flex items-center gap-0.5">
-                                <Link2 className="h-2.5 w-2.5" />
-                                {task.dependency}
+                                <Link2 className="h-2.5 w-2.5" />{task.dependency}
                               </Badge>
                             )}
                           </div>
@@ -247,13 +234,11 @@ export function GeoSprint6Planner() {
           })}
         </TabsContent>
 
-        {/* Timeline View */}
         <TabsContent value="timeline" className="mt-4">
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
-                <CalendarDays className="h-4 w-4 text-primary" />
-                ציר זמן - 12 שבועות
+                <CalendarDays className="h-4 w-4 text-primary" />ציר זמן - 12 שבועות
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -264,25 +249,20 @@ export function GeoSprint6Planner() {
                   const phaseColors = { 1: 'border-primary/40', 2: 'border-amber-400/40', 3: 'border-emerald-400/40' };
                   const phaseBg = { 1: 'bg-primary/5', 2: 'bg-amber-50 dark:bg-amber-900/10', 3: 'bg-emerald-50 dark:bg-emerald-900/10' };
                   return (
-                    <div key={week} className={`flex gap-3 p-3 rounded-lg border ${phaseColors[phase]} ${phaseBg[phase]}`}>
+                    <div key={week} className={`flex gap-3 p-3 rounded-lg border ${phaseColors[phase as 1|2|3]} ${phaseBg[phase as 1|2|3]}`}>
                       <div className="w-16 shrink-0 text-center">
                         <p className="text-xs font-semibold">שבוע {week}</p>
                         <p className="text-[10px] text-muted-foreground">P{phase}</p>
                       </div>
                       <div className="flex-1 flex flex-wrap gap-1.5">
                         {weekTasks.length ? weekTasks.map(t => (
-                          <Badge
-                            key={t.id}
-                            variant={t.status === 'done' ? 'outline' : 'secondary'}
+                          <Badge key={t.id} variant={t.status === 'done' ? 'outline' : 'secondary'}
                             className={`text-[10px] cursor-pointer hover:bg-primary/10 ${t.status === 'done' ? 'line-through opacity-60' : ''}`}
-                            onClick={() => setSelectedTask(t)}
-                          >
+                            onClick={() => setSelectedTask(t)}>
                             <span className={`mr-1 inline-block w-1.5 h-1.5 rounded-full ${OWNER_LABELS[t.owner].color.split(' ')[0]}`} />
                             {t.title.slice(0, 30)}…
                           </Badge>
-                        )) : (
-                          <span className="text-xs text-muted-foreground italic">-</span>
-                        )}
+                        )) : <span className="text-xs text-muted-foreground italic">-</span>}
                       </div>
                       <div className="w-12 text-center shrink-0">
                         <p className="text-xs font-medium">{weekTasks.reduce((s, t) => s + t.daysEstimate, 0)}d</p>
@@ -295,7 +275,6 @@ export function GeoSprint6Planner() {
           </Card>
         </TabsContent>
 
-        {/* Workload View */}
         <TabsContent value="workload" className="mt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {ownerStats.map(os => {
@@ -304,9 +283,7 @@ export function GeoSprint6Planner() {
                 <Card key={os.owner} className="border-border/50">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-3">
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${OWNER_LABELS[os.owner].color}`}>
-                        {OWNER_LABELS[os.owner].label}
-                      </span>
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${OWNER_LABELS[os.owner].color}`}>{OWNER_LABELS[os.owner].label}</span>
                       <Badge variant="outline" className="text-[10px]">{os.days} ימים נותרו</Badge>
                     </div>
                     <div className="flex items-end gap-2 mb-2">
@@ -325,12 +302,10 @@ export function GeoSprint6Planner() {
             })}
           </div>
 
-          {/* Impact summary */}
           <Card className="mt-4">
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
-                <BarChart3 className="h-4 w-4 text-primary" />
-                סיכום השפעה לפי קטגוריה
+                <BarChart3 className="h-4 w-4 text-primary" />סיכום השפעה לפי קטגוריה
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -367,13 +342,10 @@ export function GeoSprint6Planner() {
                 </DialogHeader>
                 <div className="space-y-4">
                   <p className="text-sm text-muted-foreground leading-relaxed">{t.description}</p>
-
                   <div className="grid grid-cols-2 gap-3">
                     <div className="p-3 rounded-lg bg-muted/30">
                       <p className="text-[10px] text-muted-foreground mb-1">בעלים</p>
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${OWNER_LABELS[t.owner].color}`}>
-                        {OWNER_LABELS[t.owner].label}
-                      </span>
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${OWNER_LABELS[t.owner].color}`}>{OWNER_LABELS[t.owner].label}</span>
                     </div>
                     <div className="p-3 rounded-lg bg-muted/30">
                       <p className="text-[10px] text-muted-foreground mb-1">קושי</p>
@@ -391,7 +363,6 @@ export function GeoSprint6Planner() {
                       <p className="text-xs font-medium">{t.daysEstimate} ימים · שבוע {t.week}</p>
                     </div>
                   </div>
-
                   {t.dependency && (
                     <div className="p-3 rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-900/20">
                       <p className="text-xs flex items-center gap-1.5">
@@ -400,12 +371,10 @@ export function GeoSprint6Planner() {
                       </p>
                     </div>
                   )}
-
                   <div className="p-3 rounded-lg bg-emerald-50/50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
                     <p className="text-[10px] text-emerald-700 dark:text-emerald-300 font-medium mb-1">תוצאה צפויה</p>
                     <p className="text-xs text-emerald-800 dark:text-emerald-200 leading-relaxed">{t.estimatedOutcome}</p>
                   </div>
-
                   <div className="flex items-center justify-between pt-2">
                     <div className="flex items-center gap-1.5">
                       <StatusIcon className={`h-4 w-4 ${STATUS_CFG[t.status].cls}`} />
