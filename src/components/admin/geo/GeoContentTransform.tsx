@@ -439,8 +439,19 @@ export function GeoContentTransform() {
     const ok = await savePage(selected.pageId, sections);
     if (ok) {
       window.dispatchEvent(new CustomEvent('geo-page-saved', { detail: { pageId: selected.pageId } }));
+
+      // Auto-trigger rescan after successful save
+      const brief = WORKSPACE_BRIEFS.find(b => b.id === selected.pageId);
+      rescanPage(
+        selected.pageId,
+        sections,
+        brief?.suggestedTitle,
+        brief?.pagePath,
+      ).then(() => {
+        window.dispatchEvent(new CustomEvent('geo-scan-complete', { detail: { pageId: selected.pageId } }));
+      });
     }
-  }, [selected, liveContents, savePage]);
+  }, [selected, liveContents, savePage, rescanPage]);
 
   const handleReAudit = useCallback(async () => {
     if (!selected) return;
