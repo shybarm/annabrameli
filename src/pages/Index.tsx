@@ -258,10 +258,10 @@ const Index = () => {
             className="text-center mb-14"
           >
             <h2 className="font-bold text-foreground mb-4">
-              מדוע לבחור בד״ר אנה ברמלי?
+              {whySection?.heading || 'מדוע לבחור בד״ר אנה ברמלי?'}
             </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              ד״ר ברמלי היא רופאה בכירה לאלרגיה ואימונולוגיה, בעלת ניסיון רב בליווי מטופלים במצבים חריפים וכרוניים.
+              {whySection?.content || 'ד״ר ברמלי היא רופאה בכירה לאלרגיה ואימונולוגיה, בעלת ניסיון רב בליווי מטופלים במצבים חריפים וכרוניים.'}
             </p>
           </motion.div>
 
@@ -295,10 +295,10 @@ const Index = () => {
             className="text-center mb-14"
           >
             <h2 className="font-bold text-foreground mb-4">
-              שירותים ואבחונים
+              {servicesSection?.heading || 'שירותים ואבחונים'}
             </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              מגוון רחב של שירותי אבחון וטיפול באלרגיות, מותאמים אישית לכל מטופל.
+              {servicesSection?.content || 'מגוון רחב של שירותי אבחון וטיפול באלרגיות, מותאמים אישית לכל מטופל.'}
             </p>
           </motion.div>
 
