@@ -6,6 +6,7 @@ import { AuthorBadge } from "@/components/blog/AuthorBadge";
 import { ArticleCTA } from "@/components/blog/ArticleCTA";
 import { buildMedicalPageSchema, buildBreadcrumbSchema } from "@/utils/medicalSchema";
 import { usePageContent } from "@/contexts/PageContentContext";
+import type { CurrentPageSection } from "@/data/geo-current-page-content";
 
 export interface KnowledgeArticleProps {
   slug: string;
@@ -15,6 +16,49 @@ export interface KnowledgeArticleProps {
   relatedArticles?: { to: string; label: string }[];
 }
 
+const renderSectionContent = (content: string, keyPrefix: string) => {
+  const blocks = content
+    .split(/\n\s*\n/)
+    .map((block) => block.trim())
+    .filter(Boolean);
+
+  return blocks.map((block, index) => {
+    const lines = block.split("\n").map((line) => line.trim()).filter(Boolean);
+    const isBulletList = lines.length > 1 && lines.every((line) => /^[-•*]\s+/.test(line));
+
+    if (isBulletList) {
+      return (
+        <ul key={`${keyPrefix}-list-${index}`} className="list-disc list-inside space-y-1.5">
+          {lines.map((line, lineIndex) => (
+            <li key={`${keyPrefix}-item-${lineIndex}`}>{line.replace(/^[-•*]\s+/, "")}</li>
+          ))}
+        </ul>
+      );
+    }
+
+    return (
+      <p key={`${keyPrefix}-paragraph-${index}`} className="whitespace-pre-wrap">
+        {block}
+      </p>
+    );
+  });
+};
+
+const renderDynamicSection = (section: CurrentPageSection, index: number) => {
+  const headingClassName = section.tag === "h3"
+    ? "text-lg font-bold text-foreground"
+    : "text-xl font-bold text-foreground";
+
+  return (
+    <section key={`${section.tag}-${index}-${section.heading || "content"}`} className="space-y-4">
+      {section.heading ? (
+        section.tag === "h3" ? <h3 className={headingClassName}>{section.heading}</h3> : <h2 className={headingClassName}>{section.heading}</h2>
+      ) : null}
+      {section.content ? renderSectionContent(section.content, `dynamic-section-${index}`) : null}
+    </section>
+  );
+};
+
 export const KnowledgeArticleLayout = ({
   slug,
   title,
@@ -23,9 +67,12 @@ export const KnowledgeArticleLayout = ({
   relatedArticles = [],
 }: KnowledgeArticleProps) => {
   const pageId = `knowledge:${slug}`;
-  const { getSection, hasOverride } = usePageContent(pageId);
+  const { sections, getSection, hasOverride } = usePageContent(pageId);
   const heroSection = getSection(0);
   const dynamicTitle = (hasOverride && heroSection?.heading) || title;
+  const overrideBodySections = hasOverride
+    ? sections.slice(1).filter((section) => section.heading || section.content)
+    : [];
   const canonicalUrl = `https://ihaveallergy.com/knowledge/${slug}`;
   const articleSchema = buildMedicalPageSchema({
     headline: dynamicTitle,
@@ -84,7 +131,11 @@ export const KnowledgeArticleLayout = ({
       {/* Body */}
       <div className="container-medical max-w-3xl py-12 md:py-16 space-y-10">
         <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-          {children}
+          {overrideBodySections.length > 0 ? (
+            <div className="text-muted-foreground leading-relaxed space-y-8">
+              {overrideBodySections.map(renderDynamicSection)}
+            </div>
+          ) : children}
         </motion.div>
 
         {/* CTA */}
