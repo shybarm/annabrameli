@@ -20,6 +20,7 @@ import Updates from "./pages/Updates";
 import FAQ from "./pages/FAQ";
 import Contact from "./pages/Contact";
 import Auth from "./pages/Auth";
+import ResetPassword from "./pages/ResetPassword";
 import PatientIntake from "./pages/PatientIntake";
 import AdminDashboard from "./pages/admin/Dashboard";
 import PatientsList from "./pages/admin/PatientsList";
@@ -171,6 +172,7 @@ const App = () => {
               <Route path="/knowledge/בדיקות-אלרגיה-פרטי-או-קופה" element={<PublicLayout><PrivateVsPublic /></PublicLayout>} />
               {/* Auth */}
               <Route path="/auth" element={<Auth />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               
               {/* Patient Intake (public) */}
               <Route path="/intake/:token" element={<PatientIntake />} />
