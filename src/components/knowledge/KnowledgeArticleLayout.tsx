@@ -43,17 +43,17 @@ export const KnowledgeArticleLayout = ({
   return (
     <>
       <Helmet>
-        <title>{title} | ד״ר אנה ברמלי</title>
+        <title>{dynamicTitle} | ד״ר אנה ברמלי</title>
         <meta name="description" content={metaDescription} />
         <link rel="canonical" href={canonicalUrl} />
         <meta name="robots" content="index, follow" />
         <meta property="og:type" content="article" />
         <meta property="og:url" content={canonicalUrl} />
-        <meta property="og:title" content={`${title} | ד״ר אנה ברמלי`} />
+        <meta property="og:title" content={`${dynamicTitle} | ד״ר אנה ברמלי`} />
         <meta property="og:description" content={metaDescription} />
         <meta property="og:image" content="https://ihaveallergy.com/og-logo.png" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={`${title} | ד״ר אנה ברמלי`} />
+        <meta name="twitter:title" content={`${dynamicTitle} | ד״ר אנה ברמלי`} />
         <meta name="twitter:description" content={metaDescription} />
         <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png" />
         <script type="application/ld+json">{JSON.stringify(articleSchema)}</script>
@@ -68,14 +68,14 @@ export const KnowledgeArticleLayout = ({
             <ChevronLeft className="w-3.5 h-3.5" />
             <Link to="/guides/טעימות-ראשונות-אלרגנים" className="hover:text-foreground transition-colors">מדריך טעימות ראשונות</Link>
             <ChevronLeft className="w-3.5 h-3.5" />
-            <span className="text-foreground truncate">{title}</span>
+            <span className="text-foreground truncate">{dynamicTitle}</span>
           </nav>
 
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <span className="inline-block text-xs font-medium text-primary bg-accent px-3 py-1 rounded-full mb-4">
               הרחבה למדריך
             </span>
-            <h1 className="font-bold text-foreground mb-6 text-balance">{title}</h1>
+            <h1 className="font-bold text-foreground mb-6 text-balance">{dynamicTitle}</h1>
             <AuthorBadge compact />
           </motion.div>
         </div>
