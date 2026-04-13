@@ -25,7 +25,6 @@ import { GeoLiveEditor } from './GeoLiveEditor';
 import {
   AlertTriangle, ArrowRight, Calendar, FileText, Filter, Save,
   Microscope, PenLine, RefreshCw, StickyNote, User, Zap, Loader2,
-  RotateCcw, CheckCircle2, XCircle, ClipboardCheck,
 } from 'lucide-react';
 
 // ── Local workflow state ──
