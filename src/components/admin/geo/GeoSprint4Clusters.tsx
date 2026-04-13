@@ -1,16 +1,55 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import {
   TOPIC_CLUSTERS, COVERAGE_VERDICT_MAP, ROLE_META, INTENT_LABELS,
   type TopicCluster, type ClusterPage, type IntentType,
 } from '@/data/geo-sprint4-data';
+import {
+  initializeLiveContent, initializeRecommendations,
+  type LivePageContent, type EditableRecommendation,
+} from '@/data/geo-live-content';
+import { CONTENT_TRANSFORMS } from '@/data/geo-content-transforms';
+import { usePageContentUpdater } from '@/contexts/PageContentContext';
+import { usePageContentPersistence } from '@/hooks/usePageContentPersistence';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { GeoLiveEditor } from './GeoLiveEditor';
 import {
   AlertTriangle, CheckCircle2, Circle, ExternalLink, Layers, Link2,
-  Target, TrendingUp, XCircle,
+  Target, TrendingUp, XCircle, PenLine, Save, Loader2,
 } from 'lucide-react';
+
+// Map cluster page paths to transform system pageIds
+const PATH_TO_PAGEID: Record<string, string> = {
+  '/': 'homepage',
+  '/about': 'about',
+  '/services': 'allergy-testing',
+  '/אלרגיה-בילדים-מדריך-מלא': 'bamba-reaction',
+  '/guides/טעימות-ראשונות-אלרגנים': 'first-foods',
+  '/knowledge/bamba-at-4-months': 'knowledge:bamba-at-4-months',
+  '/knowledge/rash-after-bamba': 'knowledge:rash-after-bamba',
+  '/knowledge/oral-food-challenge': 'knowledge:oral-food-challenge',
+  '/knowledge/blood-test-allergy': 'knowledge:blood-test-allergy',
+  '/knowledge/positive-without-symptoms': 'knowledge:positive-without-symptoms',
+  '/knowledge/days-between-allergens': 'knowledge:days-between-allergens',
+  '/knowledge/skin-prick-pain': 'knowledge:skin-prick-pain',
+  '/knowledge/vomiting-after-tahini': 'knowledge:vomiting-after-tahini',
+  '/knowledge/redness-around-mouth': 'knowledge:redness-around-mouth',
+  '/knowledge/garden-refusal': 'knowledge:garden-refusal',
+  '/knowledge/school-trip': 'knowledge:school-trip',
+  '/knowledge/allergy-certificate': 'knowledge:allergy-certificate',
+  '/knowledge/epipen-responsibility': 'knowledge:epipen-responsibility',
+  '/knowledge/medical-aide': 'knowledge:medical-aide',
+  '/knowledge/private-vs-public': 'knowledge:private-vs-public',
+  '/golden-guide-rights': 'knowledge:golden-guide-rights',
+};
+
+function getPageId(path: string): string | null {
+  return PATH_TO_PAGEID[path] || null;
+}
 
 const roleOrder: ClusterPage['role'][] = ['pillar', 'supporting', 'weak', 'duplicate', 'missing'];
 const sortPages = (pages: ClusterPage[]) =>
@@ -69,9 +108,12 @@ function DepthRing({ value }: { value: number }) {
   );
 }
 
-function PageRow({ page }: { page: ClusterPage }) {
+function PageRow({ page, onTransform }: { page: ClusterPage; onTransform: (page: ClusterPage) => void }) {
   const roleMeta = ROLE_META[page.role];
   const intentMeta = INTENT_LABELS[page.intent];
+  const pageId = page.path ? getPageId(page.path) : null;
+  const canTransform = page.role !== 'missing' && !!pageId;
+
   return (
     <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/20 hover:bg-muted/40 transition-colors border border-border/30">
       <div className="flex flex-col items-center gap-1 pt-0.5">
@@ -106,16 +148,104 @@ function PageRow({ page }: { page: ClusterPage }) {
           </div>
         )}
       </div>
+      {canTransform && (
+        <Button
+          variant="outline"
+          size="sm"
+          className="shrink-0 gap-1 text-[10px] h-7"
+          onClick={() => onTransform(page)}
+        >
+          <PenLine className="h-3 w-3" />
+          טרנספורמציה
+        </Button>
+      )}
     </div>
   );
 }
 
-function ClusterCard({ cluster }: { cluster: TopicCluster }) {
+// ── Cluster Page Editor Dialog ──
+function ClusterPageEditor({
+  page,
+  open,
+  onClose,
+}: {
+  page: ClusterPage | null;
+  open: boolean;
+  onClose: () => void;
+}) {
+  const pageId = page?.path ? getPageId(page.path) : null;
+  const { setSections: setPageContentSections } = usePageContentUpdater();
+  const { savePage, saving: isSaving } = usePageContentPersistence();
+
+  const [liveContent, setLiveContent] = useState<LivePageContent | null>(null);
+  const [recommendations, setRecommendations] = useState<EditableRecommendation[]>([]);
+
+  // Initialize when page changes
+  useState(() => {
+    if (pageId) {
+      setLiveContent(initializeLiveContent(pageId));
+      setRecommendations(initializeRecommendations(pageId));
+    }
+  });
+
+  const handleSave = useCallback(async () => {
+    if (!pageId || !liveContent) return;
+    const sections = liveContent.sections.map(s => ({
+      heading: s.heading,
+      tag: s.tag,
+      content: s.content,
+    }));
+    setPageContentSections(pageId, sections);
+    const ok = await savePage(pageId, sections);
+    if (ok) {
+      window.dispatchEvent(new CustomEvent('geo-page-saved', { detail: { pageId } }));
+    }
+  }, [pageId, liveContent, savePage, setPageContentSections]);
+
+  if (!page || !pageId || !liveContent) return null;
+
+  return (
+    <Dialog open={open} onOpenChange={v => !v && onClose()}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" dir="rtl">
+        <DialogHeader>
+          <DialogTitle className="text-base flex items-center gap-2">
+            <PenLine className="h-4 w-4 text-primary" />
+            טרנספורמציה: {page.titleHe}
+          </DialogTitle>
+          <p className="text-xs text-muted-foreground">{page.path}</p>
+        </DialogHeader>
+
+        <GeoLiveEditor
+          liveContent={liveContent}
+          recommendations={recommendations}
+          onLiveContentUpdate={setLiveContent}
+          onRecommendationsUpdate={setRecommendations}
+        />
+
+        <div className="flex justify-end gap-2 pt-2 border-t border-border/50">
+          <Button variant="outline" size="sm" onClick={onClose}>סגור</Button>
+          <Button
+            size="sm"
+            className="gap-2"
+            onClick={handleSave}
+            disabled={isSaving}
+          >
+            {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+            {isSaving ? 'שומר...' : 'שמור קבוע ל-DB'}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function ClusterCard({ cluster, onTransformPage }: { cluster: TopicCluster; onTransformPage: (page: ClusterPage) => void }) {
   const [expanded, setExpanded] = useState(false);
   const v = COVERAGE_VERDICT_MAP[cluster.coverageVerdict];
   const missing = cluster.pages.filter(p => p.role === 'missing').length;
   const weak = cluster.pages.filter(p => p.role === 'weak').length;
   const existing = cluster.pages.filter(p => p.role !== 'missing').length;
+  const editableCount = cluster.pages.filter(p => p.role !== 'missing' && p.path && getPageId(p.path)).length;
 
   return (
     <Card className="border-border/50 overflow-hidden">
@@ -127,6 +257,12 @@ function ClusterCard({ cluster }: { cluster: TopicCluster }) {
               <CardTitle className="text-base">{cluster.nameHe}</CardTitle>
               <Badge variant="outline" className="text-[10px]">{cluster.nameEn}</Badge>
               <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${v.color} ${v.bg}`}>{v.label}</span>
+              {editableCount > 0 && (
+                <Badge variant="secondary" className="text-[10px] gap-1">
+                  <PenLine className="h-2.5 w-2.5" />
+                  {editableCount} ניתנים לעריכה
+                </Badge>
+              )}
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed">{cluster.summary}</p>
             <div className="flex gap-3 text-[11px]">
@@ -151,7 +287,9 @@ function ClusterCard({ cluster }: { cluster: TopicCluster }) {
         <CardContent className="pt-0 space-y-2">
           <Progress value={cluster.coverageDepth} className="h-1.5" />
           <div className="space-y-2">
-            {sortPages(cluster.pages).map((p, i) => <PageRow key={i} page={p} />)}
+            {sortPages(cluster.pages).map((p, i) => (
+              <PageRow key={i} page={p} onTransform={onTransformPage} />
+            ))}
           </div>
         </CardContent>
       )}
@@ -272,6 +410,8 @@ function IntentMapPanel() {
 }
 
 export function GeoSprint4Clusters() {
+  const [editingPage, setEditingPage] = useState<ClusterPage | null>(null);
+
   return (
     <div className="space-y-6">
       <OverviewStats />
@@ -284,11 +424,23 @@ export function GeoSprint4Clusters() {
         </TabsList>
 
         <TabsContent value="clusters" className="mt-4 space-y-4">
-          {TOPIC_CLUSTERS.map(c => <ClusterCard key={c.id} cluster={c} />)}
+          {TOPIC_CLUSTERS.map(c => (
+            <ClusterCard
+              key={c.id}
+              cluster={c}
+              onTransformPage={setEditingPage}
+            />
+          ))}
         </TabsContent>
         <TabsContent value="coverage" className="mt-4"><CoverageDepthPanel /></TabsContent>
         <TabsContent value="intents" className="mt-4"><IntentMapPanel /></TabsContent>
       </Tabs>
+
+      <ClusterPageEditor
+        page={editingPage}
+        open={!!editingPage}
+        onClose={() => setEditingPage(null)}
+      />
     </div>
   );
 }
