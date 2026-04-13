@@ -1,9 +1,9 @@
 import { useState, useMemo } from 'react';
 import {
-  SCORED_PAGES, DIMENSION_META, REC_LABEL_META,
-  getAICitableFirst, getHighValueWeakFormat, getOverbroadPages,
+  DIMENSION_META, REC_LABEL_META,
   type ScoredPage, type ScoreDimension,
 } from '@/data/geo-sprint5-data';
+import { useGeoLiveData, useLiveScoredPages } from '@/hooks/useGeoLiveData';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import {
   Award, ChevronDown, ChevronUp, Filter, Lightbulb, Search,
-  Star, Target, TrendingUp, Zap,
+  Star, Target, TrendingUp, Zap, Database,
 } from 'lucide-react';
 
 function ScoreRing({ value, size = 64 }: { value: number; size?: number }) {
@@ -39,37 +39,46 @@ function ScoreRing({ value, size = 64 }: { value: number; size?: number }) {
   );
 }
 
-function OverviewStats() {
-  const avg = Math.round(SCORED_PAGES.reduce((s, p) => s + p.weightedScore, 0) / SCORED_PAGES.length * 10) / 10;
-  const quickWins = SCORED_PAGES.reduce((s, p) => s + p.recommendations.filter(r => r.label === 'quick-win').length, 0);
-  const rewrites = SCORED_PAGES.reduce((s, p) => s + p.recommendations.filter(r => r.label === 'rewrite-required').length, 0);
-  const citable = getAICitableFirst().length;
+function OverviewStats({ pages, hasLiveData }: { pages: ScoredPage[]; hasLiveData: boolean }) {
+  const avg = Math.round(pages.reduce((s, p) => s + p.weightedScore, 0) / pages.length * 10) / 10;
+  const quickWins = pages.reduce((s, p) => s + p.recommendations.filter(r => r.label === 'quick-win').length, 0);
+  const rewrites = pages.reduce((s, p) => s + p.recommendations.filter(r => r.label === 'rewrite-required').length, 0);
+  const citable = pages.filter(p => p.weightedScore >= 7.5).length;
 
   const stats = [
     { label: 'ציון ממוצע', value: avg, icon: Award, accent: 'text-primary' },
-    { label: 'דפים מנותחים', value: SCORED_PAGES.length, icon: Target, accent: 'text-primary' },
+    { label: 'דפים מנותחים', value: pages.length, icon: Target, accent: 'text-primary' },
     { label: 'ניצחונות מהירים', value: quickWins, icon: Zap, accent: 'text-emerald-600 dark:text-emerald-400' },
     { label: 'שכתוב נדרש', value: rewrites, icon: Filter, accent: 'text-amber-600 dark:text-amber-400' },
     { label: 'מוכנים לציטוט AI', value: citable, icon: Star, accent: 'text-purple-600 dark:text-purple-400' },
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-      {stats.map(s => (
-        <Card key={s.label} className="border-border/50">
-          <CardContent className="p-4 flex flex-col items-center text-center gap-1">
-            <s.icon className={`h-5 w-5 ${s.accent}`} />
-            <span className="text-2xl font-bold text-foreground">{s.value}</span>
-            <span className="text-xs text-muted-foreground">{s.label}</span>
-          </CardContent>
-        </Card>
-      ))}
+    <div className="space-y-2">
+      {hasLiveData && (
+        <div className="flex items-center gap-2 text-[10px] text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800">
+          <Database className="h-3 w-3" />
+          ציונים מבוססים על סריקות AI חיות
+        </div>
+      )}
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        {stats.map(s => (
+          <Card key={s.label} className="border-border/50">
+            <CardContent className="p-4 flex flex-col items-center text-center gap-1">
+              <s.icon className={`h-5 w-5 ${s.accent}`} />
+              <span className="text-2xl font-bold text-foreground">{s.value}</span>
+              <span className="text-xs text-muted-foreground">{s.label}</span>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }
 
 function DimBar({ dimension, score }: { dimension: ScoreDimension; score: number }) {
   const meta = DIMENSION_META[dimension];
+  if (!meta) return null;
   return (
     <div className="flex items-center gap-2">
       <span className="text-xs w-5 text-center">{meta.icon}</span>
@@ -97,6 +106,7 @@ function PageDetailDialog({ page, open, onClose }: { page: ScoredPage | null; op
         <div className="space-y-5 mt-2">
           {page.dimensions.map(d => {
             const meta = DIMENSION_META[d.dimension];
+            if (!meta) return null;
             return (
               <div key={d.dimension} className="p-3 rounded-lg border border-border/50 bg-card space-y-2">
                 <div className="flex items-center justify-between">
@@ -132,7 +142,8 @@ function PageDetailDialog({ page, open, onClose }: { page: ScoredPage | null; op
           <div className="space-y-2">
             <h4 className="text-sm font-bold text-foreground">המלצות</h4>
             {page.recommendations.map((r, i) => {
-              const rm = REC_LABEL_META[r.label];
+              const rm = REC_LABEL_META[r.label as keyof typeof REC_LABEL_META];
+              if (!rm) return null;
               return (
                 <div key={i} className="flex items-start gap-2 p-2 rounded-lg bg-muted/20">
                   <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold whitespace-nowrap ${rm.color} ${rm.bg}`}>{rm.label}</span>
@@ -166,43 +177,13 @@ function PageRow({ page, onClick }: { page: ScoredPage; onClick: () => void }) {
             </div>
             <div className="flex gap-1.5 flex-wrap">
               {page.recommendations.map((r, i) => {
-                const rm = REC_LABEL_META[r.label];
+                const rm = REC_LABEL_META[r.label as keyof typeof REC_LABEL_META];
+                if (!rm) return null;
                 return <span key={i} className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${rm.color} ${rm.bg}`}>{rm.label}</span>;
               })}
             </div>
           </div>
         </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function StrategicList({ title, icon: Icon, pages, accent, description }: {
-  title: string; icon: React.ElementType; pages: ScoredPage[]; accent: string; description: string;
-}) {
-  return (
-    <Card className="border-border/50">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-base flex items-center gap-2"><Icon className={`h-5 w-5 ${accent}`} />{title}</CardTitle>
-        <p className="text-xs text-muted-foreground">{description}</p>
-      </CardHeader>
-      <CardContent className="space-y-2">
-        {pages.length === 0 && <p className="text-xs text-muted-foreground">אין דפים בקטגוריה זו.</p>}
-        {pages.map(p => (
-          <div key={p.id} className="flex items-center gap-3 p-2 rounded-lg bg-muted/20">
-            <ScoreRing value={p.weightedScore} size={40} />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground truncate">{p.titleHe}</p>
-              <p className="text-[10px] font-mono text-muted-foreground truncate">{p.path}</p>
-            </div>
-            <div className="flex gap-1 flex-wrap justify-end">
-              {p.recommendations.slice(0, 2).map((r, i) => {
-                const rm = REC_LABEL_META[r.label];
-                return <span key={i} className={`text-[9px] px-1.5 py-0.5 rounded-full font-semibold ${rm.color} ${rm.bg}`}>{rm.label}</span>;
-              })}
-            </div>
-          </div>
-        ))}
       </CardContent>
     </Card>
   );
@@ -231,27 +212,31 @@ function WeightBreakdown() {
 }
 
 export function GeoSprint5Scoring() {
+  const { scanResults } = useGeoLiveData();
+  const livePages = useLiveScoredPages(scanResults);
+  const hasLiveData = Object.keys(scanResults).length > 0;
+
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [selectedPage, setSelectedPage] = useState<ScoredPage | null>(null);
 
   const types = useMemo(() => {
-    const s = new Set(SCORED_PAGES.map(p => p.type));
+    const s = new Set(livePages.map(p => p.type));
     return ['all', ...Array.from(s)];
-  }, []);
+  }, [livePages]);
 
   const filtered = useMemo(() => {
-    let list = SCORED_PAGES;
+    let list = livePages;
     if (typeFilter !== 'all') list = list.filter(p => p.type === typeFilter);
     if (search) list = list.filter(p => p.titleHe.includes(search) || p.path.includes(search));
     list = [...list].sort((a, b) => sortDir === 'asc' ? a.weightedScore - b.weightedScore : b.weightedScore - a.weightedScore);
     return list;
-  }, [search, typeFilter, sortDir]);
+  }, [search, typeFilter, sortDir, livePages]);
 
   return (
     <div className="space-y-6">
-      <OverviewStats />
+      <OverviewStats pages={livePages} hasLiveData={hasLiveData} />
 
       <Tabs defaultValue="pages" className="w-full">
         <TabsList className="w-full h-auto gap-1 bg-muted/30 p-1 rounded-xl flex-wrap">
@@ -287,15 +272,47 @@ export function GeoSprint5Scoring() {
         </TabsContent>
 
         <TabsContent value="strategic" className="mt-4 space-y-4">
-          <StrategicList title="מוכנים לציטוט AI ראשונים" icon={Star} pages={getAICitableFirst()}
-            accent="text-purple-600 dark:text-purple-400"
-            description="דפים שהכי קרובים למצב שבו AI יצטט אותם. שיפורים קטנים = impact גדול." />
-          <StrategicList title="ערך נושאי גבוה - פורמט חלש" icon={TrendingUp} pages={getHighValueWeakFormat()}
-            accent="text-amber-600 dark:text-amber-400"
-            description="תוכן חזק, מבנה לא מותאם. שכתוב מבני ישפר אותם משמעותית." />
-          <StrategicList title="דפים רחבים מדי - צריכים צמצום" icon={Target} pages={getOverbroadPages()}
-            accent="text-destructive"
-            description="דפים שמנסים לכסות יותר מדי. פיצול לדפים ממוקדים ישפר דירוג." />
+          <Card className="border-border/50">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Star className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                מוכנים לציטוט AI ראשונים
+              </CardTitle>
+              <p className="text-xs text-muted-foreground">דפים שהכי קרובים למצב שבו AI יצטט אותם.</p>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {livePages.filter(p => p.weightedScore >= 6.5 && p.weightedScore < 8).sort((a, b) => b.weightedScore - a.weightedScore).slice(0, 5).map(p => (
+                <div key={p.id} className="flex items-center gap-3 p-2 rounded-lg bg-muted/20">
+                  <ScoreRing value={p.weightedScore} size={40} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{p.titleHe}</p>
+                    <p className="text-[10px] font-mono text-muted-foreground truncate">{p.path}</p>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          <Card className="border-border/50">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                ערך נושאי גבוה - פורמט חלש
+              </CardTitle>
+              <p className="text-xs text-muted-foreground">תוכן חזק, מבנה לא מותאם. שכתוב מבני ישפר אותם.</p>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {livePages.filter(p => p.weightedScore < 6 && p.weightedScore >= 4).sort((a, b) => a.weightedScore - b.weightedScore).slice(0, 5).map(p => (
+                <div key={p.id} className="flex items-center gap-3 p-2 rounded-lg bg-muted/20">
+                  <ScoreRing value={p.weightedScore} size={40} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{p.titleHe}</p>
+                    <p className="text-[10px] font-mono text-muted-foreground truncate">{p.path}</p>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="weights" className="mt-4"><WeightBreakdown /></TabsContent>

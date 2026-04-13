@@ -1,13 +1,12 @@
 import { GEO_PAGES, ENTITY_SIGNALS } from '@/data/geo-data';
 import { TOPIC_CLUSTERS } from '@/data/geo-sprint4-data';
-import { SCORED_PAGES } from '@/data/geo-sprint5-data';
-import { EXECUTION_TASKS } from '@/data/geo-sprint6-data';
+import { useGeoLiveData, useLiveScoredPages, useLiveExecutionTasks } from '@/hooks/useGeoLiveData';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import {
   Brain, Target, Shield, FileText, AlertTriangle, CheckCircle, TrendingUp,
-  User, Building, MapPin, Stethoscope,
+  User, Building, MapPin, Stethoscope, Loader2, Database,
 } from 'lucide-react';
 
 function scoreColor(score: number) {
@@ -21,46 +20,77 @@ const iconMap: Record<string, any> = {
 };
 
 export function GeoDashboard() {
-  const avgGeoScore = SCORED_PAGES.length
-    ? Math.round((SCORED_PAGES.reduce((s, p) => s + p.weightedScore, 0) / SCORED_PAGES.length) * 10)
+  const { scanResults, clusterActions, sprintTasks, contentOverrides, loading, loaded } = useGeoLiveData();
+  const livePages = useLiveScoredPages(scanResults);
+  const liveTasks = useLiveExecutionTasks(sprintTasks, clusterActions);
+
+  const hasScanData = Object.keys(scanResults).length > 0;
+
+  // Use live scan data if available, otherwise fall back to static
+  const avgGeoScore = livePages.length
+    ? Math.round((livePages.reduce((s, p) => s + p.weightedScore, 0) / livePages.length) * 10)
     : 0;
   const avgEntity = Math.round(ENTITY_SIGNALS.reduce((s, e) => s + e.consistency, 0) / ENTITY_SIGNALS.length);
   const avgCluster = Math.round(TOPIC_CLUSTERS.reduce((s, c) => s + c.coverageDepth, 0) / TOPIC_CLUSTERS.length);
-  const criticalPages = GEO_PAGES.filter(p => p.geoScore < 55).length;
-  const completedTasks = EXECUTION_TASKS.filter(t => t.status === 'done').length;
-  const totalTasks = EXECUTION_TASKS.length;
+  const criticalPages = hasScanData
+    ? livePages.filter(p => p.weightedScore < 5.5).length
+    : GEO_PAGES.filter(p => p.geoScore < 55).length;
+  const completedTasks = liveTasks.filter(t => t.status === 'done').length;
+  const totalTasks = liveTasks.length;
+  const savedPages = Object.keys(contentOverrides).length;
 
   const stats = [
-    { label: 'ציון GEO ממוצע', value: avgGeoScore, icon: Brain, suffix: '/100' },
-    { label: 'עקביות ישות', value: avgEntity, icon: Target, suffix: '/100' },
-    { label: 'כיסוי אשכולות', value: avgCluster, icon: TrendingUp, suffix: '%' },
-    { label: 'דפים קריטיים', value: criticalPages, icon: AlertTriangle, suffix: '' },
-    { label: 'דפים באתר', value: GEO_PAGES.length, icon: FileText, suffix: '' },
-    { label: 'תוכנית 90 יום', value: completedTasks, icon: CheckCircle, suffix: `/${totalTasks}` },
+    { label: 'ציון GEO ממוצע', value: hasScanData ? (avgGeoScore / 10).toFixed(1) : avgGeoScore, icon: Brain, suffix: hasScanData ? '/10' : '/100', live: hasScanData },
+    { label: 'עקביות ישות', value: avgEntity, icon: Target, suffix: '/100', live: false },
+    { label: 'כיסוי אשכולות', value: avgCluster, icon: TrendingUp, suffix: '%', live: false },
+    { label: 'דפים קריטיים', value: criticalPages, icon: AlertTriangle, suffix: '', live: hasScanData },
+    { label: 'דפים נשמרו', value: savedPages, icon: Database, suffix: '', live: true },
+    { label: 'תוכנית 90 יום', value: completedTasks, icon: CheckCircle, suffix: `/${totalTasks}`, live: sprintTasks.length > 0 },
   ];
 
-  const topPriority = GEO_PAGES
-    .filter(p => p.priority === 'high')
-    .sort((a, b) => a.geoScore - b.geoScore)
-    .slice(0, 5);
+  // Priority pages from live data
+  const topPriority = hasScanData
+    ? [...livePages].sort((a, b) => a.weightedScore - b.weightedScore).slice(0, 5)
+    : GEO_PAGES.filter(p => p.priority === 'high').sort((a, b) => a.geoScore - b.geoScore).slice(0, 5);
 
-  // Weakest clusters
   const weakClusters = [...TOPIC_CLUSTERS]
     .sort((a, b) => a.coverageDepth - b.coverageDepth)
     .slice(0, 5);
 
+  if (loading && !loaded) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <span className="text-sm text-muted-foreground mr-2">טוען נתונים...</span>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
+      {/* Data source indicator */}
+      {hasScanData && (
+        <div className="flex items-center gap-2 text-[10px] text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800">
+          <Database className="h-3 w-3" />
+          נתונים חיים מ-{Object.keys(scanResults).length} סריקות AI אחרונות
+          {savedPages > 0 && ` • ${savedPages} דפים נשמרו`}
+          {clusterActions.length > 0 && ` • ${clusterActions.filter(a => a.status === 'completed').length} פעולות הושלמו`}
+        </div>
+      )}
+
       {/* Score Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {stats.map(s => (
           <Card key={s.label} className="border-border/50">
             <CardContent className="p-4 text-center">
               <s.icon className="h-5 w-5 mx-auto mb-2 text-muted-foreground" />
-              <div className={`text-2xl font-bold ${scoreColor(s.value)}`}>
+              <div className={`text-2xl font-bold ${typeof s.value === 'number' ? scoreColor(s.value) : 'text-foreground'}`}>
                 {s.value}{s.suffix}
               </div>
               <p className="text-xs text-muted-foreground mt-1">{s.label}</p>
+              {s.live && (
+                <span className="text-[8px] text-emerald-500">● חי</span>
+              )}
             </CardContent>
           </Card>
         ))}
@@ -74,10 +104,11 @@ export function GeoDashboard() {
             <CardTitle className="text-base flex items-center gap-2">
               <TrendingUp className="h-4 w-4" />
               דפים בעדיפות גבוהה
+              {hasScanData && <Badge variant="outline" className="text-[9px]">נתונים חיים</Badge>}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {topPriority.map(page => (
+            {topPriority.map((page: any) => (
               <div key={page.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{page.titleHe}</p>
@@ -85,10 +116,10 @@ export function GeoDashboard() {
                 </div>
                 <div className="flex items-center gap-3 mr-3">
                   <div className="w-16">
-                    <Progress value={page.geoScore} className="h-2" />
+                    <Progress value={(page.weightedScore || page.geoScore || 0) * (hasScanData ? 10 : 1)} className="h-2" />
                   </div>
-                  <span className={`text-sm font-bold w-8 text-left ${scoreColor(page.geoScore)}`}>
-                    {page.geoScore}
+                  <span className={`text-sm font-bold w-8 text-left ${scoreColor((page.weightedScore || page.geoScore || 0) * (hasScanData ? 10 : 1))}`}>
+                    {hasScanData ? page.weightedScore : page.geoScore}
                   </span>
                 </div>
               </div>
@@ -96,7 +127,7 @@ export function GeoDashboard() {
           </CardContent>
         </Card>
 
-        {/* Entity Health - integrated from Entity Layer */}
+        {/* Entity Health */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
@@ -120,14 +151,10 @@ export function GeoDashboard() {
                   </div>
                   <Progress value={entity.consistency} className="h-2 mb-2" />
                   {entity.issues.length > 0 && (
-                    <p className="text-xs text-muted-foreground line-clamp-1">
-                      ⚠ {entity.issues[0]}
-                    </p>
+                    <p className="text-xs text-muted-foreground line-clamp-1">⚠ {entity.issues[0]}</p>
                   )}
                   {entity.fixes.length > 0 && (
-                    <p className="text-xs text-emerald-600 dark:text-emerald-400 line-clamp-1 mt-0.5">
-                      ✓ {entity.fixes[0]}
-                    </p>
+                    <p className="text-xs text-emerald-600 dark:text-emerald-400 line-clamp-1 mt-0.5">✓ {entity.fixes[0]}</p>
                   )}
                 </div>
               );
@@ -159,6 +186,30 @@ export function GeoDashboard() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Recent Actions */}
+      {clusterActions.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <CheckCircle className="h-4 w-4" />
+              פעולות אחרונות
+              <Badge variant="outline" className="text-[9px]">חי מ-DB</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {clusterActions.slice(0, 5).map(action => (
+              <div key={action.id} className="flex items-center gap-3 p-2 rounded-lg bg-muted/20">
+                <Badge variant={action.status === 'completed' ? 'default' : 'secondary'} className="text-[9px]">
+                  {action.status === 'completed' ? 'הושלם' : action.status === 'pending' ? 'ממתין' : action.status}
+                </Badge>
+                <span className="text-xs text-foreground truncate flex-1">{action.pageTitle}</span>
+                <span className="text-[10px] text-muted-foreground">{action.actionType}</span>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
