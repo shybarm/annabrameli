@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { GraduationCap, Award, Heart, Stethoscope, BookOpen, Users } from "lucide-react";
 import { SchemaMarkup } from "@/components/seo/SchemaMarkup";
+import { usePageContent } from "@/contexts/PageContentContext";
 import drAnnaImage from "@/assets/dr-anna-brameli.jpeg";
 
 const education = [
@@ -56,7 +57,10 @@ const achievements = [
 ];
 
 const About = () => {
-  return (
+  const { getSection } = usePageContent('about');
+  const heroSection = getSection(0);
+  const introSection = getSection(1);
+  const philosophySection = getSection(2);
     <>
       <Helmet>
         <title>אודות ד״ר אנה ברמלי | רקע מקצועי, השכלה וגישה טיפולית</title>

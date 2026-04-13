@@ -631,10 +631,10 @@ const Index = () => {
             <div className="relative z-10">
               <AlertTriangle className="w-12 h-12 text-primary-foreground/70 mx-auto mb-6" />
               <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-primary-foreground mb-5 leading-tight">
-                מרגישים שהילד מגיב למזון, עקיצה או תרופה?
+                {ctaSection?.heading || 'מרגישים שהילד מגיב למזון, עקיצה או תרופה?'}
               </h2>
               <p className="text-primary-foreground/85 text-lg max-w-2xl mx-auto mb-10 leading-relaxed">
-                אל תחכו – קבעו תור לאבחון מקצועי. אבחון מוקדם ומדויק יכול לשנות את ההתנהלות היומיומית ולהעניק שקט נפשי.
+                {ctaSection?.content || 'אל תחכו – קבעו תור לאבחון מקצועי. אבחון מוקדם ומדויק יכול לשנות את ההתנהלות היומיומית ולהעניק שקט נפשי.'}
               </p>
               <Button size="lg" variant="secondary" className="shadow-lg" asChild>
                 <Link to="/book">
