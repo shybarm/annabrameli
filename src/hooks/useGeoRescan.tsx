@@ -40,9 +40,12 @@ export function useGeoRescan() {
           .select('*')
           .order('scanned_at', { ascending: false });
 
-        if (error || !data) return;
+        if (error || !data) {
+          console.error('Failed to load scan results:', error);
+          return;
+        }
 
-        // Group by page_id, keep only latest per page
+        // Keep only the latest scan per page_id
         const byPage: Record<string, GeoScanResult> = {};
         for (const row of data as any[]) {
           if (!byPage[row.page_id]) {

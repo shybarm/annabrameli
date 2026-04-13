@@ -95,8 +95,8 @@ Respond in valid JSON only. No markdown.`;
       throw new Error("Failed to parse AI analysis response");
     }
 
-    // Build scan result
     const scannedAt = new Date().toISOString();
+
     const scanResult = {
       pageId,
       scannedAt,
@@ -106,9 +106,10 @@ Respond in valid JSON only. No markdown.`;
       recommendations: analysis.recommendations || [],
       strengths: analysis.strengths || [],
       weaknesses: analysis.weaknesses || [],
+      persisted: false,
     };
 
-    // Persist to geo_scan_results table
+    // Persist scan result to geo_scan_results table
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
@@ -129,8 +130,6 @@ Respond in valid JSON only. No markdown.`;
 
     if (dbError) {
       console.error("Failed to persist scan result:", dbError);
-      // Still return the result even if DB save fails, but flag it
-      scanResult.persisted = false;
     } else {
       scanResult.persisted = true;
     }

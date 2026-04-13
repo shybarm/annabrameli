@@ -275,7 +275,7 @@ function ClusterPageEditor({
   const [recommendations, setRecommendations] = useState<EditableRecommendation[]>([]);
   const [initialized, setInitialized] = useState<string | null>(null);
 
-  // Initialize content in useEffect to avoid setState during render
+  // Move initialization into useEffect to avoid setState during render
   useEffect(() => {
     if (open && pageId && initialized !== pageId) {
       setLiveContent(initializeLiveContent(pageId));

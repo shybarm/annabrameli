@@ -47,7 +47,10 @@ export function useClusterActions() {
           .order('created_at', { ascending: false })
           .limit(100);
 
-        if (error || !data) return;
+        if (error || !data) {
+          console.error('Failed to load cluster actions:', error);
+          return;
+        }
 
         if (!cancelled) {
           setActions((data as any[]).map(row => ({
@@ -94,7 +97,7 @@ export function useClusterActions() {
     setActions(prev => [action, ...prev]);
     toast.info(`${ACTION_LABELS[type]}: ${pageTitle}`);
 
-    // Persist to DB in background
+    // Persist to DB in background, replace temp ID with real one
     (async () => {
       try {
         const { data, error } = await supabase
@@ -111,13 +114,12 @@ export function useClusterActions() {
           .single();
 
         if (!error && data) {
-          // Replace temp ID with real DB ID
           setActions(prev => prev.map(a =>
             a.id === tempId ? { ...a, id: (data as any).id } : a
           ));
         }
       } catch (err) {
-        console.error('Failed to persist action:', err);
+        console.error('Failed to persist action to DB:', err);
       }
     })();
 
@@ -126,23 +128,24 @@ export function useClusterActions() {
 
   const executeAction = useCallback(async (actionId: string): Promise<boolean> => {
     setProcessing(true);
-    setActions(prev => prev.map(a =>
-      a.id === actionId ? { ...a, status: 'in_progress' as const } : a
-    ));
 
+    // Find the action from current state
     const action = actions.find(a => a.id === actionId);
     if (!action) {
       setProcessing(false);
       return false;
     }
 
+    setActions(prev => prev.map(a =>
+      a.id === actionId ? { ...a, status: 'in_progress' as const } : a
+    ));
+
     try {
-      // Execute real side effects based on action type
+      // Execute REAL side effects based on action type
       let success = false;
 
       switch (action.type) {
         case 'add_internal_link': {
-          // Persist internal link metadata to page_content_overrides or content brief
           const { error } = await supabase
             .from('geo_content_briefs' as any)
             .insert({
@@ -157,12 +160,11 @@ export function useClusterActions() {
               },
             });
           success = !error;
-          if (error) console.error('add_internal_link failed:', error);
+          if (error) console.error('add_internal_link persist failed:', error);
           break;
         }
 
         case 'assign_to_cluster': {
-          // Persist cluster assignment
           const { error } = await supabase
             .from('geo_content_briefs' as any)
             .insert({
@@ -179,12 +181,11 @@ export function useClusterActions() {
               },
             });
           success = !error;
-          if (error) console.error('assign_to_cluster failed:', error);
+          if (error) console.error('assign_to_cluster persist failed:', error);
           break;
         }
 
         case 'create_brief': {
-          // Persist the brief content
           const { error } = await supabase
             .from('geo_content_briefs' as any)
             .insert({
@@ -200,12 +201,11 @@ export function useClusterActions() {
               },
             });
           success = !error;
-          if (error) console.error('create_brief failed:', error);
+          if (error) console.error('create_brief persist failed:', error);
           break;
         }
 
         case 'generate_draft': {
-          // Persist draft placeholder
           const { error } = await supabase
             .from('geo_content_briefs' as any)
             .insert({
@@ -221,12 +221,11 @@ export function useClusterActions() {
               },
             });
           success = !error;
-          if (error) console.error('generate_draft failed:', error);
+          if (error) console.error('generate_draft persist failed:', error);
           break;
         }
 
         case 'queue_to_sprint': {
-          // Persist sprint task
           const { error } = await supabase
             .from('geo_content_briefs' as any)
             .insert({
@@ -242,7 +241,7 @@ export function useClusterActions() {
               },
             });
           success = !error;
-          if (error) console.error('queue_to_sprint failed:', error);
+          if (error) console.error('queue_to_sprint persist failed:', error);
 
           if (success) {
             window.dispatchEvent(new CustomEvent('geo-action-queued', {
@@ -262,19 +261,16 @@ export function useClusterActions() {
           : a
       ));
 
-      // Update status in DB
+      // Update status in DB (skip temp IDs that haven't been persisted yet)
       if (!actionId.startsWith('temp-')) {
         await supabase
           .from('geo_cluster_actions' as any)
-          .update({
-            status: newStatus,
-            completed_at: success ? completedAt : null,
-          })
+          .update({ status: newStatus, completed_at: success ? completedAt : null })
           .eq('id', actionId);
       }
 
       if (success) {
-        toast.success(`${ACTION_LABELS[action.type]} הושלם: ${action.pageTitle}`);
+        toast.success(`${ACTION_LABELS[action.type]} הושלם ונשמר: ${action.pageTitle}`);
       } else {
         toast.error(`${ACTION_LABELS[action.type]} נכשל: ${action.pageTitle}`);
       }
@@ -286,7 +282,6 @@ export function useClusterActions() {
         a.id === actionId ? { ...a, status: 'failed' as const } : a
       ));
 
-      // Update status in DB
       if (!actionId.startsWith('temp-')) {
         await supabase
           .from('geo_cluster_actions' as any)
