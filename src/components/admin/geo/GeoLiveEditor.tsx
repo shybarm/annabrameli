@@ -54,14 +54,14 @@ const VIEW_LABELS: Record<ViewMode, { label: string; icon: typeof Eye }> = {
 // ── Single recommendation card with inline editing ──
 function RecommendationCard({
   rec,
-  liveContent,
+  liveValue,
   onEdit,
   onStatusChange,
   onApply,
   onRevert,
 }: {
   rec: EditableRecommendation;
-  liveContent: string;
+  liveValue: string;
   onEdit: (id: string, newText: string) => void;
   onStatusChange: (id: string, status: RecommendationStatus) => void;
   onApply: (id: string) => void;
@@ -111,9 +111,9 @@ function RecommendationCard({
             {/* Current live */}
             <div className="p-2.5 rounded bg-muted/30 border border-border/50">
               <p className="text-[10px] font-semibold text-muted-foreground mb-1 flex items-center gap-1">
-                <Eye className="h-3 w-3" /> תוכן נוכחי באתר
+                <Eye className="h-3 w-3" /> {rec.targetField === 'heading' ? 'כותרת נוכחית באתר' : 'תוכן נוכחי באתר'}
               </p>
-              <p className="text-foreground whitespace-pre-wrap">{liveContent || rec.originalBefore}</p>
+              <p className="text-foreground whitespace-pre-wrap">{liveValue || rec.originalBefore}</p>
             </div>
 
             {/* Editable recommendation */}
@@ -126,7 +126,7 @@ function RecommendationCard({
                 isApplied ? 'text-emerald-600 dark:text-emerald-400' : 'text-primary'
               }`}>
                 {isApplied ? <Check className="h-3 w-3" /> : <Edit3 className="h-3 w-3" />}
-                {isApplied ? 'הוחל בהצלחה — התוכן עודכן בדף' : 'גרסה מומלצת (ניתנת לעריכה)'}
+                {isApplied ? 'הוחל בהצלחה — הדף עודכן' : rec.targetField === 'heading' ? 'כותרת מומלצת (ניתנת לעריכה)' : 'גרסה מומלצת (ניתנת לעריכה)'}
               </p>
               {isEditing ? (
                 <div className="space-y-2">
@@ -332,7 +332,10 @@ export function GeoLiveEditor({
     const updatedSections = [...liveContent.sections];
     const idx = Math.min(rec.sectionIndex, updatedSections.length - 1);
     if (idx >= 0 && updatedSections[idx]) {
-      updatedSections[idx] = { ...updatedSections[idx], content: rec.editedAfter };
+      updatedSections[idx] = {
+        ...updatedSections[idx],
+        [rec.targetField]: rec.editedAfter,
+      };
     }
 
     const now = new Date().toISOString();
@@ -395,7 +398,10 @@ export function GeoLiveEditor({
     approved.forEach(rec => {
       const idx = Math.min(rec.sectionIndex, updatedSections.length - 1);
       if (idx >= 0) {
-        updatedSections[idx] = { ...updatedSections[idx], content: rec.editedAfter };
+        updatedSections[idx] = {
+          ...updatedSections[idx],
+          [rec.targetField]: rec.editedAfter,
+        };
       }
     });
 
@@ -513,7 +519,11 @@ export function GeoLiveEditor({
             <RecommendationCard
               key={rec.id}
               rec={rec}
-              liveContent={liveContent.sections[rec.sectionIndex]?.content || ''}
+              liveValue={
+                rec.targetField === 'heading'
+                  ? (liveContent.sections[rec.sectionIndex]?.heading || '')
+                  : (liveContent.sections[rec.sectionIndex]?.content || '')
+              }
               onEdit={handleEditRec}
               onStatusChange={handleStatusChange}
               onApply={handleApply}
