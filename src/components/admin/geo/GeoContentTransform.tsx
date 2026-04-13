@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   CONTENT_TRANSFORMS, WORKFLOW_STATUS_CONFIG, PRIORITY_CONFIG,
   type ContentTransform, type WorkflowStatus, type PriorityLevel,
@@ -9,6 +9,8 @@ import {
 } from '@/data/geo-live-content';
 import { usePageContentUpdater } from '@/contexts/PageContentContext';
 import { WORKSPACE_BRIEFS } from '@/data/geo-workspace-briefs';
+import { usePageContentPersistence } from '@/hooks/usePageContentPersistence';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -21,8 +23,8 @@ import { DiagnosisTab, StructureTab } from './GeoTransformTabs';
 import { PrePublishChecklist } from './GeoPrePublishChecklist';
 import { GeoLiveEditor } from './GeoLiveEditor';
 import {
-  AlertTriangle, ArrowRight, Calendar, FileText, Filter,
-  Microscope, PenLine, RefreshCw, StickyNote, User, Zap,
+  AlertTriangle, ArrowRight, Calendar, FileText, Filter, Save,
+  Microscope, PenLine, RefreshCw, StickyNote, User, Zap, Loader2,
 } from 'lucide-react';
 
 // ── Local workflow state ──
