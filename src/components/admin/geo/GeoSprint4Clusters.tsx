@@ -275,19 +275,19 @@ function ClusterPageEditor({
   const [recommendations, setRecommendations] = useState<EditableRecommendation[]>([]);
   const [initialized, setInitialized] = useState<string | null>(null);
 
-  if (open && pageId && initialized !== pageId) {
-    const content = initializeLiveContent(pageId);
-    const recs = initializeRecommendations(pageId);
-    setLiveContent(content);
-    setRecommendations(recs);
-    setInitialized(pageId);
-  }
-
-  if (!open && initialized) {
-    setInitialized(null);
-    setLiveContent(null);
-    setRecommendations([]);
-  }
+  // Initialize content in useEffect to avoid setState during render
+  useEffect(() => {
+    if (open && pageId && initialized !== pageId) {
+      setLiveContent(initializeLiveContent(pageId));
+      setRecommendations(initializeRecommendations(pageId));
+      setInitialized(pageId);
+    }
+    if (!open && initialized) {
+      setInitialized(null);
+      setLiveContent(null);
+      setRecommendations([]);
+    }
+  }, [open, pageId, initialized]);
 
   const handleSave = useCallback(async () => {
     if (!pageId || !liveContent) return;
