@@ -338,10 +338,10 @@ const Index = () => {
             className="text-center mb-14"
           >
             <h2 className="font-bold text-foreground mb-4">
-              מדריכים להורים
+              {guidesSection?.heading || 'מדריכים להורים'}
             </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              כל מה שצריך לדעת על אלרגיות אצל ילדים – בשפה פשוטה, מבוססת מחקר, ומותאמת להורים ישראליים.
+              {guidesSection?.content || 'כל מה שצריך לדעת על אלרגיות אצל ילדים – בשפה פשוטה, מבוססת מחקר, ומותאמת להורים ישראליים.'}
             </p>
           </motion.div>
 
