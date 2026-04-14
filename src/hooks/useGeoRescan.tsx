@@ -31,6 +31,10 @@ export interface GeoScanResult {
   contentHash?: string;
   persisted?: boolean;
   dataSource?: string;
+  overrideKeyUsed?: string;
+  scannedHeadline?: string;
+  scannedPath?: string;
+  scannedSectionCount?: number;
   recommendationsFilteredCount?: number;
 }
 
