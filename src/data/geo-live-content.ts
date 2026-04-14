@@ -126,21 +126,30 @@ export function initializeLiveContent(
   };
 }
 
-export function initializeRecommendations(pageId: string): EditableRecommendation[] {
+export function initializeRecommendations(
+  pageId: string,
+  currentContent?: LiveSection[],
+): EditableRecommendation[] {
   const transform = CONTENT_TRANSFORMS.find(t => t.pageId === pageId);
   if (!transform) return [];
 
-  const currentSections = buildCurrentSections(pageId);
+  const liveSections = currentContent || buildCurrentSections(pageId);
 
   return transform.changeLog.map((item, i) => {
     const sectionIndex = Math.min(i, (transform.draft.length || 1) - 1);
     const draftSection = transform.draft[sectionIndex];
-    const currentSection = currentSections[sectionIndex] || draftSection;
+    const currentSection = liveSections[sectionIndex] || draftSection;
     const targetField: EditableField = draftSection.content?.trim() ? 'content' : 'heading';
     const originalAfter = targetField === 'heading' ? draftSection.heading : draftSection.content;
     const originalBefore = targetField === 'heading'
       ? currentSection?.heading || ''
       : currentSection?.content || '';
+
+    // Reconcile: check if the recommended change is already present in the current content
+    const currentValue = targetField === 'heading'
+      ? currentSection?.heading || ''
+      : currentSection?.content || '';
+    const isAlreadyApplied = reconcileRecommendation(originalAfter, currentValue);
 
     return {
       id: `${pageId}-rec-${i}`,
@@ -152,7 +161,29 @@ export function initializeRecommendations(pageId: string): EditableRecommendatio
       originalAfter,
       editedAfter: originalAfter,
       reason: item.reason,
-      status: 'draft' as RecommendationStatus,
+      status: isAlreadyApplied ? 'applied' as RecommendationStatus : 'draft' as RecommendationStatus,
+      appliedAt: isAlreadyApplied ? new Date().toISOString() : undefined,
     };
   });
+}
+
+/**
+ * Reconcile a recommendation against current content.
+ * Returns true if the recommendation text is already present/satisfied.
+ */
+function reconcileRecommendation(recommendedText: string, currentContent: string): boolean {
+  if (!recommendedText || !currentContent) return false;
+
+  const normalise = (s: string) => s.replace(/\s+/g, ' ').trim().toLowerCase();
+  const recNorm = normalise(recommendedText);
+  const curNorm = normalise(currentContent);
+
+  // Exact or substring match
+  if (curNorm.includes(recNorm) || recNorm === curNorm) return true;
+
+  // Significant-word overlap: if >70% of recommendation words exist in content
+  const recWords = recNorm.split(/\s+/).filter(w => w.length > 3);
+  if (recWords.length === 0) return false;
+  const matchCount = recWords.filter(w => curNorm.includes(w)).length;
+  return (matchCount / recWords.length) >= 0.7;
 }

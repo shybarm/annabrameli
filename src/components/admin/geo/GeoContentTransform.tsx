@@ -534,6 +534,10 @@ export function GeoContentTransform() {
       brief?.pagePath,
     );
 
+    // Phase 3: Reconcile recommendations against current saved content
+    const reconciledRecs = initializeRecommendations(selected.pageId, content.sections);
+    setAllRecommendations(prev => ({ ...prev, [selected.pageId]: reconciledRecs }));
+
     if (result) {
       setSavePhase('done');
     } else {
@@ -561,6 +565,10 @@ export function GeoContentTransform() {
     );
 
     if (result) {
+      // Reconcile recommendations against current content after rescan
+      const reconciledRecs = initializeRecommendations(pageId, content.sections);
+      setAllRecommendations(prev => ({ ...prev, [pageId]: reconciledRecs }));
+
       updateWorkflow(pageId, {
         ...workflows[pageId],
         status: 're_audit',
@@ -606,9 +614,10 @@ export function GeoContentTransform() {
 
   const ensureRecommendations = useCallback((pageId: string) => {
     if (allRecommendations[pageId]) return;
-    const recs = initializeRecommendations(pageId);
+    const content = liveContents[pageId];
+    const recs = initializeRecommendations(pageId, content?.sections);
     setAllRecommendations(prev => ({ ...prev, [pageId]: recs }));
-  }, [allRecommendations]);
+  }, [allRecommendations, liveContents]);
 
   // Initialize content when a page is selected (via effect, not during render)
   useEffect(() => {
