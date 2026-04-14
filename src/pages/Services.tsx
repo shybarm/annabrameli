@@ -190,10 +190,10 @@ const Services = () => {
             className="max-w-3xl"
           >
             <h1 className="font-bold text-foreground mb-6">
-              שירותים ומצבים רפואיים
+              {heroSection?.heading || 'שירותים ומצבים רפואיים'}
             </h1>
             <p className="text-lg text-muted-foreground leading-relaxed">
-              מגוון רחב של שירותי אבחון וטיפול באלרגיות, מותאמים אישית לכל מטופל. המידע להלן מסייע להורים להבין את המצבים השונים ולדעת מתי לפנות לאבחון מקצועי.
+              {introSection?.content || 'מגוון רחב של שירותי אבחון וטיפול באלרגיות, מותאמים אישית לכל מטופל. המידע להלן מסייע להורים להבין את המצבים השונים ולדעת מתי לפנות לאבחון מקצועי.'}
             </p>
           </motion.div>
         </div>
