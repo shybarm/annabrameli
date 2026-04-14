@@ -64,12 +64,13 @@ function PriorityBadge({ priority }: { priority: string }) {
 }
 
 function TransformCard({
-  transform, workflow, onClick, scanResult,
+  transform, workflow, onClick, scanResult, hasDraft,
 }: {
   transform: ContentTransform;
   workflow: PageWorkflow;
   onClick: () => void;
   scanResult?: GeoScanResult | null;
+  hasDraft?: boolean;
 }) {
   const brief = WORKSPACE_BRIEFS.find(b => b.id === transform.pageId);
   if (!brief) return null;
@@ -93,6 +94,12 @@ function TransformCard({
                 <Badge className="text-[9px] bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 gap-1">
                   <CheckCircle2 className="h-2.5 w-2.5" />
                   נסרק
+                </Badge>
+              )}
+              {hasDraft && (
+                <Badge className="text-[9px] bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 gap-1">
+                  <PenLine className="h-2.5 w-2.5" />
+                  טיוטה
                 </Badge>
               )}
             </div>
