@@ -464,11 +464,15 @@ function ClusterCard({
   onTransformPage,
   onAction,
   clusterActions,
+  liveAssignments,
+  liveBriefCount,
 }: {
   cluster: TopicCluster;
   onTransformPage: (page: ClusterPage) => void;
   onAction: (type: ClusterActionType, page: ClusterPage, clusterId: string) => void;
   clusterActions: number;
+  liveAssignments: Array<{ pageTitle: string; pagePath: string; content: any }>;
+  liveBriefCount: number;
 }) {
   const [expanded, setExpanded] = useState(false);
   const v = COVERAGE_VERDICT_MAP[cluster.coverageVerdict];
@@ -476,6 +480,9 @@ function ClusterCard({
   const weak = cluster.pages.filter(p => p.role === 'weak').length;
   const existing = cluster.pages.filter(p => p.role !== 'missing').length;
   const editableCount = cluster.pages.filter(p => p.role !== 'missing' && p.path && getPageId(p.path)).length;
+
+  // Merge live assignments into page list display
+  const dynamicAssignmentTitles = new Set(liveAssignments.map(a => a.pageTitle));
 
   return (
     <Card className="border-border/50 overflow-hidden">
@@ -497,6 +504,18 @@ function ClusterCard({
                 <Badge className="text-[9px] bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 gap-1">
                   <ClipboardList className="h-2.5 w-2.5" />
                   {clusterActions} פעולות
+                </Badge>
+              )}
+              {liveAssignments.length > 0 && (
+                <Badge className="text-[9px] bg-primary/10 text-primary gap-1">
+                  <Layers className="h-2.5 w-2.5" />
+                  +{liveAssignments.length} שויכו ידנית
+                </Badge>
+              )}
+              {liveBriefCount > 0 && (
+                <Badge className="text-[9px] bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 gap-1">
+                  <FileText className="h-2.5 w-2.5" />
+                  {liveBriefCount} בריפים
                 </Badge>
               )}
             </div>
@@ -533,6 +552,20 @@ function ClusterCard({
               />
             ))}
           </div>
+          {/* Show dynamically assigned pages not in static topology */}
+          {liveAssignments.filter(a => !cluster.pages.some(p => p.titleHe === a.pageTitle)).length > 0 && (
+            <div className="mt-3 pt-2 border-t border-border/30">
+              <p className="text-[10px] font-semibold text-primary mb-1.5">שויכו ידנית (לא בטופולוגיה סטטית):</p>
+              {liveAssignments.filter(a => !cluster.pages.some(p => p.titleHe === a.pageTitle)).map((a, i) => (
+                <div key={i} className="flex items-center gap-2 p-2 rounded bg-primary/5 text-xs mb-1">
+                  <Layers className="h-3 w-3 text-primary" />
+                  <span className="font-medium text-foreground">{a.pageTitle}</span>
+                  {a.pagePath && <span className="text-muted-foreground font-mono text-[10px]">{a.pagePath}</span>}
+                  <Badge className="text-[9px] bg-primary/10 text-primary ml-auto">שיוך ידני</Badge>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       )}
     </Card>
