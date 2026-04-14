@@ -19,6 +19,23 @@ async function hashContent(text: string): Promise<string> {
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("").slice(0, 16);
 }
 
+/**
+ * Override key aliases — same as the client-side PAGE_ID_ALIASES.
+ * When scanning by GEO pageId 'bamba-reaction', the live page actually
+ * renders content from override key 'knowledge:פריחה-אחרי-במבה'.
+ */
+const OVERRIDE_KEY_MAP: Record<string, string> = {
+  'bamba-reaction': 'knowledge:פריחה-אחרי-במבה',
+};
+
+/**
+ * Get all candidate DB lookup keys for a pageId.
+ */
+function getOverrideCandidates(pageId: string): string[] {
+  const mapped = OVERRIDE_KEY_MAP[pageId];
+  return mapped ? [mapped, pageId] : [pageId];
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -47,19 +64,33 @@ serve(async (req) => {
     const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     let contentSections = sections;
-    try {
-      const { data: override } = await supabaseAdmin
-        .from("page_content_overrides")
-        .select("sections")
-        .eq("page_id", pageId)
-        .eq("version_label", "applied")
-        .maybeSingle();
+    let contentSourceUsed = 'client_provided';
+    let overrideKeyUsed: string | null = null;
 
-      if (override?.sections && Array.isArray(override.sections) && override.sections.length > 0) {
-        contentSections = override.sections;
-        console.log(`[geo-rescan] Using persisted content for ${pageId} (${override.sections.length} sections)`);
-      } else {
-        console.log(`[geo-rescan] No persisted content for ${pageId}, using provided sections`);
+    // Try all candidate keys (mapped + original) to find persisted content
+    const candidates = getOverrideCandidates(pageId);
+    
+    try {
+      const { data: overrides } = await supabaseAdmin
+        .from("page_content_overrides")
+        .select("page_id, sections, version_label")
+        .in("page_id", candidates)
+        .eq("version_label", "applied")
+        .order("updated_at", { ascending: false })
+        .limit(1);
+
+      if (overrides && overrides.length > 0) {
+        const override = overrides[0];
+        if (Array.isArray(override.sections) && override.sections.length > 0) {
+          contentSections = override.sections;
+          contentSourceUsed = 'db_override';
+          overrideKeyUsed = override.page_id;
+          console.log(`[geo-rescan] Using persisted content for ${pageId} via override key "${override.page_id}" (${override.sections.length} sections)`);
+        }
+      }
+      
+      if (contentSourceUsed === 'client_provided') {
+        console.log(`[geo-rescan] No persisted content for ${pageId} (checked keys: ${candidates.join(', ')}), using provided sections`);
       }
     } catch (e) {
       console.warn("[geo-rescan] Failed to fetch persisted content, using provided sections:", e.message);
@@ -70,6 +101,9 @@ serve(async (req) => {
     ).join('\n\n');
 
     const contentHash = await hashContent(contentText);
+
+    // Extract the first heading to use as verification anchor
+    const scannedHeadline = contentSections[0]?.heading || '';
 
     const prompt = `You are a GEO (Generative Engine Optimization) expert analyzing a medical clinic website page for AI search engine visibility.
 
@@ -162,10 +196,8 @@ Respond in valid JSON only. No markdown.`;
     const rawRecommendations = analysis.recommendations || [];
     const filteredRecommendations = rawRecommendations.filter((r: any) => {
       if (!r.text) return false;
-      // Check if the recommendation text closely matches existing content
       const recWords = (r.text || '').split(/\s+/).filter((w: string) => w.length > 3);
       const matchingWords = recWords.filter((w: string) => contentText.includes(w));
-      // If >70% of significant words are already in content, skip
       return recWords.length === 0 || (matchingWords.length / recWords.length) < 0.7;
     });
 
@@ -182,7 +214,11 @@ Respond in valid JSON only. No markdown.`;
       weaknesses: analysis.weaknesses || [],
       contentHash,
       persisted: false,
-      dataSource: 'ai_scan',
+      dataSource: contentSourceUsed,
+      overrideKeyUsed: overrideKeyUsed || pageId,
+      scannedHeadline,
+      scannedPath: pagePath || null,
+      scannedSectionCount: contentSections.length,
       recommendationsFilteredCount,
     };
 
@@ -209,7 +245,7 @@ Respond in valid JSON only. No markdown.`;
       scanResult.persisted = false;
     } else {
       scanResult.persisted = true;
-      console.log(`[geo-rescan] Scan persisted for ${pageId}, score: ${scanResult.overallScore}`);
+      console.log(`[geo-rescan] Scan persisted for ${pageId}, score: ${scanResult.overallScore}, source: ${contentSourceUsed}, overrideKey: ${overrideKeyUsed || pageId}`);
     }
 
     return respond(scanResult);
