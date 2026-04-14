@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useGeoLiveActions } from '@/contexts/GeoLiveDataContext';
+import { usePageContentUpdater } from '@/contexts/PageContentContext';
 import { toast } from 'sonner';
 
 export type ClusterActionType =
@@ -35,6 +36,7 @@ export function useClusterActions() {
   const [processing, setProcessing] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const liveActions = useGeoLiveActions();
+  const { refreshPage } = usePageContentUpdater();
 
   useEffect(() => {
     if (loaded) return;
@@ -195,6 +197,9 @@ export function useClusterActions() {
       appliedBy: null,
     });
 
+    // Immediately sync PageContentContext so editor shows updated content
+    await refreshPage(pageId);
+
     return true;
   };
 
@@ -289,6 +294,9 @@ export function useClusterActions() {
       updatedAt: new Date().toISOString(),
       appliedBy: null,
     });
+
+    // Sync PageContentContext for immediate editor visibility
+    await refreshPage(pageId);
 
     return true;
   };

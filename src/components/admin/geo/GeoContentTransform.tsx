@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import {
   CONTENT_TRANSFORMS, WORKFLOW_STATUS_CONFIG, PRIORITY_CONFIG,
   type ContentTransform, type WorkflowStatus, type PriorityLevel,
@@ -63,12 +64,13 @@ function PriorityBadge({ priority }: { priority: string }) {
 }
 
 function TransformCard({
-  transform, workflow, onClick, scanResult,
+  transform, workflow, onClick, scanResult, hasDraft,
 }: {
   transform: ContentTransform;
   workflow: PageWorkflow;
   onClick: () => void;
   scanResult?: GeoScanResult | null;
+  hasDraft?: boolean;
 }) {
   const brief = WORKSPACE_BRIEFS.find(b => b.id === transform.pageId);
   if (!brief) return null;
@@ -92,6 +94,12 @@ function TransformCard({
                 <Badge className="text-[9px] bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 gap-1">
                   <CheckCircle2 className="h-2.5 w-2.5" />
                   נסרק
+                </Badge>
+              )}
+              {hasDraft && (
+                <Badge className="text-[9px] bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 gap-1">
+                  <PenLine className="h-2.5 w-2.5" />
+                  טיוטה
                 </Badge>
               )}
             </div>
@@ -273,6 +281,7 @@ function TransformDetail({
   onSavePermanent, isSaving, savePhase, saveButtonLabel,
   onReAudit, isScanning,
   scanResult,
+  hasDraft, draftSections, activeVersion, onVersionSwitch,
 }: {
   transform: ContentTransform | null;
   open: boolean;
@@ -292,6 +301,10 @@ function TransformDetail({
   onReAudit: () => void;
   isScanning: boolean;
   scanResult: GeoScanResult | null;
+  hasDraft?: boolean;
+  draftSections?: any[];
+  activeVersion?: 'applied' | 'draft';
+  onVersionSwitch?: (v: 'applied' | 'draft') => void;
 }) {
   if (!transform || !workflow || !liveContent) return null;
   const brief = WORKSPACE_BRIEFS.find(b => b.id === transform.pageId);
@@ -325,6 +338,40 @@ function TransformDetail({
             </div>
           </DialogTitle>
         </DialogHeader>
+
+        {/* Version indicator */}
+        {(hasDraft || activeVersion) && (
+          <div className="flex items-center gap-2 mt-2 p-2 rounded-lg border border-border/50 bg-muted/20">
+            <span className="text-[10px] font-semibold text-muted-foreground">גרסה:</span>
+            <button
+              onClick={() => onVersionSwitch?.('applied')}
+              className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors ${
+                (!activeVersion || activeVersion === 'applied')
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+              }`}
+            >
+              מאושרת (applied)
+            </button>
+            {hasDraft && (
+              <button
+                onClick={() => onVersionSwitch?.('draft')}
+                className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors ${
+                  activeVersion === 'draft'
+                    ? 'bg-amber-500 text-white'
+                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                }`}
+              >
+                טיוטה (draft)
+              </button>
+            )}
+            {activeVersion === 'draft' && (
+              <span className="text-[10px] text-amber-600 dark:text-amber-400 mr-auto">
+                ⚠ אתה צופה בטיוטה — לא פורסם לאתר
+              </span>
+            )}
+          </div>
+        )}
 
         {/* Save & Re-audit buttons */}
         <div className="flex justify-end gap-2 mt-2">
@@ -413,18 +460,44 @@ export function GeoContentTransform() {
   const { upsertContentOverride } = useGeoLiveActions();
   const [savePhase, setSavePhase] = useState<SavePhase>('idle');
 
+  /** Track which version (applied | draft) the user is viewing per page */
+  const [activeVersion, setActiveVersion] = useState<Record<string, 'applied' | 'draft'>>({});
+  /** Store draft content per page (loaded from DB) */
+  const [draftContents, setDraftContents] = useState<Record<string, any[]>>({});
+  /** Pages that have a draft version in DB */
+  const [pagesWithDraft, setPagesWithDraft] = useState<Set<string>>(new Set());
+
   // Load persisted overrides on mount and push into PageContentContext
+  // Also detect which pages have draft versions
   useEffect(() => {
     loadAllOverrides().then(overrides => {
       for (const [pageId, sections] of Object.entries(overrides)) {
         setPageContentSections(pageId, sections);
       }
     });
+
+    // Load draft versions separately
+    (async () => {
+      const { data } = await supabase
+        .from('page_content_overrides' as any)
+        .select('page_id, sections, version_label')
+        .eq('version_label', 'draft');
+      if (data) {
+        const drafts = new Set<string>();
+        const draftMap: Record<string, any[]> = {};
+        for (const row of data as any[]) {
+          drafts.add(row.page_id);
+          draftMap[row.page_id] = row.sections;
+        }
+        setPagesWithDraft(drafts);
+        setDraftContents(draftMap);
+      }
+    })();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Live content and recommendations state per page
   const [liveContents, setLiveContents] = useState<Record<string, LivePageContent>>({});
-  const [allRecommendations, setAllRecommendations] = useState<Record<string, EditableRecommendation[]>>({});
+  const [allRecommendations, setAllRecommendations] = useState<Record<string, EditableRecommendation[]>>({}); 
 
   const handleSavePermanent = useCallback(async () => {
     if (!selected) return;
@@ -675,6 +748,7 @@ export function GeoContentTransform() {
             workflow={workflows[t.pageId]}
             onClick={() => setSelected(t)}
             scanResult={getScanResult(t.pageId)}
+            hasDraft={pagesWithDraft.has(t.pageId)}
           />
         ))}
         {filtered.length === 0 && (
@@ -701,6 +775,21 @@ export function GeoContentTransform() {
         onReAudit={handleReAudit}
         isScanning={isScanning}
         scanResult={selected ? getScanResult(selected.pageId) : null}
+        hasDraft={selected ? pagesWithDraft.has(selected.pageId) : false}
+        draftSections={selected ? draftContents[selected.pageId] : undefined}
+        activeVersion={selected ? (activeVersion[selected.pageId] || 'applied') : 'applied'}
+        onVersionSwitch={(v) => {
+          if (!selected) return;
+          setActiveVersion(prev => ({ ...prev, [selected.pageId]: v }));
+          if (v === 'draft' && draftContents[selected.pageId]) {
+            const draftContent = initializeLiveContent(selected.pageId, draftContents[selected.pageId]);
+            setLiveContents(prev => ({ ...prev, [selected.pageId]: { ...draftContent, currentVersion: 'working_draft' } }));
+          } else if (v === 'applied') {
+            const persisted = getPersistedSections(selected.pageId);
+            const content = initializeLiveContent(selected.pageId, persisted.length > 0 ? persisted : undefined);
+            setLiveContents(prev => ({ ...prev, [selected.pageId]: content }));
+          }
+        }}
       />
 
       {/* General audit button */}

@@ -36,6 +36,8 @@ interface PageContentContextType {
   setSections: (pageId: string, sections: CurrentPageSection[]) => void;
   hasOverride: (pageId: string) => boolean;
   resetPage: (pageId: string) => void;
+  /** Re-hydrate a single page from DB (call after cluster action mutates page_content_overrides) */
+  refreshPage: (pageId: string) => Promise<void>;
 }
 
 const PageContentContext = createContext<PageContentContextType | null>(null);
@@ -125,8 +127,30 @@ export function PageContentProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const refreshPage = useCallback(async (pageId: string) => {
+    try {
+      const candidates = getPageIdCandidates(pageId);
+      const { data, error } = await supabase
+        .from('page_content_overrides' as any)
+        .select('page_id, sections, version_label')
+        .in('page_id', candidates)
+        .eq('version_label', 'applied')
+        .order('updated_at', { ascending: false })
+        .limit(1);
+
+      if (error) throw error;
+
+      if (data && (data as any[]).length > 0) {
+        const row = (data as any[])[0];
+        setOverrides(prev => ({ ...prev, [row.page_id]: row.sections as CurrentPageSection[] }));
+      }
+    } catch (err) {
+      console.error('Failed to refresh page content from DB:', err);
+    }
+  }, []);
+
   return (
-    <PageContentContext.Provider value={{ getSection, getSections, setSections, hasOverride, resetPage }}>
+    <PageContentContext.Provider value={{ getSection, getSections, setSections, hasOverride, resetPage, refreshPage }}>
       {children}
     </PageContentContext.Provider>
   );
@@ -155,6 +179,7 @@ export function usePageContentUpdater() {
     return {
       setSections: () => {},
       resetPage: () => {},
+      refreshPage: async () => {},
       getSections: (_pageId: string) => [] as CurrentPageSection[],
       hasOverride: (_pageId: string) => false,
     };
@@ -162,6 +187,7 @@ export function usePageContentUpdater() {
   return {
     setSections: ctx.setSections,
     resetPage: ctx.resetPage,
+    refreshPage: ctx.refreshPage,
     getSections: ctx.getSections,
     hasOverride: ctx.hasOverride,
   };

@@ -11,6 +11,9 @@ import {
 import { usePageContentUpdater } from '@/contexts/PageContentContext';
 import { usePageContentPersistence } from '@/hooks/usePageContentPersistence';
 import { useClusterActions, type ClusterActionType } from '@/hooks/useClusterActions';
+import { useGeoLiveState } from '@/contexts/GeoLiveDataContext';
+import { useLiveClusterAssignments, useLiveBriefs } from '@/hooks/useGeoLiveData';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -462,11 +465,15 @@ function ClusterCard({
   onTransformPage,
   onAction,
   clusterActions,
+  liveAssignments,
+  liveBriefCount,
 }: {
   cluster: TopicCluster;
   onTransformPage: (page: ClusterPage) => void;
   onAction: (type: ClusterActionType, page: ClusterPage, clusterId: string) => void;
   clusterActions: number;
+  liveAssignments: Array<{ pageTitle: string; pagePath: string; content: any }>;
+  liveBriefCount: number;
 }) {
   const [expanded, setExpanded] = useState(false);
   const v = COVERAGE_VERDICT_MAP[cluster.coverageVerdict];
@@ -474,6 +481,8 @@ function ClusterCard({
   const weak = cluster.pages.filter(p => p.role === 'weak').length;
   const existing = cluster.pages.filter(p => p.role !== 'missing').length;
   const editableCount = cluster.pages.filter(p => p.role !== 'missing' && p.path && getPageId(p.path)).length;
+
+  // Live assignments enrichment
 
   return (
     <Card className="border-border/50 overflow-hidden">
@@ -495,6 +504,18 @@ function ClusterCard({
                 <Badge className="text-[9px] bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 gap-1">
                   <ClipboardList className="h-2.5 w-2.5" />
                   {clusterActions} פעולות
+                </Badge>
+              )}
+              {liveAssignments.length > 0 && (
+                <Badge className="text-[9px] bg-primary/10 text-primary gap-1">
+                  <Layers className="h-2.5 w-2.5" />
+                  +{liveAssignments.length} שויכו ידנית
+                </Badge>
+              )}
+              {liveBriefCount > 0 && (
+                <Badge className="text-[9px] bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 gap-1">
+                  <FileText className="h-2.5 w-2.5" />
+                  {liveBriefCount} בריפים
                 </Badge>
               )}
             </div>
@@ -531,6 +552,20 @@ function ClusterCard({
               />
             ))}
           </div>
+          {/* Show dynamically assigned pages not in static topology */}
+          {liveAssignments.filter(a => !cluster.pages.some(p => p.titleHe === a.pageTitle)).length > 0 && (
+            <div className="mt-3 pt-2 border-t border-border/30">
+              <p className="text-[10px] font-semibold text-primary mb-1.5">שויכו ידנית (לא בטופולוגיה סטטית):</p>
+              {liveAssignments.filter(a => !cluster.pages.some(p => p.titleHe === a.pageTitle)).map((a, i) => (
+                <div key={i} className="flex items-center gap-2 p-2 rounded bg-primary/5 text-xs mb-1">
+                  <Layers className="h-3 w-3 text-primary" />
+                  <span className="font-medium text-foreground">{a.pageTitle}</span>
+                  {a.pagePath && <span className="text-muted-foreground font-mono text-[10px]">{a.pagePath}</span>}
+                  <Badge className="text-[9px] bg-primary/10 text-primary ml-auto">שיוך ידני</Badge>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       )}
     </Card>
@@ -656,6 +691,9 @@ export function GeoSprint4Clusters() {
     actions, addAction, executeAction, getActionsForCluster,
     getPendingCount, getCompletedCount, processing, ACTION_LABELS,
   } = useClusterActions();
+  const liveState = useGeoLiveState();
+  const assignments = useLiveClusterAssignments(liveState.contentBriefs);
+  const briefs = useLiveBriefs(liveState.contentBriefs);
 
   const handleAction = useCallback((type: ClusterActionType, page: ClusterPage, clusterId: string) => {
     if (type === 'create_brief') {
@@ -675,7 +713,6 @@ export function GeoSprint4Clusters() {
       executeAction(action.id);
     }
 
-    // Dispatch event for sprint planner integration
     if (type === 'queue_to_sprint') {
       executeAction(action.id);
     }
@@ -683,11 +720,12 @@ export function GeoSprint4Clusters() {
 
   const handleSaveBrief = useCallback((briefContent: string) => {
     if (!briefPage) return;
-    addAction('create_brief', '', briefPage.titleHe, briefPage.path || '', {
+    const action = addAction('create_brief', '', briefPage.titleHe, briefPage.path || '', {
       actionLabel: 'בריף כתיבה',
       briefContent,
     });
-  }, [briefPage, addAction]);
+    executeAction(action.id);
+  }, [briefPage, addAction, executeAction]);
 
   return (
     <div className="space-y-6">
@@ -699,6 +737,37 @@ export function GeoSprint4Clusters() {
         onExecute={executeAction}
         processing={processing}
       />
+
+      {/* Persisted briefs panel */}
+      {briefs.length > 0 && (
+        <Card className="border-border/50">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <FileText className="h-5 w-5 text-primary" />
+              בריפים שמורים ({briefs.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 max-h-[250px] overflow-y-auto">
+            {briefs.map(b => (
+              <div key={b.id} className="flex items-center gap-3 p-2 rounded-lg bg-muted/20 border border-border/30">
+                <FileText className="h-4 w-4 text-primary shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium text-foreground truncate">{b.pageTitle}</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {b.briefType === 'brief' ? 'בריף' : 'טיוטה'} · {b.clusterId || 'כללי'} · {new Date(b.createdAt).toLocaleDateString('he-IL')}
+                  </p>
+                  {b.content?.intent && (
+                    <p className="text-[10px] text-primary">כוונה: {b.content.intent}</p>
+                  )}
+                </div>
+                <Badge className="text-[9px] bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+                  {b.content?.status || 'saved'}
+                </Badge>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
 
       <Tabs defaultValue="clusters" className="w-full">
         <TabsList className="w-full h-auto gap-1 bg-muted/30 p-1 rounded-xl flex-wrap">
@@ -715,6 +784,12 @@ export function GeoSprint4Clusters() {
               onTransformPage={setEditingPage}
               onAction={handleAction}
               clusterActions={getActionsForCluster(c.id).length}
+              liveAssignments={assignments.filter(a => a.clusterId === c.id).map(a => ({
+                pageTitle: a.pageTitle,
+                pagePath: a.pagePath,
+                content: a.content,
+              }))}
+              liveBriefCount={briefs.filter(b => b.clusterId === c.id).length}
             />
           ))}
         </TabsContent>
