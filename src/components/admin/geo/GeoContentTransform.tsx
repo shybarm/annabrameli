@@ -748,6 +748,7 @@ export function GeoContentTransform() {
             workflow={workflows[t.pageId]}
             onClick={() => setSelected(t)}
             scanResult={getScanResult(t.pageId)}
+            hasDraft={pagesWithDraft.has(t.pageId)}
           />
         ))}
         {filtered.length === 0 && (
@@ -774,6 +775,21 @@ export function GeoContentTransform() {
         onReAudit={handleReAudit}
         isScanning={isScanning}
         scanResult={selected ? getScanResult(selected.pageId) : null}
+        hasDraft={selected ? pagesWithDraft.has(selected.pageId) : false}
+        draftSections={selected ? draftContents[selected.pageId] : undefined}
+        activeVersion={selected ? (activeVersion[selected.pageId] || 'applied') : 'applied'}
+        onVersionSwitch={(v) => {
+          if (!selected) return;
+          setActiveVersion(prev => ({ ...prev, [selected.pageId]: v }));
+          if (v === 'draft' && draftContents[selected.pageId]) {
+            const draftContent = initializeLiveContent(selected.pageId, draftContents[selected.pageId]);
+            setLiveContents(prev => ({ ...prev, [selected.pageId]: { ...draftContent, currentVersion: 'working_draft' } }));
+          } else if (v === 'applied') {
+            const persisted = getPersistedSections(selected.pageId);
+            const content = initializeLiveContent(selected.pageId, persisted.length > 0 ? persisted : undefined);
+            setLiveContents(prev => ({ ...prev, [selected.pageId]: content }));
+          }
+        }}
       />
 
       {/* General audit button */}
