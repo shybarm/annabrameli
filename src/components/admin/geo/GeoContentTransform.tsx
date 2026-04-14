@@ -413,18 +413,44 @@ export function GeoContentTransform() {
   const { upsertContentOverride } = useGeoLiveActions();
   const [savePhase, setSavePhase] = useState<SavePhase>('idle');
 
+  /** Track which version (applied | draft) the user is viewing per page */
+  const [activeVersion, setActiveVersion] = useState<Record<string, 'applied' | 'draft'>>({});
+  /** Store draft content per page (loaded from DB) */
+  const [draftContents, setDraftContents] = useState<Record<string, any[]>>({});
+  /** Pages that have a draft version in DB */
+  const [pagesWithDraft, setPagesWithDraft] = useState<Set<string>>(new Set());
+
   // Load persisted overrides on mount and push into PageContentContext
+  // Also detect which pages have draft versions
   useEffect(() => {
     loadAllOverrides().then(overrides => {
       for (const [pageId, sections] of Object.entries(overrides)) {
         setPageContentSections(pageId, sections);
       }
     });
+
+    // Load draft versions separately
+    (async () => {
+      const { data } = await supabase
+        .from('page_content_overrides' as any)
+        .select('page_id, sections, version_label')
+        .eq('version_label', 'draft');
+      if (data) {
+        const drafts = new Set<string>();
+        const draftMap: Record<string, any[]> = {};
+        for (const row of data as any[]) {
+          drafts.add(row.page_id);
+          draftMap[row.page_id] = row.sections;
+        }
+        setPagesWithDraft(drafts);
+        setDraftContents(draftMap);
+      }
+    })();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Live content and recommendations state per page
   const [liveContents, setLiveContents] = useState<Record<string, LivePageContent>>({});
-  const [allRecommendations, setAllRecommendations] = useState<Record<string, EditableRecommendation[]>>({});
+  const [allRecommendations, setAllRecommendations] = useState<Record<string, EditableRecommendation[]>>({}); 
 
   const handleSavePermanent = useCallback(async () => {
     if (!selected) return;
