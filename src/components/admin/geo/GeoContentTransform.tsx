@@ -278,7 +278,8 @@ function TransformDetail({
   checklist, onChecklistToggle,
   liveContent, recommendations,
   onLiveContentUpdate, onRecommendationsUpdate,
-  onSavePermanent, isSaving, onReAudit, isScanning,
+  onSavePermanent, isSaving, savePhase, saveButtonLabel,
+  onReAudit, isScanning,
   scanResult,
 }: {
   transform: ContentTransform | null;
@@ -294,6 +295,8 @@ function TransformDetail({
   onRecommendationsUpdate: (recs: EditableRecommendation[]) => void;
   onSavePermanent: () => void;
   isSaving: boolean;
+  savePhase?: string;
+  saveButtonLabel?: string;
   onReAudit: () => void;
   isScanning: boolean;
   scanResult: GeoScanResult | null;
