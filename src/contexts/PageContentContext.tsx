@@ -155,10 +155,14 @@ export function usePageContentUpdater() {
     return {
       setSections: () => {},
       resetPage: () => {},
+      getSections: (_pageId: string) => [] as CurrentPageSection[],
+      hasOverride: (_pageId: string) => false,
     };
   }
   return {
     setSections: ctx.setSections,
     resetPage: ctx.resetPage,
+    getSections: ctx.getSections,
+    hasOverride: ctx.hasOverride,
   };
 }

@@ -95,18 +95,33 @@ function buildCurrentSections(pageId: string): LiveSection[] {
   }));
 }
 
-export function initializeLiveContent(pageId: string): LivePageContent {
-  const sections = buildCurrentSections(pageId);
+/**
+ * Initialize live content for a page.
+ * @param pageId - The page identifier
+ * @param persistedSections - Optional sections from page_content_overrides (DB).
+ *   When provided, these are used as the canonical content instead of static seed data.
+ */
+export function initializeLiveContent(
+  pageId: string,
+  persistedSections?: { heading: string; tag: string; content: string }[],
+): LivePageContent {
+  const sections: LiveSection[] = persistedSections
+    ? persistedSections.map(s => ({
+        heading: s.heading,
+        tag: s.tag as LiveSection['tag'],
+        content: s.content,
+      }))
+    : buildCurrentSections(pageId);
 
   return {
     pageId,
     sections,
-    currentVersion: 'original',
+    currentVersion: persistedSections ? 'applied' : 'original',
     history: [{
       timestamp: new Date().toISOString(),
-      label: 'גרסה מקורית',
+      label: persistedSections ? 'גרסה שמורה (DB)' : 'גרסה מקורית',
       sections: cloneSections(sections),
-      versionType: 'original',
+      versionType: persistedSections ? 'applied' : 'original',
     }],
   };
 }

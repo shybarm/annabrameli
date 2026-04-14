@@ -268,17 +268,21 @@ function ClusterPageEditor({
   onClose: () => void;
 }) {
   const pageId = page?.path ? getPageId(page.path) : null;
-  const { setSections: setPageContentSections } = usePageContentUpdater();
+  const { setSections: setPageContentSections, getSections: getPersistedSections } = usePageContentUpdater();
   const { savePage, saving: isSaving } = usePageContentPersistence();
 
   const [liveContent, setLiveContent] = useState<LivePageContent | null>(null);
   const [recommendations, setRecommendations] = useState<EditableRecommendation[]>([]);
   const [initialized, setInitialized] = useState<string | null>(null);
 
-  // Move initialization into useEffect to avoid setState during render
+  // Initialize from persisted DB content first, static seed as fallback
   useEffect(() => {
     if (open && pageId && initialized !== pageId) {
-      setLiveContent(initializeLiveContent(pageId));
+      const persisted = getPersistedSections(pageId);
+      setLiveContent(initializeLiveContent(
+        pageId,
+        persisted.length > 0 ? persisted : undefined,
+      ));
       setRecommendations(initializeRecommendations(pageId));
       setInitialized(pageId);
     }
@@ -287,7 +291,7 @@ function ClusterPageEditor({
       setLiveContent(null);
       setRecommendations([]);
     }
-  }, [open, pageId, initialized]);
+  }, [open, pageId, initialized, getPersistedSections]);
 
   const handleSave = useCallback(async () => {
     if (!pageId || !liveContent) return;

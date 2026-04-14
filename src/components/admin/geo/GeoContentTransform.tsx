@@ -410,11 +410,11 @@ export function GeoContentTransform() {
   const [workflows, setWorkflows] = useState<WorkflowMap>(DEFAULT_WORKFLOWS);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [checklists, setChecklists] = useState<Record<string, Record<string, boolean>>>({});
-  const { setSections: setPageContentSections } = usePageContentUpdater();
+  const { setSections: setPageContentSections, getSections: getPersistedSections } = usePageContentUpdater();
   const { savePage, loadAllOverrides, saving: isSavingPermanent } = usePageContentPersistence();
   const { rescanPage, getScanResult, scanResults, scanning: isScanning } = useGeoRescan();
 
-  // Load persisted overrides on mount
+  // Load persisted overrides on mount and push into PageContentContext
   useEffect(() => {
     loadAllOverrides().then(overrides => {
       for (const [pageId, sections] of Object.entries(overrides)) {
@@ -456,10 +456,14 @@ export function GeoContentTransform() {
   const handleReAudit = useCallback(async () => {
     if (!selected) return;
     const pageId = selected.pageId;
-    const content = liveContents[pageId] || initializeLiveContent(pageId);
+    // Use existing editor state, or load from persisted content, then static fallback
+    let content = liveContents[pageId];
+    if (!content) {
+      const persisted = getPersistedSections(pageId);
+      content = initializeLiveContent(pageId, persisted.length > 0 ? persisted : undefined);
+    }
     const brief = WORKSPACE_BRIEFS.find(b => b.id === pageId);
 
-    // Run real AI scan on current content
     const result = await rescanPage(
       pageId,
       content.sections.map(s => ({ heading: s.heading, tag: s.tag, content: s.content })),
@@ -468,7 +472,6 @@ export function GeoContentTransform() {
     );
 
     if (result) {
-      // Update workflow with scan timestamp
       setWorkflows(prev => ({
         ...prev,
         [pageId]: {
@@ -478,11 +481,15 @@ export function GeoContentTransform() {
         },
       }));
     }
-  }, [selected, liveContents, rescanPage]);
+  }, [selected, liveContents, rescanPage, getPersistedSections]);
 
   const handleGeneralAudit = useCallback(async () => {
     for (const t of CONTENT_TRANSFORMS) {
-      const content = liveContents[t.pageId] || initializeLiveContent(t.pageId);
+      let content = liveContents[t.pageId];
+      if (!content) {
+        const persisted = getPersistedSections(t.pageId);
+        content = initializeLiveContent(t.pageId, persisted.length > 0 ? persisted : undefined);
+      }
       const brief = WORKSPACE_BRIEFS.find(b => b.id === t.pageId);
 
       await rescanPage(
@@ -501,17 +508,21 @@ export function GeoContentTransform() {
         },
       }));
     }
-  }, [liveContents, rescanPage]);
+  }, [liveContents, rescanPage, getPersistedSections]);
 
-  // Lazy-initialize live content for a page
+  // Lazy-initialize live content for a page — uses persisted DB content if available
   const getLiveContent = useCallback((pageId: string): LivePageContent => {
     if (!liveContents[pageId]) {
-      const content = initializeLiveContent(pageId);
+      const persisted = getPersistedSections(pageId);
+      const content = initializeLiveContent(
+        pageId,
+        persisted.length > 0 ? persisted : undefined,
+      );
       setLiveContents(prev => ({ ...prev, [pageId]: content }));
       return content;
     }
     return liveContents[pageId];
-  }, [liveContents]);
+  }, [liveContents, getPersistedSections]);
 
   const getRecommendations = useCallback((pageId: string): EditableRecommendation[] => {
     if (!allRecommendations[pageId]) {
