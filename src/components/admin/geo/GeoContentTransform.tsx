@@ -467,7 +467,7 @@ export function GeoContentTransform() {
       setSavePhase('error');
     }
     setTimeout(() => setSavePhase('idle'), 4000);
-  }, [selected, liveContents, savePage, rescanPage]);
+  }, [selected, liveContents, savePage, rescanPage, upsertContentOverride]);
 
   const handleReAudit = useCallback(async () => {
     if (!selected) return;
