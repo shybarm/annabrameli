@@ -11,6 +11,7 @@ import { usePageContentUpdater } from '@/contexts/PageContentContext';
 import { WORKSPACE_BRIEFS } from '@/data/geo-workspace-briefs';
 import { usePageContentPersistence } from '@/hooks/usePageContentPersistence';
 import { useGeoRescan, type GeoScanResult } from '@/hooks/useGeoRescan';
+import { useGeoLiveActions } from '@/contexts/GeoLiveDataContext';
 import { useGeoWorkflows, type PageWorkflow } from '@/hooks/useGeoWorkflows';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -409,6 +410,7 @@ export function GeoContentTransform() {
   const { setSections: setPageContentSections, getSections: getPersistedSections } = usePageContentUpdater();
   const { savePage, loadAllOverrides, saving: isSavingPermanent } = usePageContentPersistence();
   const { rescanPage, getScanResult, scanResults, scanning: isScanning } = useGeoRescan();
+  const { upsertContentOverride } = useGeoLiveActions();
   const [savePhase, setSavePhase] = useState<SavePhase>('idle');
 
   // Load persisted overrides on mount and push into PageContentContext
@@ -443,26 +445,29 @@ export function GeoContentTransform() {
       return;
     }
 
-    window.dispatchEvent(new CustomEvent('geo-page-saved', { detail: { pageId: selected.pageId } }));
+    // Update shared provider state with new override metadata
+    upsertContentOverride(selected.pageId, {
+      updatedAt: new Date().toISOString(),
+      appliedBy: null,
+    });
 
     // Phase 2: Auto-rescan the exact saved content
     setSavePhase('rescanning');
     const brief = WORKSPACE_BRIEFS.find(b => b.id === selected.pageId);
     const result = await rescanPage(
       selected.pageId,
-      sections, // Use the exact sections that were just persisted
+      sections,
       brief?.suggestedTitle,
       brief?.pagePath,
     );
 
     if (result) {
-      window.dispatchEvent(new CustomEvent('geo-scan-complete', { detail: { pageId: selected.pageId } }));
       setSavePhase('done');
     } else {
       setSavePhase('error');
     }
     setTimeout(() => setSavePhase('idle'), 4000);
-  }, [selected, liveContents, savePage, rescanPage]);
+  }, [selected, liveContents, savePage, rescanPage, upsertContentOverride]);
 
   const handleReAudit = useCallback(async () => {
     if (!selected) return;
