@@ -179,6 +179,7 @@ export function usePageContentUpdater() {
     return {
       setSections: () => {},
       resetPage: () => {},
+      refreshPage: async () => {},
       getSections: (_pageId: string) => [] as CurrentPageSection[],
       hasOverride: (_pageId: string) => false,
     };
@@ -186,6 +187,7 @@ export function usePageContentUpdater() {
   return {
     setSections: ctx.setSections,
     resetPage: ctx.resetPage,
+    refreshPage: ctx.refreshPage,
     getSections: ctx.getSections,
     hasOverride: ctx.hasOverride,
   };
