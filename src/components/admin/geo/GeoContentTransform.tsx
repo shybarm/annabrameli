@@ -281,6 +281,7 @@ function TransformDetail({
   onSavePermanent, isSaving, savePhase, saveButtonLabel,
   onReAudit, isScanning,
   scanResult,
+  hasDraft, draftSections, activeVersion, onVersionSwitch,
 }: {
   transform: ContentTransform | null;
   open: boolean;
@@ -300,6 +301,10 @@ function TransformDetail({
   onReAudit: () => void;
   isScanning: boolean;
   scanResult: GeoScanResult | null;
+  hasDraft?: boolean;
+  draftSections?: any[];
+  activeVersion?: 'applied' | 'draft';
+  onVersionSwitch?: (v: 'applied' | 'draft') => void;
 }) {
   if (!transform || !workflow || !liveContent) return null;
   const brief = WORKSPACE_BRIEFS.find(b => b.id === transform.pageId);
