@@ -113,7 +113,11 @@ function RecommendationCard({
               <p className="text-[10px] font-semibold text-muted-foreground mb-1 flex items-center gap-1">
                 <Eye className="h-3 w-3" /> {rec.targetField === 'heading' ? 'כותרת נוכחית באתר' : 'תוכן נוכחי באתר'}
               </p>
-              <p className="text-foreground whitespace-pre-wrap">{liveValue || rec.originalBefore}</p>
+              {liveValue ? (
+                <p className="text-foreground whitespace-pre-wrap">{liveValue}</p>
+              ) : (
+                <p className="text-muted-foreground italic">תוכן זה לא קיים כרגע בדף — מדובר בהמלצה להוספת תוכן חדש</p>
+              )}
             </div>
 
             {/* Editable recommendation */}
@@ -515,21 +519,32 @@ export function GeoLiveEditor({
           <p className="text-xs text-muted-foreground">
             כל שינוי ניתן לעריכה, אישור, והחלה ישירה על הדף. לחצו "החל על הדף" כדי לעדכן את התוכן בפועל.
           </p>
-          {recommendations.map(rec => (
-            <RecommendationCard
-              key={rec.id}
-              rec={rec}
-              liveValue={
-                rec.targetField === 'heading'
-                  ? (liveContent.sections[rec.sectionIndex]?.heading || '')
-                  : (liveContent.sections[rec.sectionIndex]?.content || '')
-              }
-              onEdit={handleEditRec}
-              onStatusChange={handleStatusChange}
-              onApply={handleApply}
-              onRevert={handleRevert}
-            />
-          ))}
+          {recommendations.map(rec => {
+            const liveValue =
+              rec.targetField === 'heading'
+                ? (liveContent.sections[rec.sectionIndex]?.heading || '')
+                : (liveContent.sections[rec.sectionIndex]?.content || '');
+
+            // Skip recommendations where proposed text already matches live content
+            const normalise = (s: string) => s.replace(/\s+/g, ' ').trim().toLowerCase();
+            const proposedNorm = normalise(rec.editedAfter);
+            const liveNorm = normalise(liveValue);
+            if (proposedNorm && liveNorm && (liveNorm.includes(proposedNorm) || proposedNorm === liveNorm)) {
+              return null; // Already applied — hide from list
+            }
+
+            return (
+              <RecommendationCard
+                key={rec.id}
+                rec={rec}
+                liveValue={liveValue}
+                onEdit={handleEditRec}
+                onStatusChange={handleStatusChange}
+                onApply={handleApply}
+                onRevert={handleRevert}
+              />
+            );
+          })}
         </div>
       )}
 
