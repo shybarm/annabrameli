@@ -483,14 +483,11 @@ export function GeoContentTransform() {
     );
 
     if (result) {
-      setWorkflows(prev => ({
-        ...prev,
-        [pageId]: {
-          ...prev[pageId],
-          status: 're_audit' as WorkflowStatus,
-          lastReviewed: new Date().toISOString().split('T')[0],
-        },
-      }));
+      updateWorkflow(pageId, {
+        ...workflows[pageId],
+        status: 're_audit',
+        lastReviewed: new Date().toISOString().split('T')[0],
+      });
     }
   }, [selected, liveContents, rescanPage, getPersistedSections]);
 
