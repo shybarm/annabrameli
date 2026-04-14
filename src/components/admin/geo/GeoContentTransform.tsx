@@ -351,6 +351,50 @@ function TransformDetail({
           </DialogTitle>
         </DialogHeader>
 
+        {/* Scan-vs-Live Mismatch Warnings */}
+        {mismatches.length > 0 && (
+          <div className="space-y-1.5 mt-2">
+            {mismatches.map((m, i) => (
+              <div key={i} className={`flex items-start gap-2 px-3 py-2 rounded-lg border text-xs ${
+                m.severity === 'critical'
+                  ? 'border-destructive/30 bg-destructive/5 text-destructive'
+                  : m.severity === 'warning'
+                    ? 'border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-300'
+                    : 'border-border/50 bg-muted/20 text-muted-foreground'
+              }`}>
+                <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-bold">{m.message}</span>
+                  <span className="block text-[10px] opacity-80 mt-0.5">{m.details}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Scan Source Metadata */}
+        {scanResult && (
+          <div className="flex items-center flex-wrap gap-2 mt-2 p-2 rounded-lg border border-border/50 bg-muted/10 text-[10px] text-muted-foreground">
+            <span className="font-semibold">מקור סריקה:</span>
+            <Badge variant="outline" className="text-[9px]">{scanResult.dataSource === 'db_override' ? 'DB Override' : scanResult.dataSource === 'client_provided' ? 'תוכן מהעורך' : scanResult.dataSource || 'לא ידוע'}</Badge>
+            {scanResult.overrideKeyUsed && scanResult.overrideKeyUsed !== transform.pageId && (
+              <span>מפתח: <code className="bg-muted px-1 rounded">{scanResult.overrideKeyUsed}</code></span>
+            )}
+            {scanResult.scannedHeadline && (
+              <span>כותרת נסרקת: "{scanResult.scannedHeadline.substring(0, 40)}"</span>
+            )}
+            {scanResult.contentHash && (
+              <span>hash: <code className="bg-muted px-1 rounded">{scanResult.contentHash.substring(0, 8)}</code></span>
+            )}
+            {registryEntry && registryEntry.overrideKey !== transform.pageId && (
+              <span className="text-amber-600 dark:text-amber-400">⚠ מפתח חי: {registryEntry.overrideKey}</span>
+            )}
+            {hasCriticalMismatch && (
+              <span className="text-destructive font-bold">⛔ הסריקה לא מהימנה — מקור שונה מהדף החי</span>
+            )}
+          </div>
+        )}
+
         {/* Version indicator */}
         {(hasDraft || activeVersion) && (
           <div className="flex items-center gap-2 mt-2 p-2 rounded-lg border border-border/50 bg-muted/20">
