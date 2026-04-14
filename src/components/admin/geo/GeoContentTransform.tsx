@@ -404,9 +404,8 @@ type SavePhase = 'idle' | 'saving' | 'rescanning' | 'done' | 'error';
 // ── Main component ──
 export function GeoContentTransform() {
   const [selected, setSelected] = useState<ContentTransform | null>(null);
-  const [workflows, setWorkflows] = useState<WorkflowMap>(DEFAULT_WORKFLOWS);
+  const { workflows, checklists, updateWorkflow, toggleChecklistItem } = useGeoWorkflows(DEFAULT_WORKFLOWS);
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [checklists, setChecklists] = useState<Record<string, Record<string, boolean>>>({});
   const { setSections: setPageContentSections, getSections: getPersistedSections } = usePageContentUpdater();
   const { savePage, loadAllOverrides, saving: isSavingPermanent } = usePageContentPersistence();
   const { rescanPage, getScanResult, scanResults, scanning: isScanning } = useGeoRescan();
