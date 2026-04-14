@@ -11,6 +11,7 @@ import { usePageContentUpdater } from '@/contexts/PageContentContext';
 import { WORKSPACE_BRIEFS } from '@/data/geo-workspace-briefs';
 import { usePageContentPersistence } from '@/hooks/usePageContentPersistence';
 import { useGeoRescan, type GeoScanResult } from '@/hooks/useGeoRescan';
+import { useGeoWorkflows, type PageWorkflow } from '@/hooks/useGeoWorkflows';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -30,24 +31,14 @@ import {
   CheckCircle2, XCircle, TrendingUp,
 } from 'lucide-react';
 
-// ── Local workflow state ──
-interface PageWorkflow {
-  status: WorkflowStatus;
-  priority: PriorityLevel;
-  owner: string;
-  lastReviewed: string;
-  notes: string;
-}
-
-type WorkflowMap = Record<string, PageWorkflow>;
-
-const DEFAULT_WORKFLOWS: WorkflowMap = Object.fromEntries(
+// ── Default workflow seeds (used as fallback before DB loads) ──
+const DEFAULT_WORKFLOWS: Record<string, PageWorkflow> = Object.fromEntries(
   CONTENT_TRANSFORMS.map(t => {
     const brief = WORKSPACE_BRIEFS.find(b => b.id === t.pageId);
     const isNew = brief && brief.currentGeoScore === 0;
     return [t.pageId, {
-      status: isNew ? 'rewrite_needed' as WorkflowStatus : 'not_reviewed' as WorkflowStatus,
-      priority: t.diagnosis.geoBlockers.length >= 3 ? 'critical' as PriorityLevel : t.diagnosis.geoBlockers.length >= 2 ? 'high' as PriorityLevel : 'medium' as PriorityLevel,
+      status: isNew ? 'rewrite_needed' : 'not_reviewed',
+      priority: t.diagnosis.geoBlockers.length >= 3 ? 'critical' : t.diagnosis.geoBlockers.length >= 2 ? 'high' : 'medium',
       owner: '',
       lastReviewed: '',
       notes: '',
@@ -60,13 +51,13 @@ const ALL_STATUSES: WorkflowStatus[] = [
   'approved', 'ready_to_publish', 'published', 're_audit',
 ];
 
-function StatusBadge({ status }: { status: WorkflowStatus }) {
-  const cfg = WORKFLOW_STATUS_CONFIG[status];
+function StatusBadge({ status }: { status: string }) {
+  const cfg = WORKFLOW_STATUS_CONFIG[status as WorkflowStatus] || WORKFLOW_STATUS_CONFIG['not_reviewed'];
   return <Badge className={`text-[10px] border ${cfg.color}`}>{cfg.label}</Badge>;
 }
 
-function PriorityBadge({ priority }: { priority: PriorityLevel }) {
-  const cfg = PRIORITY_CONFIG[priority];
+function PriorityBadge({ priority }: { priority: string }) {
+  const cfg = PRIORITY_CONFIG[priority as PriorityLevel] || PRIORITY_CONFIG['medium'];
   return <Badge className={`text-[10px] ${cfg.color}`}>{cfg.label}</Badge>;
 }
 
@@ -413,9 +404,8 @@ type SavePhase = 'idle' | 'saving' | 'rescanning' | 'done' | 'error';
 // ── Main component ──
 export function GeoContentTransform() {
   const [selected, setSelected] = useState<ContentTransform | null>(null);
-  const [workflows, setWorkflows] = useState<WorkflowMap>(DEFAULT_WORKFLOWS);
+  const { workflows, checklists, updateWorkflow, toggleChecklistItem } = useGeoWorkflows(DEFAULT_WORKFLOWS);
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [checklists, setChecklists] = useState<Record<string, Record<string, boolean>>>({});
   const { setSections: setPageContentSections, getSections: getPersistedSections } = usePageContentUpdater();
   const { savePage, loadAllOverrides, saving: isSavingPermanent } = usePageContentPersistence();
   const { rescanPage, getScanResult, scanResults, scanning: isScanning } = useGeoRescan();
@@ -493,16 +483,13 @@ export function GeoContentTransform() {
     );
 
     if (result) {
-      setWorkflows(prev => ({
-        ...prev,
-        [pageId]: {
-          ...prev[pageId],
-          status: 're_audit' as WorkflowStatus,
-          lastReviewed: new Date().toISOString().split('T')[0],
-        },
-      }));
+      updateWorkflow(pageId, {
+        ...workflows[pageId],
+        status: 're_audit',
+        lastReviewed: new Date().toISOString().split('T')[0],
+      });
     }
-  }, [selected, liveContents, rescanPage, getPersistedSections]);
+  }, [selected, liveContents, rescanPage, getPersistedSections, updateWorkflow, workflows]);
 
   const handleGeneralAudit = useCallback(async () => {
     for (const t of CONTENT_TRANSFORMS) {
@@ -520,16 +507,13 @@ export function GeoContentTransform() {
         brief?.pagePath,
       );
 
-      setWorkflows(prev => ({
-        ...prev,
-        [t.pageId]: {
-          ...prev[t.pageId],
-          status: 're_audit' as WorkflowStatus,
-          lastReviewed: new Date().toISOString().split('T')[0],
-        },
-      }));
+      updateWorkflow(t.pageId, {
+        ...workflows[t.pageId],
+        status: 're_audit',
+        lastReviewed: new Date().toISOString().split('T')[0],
+      });
     }
-  }, [liveContents, rescanPage, getPersistedSections]);
+  }, [liveContents, rescanPage, getPersistedSections, updateWorkflow, workflows]);
 
   // Initialize live content via effect instead of during render
   const ensureLiveContent = useCallback((pageId: string) => {
@@ -555,16 +539,6 @@ export function GeoContentTransform() {
     ensureRecommendations(selected.pageId);
   }, [selected?.pageId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const updateWorkflow = useCallback((pageId: string, updated: PageWorkflow) => {
-    setWorkflows(prev => ({ ...prev, [pageId]: updated }));
-  }, []);
-
-  const toggleChecklistItem = useCallback((pageId: string, itemId: string, checked: boolean) => {
-    setChecklists(prev => ({
-      ...prev,
-      [pageId]: { ...(prev[pageId] || {}), [itemId]: checked },
-    }));
-  }, []);
 
   const updateLiveContent = useCallback((pageId: string, content: LivePageContent) => {
     setLiveContents(prev => ({ ...prev, [pageId]: content }));

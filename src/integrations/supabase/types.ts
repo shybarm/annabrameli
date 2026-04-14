@@ -777,6 +777,45 @@ export type Database = {
         }
         Relationships: []
       }
+      geo_page_workflows: {
+        Row: {
+          checklist: Json
+          created_at: string
+          id: string
+          last_reviewed: string
+          notes: string
+          owner: string
+          page_id: string
+          priority: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          checklist?: Json
+          created_at?: string
+          id?: string
+          last_reviewed?: string
+          notes?: string
+          owner?: string
+          page_id: string
+          priority?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          checklist?: Json
+          created_at?: string
+          id?: string
+          last_reviewed?: string
+          notes?: string
+          owner?: string
+          page_id?: string
+          priority?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       geo_scan_results: {
         Row: {
           blockers: Json
