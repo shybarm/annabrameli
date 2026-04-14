@@ -352,8 +352,8 @@ function TransformDetail({
             className="gap-2"
             size="sm"
           >
-            {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-            {isSaving ? 'שומר...' : 'שמור קבוע ל-DB'}
+            {(savePhase === 'saving' || savePhase === 'rescanning') ? <Loader2 className="h-4 w-4 animate-spin" /> : savePhase === 'done' ? <CheckCircle2 className="h-4 w-4" /> : <Save className="h-4 w-4" />}
+            {saveButtonLabel || 'שמור קבוע ל-DB'}
           </Button>
         </div>
 
