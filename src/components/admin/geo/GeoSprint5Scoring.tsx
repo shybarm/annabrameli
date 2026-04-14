@@ -158,7 +158,7 @@ function PageDetailDialog({ page, open, onClose }: { page: ScoredPage | null; op
   );
 }
 
-function PageRow({ page, onClick }: { page: ScoredPage; onClick: () => void }) {
+function PageRow({ page, isLive, scannedAt, onClick }: { page: ScoredPage; isLive: boolean; scannedAt?: string; onClick: () => void }) {
   return (
     <Card className="border-border/50 cursor-pointer hover:border-primary/40 transition-colors" onClick={onClick}>
       <CardContent className="p-4">
@@ -168,8 +168,16 @@ function PageRow({ page, onClick }: { page: ScoredPage; onClick: () => void }) {
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-sm font-semibold text-foreground">{page.titleHe}</span>
               <Badge variant="outline" className="text-[10px]">{page.type}</Badge>
+              {isLive ? (
+                <Badge variant="outline" className="text-[9px] border-emerald-300 text-emerald-600 dark:text-emerald-400">● חי</Badge>
+              ) : (
+                <Badge variant="outline" className="text-[9px] text-muted-foreground">סטטי</Badge>
+              )}
             </div>
             <p className="text-[11px] font-mono text-muted-foreground truncate">{page.path}</p>
+            {scannedAt && (
+              <p className="text-[10px] text-muted-foreground">נסרק: {new Date(scannedAt).toLocaleDateString('he-IL')} {new Date(scannedAt).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}</p>
+            )}
             <div className="space-y-1">
               {[...page.dimensions].sort((a, b) => a.score - b.score).slice(0, 3).map(d =>
                 <DimBar key={d.dimension} dimension={d.dimension} score={d.score} />
