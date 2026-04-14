@@ -489,7 +489,7 @@ export function GeoContentTransform() {
         lastReviewed: new Date().toISOString().split('T')[0],
       });
     }
-  }, [selected, liveContents, rescanPage, getPersistedSections]);
+  }, [selected, liveContents, rescanPage, getPersistedSections, updateWorkflow, workflows]);
 
   const handleGeneralAudit = useCallback(async () => {
     for (const t of CONTENT_TRANSFORMS) {
