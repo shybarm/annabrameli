@@ -278,7 +278,8 @@ function TransformDetail({
   checklist, onChecklistToggle,
   liveContent, recommendations,
   onLiveContentUpdate, onRecommendationsUpdate,
-  onSavePermanent, isSaving, onReAudit, isScanning,
+  onSavePermanent, isSaving, savePhase, saveButtonLabel,
+  onReAudit, isScanning,
   scanResult,
 }: {
   transform: ContentTransform | null;
@@ -294,6 +295,8 @@ function TransformDetail({
   onRecommendationsUpdate: (recs: EditableRecommendation[]) => void;
   onSavePermanent: () => void;
   isSaving: boolean;
+  savePhase?: string;
+  saveButtonLabel?: string;
   onReAudit: () => void;
   isScanning: boolean;
   scanResult: GeoScanResult | null;
@@ -349,8 +352,8 @@ function TransformDetail({
             className="gap-2"
             size="sm"
           >
-            {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-            {isSaving ? 'שומר...' : 'שמור קבוע ל-DB'}
+            {(savePhase === 'saving' || savePhase === 'rescanning') ? <Loader2 className="h-4 w-4 animate-spin" /> : savePhase === 'done' ? <CheckCircle2 className="h-4 w-4" /> : <Save className="h-4 w-4" />}
+            {saveButtonLabel || 'שמור קבוע ל-DB'}
           </Button>
         </div>
 
@@ -404,6 +407,9 @@ function TransformDetail({
   );
 }
 
+// ── Save lifecycle phase ──
+type SavePhase = 'idle' | 'saving' | 'rescanning' | 'done' | 'error';
+
 // ── Main component ──
 export function GeoContentTransform() {
   const [selected, setSelected] = useState<ContentTransform | null>(null);
@@ -413,6 +419,7 @@ export function GeoContentTransform() {
   const { setSections: setPageContentSections, getSections: getPersistedSections } = usePageContentUpdater();
   const { savePage, loadAllOverrides, saving: isSavingPermanent } = usePageContentPersistence();
   const { rescanPage, getScanResult, scanResults, scanning: isScanning } = useGeoRescan();
+  const [savePhase, setSavePhase] = useState<SavePhase>('idle');
 
   // Load persisted overrides on mount and push into PageContentContext
   useEffect(() => {
@@ -436,21 +443,35 @@ export function GeoContentTransform() {
       tag: s.tag,
       content: s.content,
     }));
-    const ok = await savePage(selected.pageId, sections);
-    if (ok) {
-      window.dispatchEvent(new CustomEvent('geo-page-saved', { detail: { pageId: selected.pageId } }));
 
-      // Auto-trigger rescan after successful save
-      const brief = WORKSPACE_BRIEFS.find(b => b.id === selected.pageId);
-      rescanPage(
-        selected.pageId,
-        sections,
-        brief?.suggestedTitle,
-        brief?.pagePath,
-      ).then(() => {
-        window.dispatchEvent(new CustomEvent('geo-scan-complete', { detail: { pageId: selected.pageId } }));
-      });
+    // Phase 1: Save
+    setSavePhase('saving');
+    const ok = await savePage(selected.pageId, sections);
+    if (!ok) {
+      setSavePhase('error');
+      setTimeout(() => setSavePhase('idle'), 3000);
+      return;
     }
+
+    window.dispatchEvent(new CustomEvent('geo-page-saved', { detail: { pageId: selected.pageId } }));
+
+    // Phase 2: Auto-rescan the exact saved content
+    setSavePhase('rescanning');
+    const brief = WORKSPACE_BRIEFS.find(b => b.id === selected.pageId);
+    const result = await rescanPage(
+      selected.pageId,
+      sections, // Use the exact sections that were just persisted
+      brief?.suggestedTitle,
+      brief?.pagePath,
+    );
+
+    if (result) {
+      window.dispatchEvent(new CustomEvent('geo-scan-complete', { detail: { pageId: selected.pageId } }));
+      setSavePhase('done');
+    } else {
+      setSavePhase('error');
+    }
+    setTimeout(() => setSavePhase('idle'), 4000);
   }, [selected, liveContents, savePage, rescanPage]);
 
   const handleReAudit = useCallback(async () => {
@@ -510,28 +531,29 @@ export function GeoContentTransform() {
     }
   }, [liveContents, rescanPage, getPersistedSections]);
 
-  // Lazy-initialize live content for a page — uses persisted DB content if available
-  const getLiveContent = useCallback((pageId: string): LivePageContent => {
-    if (!liveContents[pageId]) {
-      const persisted = getPersistedSections(pageId);
-      const content = initializeLiveContent(
-        pageId,
-        persisted.length > 0 ? persisted : undefined,
-      );
-      setLiveContents(prev => ({ ...prev, [pageId]: content }));
-      return content;
-    }
-    return liveContents[pageId];
+  // Initialize live content via effect instead of during render
+  const ensureLiveContent = useCallback((pageId: string) => {
+    if (liveContents[pageId]) return;
+    const persisted = getPersistedSections(pageId);
+    const content = initializeLiveContent(
+      pageId,
+      persisted.length > 0 ? persisted : undefined,
+    );
+    setLiveContents(prev => ({ ...prev, [pageId]: content }));
   }, [liveContents, getPersistedSections]);
 
-  const getRecommendations = useCallback((pageId: string): EditableRecommendation[] => {
-    if (!allRecommendations[pageId]) {
-      const recs = initializeRecommendations(pageId);
-      setAllRecommendations(prev => ({ ...prev, [pageId]: recs }));
-      return recs;
-    }
-    return allRecommendations[pageId];
+  const ensureRecommendations = useCallback((pageId: string) => {
+    if (allRecommendations[pageId]) return;
+    const recs = initializeRecommendations(pageId);
+    setAllRecommendations(prev => ({ ...prev, [pageId]: recs }));
   }, [allRecommendations]);
+
+  // Initialize content when a page is selected (via effect, not during render)
+  useEffect(() => {
+    if (!selected) return;
+    ensureLiveContent(selected.pageId);
+    ensureRecommendations(selected.pageId);
+  }, [selected?.pageId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const updateWorkflow = useCallback((pageId: string, updated: PageWorkflow) => {
     setWorkflows(prev => ({ ...prev, [pageId]: updated }));
@@ -569,6 +591,15 @@ export function GeoContentTransform() {
     acc[s] = CONTENT_TRANSFORMS.filter(t => workflows[t.pageId]?.status === s).length;
     return acc;
   }, {} as Record<string, number>);
+
+  // Derive save button label from phase
+  const saveButtonLabel = savePhase === 'saving' ? 'שומר...'
+    : savePhase === 'rescanning' ? 'סורק GEO...'
+    : savePhase === 'done' ? '✓ נשמר ונסרק'
+    : savePhase === 'error' ? '✗ שגיאה'
+    : 'שמור קבוע ל-DB';
+
+  const isSaveDisabled = savePhase === 'saving' || savePhase === 'rescanning' || isSavingPermanent;
 
   return (
     <div className="space-y-6">
@@ -680,12 +711,14 @@ export function GeoContentTransform() {
         onWorkflowChange={(w) => selected && updateWorkflow(selected.pageId, w)}
         checklist={selected ? (checklists[selected.pageId] || {}) : {}}
         onChecklistToggle={(itemId, checked) => selected && toggleChecklistItem(selected.pageId, itemId, checked)}
-        liveContent={selected ? getLiveContent(selected.pageId) : null}
-        recommendations={selected ? getRecommendations(selected.pageId) : []}
+        liveContent={selected ? (liveContents[selected.pageId] || null) : null}
+        recommendations={selected ? (allRecommendations[selected.pageId] || []) : []}
         onLiveContentUpdate={(content) => selected && updateLiveContent(selected.pageId, content)}
         onRecommendationsUpdate={(recs) => selected && updateRecommendations(selected.pageId, recs)}
         onSavePermanent={handleSavePermanent}
-        isSaving={isSavingPermanent}
+        isSaving={isSaveDisabled}
+        savePhase={savePhase}
+        saveButtonLabel={saveButtonLabel}
         onReAudit={handleReAudit}
         isScanning={isScanning}
         scanResult={selected ? getScanResult(selected.pageId) : null}

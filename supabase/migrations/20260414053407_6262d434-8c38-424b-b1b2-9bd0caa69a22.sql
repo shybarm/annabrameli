@@ -1,0 +1,1 @@
+ALTER TABLE public.geo_scan_results ADD COLUMN content_hash text DEFAULT NULL;
