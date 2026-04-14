@@ -51,8 +51,8 @@ const ALL_STATUSES: WorkflowStatus[] = [
   'approved', 'ready_to_publish', 'published', 're_audit',
 ];
 
-function StatusBadge({ status }: { status: WorkflowStatus }) {
-  const cfg = WORKFLOW_STATUS_CONFIG[status];
+function StatusBadge({ status }: { status: string }) {
+  const cfg = WORKFLOW_STATUS_CONFIG[status as WorkflowStatus] || WORKFLOW_STATUS_CONFIG['not_reviewed'];
   return <Badge className={`text-[10px] border ${cfg.color}`}>{cfg.label}</Badge>;
 }
 
