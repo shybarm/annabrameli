@@ -691,6 +691,9 @@ export function GeoSprint4Clusters() {
     actions, addAction, executeAction, getActionsForCluster,
     getPendingCount, getCompletedCount, processing, ACTION_LABELS,
   } = useClusterActions();
+  const liveState = useGeoLiveState();
+  const assignments = useLiveClusterAssignments(liveState.contentBriefs);
+  const briefs = useLiveBriefs(liveState.contentBriefs);
 
   const handleAction = useCallback((type: ClusterActionType, page: ClusterPage, clusterId: string) => {
     if (type === 'create_brief') {
@@ -710,7 +713,6 @@ export function GeoSprint4Clusters() {
       executeAction(action.id);
     }
 
-    // Dispatch event for sprint planner integration
     if (type === 'queue_to_sprint') {
       executeAction(action.id);
     }
@@ -718,11 +720,12 @@ export function GeoSprint4Clusters() {
 
   const handleSaveBrief = useCallback((briefContent: string) => {
     if (!briefPage) return;
-    addAction('create_brief', '', briefPage.titleHe, briefPage.path || '', {
+    const action = addAction('create_brief', '', briefPage.titleHe, briefPage.path || '', {
       actionLabel: 'בריף כתיבה',
       briefContent,
     });
-  }, [briefPage, addAction]);
+    executeAction(action.id);
+  }, [briefPage, addAction, executeAction]);
 
   return (
     <div className="space-y-6">
@@ -734,6 +737,37 @@ export function GeoSprint4Clusters() {
         onExecute={executeAction}
         processing={processing}
       />
+
+      {/* Persisted briefs panel */}
+      {briefs.length > 0 && (
+        <Card className="border-border/50">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <FileText className="h-5 w-5 text-primary" />
+              בריפים שמורים ({briefs.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 max-h-[250px] overflow-y-auto">
+            {briefs.map(b => (
+              <div key={b.id} className="flex items-center gap-3 p-2 rounded-lg bg-muted/20 border border-border/30">
+                <FileText className="h-4 w-4 text-primary shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium text-foreground truncate">{b.pageTitle}</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {b.briefType === 'brief' ? 'בריף' : 'טיוטה'} · {b.clusterId || 'כללי'} · {new Date(b.createdAt).toLocaleDateString('he-IL')}
+                  </p>
+                  {b.content?.intent && (
+                    <p className="text-[10px] text-primary">כוונה: {b.content.intent}</p>
+                  )}
+                </div>
+                <Badge className="text-[9px] bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+                  {b.content?.status || 'saved'}
+                </Badge>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
 
       <Tabs defaultValue="clusters" className="w-full">
         <TabsList className="w-full h-auto gap-1 bg-muted/30 p-1 rounded-xl flex-wrap">
@@ -750,6 +784,12 @@ export function GeoSprint4Clusters() {
               onTransformPage={setEditingPage}
               onAction={handleAction}
               clusterActions={getActionsForCluster(c.id).length}
+              liveAssignments={assignments.filter(a => a.clusterId === c.id).map(a => ({
+                pageTitle: a.pageTitle,
+                pagePath: a.pagePath,
+                content: a.content,
+              }))}
+              liveBriefCount={briefs.filter(b => b.clusterId === c.id).length}
             />
           ))}
         </TabsContent>
