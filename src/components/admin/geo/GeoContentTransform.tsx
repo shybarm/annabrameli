@@ -565,6 +565,10 @@ export function GeoContentTransform() {
     );
 
     if (result) {
+      // Reconcile recommendations against current content after rescan
+      const reconciledRecs = initializeRecommendations(pageId, content.sections);
+      setAllRecommendations(prev => ({ ...prev, [pageId]: reconciledRecs }));
+
       updateWorkflow(pageId, {
         ...workflows[pageId],
         status: 're_audit',
