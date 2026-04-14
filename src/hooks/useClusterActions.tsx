@@ -378,7 +378,19 @@ export function useClusterActions() {
       // Refresh shared provider to pick up new briefs/tasks/overrides
       if (success) {
         await liveActions.refresh();
-        toast.success(`${ACTION_LABELS[action.type]} הושלם: ${action.pageTitle}`);
+
+        // Honest messaging: distinguish between real page operations and draft-only artifacts
+        const isMissingPage = !action.pagePath || action.metadata.role === 'missing';
+        const isDraftAction = action.type === 'generate_draft' || action.type === 'create_brief';
+
+        if (isMissingPage && isDraftAction) {
+          toast.success(
+            `${ACTION_LABELS[action.type]} נשמר: ${action.pageTitle}`,
+            { description: 'טיוטה/בריף בלבד — הדף עדיין לא קיים כנתיב באתר' }
+          );
+        } else {
+          toast.success(`${ACTION_LABELS[action.type]} הושלם: ${action.pageTitle}`);
+        }
       } else {
         toast.error(`${ACTION_LABELS[action.type]} נכשל: ${action.pageTitle}`);
       }
