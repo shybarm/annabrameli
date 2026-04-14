@@ -1,5 +1,13 @@
-import { useState, useCallback, useEffect } from 'react';
+/**
+ * useGeoRescan — mutation-only hook.
+ * Performs rescans via the edge function and writes results
+ * directly into the shared GeoLiveDataProvider state.
+ * Does NOT own its own scanResults copy.
+ */
+
+import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useGeoLiveState, useGeoLiveActions } from '@/contexts/GeoLiveDataContext';
 import { toast } from 'sonner';
 
 export interface GeoScanDimension {
@@ -26,58 +34,8 @@ export interface GeoScanResult {
 
 export function useGeoRescan() {
   const [scanning, setScanning] = useState(false);
-  const [scanResults, setScanResults] = useState<Record<string, GeoScanResult>>({});
-  const [loaded, setLoaded] = useState(false);
-
-  // Load latest scan results from DB on mount
-  useEffect(() => {
-    if (loaded) return;
-    let cancelled = false;
-
-    const loadFromDb = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('geo_scan_results' as any)
-          .select('*')
-          .order('scanned_at', { ascending: false });
-
-        if (error || !data) {
-          console.error('Failed to load scan results:', error);
-          return;
-        }
-
-        // Keep only the latest scan per page_id
-        const byPage: Record<string, GeoScanResult> = {};
-        for (const row of data as any[]) {
-          if (!byPage[row.page_id]) {
-            byPage[row.page_id] = {
-              pageId: row.page_id,
-              scannedAt: row.scanned_at,
-              dimensions: row.dimensions,
-              overallScore: Number(row.overall_score),
-              blockers: row.blockers || [],
-              recommendations: row.recommendations || [],
-              strengths: row.strengths || [],
-              weaknesses: row.weaknesses || [],
-              contentHash: row.content_hash || undefined,
-              persisted: true,
-            };
-          }
-        }
-
-        if (!cancelled) {
-          setScanResults(byPage);
-        }
-      } catch (err) {
-        console.error('Failed to load scan results from DB:', err);
-      } finally {
-        if (!cancelled) setLoaded(true);
-      }
-    };
-
-    loadFromDb();
-    return () => { cancelled = true; };
-  }, [loaded]);
+  const { scanResults } = useGeoLiveState();
+  const { upsertScanResult } = useGeoLiveActions();
 
   const rescanPage = useCallback(async (
     pageId: string,
@@ -95,7 +53,9 @@ export function useGeoRescan() {
       if (data?.error) throw new Error(data.error);
 
       const result = data as GeoScanResult;
-      setScanResults(prev => ({ ...prev, [pageId]: result }));
+      
+      // Write directly into shared provider state — no local copy
+      upsertScanResult(pageId, result);
 
       if (result.persisted) {
         toast.success(`סריקת GEO הושלמה ונשמרה — ציון: ${result.overallScore}`);
@@ -110,7 +70,7 @@ export function useGeoRescan() {
     } finally {
       setScanning(false);
     }
-  }, []);
+  }, [upsertScanResult]);
 
   const getScanResult = useCallback((pageId: string) => {
     return scanResults[pageId] || null;
