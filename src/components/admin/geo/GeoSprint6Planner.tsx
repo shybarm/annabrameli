@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -7,7 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  PHASE_META, OWNER_LABELS, PAGE_TO_TASK_MAP,
+  PHASE_META, OWNER_LABELS,
   type ExecutionTask, type Phase, type TaskStatus,
 } from '@/data/geo-sprint6-data';
 import { useGeoLiveData, useLiveExecutionTasks } from '@/hooks/useGeoLiveData';
@@ -40,6 +40,8 @@ export function GeoSprint6Planner() {
   useEffect(() => {
     setTasks(baseTasks);
   }, [baseTasks]);
+
+  const hasDbTasks = sprintTasks.length > 0;
 
   const toggleStatus = (id: string) => {
     setTasks(prev => prev.map(t =>
