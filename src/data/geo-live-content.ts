@@ -136,20 +136,25 @@ export function initializeRecommendations(
   const liveSections = currentContent || buildCurrentSections(pageId);
 
   return transform.changeLog.map((item, i) => {
-    const sectionIndex = Math.min(i, (transform.draft.length || 1) - 1);
+    // Find the best matching draft section for this changeLog item
+    // by looking for the draft section whose content/heading best matches the 'after' description
+    const sectionIndex = findBestDraftSection(transform.draft, item, i);
     const draftSection = transform.draft[sectionIndex];
-    const currentSection = liveSections[sectionIndex] || draftSection;
+
     const targetField: EditableField = draftSection.content?.trim() ? 'content' : 'heading';
     const originalAfter = targetField === 'heading' ? draftSection.heading : draftSection.content;
-    const originalBefore = targetField === 'heading'
-      ? currentSection?.heading || ''
-      : currentSection?.content || '';
 
-    // Reconcile: check if the recommended change is already present in the current content
-    const currentValue = targetField === 'heading'
-      ? currentSection?.heading || ''
-      : currentSection?.content || '';
-    const isAlreadyApplied = reconcileRecommendation(originalAfter, currentValue);
+    // Find the matching section in the CURRENT live content by area/heading similarity
+    const currentSection = findMatchingLiveSection(liveSections, draftSection, item);
+    const originalBefore = currentSection
+      ? (targetField === 'heading' ? currentSection.heading : currentSection.content)
+      : item.before; // Fall back to the changeLog's own 'before' description
+
+    // Reconcile: check if the recommended content is already in any live section
+    const isAlreadyApplied = liveSections.some(s => {
+      const text = `${s.heading} ${s.content}`;
+      return reconcileRecommendation(originalAfter, text);
+    });
 
     return {
       id: `${pageId}-rec-${i}`,
@@ -165,6 +170,80 @@ export function initializeRecommendations(
       appliedAt: isAlreadyApplied ? new Date().toISOString() : undefined,
     };
   });
+}
+
+/**
+ * Find the draft section index that best matches a changeLog item.
+ * Uses area name and content keyword overlap as signals.
+ */
+function findBestDraftSection(
+  draft: { heading: string; tag: string; content: string }[],
+  changeItem: { area: string; after: string },
+  fallbackIndex: number,
+): number {
+  // Try to match by area keyword in heading
+  const areaLower = changeItem.area.toLowerCase();
+  for (let j = 0; j < draft.length; j++) {
+    const headingLower = (draft[j].heading || '').toLowerCase();
+    if (headingLower && areaLower && (
+      headingLower.includes(areaLower) || areaLower.includes(headingLower)
+    )) {
+      return j;
+    }
+  }
+
+  // Try to match by 'after' description words in draft content
+  const afterWords = changeItem.after.split(/\s+/).filter(w => w.length > 3);
+  if (afterWords.length > 0) {
+    let bestIdx = fallbackIndex;
+    let bestScore = 0;
+    for (let j = 0; j < draft.length; j++) {
+      const text = `${draft[j].heading} ${draft[j].content}`.toLowerCase();
+      const score = afterWords.filter(w => text.includes(w.toLowerCase())).length / afterWords.length;
+      if (score > bestScore) {
+        bestScore = score;
+        bestIdx = j;
+      }
+    }
+    if (bestScore > 0.3) return bestIdx;
+  }
+
+  return Math.min(fallbackIndex, draft.length - 1);
+}
+
+/**
+ * Find the live section that corresponds to a draft section.
+ * Returns null if no reasonable match exists (meaning the recommended content is new).
+ */
+function findMatchingLiveSection(
+  liveSections: LiveSection[],
+  draftSection: { heading: string; content: string },
+  changeItem: { area: string; before: string },
+): LiveSection | null {
+  if (!liveSections.length) return null;
+
+  // Try exact heading match
+  for (const s of liveSections) {
+    if (s.heading && draftSection.heading && s.heading === draftSection.heading) return s;
+  }
+
+  // Try keyword overlap between the changeItem 'before' description and live content
+  const beforeWords = changeItem.before.split(/\s+/).filter(w => w.length > 3);
+  if (beforeWords.length > 0) {
+    let bestSection: LiveSection | null = null;
+    let bestScore = 0;
+    for (const s of liveSections) {
+      const text = `${s.heading} ${s.content}`;
+      const score = beforeWords.filter(w => text.includes(w)).length / beforeWords.length;
+      if (score > bestScore) {
+        bestScore = score;
+        bestSection = s;
+      }
+    }
+    if (bestScore > 0.3) return bestSection;
+  }
+
+  return null;
 }
 
 /**
