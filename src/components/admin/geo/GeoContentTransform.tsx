@@ -31,24 +31,14 @@ import {
   CheckCircle2, XCircle, TrendingUp,
 } from 'lucide-react';
 
-// ── Local workflow state ──
-interface PageWorkflow {
-  status: WorkflowStatus;
-  priority: PriorityLevel;
-  owner: string;
-  lastReviewed: string;
-  notes: string;
-}
-
-type WorkflowMap = Record<string, PageWorkflow>;
-
-const DEFAULT_WORKFLOWS: WorkflowMap = Object.fromEntries(
+// ── Default workflow seeds (used as fallback before DB loads) ──
+const DEFAULT_WORKFLOWS: Record<string, PageWorkflow> = Object.fromEntries(
   CONTENT_TRANSFORMS.map(t => {
     const brief = WORKSPACE_BRIEFS.find(b => b.id === t.pageId);
     const isNew = brief && brief.currentGeoScore === 0;
     return [t.pageId, {
-      status: isNew ? 'rewrite_needed' as WorkflowStatus : 'not_reviewed' as WorkflowStatus,
-      priority: t.diagnosis.geoBlockers.length >= 3 ? 'critical' as PriorityLevel : t.diagnosis.geoBlockers.length >= 2 ? 'high' as PriorityLevel : 'medium' as PriorityLevel,
+      status: isNew ? 'rewrite_needed' : 'not_reviewed',
+      priority: t.diagnosis.geoBlockers.length >= 3 ? 'critical' : t.diagnosis.geoBlockers.length >= 2 ? 'high' : 'medium',
       owner: '',
       lastReviewed: '',
       notes: '',
