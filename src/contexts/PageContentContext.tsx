@@ -5,6 +5,12 @@ import { supabase } from '@/integrations/supabase/client';
 const PAGE_ID_ALIASES: Record<string, string[]> = {
   'knowledge:פריחה-אחרי-במבה': ['bamba-reaction'],
   'bamba-reaction': ['knowledge:פריחה-אחרי-במבה'],
+  // GEO system uses 'milk-allergy' but if a route is ever created it would use 'knowledge:אלרגיה-לחלב-בילדים'
+  'milk-allergy': ['knowledge:אלרגיה-לחלב-בילדים'],
+  'knowledge:אלרגיה-לחלב-בילדים': ['milk-allergy'],
+  // GEO system uses 'atopic-dermatitis' but if a route is ever created it would use 'knowledge:אקזמה-אטופית-בילדים'
+  'atopic-dermatitis': ['knowledge:אקזמה-אטופית-בילדים'],
+  'knowledge:אקזמה-אטופית-בילדים': ['atopic-dermatitis'],
 };
 
 function getPageIdCandidates(pageId: string) {
