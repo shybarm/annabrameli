@@ -507,14 +507,11 @@ export function GeoContentTransform() {
         brief?.pagePath,
       );
 
-      setWorkflows(prev => ({
-        ...prev,
-        [t.pageId]: {
-          ...prev[t.pageId],
-          status: 're_audit' as WorkflowStatus,
-          lastReviewed: new Date().toISOString().split('T')[0],
-        },
-      }));
+      updateWorkflow(t.pageId, {
+        ...workflows[t.pageId],
+        status: 're_audit',
+        lastReviewed: new Date().toISOString().split('T')[0],
+      });
     }
   }, [liveContents, rescanPage, getPersistedSections]);
 
