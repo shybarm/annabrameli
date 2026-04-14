@@ -780,6 +780,7 @@ export type Database = {
       geo_scan_results: {
         Row: {
           blockers: Json
+          content_hash: string | null
           created_at: string
           dimensions: Json
           id: string
@@ -792,6 +793,7 @@ export type Database = {
         }
         Insert: {
           blockers?: Json
+          content_hash?: string | null
           created_at?: string
           dimensions?: Json
           id?: string
@@ -804,6 +806,7 @@ export type Database = {
         }
         Update: {
           blockers?: Json
+          content_hash?: string | null
           created_at?: string
           dimensions?: Json
           id?: string
