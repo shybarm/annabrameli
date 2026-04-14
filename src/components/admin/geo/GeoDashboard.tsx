@@ -73,9 +73,10 @@ export function GeoDashboard() {
       {hasScanData && (
         <div className="flex items-center gap-2 text-[10px] text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800">
           <Database className="h-3 w-3" />
-          נתונים חיים מ-{Object.keys(scanResults).length} סריקות AI אחרונות
+          נתונים חיים מ-{Object.keys(scanResults).length} סריקות AI
+          {latestScanAt && ` • עודכן ${new Date(latestScanAt).toLocaleDateString('he-IL')}`}
           {savedPages > 0 && ` • ${savedPages} דפים נשמרו`}
-          {clusterActions.length > 0 && ` • ${clusterActions.filter(a => a.status === 'completed').length} פעולות הושלמו`}
+          {clusterActions.filter(a => a.status === 'completed').length > 0 && ` • ${clusterActions.filter(a => a.status === 'completed').length} פעולות הושלמו`}
         </div>
       )}
 
@@ -105,26 +106,29 @@ export function GeoDashboard() {
             <CardTitle className="text-base flex items-center gap-2">
               <TrendingUp className="h-4 w-4" />
               דפים בעדיפות גבוהה
-              {hasScanData && <Badge variant="outline" className="text-[9px]">נתונים חיים</Badge>}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {topPriority.map((page: any) => (
-              <div key={page.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{page.titleHe}</p>
-                  <p className="text-xs text-muted-foreground font-mono truncate">{page.path}</p>
-                </div>
-                <div className="flex items-center gap-3 mr-3">
-                  <div className="w-16">
-                    <Progress value={(page.weightedScore || page.geoScore || 0) * (hasScanData ? 10 : 1)} className="h-2" />
+            {topPriority.map((page) => {
+              const isLive = !!scanResults[page.id];
+              return (
+                <div key={page.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{page.titleHe}</p>
+                    <p className="text-xs text-muted-foreground font-mono truncate">{page.path}</p>
                   </div>
-                  <span className={`text-sm font-bold w-8 text-left ${scoreColor((page.weightedScore || page.geoScore || 0) * (hasScanData ? 10 : 1))}`}>
-                    {hasScanData ? page.weightedScore : page.geoScore}
-                  </span>
+                  <div className="flex items-center gap-3 mr-3">
+                    <div className="w-16">
+                      <Progress value={page.weightedScore * 10} className="h-2" />
+                    </div>
+                    <span className={`text-sm font-bold w-8 text-left ${scoreColor(page.weightedScore * 10)}`}>
+                      {page.weightedScore}
+                    </span>
+                    {isLive && <span className="text-[8px] text-emerald-500">●</span>}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </CardContent>
         </Card>
 
