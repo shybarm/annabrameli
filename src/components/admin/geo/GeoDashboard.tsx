@@ -1,4 +1,4 @@
-import { GEO_PAGES, ENTITY_SIGNALS } from '@/data/geo-data';
+import { ENTITY_SIGNALS } from '@/data/geo-data';
 import { TOPIC_CLUSTERS } from '@/data/geo-sprint4-data';
 import { useGeoLiveData, useLiveScoredPages, useLiveExecutionTasks } from '@/hooks/useGeoLiveData';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,21 +26,24 @@ export function GeoDashboard() {
 
   const hasScanData = Object.keys(scanResults).length > 0;
 
-  // Use live scan data if available, otherwise fall back to static
+  // Always use livePages as unified source (merges static + live scan data)
   const avgGeoScore = livePages.length
-    ? Math.round((livePages.reduce((s, p) => s + p.weightedScore, 0) / livePages.length) * 10)
+    ? Math.round(livePages.reduce((s, p) => s + p.weightedScore, 0) / livePages.length * 10) / 10
     : 0;
   const avgEntity = Math.round(ENTITY_SIGNALS.reduce((s, e) => s + e.consistency, 0) / ENTITY_SIGNALS.length);
   const avgCluster = Math.round(TOPIC_CLUSTERS.reduce((s, c) => s + c.coverageDepth, 0) / TOPIC_CLUSTERS.length);
-  const criticalPages = hasScanData
-    ? livePages.filter(p => p.weightedScore < 5.5).length
-    : GEO_PAGES.filter(p => p.geoScore < 55).length;
+  const criticalPages = livePages.filter(p => p.weightedScore < 5.5).length;
   const completedTasks = liveTasks.filter(t => t.status === 'done').length;
   const totalTasks = liveTasks.length;
   const savedPages = Object.keys(contentOverrides).length;
 
+  // Find most recent scan timestamp
+  const latestScanAt = Object.values(scanResults).reduce((latest, s) => {
+    return s.scannedAt > latest ? s.scannedAt : latest;
+  }, '');
+
   const stats = [
-    { label: 'ציון GEO ממוצע', value: hasScanData ? (avgGeoScore / 10).toFixed(1) : avgGeoScore, icon: Brain, suffix: hasScanData ? '/10' : '/100', live: hasScanData },
+    { label: 'ציון GEO ממוצע', value: avgGeoScore, icon: Brain, suffix: '/10', live: hasScanData },
     { label: 'עקביות ישות', value: avgEntity, icon: Target, suffix: '/100', live: false },
     { label: 'כיסוי אשכולות', value: avgCluster, icon: TrendingUp, suffix: '%', live: false },
     { label: 'דפים קריטיים', value: criticalPages, icon: AlertTriangle, suffix: '', live: hasScanData },
