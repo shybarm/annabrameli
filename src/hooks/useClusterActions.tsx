@@ -36,6 +36,7 @@ export function useClusterActions() {
   const [processing, setProcessing] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const liveActions = useGeoLiveActions();
+  const { refreshPage } = usePageContentUpdater();
 
   useEffect(() => {
     if (loaded) return;
