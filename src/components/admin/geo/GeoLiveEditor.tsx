@@ -113,7 +113,11 @@ function RecommendationCard({
               <p className="text-[10px] font-semibold text-muted-foreground mb-1 flex items-center gap-1">
                 <Eye className="h-3 w-3" /> {rec.targetField === 'heading' ? 'כותרת נוכחית באתר' : 'תוכן נוכחי באתר'}
               </p>
-              <p className="text-foreground whitespace-pre-wrap">{liveValue || rec.originalBefore}</p>
+              {liveValue ? (
+                <p className="text-foreground whitespace-pre-wrap">{liveValue}</p>
+              ) : (
+                <p className="text-muted-foreground italic">תוכן זה לא קיים כרגע בדף — מדובר בהמלצה להוספת תוכן חדש</p>
+              )}
             </div>
 
             {/* Editable recommendation */}
