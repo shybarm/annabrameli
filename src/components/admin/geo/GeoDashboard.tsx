@@ -51,10 +51,8 @@ export function GeoDashboard() {
     { label: 'תוכנית 90 יום', value: completedTasks, icon: CheckCircle, suffix: `/${totalTasks}`, live: sprintTasks.length > 0 },
   ];
 
-  // Priority pages from live data
-  const topPriority = hasScanData
-    ? [...livePages].sort((a, b) => a.weightedScore - b.weightedScore).slice(0, 5)
-    : GEO_PAGES.filter(p => p.priority === 'high').sort((a, b) => a.geoScore - b.geoScore).slice(0, 5);
+  // Always use unified livePages (sorted by weakest first)
+  const topPriority = [...livePages].sort((a, b) => a.weightedScore - b.weightedScore).slice(0, 5);
 
   const weakClusters = [...TOPIC_CLUSTERS]
     .sort((a, b) => a.coverageDepth - b.coverageDepth)
