@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useGeoLiveActions } from '@/contexts/GeoLiveDataContext';
 import { toast } from 'sonner';
 
 export type ClusterActionType =
@@ -33,8 +34,8 @@ export function useClusterActions() {
   const [actions, setActions] = useState<ClusterAction[]>([]);
   const [processing, setProcessing] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const liveActions = useGeoLiveActions();
 
-  // Load persisted actions from DB on mount
   useEffect(() => {
     if (loaded) return;
     let cancelled = false;
@@ -85,30 +86,20 @@ export function useClusterActions() {
   ): ClusterAction => {
     const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
     const action: ClusterAction = {
-      id: tempId,
-      type,
-      clusterId,
-      pageTitle,
-      pagePath,
-      status: 'pending',
-      metadata,
-      createdAt: new Date().toISOString(),
+      id: tempId, type, clusterId, pageTitle, pagePath,
+      status: 'pending', metadata, createdAt: new Date().toISOString(),
     };
     setActions(prev => [action, ...prev]);
     toast.info(`${ACTION_LABELS[type]}: ${pageTitle}`);
 
-    // Persist to DB in background, replace temp ID with real one
     (async () => {
       try {
         const { data, error } = await supabase
           .from('geo_cluster_actions' as any)
           .insert({
-            action_type: type,
-            cluster_id: clusterId,
-            page_title: pageTitle,
-            page_path: pagePath,
-            status: 'pending',
-            metadata,
+            action_type: type, cluster_id: clusterId,
+            page_title: pageTitle, page_path: pagePath,
+            status: 'pending', metadata,
           })
           .select('id')
           .single();
@@ -126,10 +117,209 @@ export function useClusterActions() {
     return action;
   }, []);
 
+  // ── Real side-effect executors ──
+
+  /** add_internal_link: Inject an internal-links section into page_content_overrides */
+  const execAddInternalLink = async (action: ClusterAction): Promise<boolean> => {
+    const linksMissing: string[] = action.metadata.linksMissing || [];
+    if (linksMissing.length === 0) return false;
+
+    // Derive pageId from pagePath
+    const pageId = derivePageId(action.pagePath);
+    if (!pageId) {
+      console.error('Cannot derive pageId from path:', action.pagePath);
+      return false;
+    }
+
+    // Read current page_content_overrides
+    const { data: existing } = await supabase
+      .from('page_content_overrides' as any)
+      .select('*')
+      .eq('page_id', pageId)
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    const currentSections: any[] = (existing as any)?.sections || [];
+
+    // Build link block content
+    const linkBlock = linksMissing.map(l => `• <a href="${l}">${l}</a>`).join('\n');
+    const newSection = {
+      heading: 'קישורים פנימיים קשורים',
+      tag: 'h2',
+      content: linkBlock,
+    };
+
+    // Check if internal links section already exists
+    const idx = currentSections.findIndex((s: any) =>
+      s.heading?.includes('קישורים פנימיים')
+    );
+    const updatedSections = [...currentSections];
+    if (idx >= 0) {
+      updatedSections[idx] = newSection;
+    } else {
+      updatedSections.push(newSection);
+    }
+
+    // Upsert page_content_overrides
+    const { error } = existing
+      ? await supabase
+          .from('page_content_overrides' as any)
+          .update({ sections: updatedSections, updated_at: new Date().toISOString() })
+          .eq('id', (existing as any).id)
+      : await supabase
+          .from('page_content_overrides' as any)
+          .insert({
+            page_id: pageId,
+            sections: updatedSections,
+            version_label: 'applied',
+          });
+
+    if (error) {
+      console.error('add_internal_link: failed to update page content:', error);
+      return false;
+    }
+
+    // Also log to briefs for traceability
+    await supabase
+      .from('geo_content_briefs' as any)
+      .insert({
+        page_title: action.pageTitle, page_path: action.pagePath,
+        cluster_id: action.clusterId, brief_type: 'internal_link',
+        content: { action: 'add_internal_link', linksAdded: linksMissing, appliedAt: new Date().toISOString() },
+      });
+
+    // Update shared provider
+    liveActions.upsertContentOverride(pageId, {
+      updatedAt: new Date().toISOString(),
+      appliedBy: null,
+    });
+
+    return true;
+  };
+
+  /** assign_to_cluster: Persist real cluster membership */
+  const execAssignToCluster = async (action: ClusterAction): Promise<boolean> => {
+    const { error } = await supabase
+      .from('geo_content_briefs' as any)
+      .insert({
+        page_title: action.pageTitle, page_path: action.pagePath,
+        cluster_id: action.clusterId, brief_type: 'cluster_assignment',
+        content: {
+          action: 'assign_to_cluster',
+          clusterId: action.clusterId,
+          intent: action.metadata.intent,
+          role: action.metadata.role,
+          assignedAt: new Date().toISOString(),
+        },
+      });
+    if (error) {
+      console.error('assign_to_cluster failed:', error);
+      return false;
+    }
+    return true;
+  };
+
+  /** create_brief: Persist structured brief artifact */
+  const execCreateBrief = async (action: ClusterAction): Promise<boolean> => {
+    const { error } = await supabase
+      .from('geo_content_briefs' as any)
+      .insert({
+        page_title: action.pageTitle, page_path: action.pagePath,
+        cluster_id: action.clusterId, brief_type: 'brief',
+        content: {
+          briefContent: action.metadata.briefContent || '',
+          intent: action.metadata.intent,
+          role: action.metadata.role,
+          targetAudience: 'הורים לילדים אלרגיים',
+          status: 'draft',
+          createdAt: new Date().toISOString(),
+        },
+      });
+    if (error) {
+      console.error('create_brief failed:', error);
+      return false;
+    }
+    return true;
+  };
+
+  /** generate_draft: Create a real draft in page_content_overrides */
+  const execGenerateDraft = async (action: ClusterAction): Promise<boolean> => {
+    const pageId = derivePageId(action.pagePath) || action.pageTitle.replace(/\s+/g, '-').toLowerCase();
+
+    // Generate structured draft sections based on metadata
+    const draftSections = [
+      { heading: action.pageTitle, tag: 'h1', content: '' },
+      { heading: 'מהי הבעיה?', tag: 'h2', content: `[תוכן לכתיבה — כוונה: ${action.metadata.intent || 'general'}]` },
+      { heading: 'מה ההמלצה?', tag: 'h2', content: '[תוכן לכתיבה]' },
+      { heading: 'מתי לפנות לרופא?', tag: 'h2', content: '[תוכן לכתיבה]' },
+      { heading: 'שאלות נפוצות', tag: 'h2', content: '[FAQ לכתיבה]' },
+    ];
+
+    // Save as draft version in page_content_overrides
+    const { error } = await supabase
+      .from('page_content_overrides' as any)
+      .insert({
+        page_id: pageId,
+        sections: draftSections,
+        version_label: 'draft',
+      });
+
+    if (error) {
+      console.error('generate_draft: failed to create draft:', error);
+      return false;
+    }
+
+    // Also record in briefs for tracking
+    await supabase
+      .from('geo_content_briefs' as any)
+      .insert({
+        page_title: action.pageTitle, page_path: action.pagePath,
+        cluster_id: action.clusterId, brief_type: 'draft',
+        content: {
+          action: 'generate_draft',
+          pageId, intent: action.metadata.intent,
+          status: 'draft_created',
+          sectionCount: draftSections.length,
+          generatedAt: new Date().toISOString(),
+        },
+      });
+
+    liveActions.upsertContentOverride(pageId, {
+      updatedAt: new Date().toISOString(),
+      appliedBy: null,
+    });
+
+    return true;
+  };
+
+  /** queue_to_sprint: Create a real structured sprint task */
+  const execQueueToSprint = async (action: ClusterAction): Promise<boolean> => {
+    const { error } = await supabase
+      .from('geo_content_briefs' as any)
+      .insert({
+        page_title: action.pageTitle, page_path: action.pagePath,
+        cluster_id: action.clusterId, brief_type: 'sprint_task',
+        content: {
+          actionType: action.metadata.actionLabel || action.type,
+          status: 'todo',
+          intent: action.metadata.intent,
+          role: action.metadata.role,
+          priority: action.metadata.role === 'missing' ? 'high' : 'medium',
+          estimatedDays: 1,
+          queuedAt: new Date().toISOString(),
+        },
+      });
+    if (error) {
+      console.error('queue_to_sprint failed:', error);
+      return false;
+    }
+    return true;
+  };
+
   const executeAction = useCallback(async (actionId: string): Promise<boolean> => {
     setProcessing(true);
 
-    // Find the action from current state
     const action = actions.find(a => a.id === actionId);
     if (!action) {
       setProcessing(false);
@@ -141,115 +331,24 @@ export function useClusterActions() {
     ));
 
     try {
-      // Execute REAL side effects based on action type
       let success = false;
 
       switch (action.type) {
-        case 'add_internal_link': {
-          const { error } = await supabase
-            .from('geo_content_briefs' as any)
-            .insert({
-              page_title: action.pageTitle,
-              page_path: action.pagePath,
-              cluster_id: action.clusterId,
-              brief_type: 'internal_link',
-              content: {
-                action: 'add_internal_link',
-                linksMissing: action.metadata.linksMissing || [],
-                appliedAt: new Date().toISOString(),
-              },
-            });
-          success = !error;
-          if (error) console.error('add_internal_link persist failed:', error);
+        case 'add_internal_link':
+          success = await execAddInternalLink(action);
           break;
-        }
-
-        case 'assign_to_cluster': {
-          const { error } = await supabase
-            .from('geo_content_briefs' as any)
-            .insert({
-              page_title: action.pageTitle,
-              page_path: action.pagePath,
-              cluster_id: action.clusterId,
-              brief_type: 'cluster_assignment',
-              content: {
-                action: 'assign_to_cluster',
-                clusterId: action.clusterId,
-                intent: action.metadata.intent,
-                role: action.metadata.role,
-                assignedAt: new Date().toISOString(),
-              },
-            });
-          success = !error;
-          if (error) console.error('assign_to_cluster persist failed:', error);
+        case 'assign_to_cluster':
+          success = await execAssignToCluster(action);
           break;
-        }
-
-        case 'create_brief': {
-          const { error } = await supabase
-            .from('geo_content_briefs' as any)
-            .insert({
-              page_title: action.pageTitle,
-              page_path: action.pagePath,
-              cluster_id: action.clusterId,
-              brief_type: 'brief',
-              content: {
-                briefContent: action.metadata.briefContent || '',
-                intent: action.metadata.intent,
-                role: action.metadata.role,
-                createdAt: new Date().toISOString(),
-              },
-            });
-          success = !error;
-          if (error) console.error('create_brief persist failed:', error);
+        case 'create_brief':
+          success = await execCreateBrief(action);
           break;
-        }
-
-        case 'generate_draft': {
-          const { error } = await supabase
-            .from('geo_content_briefs' as any)
-            .insert({
-              page_title: action.pageTitle,
-              page_path: action.pagePath,
-              cluster_id: action.clusterId,
-              brief_type: 'draft',
-              content: {
-                action: 'generate_draft',
-                intent: action.metadata.intent,
-                status: 'draft_generated',
-                generatedAt: new Date().toISOString(),
-              },
-            });
-          success = !error;
-          if (error) console.error('generate_draft persist failed:', error);
+        case 'generate_draft':
+          success = await execGenerateDraft(action);
           break;
-        }
-
-        case 'queue_to_sprint': {
-          const { error } = await supabase
-            .from('geo_content_briefs' as any)
-            .insert({
-              page_title: action.pageTitle,
-              page_path: action.pagePath,
-              cluster_id: action.clusterId,
-              brief_type: 'sprint_task',
-              content: {
-                action: 'queue_to_sprint',
-                intent: action.metadata.intent,
-                role: action.metadata.role,
-                queuedAt: new Date().toISOString(),
-              },
-            });
-          success = !error;
-          if (error) console.error('queue_to_sprint persist failed:', error);
-
-          if (success) {
-            window.dispatchEvent(new CustomEvent('geo-action-queued', {
-              detail: { actionType: action.type, pageTitle: action.pageTitle, pagePath: action.pagePath },
-            }));
-          }
+        case 'queue_to_sprint':
+          success = await execQueueToSprint(action);
           break;
-        }
       }
 
       const completedAt = new Date().toISOString();
@@ -261,7 +360,7 @@ export function useClusterActions() {
           : a
       ));
 
-      // Update status in DB (skip temp IDs that haven't been persisted yet)
+      // Update status in DB
       if (!actionId.startsWith('temp-')) {
         await supabase
           .from('geo_cluster_actions' as any)
@@ -269,8 +368,10 @@ export function useClusterActions() {
           .eq('id', actionId);
       }
 
+      // Refresh shared provider to pick up new briefs/tasks/overrides
       if (success) {
-        toast.success(`${ACTION_LABELS[action.type]} הושלם ונשמר: ${action.pageTitle}`);
+        await liveActions.refresh();
+        toast.success(`${ACTION_LABELS[action.type]} הושלם: ${action.pageTitle}`);
       } else {
         toast.error(`${ACTION_LABELS[action.type]} נכשל: ${action.pageTitle}`);
       }
@@ -294,7 +395,7 @@ export function useClusterActions() {
     } finally {
       setProcessing(false);
     }
-  }, [actions]);
+  }, [actions, liveActions]);
 
   const getActionsForCluster = useCallback((clusterId: string) => {
     return actions.filter(a => a.clusterId === clusterId);
@@ -309,13 +410,26 @@ export function useClusterActions() {
   }, [actions]);
 
   return {
-    actions,
-    addAction,
-    executeAction,
-    getActionsForCluster,
-    getPendingCount,
-    getCompletedCount,
-    processing,
-    ACTION_LABELS,
+    actions, addAction, executeAction,
+    getActionsForCluster, getPendingCount, getCompletedCount,
+    processing, ACTION_LABELS,
   };
+}
+
+// ── Helpers ──
+
+const PATH_TO_PAGEID: Record<string, string> = {
+  '/': 'homepage',
+  '/about': 'about',
+  '/services': 'allergy-testing',
+  '/guides/טעימות-ראשונות-אלרגנים': 'first-foods',
+  '/knowledge/פריחה-אחרי-במבה': 'bamba-reaction',
+};
+
+function derivePageId(path: string): string | null {
+  if (!path) return null;
+  if (PATH_TO_PAGEID[path]) return PATH_TO_PAGEID[path];
+  // Try to extract from path
+  const segments = path.split('/').filter(Boolean);
+  return segments.length > 0 ? segments[segments.length - 1] : null;
 }

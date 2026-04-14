@@ -80,6 +80,7 @@ export function useLiveExecutionTasks(
   return useMemo(() => {
     const tasks = [...EXECUTION_TASKS];
 
+    // Mark static tasks as done if matching completed cluster actions exist
     for (let i = 0; i < tasks.length; i++) {
       const title = tasks[i].title.toLowerCase();
       for (const action of clusterActions.filter(a => a.status === 'completed')) {
@@ -90,25 +91,42 @@ export function useLiveExecutionTasks(
       }
     }
 
+    // Merge real DB sprint tasks
     for (const st of sprintTasks) {
       if (!tasks.find(t => t.id === st.id)) {
+        const content = (st as any).content || {};
         tasks.push({
           id: st.id,
           phase: 1,
-          title: `${st.pageTitle} — ${st.actionType}`,
-          description: `פעולה מאשכולות: ${st.actionType}`,
+          title: `${st.pageTitle} — ${content.actionType || st.actionType}`,
+          description: `פעולה מאשכולות: ${content.actionType || st.actionType}`,
           owner: 'content',
           difficulty: 'easy',
-          impact: 'medium',
+          impact: content.priority === 'high' ? 'high' : 'medium',
           dependency: null,
           estimatedOutcome: 'שיפור כיסוי GEO',
-          status: (st.status === 'completed' ? 'done' : 'todo') as TaskStatus,
+          status: (content.status === 'done' || st.status === 'completed' ? 'done' : 'todo') as TaskStatus,
           week: 1,
-          daysEstimate: 1,
+          daysEstimate: content.estimatedDays || 1,
         });
       }
     }
 
     return tasks;
   }, [sprintTasks, clusterActions]);
+}
+
+/** Read persisted cluster assignments for a specific cluster */
+export function useLiveClusterAssignments(contentBriefs: GeoLiveState['contentBriefs'], clusterId?: string) {
+  return useMemo(() => {
+    return contentBriefs
+      .filter(b => b.briefType === 'cluster_assignment' && (!clusterId || b.clusterId === clusterId));
+  }, [contentBriefs, clusterId]);
+}
+
+/** Read persisted briefs */
+export function useLiveBriefs(contentBriefs: GeoLiveState['contentBriefs']) {
+  return useMemo(() => {
+    return contentBriefs.filter(b => b.briefType === 'brief' || b.briefType === 'draft');
+  }, [contentBriefs]);
 }
