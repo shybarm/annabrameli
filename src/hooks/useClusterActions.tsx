@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useGeoLiveActions } from '@/contexts/GeoLiveDataContext';
+import { usePageContentUpdater } from '@/contexts/PageContentContext';
 import { toast } from 'sonner';
 
 export type ClusterActionType =
