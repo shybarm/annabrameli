@@ -111,7 +111,7 @@ Respond in valid JSON only. No markdown.`;
     // --- Call AI Gateway ---
     let aiResponse: Response;
     try {
-      aiResponse = await fetch("https://ai-gateway.lovable.dev/v1/chat/completions", {
+      aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${LOVABLE_API_KEY}`,
