@@ -513,7 +513,7 @@ export function GeoContentTransform() {
         lastReviewed: new Date().toISOString().split('T')[0],
       });
     }
-  }, [liveContents, rescanPage, getPersistedSections]);
+  }, [liveContents, rescanPage, getPersistedSections, updateWorkflow, workflows]);
 
   // Initialize live content via effect instead of during render
   const ensureLiveContent = useCallback((pageId: string) => {
