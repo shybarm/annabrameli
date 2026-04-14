@@ -13,6 +13,7 @@ import { usePageContentPersistence } from '@/hooks/usePageContentPersistence';
 import { useClusterActions, type ClusterActionType } from '@/hooks/useClusterActions';
 import { useGeoLiveState } from '@/contexts/GeoLiveDataContext';
 import { useLiveClusterAssignments, useLiveBriefs } from '@/hooks/useGeoLiveData';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -481,8 +482,7 @@ function ClusterCard({
   const existing = cluster.pages.filter(p => p.role !== 'missing').length;
   const editableCount = cluster.pages.filter(p => p.role !== 'missing' && p.path && getPageId(p.path)).length;
 
-  // Merge live assignments into page list display
-  const dynamicAssignmentTitles = new Set(liveAssignments.map(a => a.pageTitle));
+  // Live assignments enrichment
 
   return (
     <Card className="border-border/50 overflow-hidden">
