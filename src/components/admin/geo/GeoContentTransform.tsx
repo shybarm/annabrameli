@@ -409,9 +409,8 @@ export function GeoContentTransform() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const { setSections: setPageContentSections, getSections: getPersistedSections } = usePageContentUpdater();
   const { savePage, loadAllOverrides, saving: isSavingPermanent } = usePageContentPersistence();
-  const { rescanPage, getScanResult, scanning: isScanning } = useGeoRescan();
-  const geoState = __importGeoState();
-  const geoActions = __importGeoActions();
+  const { rescanPage, getScanResult, scanResults, scanning: isScanning } = useGeoRescan();
+  const { upsertContentOverride } = useGeoLiveActions();
   const [savePhase, setSavePhase] = useState<SavePhase>('idle');
 
   // Load persisted overrides on mount and push into PageContentContext
