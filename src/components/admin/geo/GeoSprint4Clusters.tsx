@@ -139,9 +139,9 @@ function PageActionMenu({
     },
     {
       type: 'generate_draft',
-      label: 'צור טיוטה',
+      label: 'צור טיוטת תוכן',
       icon: <PenLine className="h-3.5 w-3.5" />,
-      description: 'צור טיוטת תוכן ראשונית בעזרת AI',
+      description: 'שמור טיוטת תוכן (לא יוצר דף חי באתר)',
       available: isMissing,
     },
     {
