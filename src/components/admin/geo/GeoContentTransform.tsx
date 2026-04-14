@@ -320,6 +320,9 @@ function TransformDetail({
   if (!brief) return null;
 
   const appliedCount = recommendations.filter(r => r.status === 'applied').length;
+  const mismatches = detectMismatches(transform.pageId);
+  const registryEntry = getRegistryEntry(transform.pageId);
+  const hasCriticalMismatch = mismatches.some(m => m.severity === 'critical');
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
