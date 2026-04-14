@@ -56,8 +56,8 @@ function StatusBadge({ status }: { status: string }) {
   return <Badge className={`text-[10px] border ${cfg.color}`}>{cfg.label}</Badge>;
 }
 
-function PriorityBadge({ priority }: { priority: PriorityLevel }) {
-  const cfg = PRIORITY_CONFIG[priority];
+function PriorityBadge({ priority }: { priority: string }) {
+  const cfg = PRIORITY_CONFIG[priority as PriorityLevel] || PRIORITY_CONFIG['medium'];
   return <Badge className={`text-[10px] ${cfg.color}`}>{cfg.label}</Badge>;
 }
 
