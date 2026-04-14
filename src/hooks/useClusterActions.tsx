@@ -248,7 +248,7 @@ export function useClusterActions() {
     return true;
   };
 
-  /** generate_draft: Create a real draft in page_content_overrides */
+  /** generate_draft: Create a content draft artifact (NOT a live page route) */
   const execGenerateDraft = async (action: ClusterAction): Promise<boolean> => {
     const pageId = derivePageId(action.pagePath) || action.pageTitle.replace(/\s+/g, '-').toLowerCase();
 
@@ -284,9 +284,11 @@ export function useClusterActions() {
         content: {
           action: 'generate_draft',
           pageId, intent: action.metadata.intent,
-          status: 'draft_created',
+          status: 'draft_only',
+          routeExists: false,
           sectionCount: draftSections.length,
           generatedAt: new Date().toISOString(),
+          note: 'טיוטת תוכן בלבד — לא נוצר נתיב באתר. דרוש פיתוח route ו-component.',
         },
       });
 
@@ -294,9 +296,6 @@ export function useClusterActions() {
       updatedAt: new Date().toISOString(),
       appliedBy: null,
     });
-
-    // Sync PageContentContext for immediate editor visibility
-    await refreshPage(pageId);
 
     return true;
   };
