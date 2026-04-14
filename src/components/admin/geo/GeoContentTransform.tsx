@@ -339,6 +339,40 @@ function TransformDetail({
           </DialogTitle>
         </DialogHeader>
 
+        {/* Version indicator */}
+        {(hasDraft || activeVersion) && (
+          <div className="flex items-center gap-2 mt-2 p-2 rounded-lg border border-border/50 bg-muted/20">
+            <span className="text-[10px] font-semibold text-muted-foreground">גרסה:</span>
+            <button
+              onClick={() => onVersionSwitch?.('applied')}
+              className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors ${
+                (!activeVersion || activeVersion === 'applied')
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+              }`}
+            >
+              מאושרת (applied)
+            </button>
+            {hasDraft && (
+              <button
+                onClick={() => onVersionSwitch?.('draft')}
+                className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors ${
+                  activeVersion === 'draft'
+                    ? 'bg-amber-500 text-white'
+                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                }`}
+              >
+                טיוטה (draft)
+              </button>
+            )}
+            {activeVersion === 'draft' && (
+              <span className="text-[10px] text-amber-600 dark:text-amber-400 mr-auto">
+                ⚠ אתה צופה בטיוטה — לא פורסם לאתר
+              </span>
+            )}
+          </div>
+        )}
+
         {/* Save & Re-audit buttons */}
         <div className="flex justify-end gap-2 mt-2">
           <Button
