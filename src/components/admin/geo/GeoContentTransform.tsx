@@ -11,6 +11,7 @@ import { usePageContentUpdater } from '@/contexts/PageContentContext';
 import { WORKSPACE_BRIEFS } from '@/data/geo-workspace-briefs';
 import { usePageContentPersistence } from '@/hooks/usePageContentPersistence';
 import { useGeoRescan, type GeoScanResult } from '@/hooks/useGeoRescan';
+import { useGeoWorkflows, type PageWorkflow } from '@/hooks/useGeoWorkflows';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
