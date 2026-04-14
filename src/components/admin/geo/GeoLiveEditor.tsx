@@ -581,7 +581,9 @@ export function GeoLiveEditor({
       {viewMode === 'live' && (
         <div className="space-y-2">
           <p className="text-xs text-muted-foreground">
-            זהו התוכן הנוכחי של הדף. סקציות שעודכנו מסומנות בירוק. ניתן לערוך ישירות.
+            {routeExists
+              ? 'זהו התוכן הנוכחי של הדף. סקציות שעודכנו מסומנות בירוק. ניתן לערוך ישירות.'
+              : 'זוהי טיוטת תוכן בלבד — הדף אינו קיים באתר החי. התוכן נשמר ב-DB אך לא נגיש בכתובת URL.'}
           </p>
           {liveContent.sections.map((section, i) => (
             <LiveSectionCard
