@@ -13,7 +13,7 @@ import { usePageContentPersistence } from '@/hooks/usePageContentPersistence';
 import { useClusterActions, type ClusterActionType } from '@/hooks/useClusterActions';
 import { useGeoLiveState } from '@/contexts/GeoLiveDataContext';
 import { useLiveClusterAssignments, useLiveBriefs } from '@/hooks/useGeoLiveData';
-import { supabase } from '@/integrations/supabase/client';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
