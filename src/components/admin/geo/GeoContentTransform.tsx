@@ -539,16 +539,6 @@ export function GeoContentTransform() {
     ensureRecommendations(selected.pageId);
   }, [selected?.pageId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const updateWorkflow = useCallback((pageId: string, updated: PageWorkflow) => {
-    setWorkflows(prev => ({ ...prev, [pageId]: updated }));
-  }, []);
-
-  const toggleChecklistItem = useCallback((pageId: string, itemId: string, checked: boolean) => {
-    setChecklists(prev => ({
-      ...prev,
-      [pageId]: { ...(prev[pageId] || {}), [itemId]: checked },
-    }));
-  }, []);
 
   const updateLiveContent = useCallback((pageId: string, content: LivePageContent) => {
     setLiveContents(prev => ({ ...prev, [pageId]: content }));
