@@ -20,6 +20,7 @@ export interface GeoScanResult {
   recommendations: { label: string; text: string }[];
   strengths: string[];
   weaknesses: string[];
+  contentHash?: string;
   persisted?: boolean;
 }
 
@@ -58,6 +59,7 @@ export function useGeoRescan() {
               recommendations: row.recommendations || [],
               strengths: row.strengths || [],
               weaknesses: row.weaknesses || [],
+              contentHash: row.content_hash || undefined,
               persisted: true,
             };
           }

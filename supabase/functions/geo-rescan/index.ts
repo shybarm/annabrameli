@@ -6,6 +6,13 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+/** Simple deterministic hash for content versioning (not cryptographic). */
+async function hashContent(text: string): Promise<string> {
+  const data = new TextEncoder().encode(text);
+  const buf = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("").slice(0, 16);
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -29,6 +36,9 @@ serve(async (req) => {
     const contentText = sections.map((s: any) =>
       `[${s.tag}] ${s.heading}\n${s.content || ''}`
     ).join('\n\n');
+
+    // Compute content hash for version tracking
+    const contentHash = await hashContent(contentText);
 
     const prompt = `You are a GEO (Generative Engine Optimization) expert analyzing a medical clinic website page for AI search engine visibility.
 
@@ -106,6 +116,7 @@ Respond in valid JSON only. No markdown.`;
       recommendations: analysis.recommendations || [],
       strengths: analysis.strengths || [],
       weaknesses: analysis.weaknesses || [],
+      contentHash,
       persisted: false,
     };
 
@@ -126,6 +137,7 @@ Respond in valid JSON only. No markdown.`;
         strengths: scanResult.strengths,
         weaknesses: scanResult.weaknesses,
         scanned_at: scannedAt,
+        content_hash: contentHash,
       });
 
     if (dbError) {
