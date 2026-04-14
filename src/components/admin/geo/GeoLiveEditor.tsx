@@ -12,8 +12,10 @@ import {
   RECOMMENDATION_STATUS_CONFIG,
   VERSION_TYPE_CONFIG,
 } from '@/data/geo-live-content';
+import { isRouteRegistered } from '@/data/geo-known-routes';
+import { WORKSPACE_BRIEFS } from '@/data/geo-workspace-briefs';
 import {
-  Check, ChevronDown, ChevronUp, Clock, Edit3, Eye,
+  AlertTriangle, Check, ChevronDown, ChevronUp, Clock, Edit3, Eye,
   History, RotateCcw, Send, ShieldCheck, X,
 } from 'lucide-react';
 
@@ -475,8 +477,24 @@ export function GeoLiveEditor({
   const totalCount = recommendations.length;
   const currentVersion = deriveVersionType(liveContent);
 
+  // Determine if this page has a real route
+  const brief = WORKSPACE_BRIEFS.find(b => b.id === liveContent.pageId);
+  const pagePath = brief?.pagePath || '';
+  const routeExists = isRouteRegistered(pagePath);
+
   return (
     <div className="space-y-4" dir="rtl">
+      {/* Route existence warning */}
+      {!routeExists && pagePath && (
+        <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg border border-destructive/30 bg-destructive/5 text-xs text-destructive">
+          <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+          <div>
+            <span className="font-bold">דף לא קיים באתר — </span>
+            <span>הנתיב <code className="bg-destructive/10 px-1 py-0.5 rounded text-[10px] font-mono">{pagePath}</code> מחזיר 404. התוכן המוצג כאן הוא טיוטת תוכן בלבד ואינו פורסם באתר החי.</span>
+          </div>
+        </div>
+      )}
+
       {/* Version banner */}
       <VersionBanner version={currentVersion} lastAppliedAt={liveContent.lastAppliedAt} />
 

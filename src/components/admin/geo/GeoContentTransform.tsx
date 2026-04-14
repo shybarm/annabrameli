@@ -4,6 +4,7 @@ import {
   CONTENT_TRANSFORMS, WORKFLOW_STATUS_CONFIG, PRIORITY_CONFIG,
   type ContentTransform, type WorkflowStatus, type PriorityLevel,
 } from '@/data/geo-content-transforms';
+import { isRouteRegistered } from '@/data/geo-known-routes';
 import {
   initializeLiveContent, initializeRecommendations,
   type LivePageContent, type EditableRecommendation,
@@ -77,6 +78,7 @@ function TransformCard({
   const blockers = scanResult?.blockers?.length ?? transform.diagnosis.geoBlockers.length;
   const changes = transform.changeLog.length;
   const currentScore = scanResult?.overallScore ?? brief.currentGeoScore;
+  const routeExists = isRouteRegistered(brief.pagePath);
 
   return (
     <Card
@@ -90,6 +92,12 @@ function TransformCard({
               <StatusBadge status={workflow.status} />
               <PriorityBadge priority={workflow.priority} />
               <Badge variant="outline" className="text-[10px]">{brief.pageType}</Badge>
+              {!routeExists && (
+                <Badge className="text-[9px] bg-destructive/10 text-destructive gap-1">
+                  <XCircle className="h-2.5 w-2.5" />
+                  דף לא קיים באתר
+                </Badge>
+              )}
               {scanResult && (
                 <Badge className="text-[9px] bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 gap-1">
                   <CheckCircle2 className="h-2.5 w-2.5" />
