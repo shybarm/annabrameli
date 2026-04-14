@@ -610,9 +610,10 @@ export function GeoContentTransform() {
 
   const ensureRecommendations = useCallback((pageId: string) => {
     if (allRecommendations[pageId]) return;
-    const recs = initializeRecommendations(pageId);
+    const content = liveContents[pageId];
+    const recs = initializeRecommendations(pageId, content?.sections);
     setAllRecommendations(prev => ({ ...prev, [pageId]: recs }));
-  }, [allRecommendations]);
+  }, [allRecommendations, liveContents]);
 
   // Initialize content when a page is selected (via effect, not during render)
   useEffect(() => {
