@@ -525,12 +525,23 @@ export function GeoLiveEditor({
                 ? (liveContent.sections[rec.sectionIndex]?.heading || '')
                 : (liveContent.sections[rec.sectionIndex]?.content || '');
 
-            // Skip recommendations where proposed text already matches live content
+            // Skip recommendations where proposed text already matches ANY live section
             const normalise = (s: string) => s.replace(/\s+/g, ' ').trim().toLowerCase();
             const proposedNorm = normalise(rec.editedAfter);
-            const liveNorm = normalise(liveValue);
-            if (proposedNorm && liveNorm && (liveNorm.includes(proposedNorm) || proposedNorm === liveNorm)) {
-              return null; // Already applied — hide from list
+            if (proposedNorm) {
+              const proposedWords = proposedNorm.split(/\s+/).filter((w: string) => w.length > 3);
+              const isAlreadyInPage = liveContent.sections.some(section => {
+                const sectionText = normalise(`${section.heading} ${section.content}`);
+                // Exact/substring match
+                if (sectionText.includes(proposedNorm) || proposedNorm === sectionText) return true;
+                // 70% word overlap
+                if (proposedWords.length > 0) {
+                  const matchCount = proposedWords.filter((w: string) => sectionText.includes(w)).length;
+                  if ((matchCount / proposedWords.length) >= 0.7) return true;
+                }
+                return false;
+              });
+              if (isAlreadyInPage) return null;
             }
 
             return (
