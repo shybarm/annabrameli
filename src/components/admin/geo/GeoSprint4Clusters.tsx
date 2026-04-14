@@ -427,34 +427,47 @@ function ActionLogPanel({ actions, onExecute, processing }: {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2 max-h-[300px] overflow-y-auto">
-        {actions.map(action => (
-          <div key={action.id} className="flex items-center gap-3 p-2 rounded-lg bg-muted/20 border border-border/30">
-            <Badge className={`text-[9px] shrink-0 ${statusColors[action.status]}`}>
-              {statusLabels[action.status]}
-            </Badge>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-foreground truncate">{action.pageTitle}</p>
-              <p className="text-[10px] text-muted-foreground">{action.metadata.actionLabel || action.type}</p>
+        {actions.map(action => {
+          const isDraftOnly = !action.pagePath && (action.type === 'generate_draft' || action.type === 'create_brief');
+          const completedLabel = isDraftOnly && action.status === 'completed' ? 'טיוטה נשמרה' : statusLabels[action.status];
+          const completedColor = isDraftOnly && action.status === 'completed'
+            ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
+            : statusColors[action.status];
+
+          return (
+            <div key={action.id} className="flex items-center gap-3 p-2 rounded-lg bg-muted/20 border border-border/30">
+              <Badge className={`text-[9px] shrink-0 ${completedColor}`}>
+                {completedLabel}
+              </Badge>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-foreground truncate">{action.pageTitle}</p>
+                <p className="text-[10px] text-muted-foreground">
+                  {action.metadata.actionLabel || action.type}
+                  {isDraftOnly && action.status === 'completed' && (
+                    <span className="text-destructive mr-1"> · דף לא קיים באתר</span>
+                  )}
+                </p>
+              </div>
+              {action.status === 'pending' && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-6 text-[10px] gap-1"
+                  onClick={() => onExecute(action.id)}
+                  disabled={processing}
+                >
+                  {processing ? <Loader2 className="h-3 w-3 animate-spin" /> : <Zap className="h-3 w-3" />}
+                  בצע
+                </Button>
+              )}
+              {action.completedAt && (
+                <span className="text-[9px] text-muted-foreground shrink-0">
+                  {new Date(action.completedAt).toLocaleTimeString('he-IL')}
+                </span>
+              )}
             </div>
-            {action.status === 'pending' && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-6 text-[10px] gap-1"
-                onClick={() => onExecute(action.id)}
-                disabled={processing}
-              >
-                {processing ? <Loader2 className="h-3 w-3 animate-spin" /> : <Zap className="h-3 w-3" />}
-                בצע
-              </Button>
-            )}
-            {action.completedAt && (
-              <span className="text-[9px] text-muted-foreground shrink-0">
-                {new Date(action.completedAt).toLocaleTimeString('he-IL')}
-              </span>
-            )}
-          </div>
-        ))}
+          );
+        })}
       </CardContent>
     </Card>
   );
