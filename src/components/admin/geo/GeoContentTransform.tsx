@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useContext } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   CONTENT_TRANSFORMS, WORKFLOW_STATUS_CONFIG, PRIORITY_CONFIG,
   type ContentTransform, type WorkflowStatus, type PriorityLevel,
@@ -7,7 +7,7 @@ import {
   initializeLiveContent, initializeRecommendations,
   type LivePageContent, type EditableRecommendation,
 } from '@/data/geo-live-content';
-import { usePageContentUpdater, usePageContent } from '@/contexts/PageContentContext';
+import { usePageContentUpdater } from '@/contexts/PageContentContext';
 import { WORKSPACE_BRIEFS } from '@/data/geo-workspace-briefs';
 import { usePageContentPersistence } from '@/hooks/usePageContentPersistence';
 import { useGeoRescan, type GeoScanResult } from '@/hooks/useGeoRescan';
@@ -410,7 +410,7 @@ export function GeoContentTransform() {
   const [workflows, setWorkflows] = useState<WorkflowMap>(DEFAULT_WORKFLOWS);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [checklists, setChecklists] = useState<Record<string, Record<string, boolean>>>({});
-  const { setSections: setPageContentSections, getSections: getPersistedSections, hasOverride: hasPersistedOverride } = usePageContentUpdater();
+  const { setSections: setPageContentSections, getSections: getPersistedSections } = usePageContentUpdater();
   const { savePage, loadAllOverrides, saving: isSavingPermanent } = usePageContentPersistence();
   const { rescanPage, getScanResult, scanResults, scanning: isScanning } = useGeoRescan();
 
