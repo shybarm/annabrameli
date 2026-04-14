@@ -534,6 +534,10 @@ export function GeoContentTransform() {
       brief?.pagePath,
     );
 
+    // Phase 3: Reconcile recommendations against current saved content
+    const reconciledRecs = initializeRecommendations(selected.pageId, content.sections);
+    setAllRecommendations(prev => ({ ...prev, [selected.pageId]: reconciledRecs }));
+
     if (result) {
       setSavePhase('done');
     } else {
