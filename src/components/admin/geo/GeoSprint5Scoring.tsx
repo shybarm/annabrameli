@@ -275,7 +275,12 @@ export function GeoSprint5Scoring() {
             </button>
           </div>
           <div className="space-y-3">
-            {filtered.map(p => <PageRow key={p.id} page={p} onClick={() => setSelectedPage(p)} />)}
+            {filtered.map(p => (
+              <PageRow key={p.id} page={p}
+                isLive={!!scanResults[p.id]}
+                scannedAt={scanResults[p.id]?.scannedAt}
+                onClick={() => setSelectedPage(p)} />
+            ))}
           </div>
         </TabsContent>
 
