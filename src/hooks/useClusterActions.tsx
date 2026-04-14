@@ -197,6 +197,9 @@ export function useClusterActions() {
       appliedBy: null,
     });
 
+    // Immediately sync PageContentContext so editor shows updated content
+    await refreshPage(pageId);
+
     return true;
   };
 
@@ -291,6 +294,9 @@ export function useClusterActions() {
       updatedAt: new Date().toISOString(),
       appliedBy: null,
     });
+
+    // Sync PageContentContext for immediate editor visibility
+    await refreshPage(pageId);
 
     return true;
   };
