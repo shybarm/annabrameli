@@ -1,4 +1,4 @@
-import { GEO_PAGES, ENTITY_SIGNALS } from '@/data/geo-data';
+import { ENTITY_SIGNALS } from '@/data/geo-data';
 import { TOPIC_CLUSTERS } from '@/data/geo-sprint4-data';
 import { useGeoLiveData, useLiveScoredPages, useLiveExecutionTasks } from '@/hooks/useGeoLiveData';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,21 +26,24 @@ export function GeoDashboard() {
 
   const hasScanData = Object.keys(scanResults).length > 0;
 
-  // Use live scan data if available, otherwise fall back to static
+  // Always use livePages as unified source (merges static + live scan data)
   const avgGeoScore = livePages.length
-    ? Math.round((livePages.reduce((s, p) => s + p.weightedScore, 0) / livePages.length) * 10)
+    ? Math.round(livePages.reduce((s, p) => s + p.weightedScore, 0) / livePages.length * 10) / 10
     : 0;
   const avgEntity = Math.round(ENTITY_SIGNALS.reduce((s, e) => s + e.consistency, 0) / ENTITY_SIGNALS.length);
   const avgCluster = Math.round(TOPIC_CLUSTERS.reduce((s, c) => s + c.coverageDepth, 0) / TOPIC_CLUSTERS.length);
-  const criticalPages = hasScanData
-    ? livePages.filter(p => p.weightedScore < 5.5).length
-    : GEO_PAGES.filter(p => p.geoScore < 55).length;
+  const criticalPages = livePages.filter(p => p.weightedScore < 5.5).length;
   const completedTasks = liveTasks.filter(t => t.status === 'done').length;
   const totalTasks = liveTasks.length;
   const savedPages = Object.keys(contentOverrides).length;
 
+  // Find most recent scan timestamp
+  const latestScanAt = Object.values(scanResults).reduce((latest, s) => {
+    return s.scannedAt > latest ? s.scannedAt : latest;
+  }, '');
+
   const stats = [
-    { label: 'ציון GEO ממוצע', value: hasScanData ? (avgGeoScore / 10).toFixed(1) : avgGeoScore, icon: Brain, suffix: hasScanData ? '/10' : '/100', live: hasScanData },
+    { label: 'ציון GEO ממוצע', value: avgGeoScore, icon: Brain, suffix: '/10', live: hasScanData },
     { label: 'עקביות ישות', value: avgEntity, icon: Target, suffix: '/100', live: false },
     { label: 'כיסוי אשכולות', value: avgCluster, icon: TrendingUp, suffix: '%', live: false },
     { label: 'דפים קריטיים', value: criticalPages, icon: AlertTriangle, suffix: '', live: hasScanData },
@@ -48,10 +51,8 @@ export function GeoDashboard() {
     { label: 'תוכנית 90 יום', value: completedTasks, icon: CheckCircle, suffix: `/${totalTasks}`, live: sprintTasks.length > 0 },
   ];
 
-  // Priority pages from live data
-  const topPriority = hasScanData
-    ? [...livePages].sort((a, b) => a.weightedScore - b.weightedScore).slice(0, 5)
-    : GEO_PAGES.filter(p => p.priority === 'high').sort((a, b) => a.geoScore - b.geoScore).slice(0, 5);
+  // Always use unified livePages (sorted by weakest first)
+  const topPriority = [...livePages].sort((a, b) => a.weightedScore - b.weightedScore).slice(0, 5);
 
   const weakClusters = [...TOPIC_CLUSTERS]
     .sort((a, b) => a.coverageDepth - b.coverageDepth)
@@ -72,9 +73,10 @@ export function GeoDashboard() {
       {hasScanData && (
         <div className="flex items-center gap-2 text-[10px] text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800">
           <Database className="h-3 w-3" />
-          נתונים חיים מ-{Object.keys(scanResults).length} סריקות AI אחרונות
+          נתונים חיים מ-{Object.keys(scanResults).length} סריקות AI
+          {latestScanAt && ` • עודכן ${new Date(latestScanAt).toLocaleDateString('he-IL')}`}
           {savedPages > 0 && ` • ${savedPages} דפים נשמרו`}
-          {clusterActions.length > 0 && ` • ${clusterActions.filter(a => a.status === 'completed').length} פעולות הושלמו`}
+          {clusterActions.filter(a => a.status === 'completed').length > 0 && ` • ${clusterActions.filter(a => a.status === 'completed').length} פעולות הושלמו`}
         </div>
       )}
 
@@ -104,26 +106,29 @@ export function GeoDashboard() {
             <CardTitle className="text-base flex items-center gap-2">
               <TrendingUp className="h-4 w-4" />
               דפים בעדיפות גבוהה
-              {hasScanData && <Badge variant="outline" className="text-[9px]">נתונים חיים</Badge>}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {topPriority.map((page: any) => (
-              <div key={page.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{page.titleHe}</p>
-                  <p className="text-xs text-muted-foreground font-mono truncate">{page.path}</p>
-                </div>
-                <div className="flex items-center gap-3 mr-3">
-                  <div className="w-16">
-                    <Progress value={(page.weightedScore || page.geoScore || 0) * (hasScanData ? 10 : 1)} className="h-2" />
+            {topPriority.map((page) => {
+              const isLive = !!scanResults[page.id];
+              return (
+                <div key={page.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{page.titleHe}</p>
+                    <p className="text-xs text-muted-foreground font-mono truncate">{page.path}</p>
                   </div>
-                  <span className={`text-sm font-bold w-8 text-left ${scoreColor((page.weightedScore || page.geoScore || 0) * (hasScanData ? 10 : 1))}`}>
-                    {hasScanData ? page.weightedScore : page.geoScore}
-                  </span>
+                  <div className="flex items-center gap-3 mr-3">
+                    <div className="w-16">
+                      <Progress value={page.weightedScore * 10} className="h-2" />
+                    </div>
+                    <span className={`text-sm font-bold w-8 text-left ${scoreColor(page.weightedScore * 10)}`}>
+                      {page.weightedScore}
+                    </span>
+                    {isLive && <span className="text-[8px] text-emerald-500">●</span>}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </CardContent>
         </Card>
 
