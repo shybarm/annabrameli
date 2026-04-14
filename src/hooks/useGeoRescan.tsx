@@ -30,6 +30,8 @@ export interface GeoScanResult {
   weaknesses: string[];
   contentHash?: string;
   persisted?: boolean;
+  dataSource?: string;
+  recommendationsFilteredCount?: number;
 }
 
 export function useGeoRescan() {
