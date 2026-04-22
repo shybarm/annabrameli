@@ -411,40 +411,7 @@ const GoldenGuide = () => {
           </div>
         </motion.section>
 
-        {/* Section: When NOT to start alone */}
-        <motion.section
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mb-12"
-          id="when-not-alone"
-        >
-          <div className="flex items-center gap-3 mb-5">
-            <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
-              <Heart className="w-5 h-5 text-primary" />
-            </div>
-            <h2 className="text-xl md:text-2xl font-bold text-foreground">
-              מתי לא להתחיל לבד – וזה בסדר
-            </h2>
-          </div>
-
-          <p className="text-muted-foreground leading-relaxed mb-5">
-            רוב התינוקות יכולים להתחיל טעימות ראשונות בבית, בבטחה. אבל יש מצבים שבהם <strong className="text-foreground">מומלץ להתייעץ עם אלרגולוג ילדים לפני ההתחלה:</strong>
-          </p>
-
-          <div className="bg-card rounded-2xl border border-border/60 p-6 space-y-3">
-            {dontStartAloneCriteria.map((item, i) => (
-              <div key={i} className="flex items-start gap-3">
-                <Info className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
-                <p className="text-muted-foreground text-sm">{item}</p>
-              </div>
-            ))}
-          </div>
-
-          <p className="text-muted-foreground leading-relaxed mt-5">
-            לפנות לאלרגולוג זה לא סימן לחולשה – זו אחריות הורית. ייעוץ קצר יכול לתת לכם שקט נפשי ותוכנית ברורה.
-          </p>
-        </motion.section>
+        {/* Section: When NOT to start alone — removed by request */}
 
         {/* Internal links hub */}
         <motion.section
