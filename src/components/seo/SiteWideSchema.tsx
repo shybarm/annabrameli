@@ -13,7 +13,6 @@ export const SiteWideSchema = () => {
     url: "https://ihaveallergy.com",
     logo: "https://ihaveallergy.com/og-logo.png",
     image: "https://ihaveallergy.com/og-logo.png",
-    telephone: "054-580-8008",
     email: "info@drbrameli.co.il",
     address: {
       "@type": "PostalAddress",

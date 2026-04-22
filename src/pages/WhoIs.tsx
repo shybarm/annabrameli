@@ -209,12 +209,6 @@ const WhoIs = () => {
                       קביעת תור פרטי
                     </Link>
                   </Button>
-                  <Button variant="outline" size="lg" asChild>
-                    <a href="tel:+972545808008">
-                      <Phone className="w-5 h-5 ml-2" />
-                      054-580-8008
-                    </a>
-                  </Button>
                 </div>
               </motion.div>
 
@@ -439,12 +433,6 @@ const WhoIs = () => {
                     <Calendar className="w-5 h-5 ml-2" />
                     קביעת תור באתר
                   </Link>
-                </Button>
-                <Button variant="outline" size="lg" asChild>
-                  <a href="tel:+972545808008">
-                    <Phone className="w-5 h-5 ml-2" />
-                    054-580-8008
-                  </a>
                 </Button>
               </div>
             </motion.div>

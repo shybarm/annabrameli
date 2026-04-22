@@ -352,12 +352,6 @@ const DrAnnaBrameli = () => {
                       קביעת תור פרטי
                     </Link>
                   </Button>
-                  <Button variant="outline" size="lg" asChild>
-                    <a href="tel:+972545808008">
-                      <Phone className="w-5 h-5 ml-2" />
-                      054-580-8008
-                    </a>
-                  </Button>
                 </div>
               </motion.div>
 
@@ -735,10 +729,6 @@ const DrAnnaBrameli = () => {
                       <span>טופס אונליין באתר</span>
                     </div>
                     <div className="flex items-center gap-3">
-                      <Phone className="w-5 h-5 text-primary" />
-                      <span>טלפון: 054-580-8008</span>
-                    </div>
-                    <div className="flex items-center gap-3">
                       <MessageCircle className="w-5 h-5 text-primary" />
                       <span>הודעת וואטסאפ</span>
                     </div>
@@ -807,16 +797,6 @@ const DrAnnaBrameli = () => {
                     <div>
                       <h3 className="font-semibold text-foreground">כתובת הקליניקה</h3>
                       <p className="text-muted-foreground">הוד השרון</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center">
-                      <Phone className="w-6 h-6 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground">טלפון</h3>
-                      <a href="tel:+972545808008" className="text-primary hover:underline">054-580-8008</a>
                     </div>
                   </div>
 

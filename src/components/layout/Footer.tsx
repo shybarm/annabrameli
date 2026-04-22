@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Phone, Mail, MapPin, Clock } from "lucide-react";
+import { Mail, MapPin, Clock } from "lucide-react";
 
 export const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -55,17 +55,6 @@ export const Footer = () => {
           <div>
             <h4 className="text-sm font-semibold text-foreground mb-5 uppercase tracking-wider">פרטי התקשרות</h4>
             <ul className="space-y-4">
-              <li className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <Phone className="w-4 h-4 text-primary" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">טלפון</p>
-                  <a href="tel:0545808008" className="text-sm text-foreground hover:text-primary transition-colors">
-                    054-580-8008
-                  </a>
-                </div>
-              </li>
               <li className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center flex-shrink-0 mt-0.5">
                   <Mail className="w-4 h-4 text-primary" />
