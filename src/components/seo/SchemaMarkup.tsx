@@ -12,7 +12,6 @@ export const SchemaMarkup = ({ type = "physician" }: SchemaMarkupProps) => {
     "image": "https://ihaveallergy.com/og-logo.png",
     "@id": "https://ihaveallergy.com",
     "url": "https://ihaveallergy.com",
-    "telephone": "054-580-8008",
     "priceRange": "$$",
     "address": {
       "@type": "PostalAddress",
@@ -64,12 +63,11 @@ export const SchemaMarkup = ({ type = "physician" }: SchemaMarkupProps) => {
     "@context": "https://schema.org",
     "@type": "ContactPage",
     name: "יצירת קשר וקביעת תור | ד״ר אנה ברמלי",
-    description: "קביעת תור במרפאת אלרגיה של ד״ר אנה ברמלי. טלפון: 054-580-8008, כתובת: הוד השרון.",
+    description: "קביעת תור במרפאת אלרגיה של ד״ר אנה ברמלי בהוד השרון.",
     url: "https://ihaveallergy.com/contact",
     mainEntity: {
       "@type": "Physician",
       name: "ד״ר אנה ברמלי",
-      telephone: "+972-54-580-8008",
       address: {
         "@type": "PostalAddress",
         addressLocality: "הוד השרון",

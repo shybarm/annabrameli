@@ -1,7 +1,7 @@
 import { Helmet } from "react-helmet-async";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Phone, Mail, MapPin, Clock, Send, CheckCircle } from "lucide-react";
+import { Mail, MapPin, Clock, Send, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,12 +10,6 @@ import { useToast } from "@/hooks/use-toast";
 import { SchemaMarkup } from "@/components/seo/SchemaMarkup";
 
 const contactInfo = [
-  {
-    icon: Phone,
-    title: "טלפון",
-    value: "054-580-8008",
-    href: "tel:0545808008",
-  },
   {
     icon: Mail,
     title: "דוא״ל",
@@ -77,7 +71,7 @@ const Contact = () => {
         <title>יצירת קשר וקביעת תור | ד״ר אנה ברמלי – מרפאת אלרגיה בהוד השרון</title>
         <meta 
           name="description" 
-          content="קביעת תור במרפאת אלרגיה של ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה. טלפון: 054-580-8008, כתובת: הוד השרון. ייעוץ אלרגיה פרטי." 
+          content="קביעת תור במרפאת אלרגיה של ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה. כתובת: הוד השרון. ייעוץ אלרגיה פרטי." 
         />
         <link rel="canonical" href="https://ihaveallergy.com/contact" />
       </Helmet>

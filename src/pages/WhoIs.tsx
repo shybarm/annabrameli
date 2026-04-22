@@ -1,6 +1,6 @@
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
-import { GraduationCap, Award, Heart, Stethoscope, BookOpen, Users, Phone, Calendar } from "lucide-react";
+import { GraduationCap, Award, Heart, Stethoscope, BookOpen, Users, Calendar } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -208,12 +208,6 @@ const WhoIs = () => {
                       <Calendar className="w-5 h-5 ml-2" />
                       קביעת תור פרטי
                     </Link>
-                  </Button>
-                  <Button variant="outline" size="lg" asChild>
-                    <a href="tel:+972545808008">
-                      <Phone className="w-5 h-5 ml-2" />
-                      054-580-8008
-                    </a>
                   </Button>
                 </div>
               </motion.div>
@@ -439,12 +433,6 @@ const WhoIs = () => {
                     <Calendar className="w-5 h-5 ml-2" />
                     קביעת תור באתר
                   </Link>
-                </Button>
-                <Button variant="outline" size="lg" asChild>
-                  <a href="tel:+972545808008">
-                    <Phone className="w-5 h-5 ml-2" />
-                    054-580-8008
-                  </a>
                 </Button>
               </div>
             </motion.div>
