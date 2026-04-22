@@ -1,6 +1,6 @@
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
-import { GraduationCap, Award, Heart, Stethoscope, BookOpen, Users, Phone, Calendar } from "lucide-react";
+import { GraduationCap, Award, Heart, Stethoscope, BookOpen, Users, Calendar } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
