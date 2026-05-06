@@ -24,32 +24,7 @@ export const Footer = () => {
             </p>
           </div>
 
-          {/* Quick Links */}
-          <div>
-            <h4 className="text-sm font-semibold text-foreground mb-5 uppercase tracking-wider">ניווט מהיר</h4>
-            <ul className="space-y-2.5">
-              {[
-                { href: "/about", label: "אודות" },
-                { href: "/dr-anna-brameli", label: "ד״ר אנה ברמלי – פרופיל מקצועי" },
-                { href: "/services", label: "שירותים" },
-                { href: "/guides/טעימות-ראשונות-אלרגנים", label: "מדריך טעימות ראשונות" },
-                { href: "/guides/בדיקות-אלרגיה-ילדים-ישראל", label: "מדריך בדיקות אלרגיה" },
-                { href: "/guides/זכויות-ילד-אלרגי-ישראל", label: "זכויות ילד אלרגי" },
-                { href: "/faq", label: "שאלות ותשובות" },
-                { href: "/contact", label: "יצירת קשר" },
-                { href: "/book", label: "קביעת תור" },
-              ].map((link) => (
-                <li key={link.href}>
-                  <Link
-                    to={link.href}
-                    className="text-muted-foreground hover:text-primary transition-colors text-sm"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {/* Quick Links — temporarily hidden pending content review */}
 
           {/* Contact Info */}
           <div>
@@ -107,34 +82,8 @@ export const Footer = () => {
           </p>
         </div>
 
-        {/* Legal Links */}
+        {/* Legal Links — temporarily hidden pending content review */}
         <div className="mt-10 pt-8 border-t border-border">
-          <div className="flex flex-wrap justify-center gap-6 mb-5">
-            <Link
-              to="/privacy"
-              className="text-xs text-muted-foreground hover:text-primary transition-colors"
-            >
-              מדיניות פרטיות
-            </Link>
-            <Link
-              to="/accessibility"
-              className="text-xs text-muted-foreground hover:text-primary transition-colors"
-            >
-              הצהרת נגישות
-            </Link>
-            <Link
-              to="/security"
-              className="text-xs text-muted-foreground hover:text-primary transition-colors"
-            >
-              אבטחת מידע
-            </Link>
-            <Link
-              to="/blog"
-              className="text-xs text-muted-foreground hover:text-primary transition-colors"
-            >
-              מאמרים ומשאבים
-            </Link>
-          </div>
           <div className="flex flex-col md:flex-row justify-between items-center gap-3">
             <p className="text-xs text-muted-foreground">
               © {currentYear} ד״ר אנה ברמלי. כל הזכויות שמורות.
