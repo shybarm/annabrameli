@@ -199,18 +199,6 @@ const Index = () => {
                     קביעת תור
                   </Link>
                 </Button>
-                <Button size="lg" variant="outline" asChild>
-                  <Link to="/faq">
-                    <MessageCircle className="w-5 h-5 ml-2" />
-                    שאלות ותשובות
-                  </Link>
-                </Button>
-                <Button size="lg" variant="secondary" asChild>
-                  <Link to="/services">
-                    <BookOpen className="w-5 h-5 ml-2" />
-                    מידע להורים
-                  </Link>
-                </Button>
               </div>
             </motion.div>
 
