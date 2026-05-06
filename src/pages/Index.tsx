@@ -292,27 +292,24 @@ const Index = () => {
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {services.map((service, index) => (
-              <ServiceCard
+              <motion.div
                 key={service.title}
-                {...service}
-                delay={index * 0.08}
-              />
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.08 }}
+                className="block h-full p-7 rounded-2xl bg-card border border-border/60"
+              >
+                <div className="w-14 h-14 rounded-2xl bg-accent flex items-center justify-center mb-5">
+                  <service.icon className="w-7 h-7 text-primary" />
+                </div>
+                <h3 className="text-lg font-semibold text-foreground mb-2.5">{service.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{service.description}</p>
+              </motion.div>
             ))}
           </div>
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-center mt-12"
-          >
-            <Button variant="outline" size="lg" asChild>
-              <Link to="/services">
-                לכל השירותים
-                <ArrowLeft className="w-4 h-4 mr-2" />
-              </Link>
-            </Button>
-          </motion.div>
+          {/* "לכל השירותים" link temporarily hidden pending content review */}
         </div>
       </section>
 
@@ -341,23 +338,17 @@ const Index = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
+                className="block h-full bg-card rounded-2xl border border-border/60 p-6 md:p-7"
               >
-                <Link
-                  to={guide.href}
-                  className="block h-full bg-card rounded-2xl border border-border/60 p-6 md:p-7 card-hover group"
-                >
-                  <span className="inline-block text-[10px] font-medium text-primary bg-accent px-2.5 py-0.5 rounded-full mb-4">
-                    {guide.badge}
-                  </span>
-                  <div className="w-11 h-11 rounded-xl bg-accent flex items-center justify-center mb-4">
-                    <guide.icon className="w-5 h-5 text-primary" />
-                  </div>
-                  <h3 className="text-lg font-bold text-foreground mb-1 group-hover:text-primary transition-colors">
-                    {guide.title}
-                  </h3>
-                  <p className="text-sm font-medium text-primary/80 mb-3">{guide.subtitle}</p>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{guide.description}</p>
-                </Link>
+                <span className="inline-block text-[10px] font-medium text-primary bg-accent px-2.5 py-0.5 rounded-full mb-4">
+                  {guide.badge}
+                </span>
+                <div className="w-11 h-11 rounded-xl bg-accent flex items-center justify-center mb-4">
+                  <guide.icon className="w-5 h-5 text-primary" />
+                </div>
+                <h3 className="text-lg font-bold text-foreground mb-1">{guide.title}</h3>
+                <p className="text-sm font-medium text-primary/80 mb-3">{guide.subtitle}</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">{guide.description}</p>
               </motion.div>
             ))}
           </div>
@@ -395,19 +386,7 @@ const Index = () => {
             ))}
           </div>
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-center mt-12"
-          >
-            <Button variant="outline" size="lg" asChild>
-              <Link to="/updates">
-                לכל העדכונים
-                <ArrowLeft className="w-4 h-4 mr-2" />
-              </Link>
-            </Button>
-          </motion.div>
+          {/* "לכל העדכונים" link temporarily hidden pending content review */}
         </div>
       </section>
 
@@ -452,159 +431,7 @@ const Index = () => {
             ))}
           </div>
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-center mt-12"
-          >
-            <Button variant="outline" size="lg" asChild>
-              <Link to="/faq">
-                לכל השאלות והתשובות
-                <ArrowLeft className="w-4 h-4 mr-2" />
-              </Link>
-            </Button>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Knowledge Center - Authority Internal Linking Hub */}
-      <section className="section-spacing-lg">
-        <div className="container-medical">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-14"
-          >
-            <h2 className="font-bold text-foreground mb-4">
-              מרכז הידע באלרגיה לילדים
-            </h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              המדריכים המקיפים ביותר בעברית על אלרגיות בילדים – מידע רפואי מהימן, מבוסס ראיות, ונכתב על ידי מומחית.
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {[
-              {
-                to: "/אלרגיה-בילדים-מדריך-מלא",
-                title: "אלרגיה בילדים – מדריך מלא להורים",
-                summary: "כל מה שצריך לדעת: מתסמינים ואבחון, דרך טיפול ומניעה, ועד ניהול חיי יומיום וזכויות במערכת החינוך.",
-              },
-              {
-                to: "/guides/אלרגיה-מדריך-מקיף",
-                title: "אלרגיה – המדריך המקיף בעברית",
-                summary: "סקירה רפואית מעמיקה של כל סוגי האלרגיה: מזון, נשימתית, עורית, תרופתית – אבחון, טיפול ומניעה.",
-              },
-              {
-                to: "/guides/טעימות-ראשונות-אלרגנים",
-                title: "טעימות ראשונות – חשיפה לאלרגנים",
-                summary: "במבה, טחינה, ביצים וחלב – מתי להתחיל, איך לזהות תגובה, ומה עושים אם הילד מגיב.",
-              },
-              {
-                to: "/guides/בדיקות-אלרגיה-ילדים-ישראל",
-                title: "בדיקות אלרגיה לילדים בישראל",
-                summary: "תבחיני עור, בדיקות דם, תגר מזון – מה כל בדיקה בודקת, עלויות, והשוואה בין פרטי לקופת חולים.",
-              },
-              {
-                to: "/guides/זכויות-ילד-אלרגי-ישראל",
-                title: "זכויות הילד האלרגי בישראל",
-                summary: "מה מגיע לילד אלרגי בגן ובבית הספר, איך לדרוש התאמות, וצ׳קליסט מוכן להורדה.",
-              },
-              {
-                to: "/blog/אלרגיה-או-רגישות-למזון-מה-ההבדל",
-                title: "אלרגיה או רגישות למזון – מה ההבדל?",
-                summary: "ההבדל הקריטי שכל הורה חייב להכיר: תגובה חיסונית מול אי-סבילות, ומתי באמת צריך לדאוג.",
-              },
-            ].map((item, index) => (
-              <motion.div
-                key={item.to}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.08 }}
-              >
-                <Link
-                  to={item.to}
-                  className="block h-full bg-card rounded-2xl border border-border/60 p-6 card-hover group"
-                >
-                  <h3 className="text-base font-semibold text-foreground mb-2 group-hover:text-primary transition-colors leading-snug">
-                    {item.title}
-                  </h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {item.summary}
-                  </p>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Blog Articles Section - Internal Linking Hub */}
-      <section className="section-spacing-lg bg-surface-warm">
-        <div className="container-medical">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-14"
-          >
-            <h2 className="font-bold text-foreground mb-4">
-              מאמרים על אלרגיה בילדים
-            </h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              מידע רפואי מהימן ומבוסס ראיות, נכתב ונסקר על ידי ד״ר אנה ברמלי.
-            </p>
-          </motion.div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {blogArticles.slice(0, 6).map((article, index) => (
-              <motion.div
-                key={article.slug}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.08 }}
-              >
-                <Link
-                  to={`/blog/${article.slug}`}
-                  className="block bg-card rounded-2xl p-6 border border-border/60 h-full card-hover group"
-                >
-                  <span className="inline-block text-xs font-medium text-primary bg-accent px-3 py-1 rounded-full mb-4">
-                    {article.categoryLabel}
-                  </span>
-                  <h3 className="text-base font-semibold text-foreground mb-3 group-hover:text-primary transition-colors leading-snug">
-                    {article.title}
-                  </h3>
-                  <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                    {article.metaDescription}
-                  </p>
-                  <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                    <Clock className="w-3.5 h-3.5" />
-                    {article.readingTime} דקות קריאה
-                  </span>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-center mt-12"
-          >
-            <Button variant="outline" size="lg" asChild>
-              <Link to="/blog">
-                לכל המאמרים
-                <ArrowLeft className="w-4 h-4 mr-2" />
-              </Link>
-            </Button>
-          </motion.div>
-        </div>
-      </section>
+          {/* "לכל השאלות" link, Knowledge Center, and Blog Articles sections temporarily hidden pending content review */}
 
       {/* CTA Section */}
       <section className="section-spacing-lg">
