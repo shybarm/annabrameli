@@ -5,15 +5,9 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 
-const navLinks = [
-  { href: "/", label: "ראשי" },
-  { href: "/about", label: "אודות" },
-  { href: "/services", label: "שירותים" },
-  { href: "/guides/טעימות-ראשונות-אלרגנים", label: "מדריכים", matchPrefix: "/guides" },
-  { href: "/blog", label: "מאמרים", matchPrefix: "/blog" },
-  { href: "/faq", label: "שאלות ותשובות" },
-  { href: "/contact", label: "יצירת קשר" },
-];
+// Navigation links temporarily hidden — content pending review.
+// Do not delete; restore by re-adding entries to this array.
+const navLinks: { href: string; label: string; matchPrefix?: string }[] = [];
 
 export const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
