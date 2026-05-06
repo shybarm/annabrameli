@@ -432,6 +432,8 @@ const Index = () => {
           </div>
 
           {/* "לכל השאלות" link, Knowledge Center, and Blog Articles sections temporarily hidden pending content review */}
+        </div>
+      </section>
 
       {/* CTA Section */}
       <section className="section-spacing-lg">
