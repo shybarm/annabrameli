@@ -53,6 +53,10 @@ const Contact = () => {
 
     setIsSubmitting(false);
     setIsSubmitted(true);
+    trackEvent('contact_form_submitted', {
+      event_category: 'conversion',
+      subject: formData.subject || undefined,
+    });
     toast({
       title: "הפנייה נשלחה בהצלחה",
       description: "נחזור אליכם בהקדם האפשרי",
