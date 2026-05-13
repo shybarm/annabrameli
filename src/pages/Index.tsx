@@ -195,7 +195,7 @@ const Index = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button size="lg" asChild>
-                  <Link to="/book">
+                  <Link to="/book" onClick={() => trackBookAppointmentClick("hero")}>
                     <Phone className="w-5 h-5 ml-2" />
                     קביעת תור
                   </Link>
