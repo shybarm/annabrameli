@@ -84,7 +84,7 @@ export const Header = () => {
               </Button>
             )}
             <Button size="sm" asChild>
-              <Link to="/book">
+              <Link to="/book" onClick={() => trackBookAppointmentClick("header_desktop")}>
                 <Phone className="w-4 h-4 ml-1.5" />
                 קביעת תור
               </Link>
