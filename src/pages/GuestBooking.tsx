@@ -278,7 +278,7 @@ export default function GuestBooking() {
 
       trackEvent('booking_submitted', {
         event_category: 'conversion',
-        appointment_type: appointmentType || undefined,
+        appointment_type: selectedType?.name_he,
         clinic_id: selectedClinic?.id,
       });
 
