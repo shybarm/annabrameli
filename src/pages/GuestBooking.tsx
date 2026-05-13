@@ -276,6 +276,12 @@ export default function GuestBooking() {
       captchaRef.current?.resetCaptcha();
       setCaptchaToken(null);
 
+      trackEvent('booking_submitted', {
+        event_category: 'conversion',
+        appointment_type: appointmentType || undefined,
+        clinic_id: selectedClinic?.id,
+      });
+
       setStep('success');
     } catch (error: any) {
       console.error('Booking error:', error);
