@@ -133,6 +133,7 @@ const App = () => {
           <AccessibilityMenu />
           <BrowserRouter>
             <SiteWideSchema />
+            <AnalyticsRouteTracker />
             <Routes>
               {/* Public routes */}
               <Route path="/" element={<PublicLayout><Index /></PublicLayout>} />
