@@ -41,9 +41,19 @@ export function trackPageView(path: string): void {
 }
 
 /** Conversion: user clicked a "schedule appointment" CTA. */
-export function trackBookAppointmentClick(location: string): void {
+export function trackBookAppointmentClick(
+  location: string,
+  destinationUrl: string = "/book"
+): void {
   trackEvent("book_appointment_click", {
     cta_location: location,
+    destination_url: destinationUrl,
+    link_url:
+      typeof window !== "undefined"
+        ? new URL(destinationUrl, window.location.origin).href
+        : destinationUrl,
+    page_path:
+      typeof window !== "undefined" ? window.location.pathname : undefined,
     event_category: "conversion",
   });
 }
