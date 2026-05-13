@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { SchemaMarkup } from "@/components/seo/SchemaMarkup";
+import { trackEvent } from "@/lib/analytics";
 
 const contactInfo = [
   {
