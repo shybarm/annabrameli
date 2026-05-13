@@ -28,6 +28,7 @@ import { SchemaMarkup } from "@/components/seo/SchemaMarkup";
 import { useMedicalUpdates } from "@/hooks/useMedicalUpdates";
 import { blogArticles } from "@/data/blog-articles";
 import { usePageContent } from "@/contexts/PageContentContext";
+import { trackBookAppointmentClick } from "@/lib/analytics";
 import drAnnaImage from "@/assets/dr-anna-brameli.jpeg";
 
 const services = [
@@ -194,7 +195,7 @@ const Index = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button size="lg" asChild>
-                  <Link to="/book">
+                  <Link to="/book" onClick={() => trackBookAppointmentClick("hero")}>
                     <Phone className="w-5 h-5 ml-2" />
                     קביעת תור
                   </Link>
@@ -454,7 +455,7 @@ const Index = () => {
                 {ctaSection?.content || 'אל תחכו – קבעו תור לאבחון מקצועי. אבחון מוקדם ומדויק יכול לשנות את ההתנהלות היומיומית ולהעניק שקט נפשי.'}
               </p>
               <Button size="lg" variant="secondary" className="shadow-lg" asChild>
-                <Link to="/book">
+                <Link to="/book" onClick={() => trackBookAppointmentClick("footer_cta")}>
                   <Phone className="w-5 h-5 ml-2" />
                   קביעת תור לאבחון
                 </Link>

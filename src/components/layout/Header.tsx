@@ -4,6 +4,7 @@ import { Menu, X, Phone, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
+import { trackBookAppointmentClick } from "@/lib/analytics";
 
 // Navigation links temporarily hidden — content pending review.
 // Do not delete; restore by re-adding entries to this array.
@@ -83,7 +84,7 @@ export const Header = () => {
               </Button>
             )}
             <Button size="sm" asChild>
-              <Link to="/book">
+              <Link to="/book" onClick={() => trackBookAppointmentClick("header_desktop")}>
                 <Phone className="w-4 h-4 ml-1.5" />
                 קביעת תור
               </Link>
@@ -140,7 +141,7 @@ export const Header = () => {
                     </Button>
                   )}
                   <Button className="w-full" asChild>
-                    <Link to="/book">
+                    <Link to="/book" onClick={() => trackBookAppointmentClick("header_mobile")}>
                       <Phone className="w-4 h-4 ml-1.5" />
                       קביעת תור
                     </Link>

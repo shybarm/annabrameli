@@ -13,6 +13,7 @@ import { ChatWidget } from "@/components/chat/ChatWidget";
 import ChatAutoOpen from "@/components/chat/ChatAutoOpen";
 import { AccessibilityMenu } from "@/components/AccessibilityMenu";
 import { SiteWideSchema } from "@/components/seo/SiteWideSchema";
+import { AnalyticsRouteTracker } from "@/components/analytics/AnalyticsRouteTracker";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Services from "./pages/Services";
@@ -132,6 +133,7 @@ const App = () => {
           <AccessibilityMenu />
           <BrowserRouter>
             <SiteWideSchema />
+            <AnalyticsRouteTracker />
             <Routes>
               {/* Public routes */}
               <Route path="/" element={<PublicLayout><Index /></PublicLayout>} />
