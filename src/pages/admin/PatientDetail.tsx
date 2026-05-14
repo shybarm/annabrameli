@@ -375,15 +375,19 @@ export default function PatientDetail() {
     }
   };
 
+  const PRODUCTION_ORIGIN = 'https://ihaveallergy.com';
+
   const getPublicAppOrigin = () => {
     const host = window.location.host;
 
-    // If we are in a Lovable preview URL (id-preview--<id>.lovable.app), convert to the public URL (<id>.lovableproject.com)
-    if (/^id-preview--.+\.lovable\.app$/i.test(host)) {
-      const publicHost = host
-        .replace(/^id-preview--/i, '')
-        .replace(/\.lovable\.app$/i, '.lovableproject.com');
-      return `${window.location.protocol}//${publicHost}`;
+    // In Lovable preview/sandbox/lovableproject hosts, always point to the live production domain
+    if (
+      /lovable\.app$/i.test(host) ||
+      /lovableproject\.com$/i.test(host) ||
+      /lovable\.dev$/i.test(host) ||
+      /localhost/i.test(host)
+    ) {
+      return PRODUCTION_ORIGIN;
     }
 
     return window.location.origin;
