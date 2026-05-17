@@ -3,6 +3,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { FAQAccordion } from "@/components/ui/faq-accordion";
 import { SchemaMarkup } from "@/components/seo/SchemaMarkup";
+import { buildFaqSchema } from "@/utils/medicalSchema";
 
 const faqCategories = [
   {
@@ -204,6 +205,9 @@ const faqCategories = [
 
 const FAQ = () => {
   const [activeCategory, setActiveCategory] = useState<string>(faqCategories[0].title);
+  const faqSchema = buildFaqSchema(
+    faqCategories.flatMap((c) => c.items.map((i) => ({ question: i.question, answer: i.answer })))
+  );
 
   return (
     <>
@@ -214,6 +218,11 @@ const FAQ = () => {
           content="תשובות מקצועיות לשאלות נפוצות על אלרגיות: אלרגיה למזון, לחלב, לבוטנים, לתרופות, לדבורים, אסתמה, אנפילקסיס ובדיקות אלרגיה." 
         />
         <link rel="canonical" href="https://ihaveallergy.com/faq" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://ihaveallergy.com/faq" />
+        <meta property="og:title" content="שאלות ותשובות על אלרגיות - ד״ר אנה ברמלי" />
+        <meta property="og:description" content="תשובות מקצועיות לשאלות הנפוצות ביותר של הורים בנושא אלרגיות בילדים ובמבוגרים." />
+        <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
       </Helmet>
       <SchemaMarkup type="medicalWebPage" />
 
