@@ -44,7 +44,7 @@ export const Header = () => {
               <span className="text-primary-foreground font-bold text-lg">א</span>
             </div>
             <div>
-              <h1 className="text-base font-bold text-foreground leading-tight">ד״ר אנה ברמלי</h1>
+              <span className="block text-base font-bold text-foreground leading-tight">ד״ר אנה ברמלי</span>
               <p className="text-[11px] text-muted-foreground leading-tight">אלרגיה ואימונולוגיה</p>
             </div>
           </Link>

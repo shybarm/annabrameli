@@ -155,19 +155,13 @@ const Index = () => {
     <>
       <Helmet>
         <title>ד״ר אנה ברמלי | מומחית לאלרגיה ואימונולוגיה</title>
-        <meta 
-          name="description" 
-          content="ד״ר אנה ברמלי - מומחית לאלרגיה ואימונולוגיה. אבחון וטיפול בילדים ובמבוגרים, קביעת תור מהירה ומדריכים מקצועיים לניהול אלרגיות." 
-        />
         <link rel="canonical" href="https://ihaveallergy.com/" />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://ihaveallergy.com/" />
         <meta property="og:title" content="ד״ר אנה ברמלי | מומחית לאלרגיה ואימונולוגיה" />
-        <meta property="og:description" content="ד״ר אנה ברמלי – מומחית לאלרגיה ואימונולוגיה | אבחון וטיפול בילדים ובמבוגרים. קביעת תור מהירה, מידע מקצועי, ומדריכים." />
         <meta property="og:image" content="https://ihaveallergy.com/og-logo.png" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="ד״ר אנה ברמלי | מומחית לאלרגיה ואימונולוגיה" />
-        <meta name="twitter:description" content="מומחית לאלרגיה ואימונולוגיה עם ניסיון רב באבחון וטיפול באלרגיות בילדים ומבוגרים." />
         <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png" />
       </Helmet>
       <SchemaMarkup type="physician" />

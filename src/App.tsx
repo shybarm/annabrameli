@@ -104,15 +104,26 @@ const queryClient = new QueryClient({
 setQueryClientRef(queryClient);
 
 /**
- * Removes platform-injected twitter:image tags that lack data-rh="true".
- * Ensures only the Helmet-managed twitter:image survives in the DOM.
+ * Removes duplicate head tags after Helmet hydrates.
+ * Keeps Bing from counting static fallbacks together with route-specific Helmet tags.
  */
 function useCleanPlatformMeta() {
   React.useEffect(() => {
+    const cleanDuplicateMetaByName = (name: string) => {
+      const metas = Array.from(document.head.querySelectorAll(`meta[name="${name}"]`));
+      if (metas.length <= 1) return;
+
+      const preferred = metas.find((el) => el.getAttribute("data-rh") === "true") || metas[metas.length - 1];
+      metas.forEach((el) => {
+        if (el !== preferred) el.remove();
+      });
+    };
+
     const cleanup = () => {
       document.head
         .querySelectorAll('meta[name="twitter:image"]:not([data-rh="true"])')
         .forEach((el) => el.remove());
+      cleanDuplicateMetaByName("description");
     };
     cleanup();
     const timer = setTimeout(cleanup, 150);
