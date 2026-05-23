@@ -50,11 +50,21 @@ if (typeof globalThis.window === "undefined") {
     history: { pushState() {}, replaceState() {} },
     dataLayer: [],
   });
+  const noopEl = () => ({
+    setAttribute() {}, removeAttribute() {}, appendChild() {}, removeChild() {},
+    insertBefore() {}, addEventListener() {}, removeEventListener() {},
+    classList: { add() {}, remove() {}, toggle() {}, contains: () => false },
+    style: {}, children: [], childNodes: [], firstChild: null, parentNode: null,
+    textContent: "", innerHTML: "",
+  });
   globalThis.document = /** @type {any} */ ({
-    head: { querySelectorAll: () => [], appendChild() {} },
-    body: { classList: { add() {}, remove() {} } },
-    documentElement: { classList: { add() {}, remove() {} }, style: {}, lang: "he", dir: "rtl" },
-    createElement: () => ({ setAttribute() {}, appendChild() {}, style: {} }),
+    head: { ...noopEl(), querySelectorAll: () => [] },
+    body: noopEl(),
+    documentElement: { ...noopEl(), lang: "he", dir: "rtl" },
+    createElement: () => noopEl(),
+    createElementNS: () => noopEl(),
+    createTextNode: (text) => ({ nodeValue: String(text), textContent: String(text) }),
+    createDocumentFragment: () => noopEl(),
     querySelector: () => null,
     querySelectorAll: () => [],
     getElementById: () => null,
