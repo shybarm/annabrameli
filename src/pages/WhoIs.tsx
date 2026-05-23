@@ -160,9 +160,8 @@ const achievements = [
 
 const WhoIs = () => {
   return (
-    <div className="min-h-screen flex flex-col" dir="rtl">
-      <Header />
-      <main className="flex-1">
+    <>
+
         <Helmet>
           <title>מי היא ד״ר אנה ברמלי | רופאת אלרגיה פרטית בישראל</title>
           <meta
