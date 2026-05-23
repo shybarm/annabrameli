@@ -1,0 +1,35 @@
+# Admin routes - prevent indexing at server level
+/admin
+  X-Robots-Tag: noindex, nofollow
+/admin/*
+  X-Robots-Tag: noindex, nofollow
+
+# Auth routes - prevent indexing
+/auth
+  X-Robots-Tag: noindex, nofollow
+
+# Patient/intake routes - prevent indexing
+/intake/*
+  X-Robots-Tag: noindex, nofollow
+/join/*
+  X-Robots-Tag: noindex, nofollow
+/patient-invite/*
+  X-Robots-Tag: noindex, nofollow
+/portal
+  X-Robots-Tag: noindex, nofollow
+/verify-booking
+  X-Robots-Tag: noindex, nofollow
+/verify-email
+  X-Robots-Tag: noindex, nofollow
+/magic
+  X-Robots-Tag: noindex, nofollow
+
+# Sitemap - correct content type
+/sitemap.xml
+  Content-Type: application/xml; charset=utf-8
+  Cache-Control: public, max-age=3600
+
+# All public pages - good caching
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin

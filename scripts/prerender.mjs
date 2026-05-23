@@ -145,7 +145,28 @@ async function main() {
 function injectIntoTemplate(template, route, appHtml, head) {
   let out = template;
 
-  // 1) Inject Helmet head BEFORE </head>. Helmet's stringified output already
+  const hasHelmetHead = Boolean(head.title || head.meta || head.link || head.script);
+
+  // 1) Strip static head tags that Helmet will replace per-route, to avoid
+  // duplicate <title>, <meta name="description">, <link rel="canonical">, and
+  // duplicate og:* tags in the prerendered HTML. We only strip when Helmet
+  // produced its own output - if SSR head capture failed, leave the static
+  // fallback so the page still has *some* metadata.
+  if (hasHelmetHead) {
+    // <title>...</title>
+    out = out.replace(/\s*<title>[\s\S]*?<\/title>/i, "");
+    // <meta name="description" ...> (handles multi-line)
+    out = out.replace(/\s*<meta\s+name=["']description["'][\s\S]*?\/?>/gi, "");
+    // <meta name="keywords" ...> (Helmet pages own this too)
+    out = out.replace(/\s*<meta\s+name=["']keywords["'][\s\S]*?\/?>/gi, "");
+    // <link rel="canonical" ...>
+    out = out.replace(/\s*<link\s+rel=["']canonical["'][\s\S]*?\/?>/gi, "");
+    // og:* and twitter:* meta - Helmet emits per-route, drop static dupes
+    out = out.replace(/\s*<meta\s+property=["']og:(title|description|url|image|type)["'][\s\S]*?\/?>/gi, "");
+    out = out.replace(/\s*<meta\s+name=["']twitter:(card|title|description|image)["'][\s\S]*?\/?>/gi, "");
+  }
+
+  // 2) Inject Helmet head BEFORE </head>. Helmet's stringified output already
   // includes <title>, <meta>, <link>, <script type="application/ld+json"> tags
   // with data-rh attributes so the client-side Helmet recognises and replaces them.
   const headFragment = [head.title, head.meta, head.link, head.script]
@@ -155,7 +176,7 @@ function injectIntoTemplate(template, route, appHtml, head) {
     out = out.replace("</head>", `    ${headFragment}\n  </head>`);
   }
 
-  // 2) Inject rendered React app into #root and mark as SSR so main.tsx hydrates.
+  // 3) Inject rendered React app into #root and mark as SSR so main.tsx hydrates.
   out = out.replace(
     /<div id="root">\s*<\/div>/,
     `<div id="root" data-ssr="true">${appHtml}</div>`
