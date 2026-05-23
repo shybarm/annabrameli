@@ -1,13 +1,11 @@
 import React from "react";
 import { renderToString } from "react-dom/server";
 import { StaticRouter } from "react-router-dom/server";
-import { HelmetProvider } from "react-helmet-async";
+import { HelmetProvider, HelmetData } from "react-helmet-async";
 import App from "./App";
 
-// CRITICAL: Force react-helmet-async into server mode even though our SSR
-// runtime has a happy-dom `window`. Without this, the Dispatcher detects DOM
-// and tries to mutate document.head (calling cancelAnimationFrame, etc.),
-// which crashes SSR and leaves `helmetContext.helmet` undefined.
+// Force react-helmet-async into server mode (happy-dom provides a `window`
+// at SSR time, otherwise Helmet tries to mutate document.head and crashes).
 (HelmetProvider as unknown as { canUseDOM: boolean }).canUseDOM = false;
 
 export interface RenderResult {
@@ -23,18 +21,23 @@ export interface RenderResult {
 }
 
 export function render(url: string): RenderResult {
-  const helmetContext: { helmet?: any } = {};
+  // CRITICAL: A *fresh* HelmetData per render. react-helmet-async otherwise
+  // falls back to a process-wide singleton, and head state accumulates across
+  // routes (every route ends up with every prior route's <title>/JSON-LD).
+  const helmetData = new (HelmetData as unknown as new (
+    context: Record<string, unknown>,
+    canUseDOM?: boolean,
+  ) => { context: { helmet?: any } })({}, false);
+
   const html = renderToString(
-    <React.StrictMode>
-      <HelmetProvider context={helmetContext}>
-        <StaticRouter location={url}>
-          <App />
-        </StaticRouter>
-      </HelmetProvider>
-    </React.StrictMode>
+    <HelmetProvider context={helmetData.context as Record<string, unknown>}>
+      <StaticRouter location={url}>
+        <App />
+      </StaticRouter>
+    </HelmetProvider>
   );
 
-  const helmet = helmetContext.helmet;
+  const helmet = helmetData.context.helmet;
   return {
     html,
     head: {
@@ -47,3 +50,4 @@ export function render(url: string): RenderResult {
     },
   };
 }
+

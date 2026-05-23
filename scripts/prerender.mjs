@@ -132,8 +132,9 @@ async function main() {
     }
   }
 
-  // Cleanup SSR build artifacts
-  rmSync(SSR_DIR, { recursive: true, force: true });
+  // Cleanup SSR build artifacts (keep when DEBUG_SSR=1)
+  if (!process.env.DEBUG_SSR) rmSync(SSR_DIR, { recursive: true, force: true });
+
 
   console.log(`\n[prerender] Done. ${succeeded.length} succeeded, ${failed.length} failed.`);
   if (failed.length) {
