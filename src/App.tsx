@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { AuthProvider, setQueryClientRef } from "@/hooks/useAuth";
 import { ClinicProvider } from "@/contexts/ClinicContext";
 import { PageContentProvider } from "@/contexts/PageContentContext";
@@ -142,7 +142,8 @@ const App = () => {
           <Toaster />
           <Sonner />
           <AccessibilityMenu />
-          <BrowserRouter>
+          <>
+
             <SiteWideSchema />
             <AnalyticsRouteTracker />
             <Routes>
@@ -235,7 +236,7 @@ const App = () => {
               
               <Route path="*" element={<NotFound />} />
             </Routes>
-          </BrowserRouter>
+          </>
         </TooltipProvider>
         </PageContentProvider>
       </ClinicProvider>
