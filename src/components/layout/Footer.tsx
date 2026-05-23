@@ -24,7 +24,21 @@ export const Footer = () => {
             </p>
           </div>
 
-          {/* Quick Links — temporarily hidden pending content review */}
+          {/* Quick Links */}
+          <nav aria-label="ניווט תחתון">
+            <h4 className="text-sm font-semibold text-foreground mb-5 uppercase tracking-wider">ניווט מהיר</h4>
+            <ul className="space-y-3 text-sm">
+              <li><Link to="/about" className="text-muted-foreground hover:text-primary transition-colors">אודות</Link></li>
+              <li><Link to="/dr-anna-brameli" className="text-muted-foreground hover:text-primary transition-colors">ד״ר אנה ברמלי</Link></li>
+              <li><Link to="/services" className="text-muted-foreground hover:text-primary transition-colors">שירותים ומצבים</Link></li>
+              <li><Link to="/blog" className="text-muted-foreground hover:text-primary transition-colors">מאמרים</Link></li>
+              <li><Link to="/faq" className="text-muted-foreground hover:text-primary transition-colors">שאלות ותשובות</Link></li>
+              <li><Link to="/contact" className="text-muted-foreground hover:text-primary transition-colors">יצירת קשר</Link></li>
+              <li><Link to="/book" className="text-muted-foreground hover:text-primary transition-colors">קביעת תור</Link></li>
+            </ul>
+          </nav>
+
+
 
           {/* Contact Info */}
           <div>
