@@ -142,7 +142,8 @@ const App = () => {
           <Toaster />
           <Sonner />
           <AccessibilityMenu />
-          <BrowserRouter>
+          <>
+
             <SiteWideSchema />
             <AnalyticsRouteTracker />
             <Routes>
