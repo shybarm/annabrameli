@@ -3,7 +3,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { FAQAccordion } from "@/components/ui/faq-accordion";
 import { SchemaMarkup } from "@/components/seo/SchemaMarkup";
-import { buildFaqSchema } from "@/utils/medicalSchema";
+import { buildFaqSchema, buildBreadcrumbSchema } from "@/utils/medicalSchema";
 
 const faqCategories = [
   {
