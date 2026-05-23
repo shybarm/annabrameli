@@ -156,8 +156,9 @@ const App = () => {
               <Route path="/privacy" element={<PublicLayout><PrivacyPolicy /></PublicLayout>} />
               <Route path="/accessibility" element={<PublicLayout><AccessibilityStatement /></PublicLayout>} />
               <Route path="/security" element={<PublicLayout><SecurityPolicy /></PublicLayout>} />
-              <Route path="/dr-anna-brameli" element={<DrAnnaBrameli />} />
-              <Route path="/whois" element={<WhoIs />} />
+              <Route path="/dr-anna-brameli" element={<PublicLayout><DrAnnaBrameli /></PublicLayout>} />
+              <Route path="/whois" element={<PublicLayout><WhoIs /></PublicLayout>} />
+
               <Route path="/blog" element={<PublicLayout><Blog /></PublicLayout>} />
               <Route path="/blog/:slug" element={<PublicLayout><BlogArticlePage /></PublicLayout>} />
               <Route path="/guides/טעימות-ראשונות-אלרגנים" element={<PublicLayout><GoldenGuide /></PublicLayout>} />

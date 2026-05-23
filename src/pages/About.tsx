@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { GraduationCap, Award, Heart, Stethoscope, BookOpen, Users } from "lucide-react";
 import { SchemaMarkup } from "@/components/seo/SchemaMarkup";
+import { buildBreadcrumbSchema } from "@/utils/medicalSchema";
 import { usePageContent } from "@/contexts/PageContentContext";
 import drAnnaImage from "@/assets/dr-anna-brameli.jpeg";
 
@@ -75,6 +76,10 @@ const About = () => {
         <meta property="og:url" content="https://ihaveallergy.com/about" />
         <meta property="og:title" content="אודות ד״ר אנה ברמלי - מומחית לאלרגיה ואימונולוגיה" />
         <meta property="og:description" content="רקע מקצועי, השכלה והגישה הטיפולית של ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה בילדים ובמבוגרים." />
+        <script type="application/ld+json">{JSON.stringify(buildBreadcrumbSchema([
+          { name: "דף הבית", item: "https://ihaveallergy.com/" },
+          { name: "אודות", item: "https://ihaveallergy.com/about" },
+        ]))}</script>
       </Helmet>
       <SchemaMarkup type="medicalWebPage" />
 

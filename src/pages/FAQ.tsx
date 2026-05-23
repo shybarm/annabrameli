@@ -3,7 +3,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { FAQAccordion } from "@/components/ui/faq-accordion";
 import { SchemaMarkup } from "@/components/seo/SchemaMarkup";
-import { buildFaqSchema } from "@/utils/medicalSchema";
+import { buildFaqSchema, buildBreadcrumbSchema } from "@/utils/medicalSchema";
 
 const faqCategories = [
   {
@@ -223,6 +223,10 @@ const FAQ = () => {
         <meta property="og:title" content="שאלות ותשובות על אלרגיות - ד״ר אנה ברמלי" />
         <meta property="og:description" content="תשובות מקצועיות לשאלות הנפוצות ביותר של הורים בנושא אלרגיות בילדים ובמבוגרים." />
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(buildBreadcrumbSchema([
+          { name: "דף הבית", item: "https://ihaveallergy.com/" },
+          { name: "שאלות ותשובות", item: "https://ihaveallergy.com/faq" },
+        ]))}</script>
       </Helmet>
       <SchemaMarkup type="medicalWebPage" />
 

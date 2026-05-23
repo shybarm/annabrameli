@@ -23,8 +23,6 @@ import {
   Navigation
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import {
   Accordion,
@@ -302,9 +300,8 @@ const internalResources = [
 
 const DrAnnaBrameli = () => {
   return (
-    <div className="min-h-screen flex flex-col" dir="rtl">
-      <Header />
-      <main className="flex-1">
+    <>
+
         <Helmet>
           <title>ד״ר אנה ברמלי - רופאת אלרגיה ואלרגולוגית | קליניקה פרטית בישראל</title>
           <meta 
@@ -931,10 +928,9 @@ const DrAnnaBrameli = () => {
             </div>
           </div>
         </section>
-      </main>
-      <Footer />
-    </div>
+    </>
   );
 };
+
 
 export default DrAnnaBrameli;

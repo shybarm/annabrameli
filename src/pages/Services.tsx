@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SchemaMarkup } from "@/components/seo/SchemaMarkup";
-import { buildFaqSchema } from "@/utils/medicalSchema";
+import { buildFaqSchema, buildBreadcrumbSchema } from "@/utils/medicalSchema";
 
 const servicesFaqs = [
   { question: "מהו תהליך האבחנה של אלרגיה פרטית בארץ?", answer: "לרוב מתחיל בקליניקה ובאיסוף היסטוריה, לאחר מכן נעשות בדיקות מתאימות. ד\"ר אנה ברמלי מסבירה את הצעדים וממליצה על הבדיקות המשלימות במידת הצורך." },
@@ -183,7 +183,48 @@ const Services = () => {
   const heroSection = getSection(0);
   const introSection = getSection(1);
 
+  const conditionsItemList = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "מצבים אלרגיים שמטופלים במרפאה",
+    itemListElement: conditions.map((c, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      item: {
+        "@type": "MedicalCondition",
+        name: c.title,
+        description: c.description,
+        signOrSymptom: c.symptoms.map((s) => ({ "@type": "MedicalSymptom", name: s })),
+        possibleTreatment: { "@type": "MedicalTherapy", name: c.treatment },
+        url: `https://ihaveallergy.com/services#${c.id}`,
+      },
+    })),
+  };
+
+  const diagnosticServiceSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "שירותי אבחון אלרגיה",
+    itemListElement: diagnosticServices.map((s, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      item: {
+        "@type": "MedicalProcedure",
+        name: s.title,
+        description: s.description,
+        procedureType: "Diagnostic",
+        provider: { "@type": "Physician", name: "ד״ר אנה ברמלי", url: "https://ihaveallergy.com/dr-anna-brameli" },
+      },
+    })),
+  };
+
+  const breadcrumbSchema = buildBreadcrumbSchema([
+    { name: "דף הבית", item: "https://ihaveallergy.com/" },
+    { name: "שירותים ומצבים רפואיים", item: "https://ihaveallergy.com/services" },
+  ]);
+
   return (
+
     <>
       <Helmet>
         <title>{heroSection?.heading || 'שירותים ומצבים רפואיים'} | ד״ר אנה ברמלי – מרפאת אלרגיה</title>
@@ -197,6 +238,9 @@ const Services = () => {
         <meta property="og:title" content="שירותי אבחון וטיפול באלרגיה - ד״ר אנה ברמלי" />
         <meta property="og:description" content="אבחון וטיפול במגוון אלרגיות: מזון, תרופות, אבק, חיות מחמד, אסתמה ואימונותרפיה. מרפאת אלרגיה בהוד השרון." />
         <script type="application/ld+json">{JSON.stringify(buildFaqSchema(servicesFaqs))}</script>
+        <script type="application/ld+json">{JSON.stringify(conditionsItemList)}</script>
+        <script type="application/ld+json">{JSON.stringify(diagnosticServiceSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
       </Helmet>
       <SchemaMarkup type="medicalWebPage" />
 

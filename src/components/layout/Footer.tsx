@@ -24,7 +24,21 @@ export const Footer = () => {
             </p>
           </div>
 
-          {/* Quick Links — temporarily hidden pending content review */}
+          {/* Quick Links */}
+          <nav aria-label="ניווט תחתון">
+            <h4 className="text-sm font-semibold text-foreground mb-5 uppercase tracking-wider">ניווט מהיר</h4>
+            <ul className="space-y-3 text-sm">
+              <li><Link to="/about" className="text-muted-foreground hover:text-primary transition-colors">אודות</Link></li>
+              <li><Link to="/dr-anna-brameli" className="text-muted-foreground hover:text-primary transition-colors">ד״ר אנה ברמלי</Link></li>
+              <li><Link to="/services" className="text-muted-foreground hover:text-primary transition-colors">שירותים ומצבים</Link></li>
+              <li><Link to="/blog" className="text-muted-foreground hover:text-primary transition-colors">מאמרים</Link></li>
+              <li><Link to="/faq" className="text-muted-foreground hover:text-primary transition-colors">שאלות ותשובות</Link></li>
+              <li><Link to="/contact" className="text-muted-foreground hover:text-primary transition-colors">יצירת קשר</Link></li>
+              <li><Link to="/book" className="text-muted-foreground hover:text-primary transition-colors">קביעת תור</Link></li>
+            </ul>
+          </nav>
+
+
 
           {/* Contact Info */}
           <div>
@@ -82,17 +96,24 @@ export const Footer = () => {
           </p>
         </div>
 
-        {/* Legal Links — temporarily hidden pending content review */}
+        {/* Legal Links */}
         <div className="mt-10 pt-8 border-t border-border">
           <div className="flex flex-col md:flex-row justify-between items-center gap-3">
             <p className="text-xs text-muted-foreground">
               © {currentYear} ד״ר אנה ברמלי. כל הזכויות שמורות.
             </p>
-            <p className="text-[11px] text-muted-foreground/70">
-              המידע באתר זה אינו מהווה תחליף לייעוץ רפואי מקצועי.
-            </p>
+            <nav aria-label="קישורי מדיניות" className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
+              <Link to="/privacy" className="text-muted-foreground hover:text-primary transition-colors">מדיניות פרטיות</Link>
+              <Link to="/accessibility" className="text-muted-foreground hover:text-primary transition-colors">הצהרת נגישות</Link>
+              <Link to="/security" className="text-muted-foreground hover:text-primary transition-colors">מדיניות אבטחת מידע</Link>
+              <Link to="/whois" className="text-muted-foreground hover:text-primary transition-colors">מי אנחנו</Link>
+            </nav>
           </div>
+          <p className="text-[11px] text-muted-foreground/70 text-center mt-4">
+            המידע באתר זה אינו מהווה תחליף לייעוץ רפואי מקצועי.
+          </p>
         </div>
+
       </div>
     </footer>
   );
