@@ -934,7 +934,5 @@ const DrAnnaBrameli = () => {
   );
 };
 
-  );
-};
 
 export default DrAnnaBrameli;
