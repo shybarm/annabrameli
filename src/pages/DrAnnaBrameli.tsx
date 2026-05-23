@@ -334,13 +334,32 @@ const DrAnnaBrameli = () => {
                 {/* Opening Paragraph */}
                 <div className="space-y-4 text-lg text-muted-foreground leading-relaxed">
                   <p>
-                    ד״ר אנה ברמלי היא רופאת אלרגיה ואלרגולוגית עם ניסיון קליני עשיר בטיפול במבוגרים וילדים. 
-                    בקליניקה הפרטית שלה (<a href="https://ihaveallergy.com" className="text-primary hover:underline">ihaveallergy.com</a>) היא מספקת אבחנה מדויקת, בדיקות אלרגיה מותאמות וטיפול פרטני במצבים כגון נזלת אלרגית, אלרגיות מזון, אלרגיות עונתיות ואסתמה.
+                    ד״ר אנה ברמלי היא רופאה מומחית באלרגיה ואימונולוגיה ורופאת ילדים. הקליניקה הפרטית שלה (<a href="https://ihaveallergy.com" className="text-primary hover:underline">ihaveallergy.com</a>) בהוד השרון מספקת אבחון מדויק, בדיקות אלרגיה מותאמות וטיפול אישי באלרגיה למזון, אלרגיה לתרופות, נזלת אלרגית, אסתמה אלרגית, אורטיקריה ואימונותרפיה - לילדים, לתינוקות ולמבוגרים.
                   </p>
                   <p>
-                    ד״ר ברמלי מדגישה טיפול מבוסס ראיות, הסבר פשוט למטופל ומעקב צמוד.
+                    גישת הטיפול מבוססת ראיות (evidence-based), עם הסבר ברור למטופל ולמשפחה ומעקב צמוד לאורך כל תהליך האבחון והטיפול.
                   </p>
                 </div>
+
+                {/* At-a-glance fact strip - optimized for AI Overview extraction */}
+                <dl className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4 p-5 rounded-2xl bg-accent/40 border border-border/60">
+                  <div>
+                    <dt className="text-xs text-muted-foreground">התמחויות</dt>
+                    <dd className="text-sm font-semibold text-foreground mt-1">אלרגיה, אימונולוגיה, רפואת ילדים</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-muted-foreground">הכשרה</dt>
+                    <dd className="text-sm font-semibold text-foreground mt-1">שניידר + Vanderbilt (ארה״ב)</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-muted-foreground">מטופלים</dt>
+                    <dd className="text-sm font-semibold text-foreground mt-1">תינוקות, ילדים ומבוגרים</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-muted-foreground">מיקום</dt>
+                    <dd className="text-sm font-semibold text-foreground mt-1">הוד השרון</dd>
+                  </div>
+                </dl>
 
                 <div className="mt-8 flex flex-col sm:flex-row gap-4">
                   <Button variant="default" size="lg" className="shadow-teal" asChild>
@@ -350,6 +369,7 @@ const DrAnnaBrameli = () => {
                     </Link>
                   </Button>
                 </div>
+
               </motion.div>
 
               <motion.div
