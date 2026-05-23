@@ -84,6 +84,10 @@ const Contact = () => {
         <meta property="og:url" content="https://ihaveallergy.com/contact" />
         <meta property="og:title" content="קביעת תור ויצירת קשר - מרפאת אלרגיה בהוד השרון" />
         <meta property="og:description" content="קביעת תור אצל ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה. מרפאה פרטית בהוד השרון, ייעוץ ואבחון אלרגיות בילדים ובמבוגרים." />
+        <script type="application/ld+json">{JSON.stringify(buildBreadcrumbSchema([
+          { name: "דף הבית", item: "https://ihaveallergy.com/" },
+          { name: "יצירת קשר", item: "https://ihaveallergy.com/contact" },
+        ]))}</script>
       </Helmet>
       <SchemaMarkup type="contactPage" />
 
