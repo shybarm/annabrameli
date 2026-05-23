@@ -4,6 +4,12 @@ import { StaticRouter } from "react-router-dom/server";
 import { HelmetProvider } from "react-helmet-async";
 import App from "./App";
 
+// CRITICAL: Force react-helmet-async into server mode even though our SSR
+// runtime has a happy-dom `window`. Without this, the Dispatcher detects DOM
+// and tries to mutate document.head (calling cancelAnimationFrame, etc.),
+// which crashes SSR and leaves `helmetContext.helmet` undefined.
+(HelmetProvider as unknown as { canUseDOM: boolean }).canUseDOM = false;
+
 export interface RenderResult {
   html: string;
   head: {
