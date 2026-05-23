@@ -258,9 +258,17 @@ const Services = () => {
             <p className="text-lg text-muted-foreground leading-relaxed">
               {introSection?.content || 'מגוון רחב של שירותי אבחון וטיפול באלרגיות, מותאמים אישית לכל מטופל. המידע להלן מסייע להורים להבין את המצבים השונים ולדעת מתי לפנות לאבחון מקצועי.'}
             </p>
+
+            {/* AI-extractable definition block */}
+            <div className="mt-8 p-5 rounded-2xl bg-card/80 border border-border/60">
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                <strong className="text-foreground">רופא אלרגיה (אלרגולוג)</strong> הוא רופא מומחה לאבחון וטיפול במצבים בהם מערכת החיסון מגיבה לחשיפה לאלרגן - מזון, תרופה, עקיצה, אבקנים, אבק או חיות מחמד. האבחון משלב היסטוריה רפואית, <Link to="/faq#בדיקות-אלרגיה-לילדים" className="text-primary hover:underline">תבחיני עור או בדיקות דם IgE</Link>, ולעיתים תגר מבוקר. הטיפול נע בין הימנעות, תרופות לשליטה בתסמינים, ואימונותרפיה ארוכת טווח. <Link to="/dr-anna-brameli" className="text-primary hover:underline">קראו על ההכשרה של ד״ר ברמלי</Link>.
+              </p>
+            </div>
           </motion.div>
         </div>
       </section>
+
 
       {/* Diagnostic Services */}
       <section className="section-spacing-lg bg-surface">
