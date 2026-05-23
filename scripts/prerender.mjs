@@ -18,67 +18,35 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync, rmSync } from "node
 import { resolve, dirname, join } from "node:path";
 import { pathToFileURL } from "node:url";
 
-// --- 1. Minimal browser-global shims --------------------------------------
-// renderToString never touches the DOM, but some modules read globals at
-// import time (e.g. supabase client reads `localStorage`). Stub the minimum.
-const memStore = () => {
-  const store = new Map();
-  return {
-    getItem: (k) => (store.has(k) ? store.get(k) : null),
-    setItem: (k, v) => store.set(k, String(v)),
-    removeItem: (k) => store.delete(k),
-    clear: () => store.clear(),
-    key: (i) => Array.from(store.keys())[i] ?? null,
-    get length() { return store.size; },
-  };
-};
-
+// --- 1. happy-dom global shim ---------------------------------------------
+// Some third-party modules (sonner, framer-motion, radix-ui, supabase client)
+// touch window/document/localStorage at import time. happy-dom gives us a
+// real-enough DOM in Node without Puppeteer/Chromium.
 if (typeof globalThis.window === "undefined") {
-  globalThis.localStorage = memStore();
-  globalThis.sessionStorage = memStore();
-  globalThis.window = /** @type {any} */ ({
-    location: { href: "https://ihaveallergy.com/", pathname: "/", search: "", origin: "https://ihaveallergy.com" },
-    navigator: { userAgent: "node-ssg" },
-    localStorage: globalThis.localStorage,
-    sessionStorage: globalThis.sessionStorage,
-    matchMedia: () => ({ matches: false, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {} }),
-    addEventListener() {},
-    removeEventListener() {},
-    requestAnimationFrame: (cb) => setTimeout(cb, 0),
-    cancelAnimationFrame: (id) => clearTimeout(id),
-    scrollTo() {},
-    history: { pushState() {}, replaceState() {} },
-    dataLayer: [],
-  });
-  const noopEl = () => ({
-    setAttribute() {}, removeAttribute() {}, appendChild() {}, removeChild() {},
-    insertBefore() {}, addEventListener() {}, removeEventListener() {},
-    classList: { add() {}, remove() {}, toggle() {}, contains: () => false },
-    style: {}, children: [], childNodes: [], firstChild: null, parentNode: null,
-    textContent: "", innerHTML: "",
-  });
-  globalThis.document = /** @type {any} */ ({
-    head: { ...noopEl(), querySelectorAll: () => [] },
-    body: noopEl(),
-    documentElement: { ...noopEl(), lang: "he", dir: "rtl" },
-    createElement: () => noopEl(),
-    createElementNS: () => noopEl(),
-    createTextNode: (text) => ({ nodeValue: String(text), textContent: String(text) }),
-    createDocumentFragment: () => noopEl(),
-    querySelector: () => null,
-    querySelectorAll: () => [],
-    getElementById: () => null,
-    addEventListener() {},
-    removeEventListener() {},
-  });
-  try { Object.defineProperty(globalThis, "navigator", { value: globalThis.window.navigator, configurable: true }); } catch {}
-  try { Object.defineProperty(globalThis, "matchMedia", { value: globalThis.window.matchMedia, configurable: true }); } catch {}
-  globalThis.HTMLElement = class {};
-  globalThis.Element = class {};
-  globalThis.Node = class {};
-  globalThis.IntersectionObserver = class { observe() {} unobserve() {} disconnect() {} };
-  globalThis.ResizeObserver = class { observe() {} unobserve() {} disconnect() {} };
-  globalThis.MutationObserver = class { observe() {} disconnect() {} takeRecords() { return []; } };
+  const { Window } = await import("happy-dom");
+  const win = new Window({ url: "https://ihaveallergy.com/" });
+  const props = [
+    "window", "document", "navigator", "location", "history",
+    "localStorage", "sessionStorage", "HTMLElement", "Element", "Node",
+    "Text", "Document", "DocumentFragment", "ShadowRoot", "Event",
+    "CustomEvent", "MouseEvent", "KeyboardEvent", "MutationObserver",
+    "IntersectionObserver", "ResizeObserver", "matchMedia",
+    "requestAnimationFrame", "cancelAnimationFrame", "getComputedStyle",
+    "DOMParser", "XMLSerializer", "NodeFilter", "CSS",
+  ];
+  for (const k of props) {
+    if (win[k] !== undefined && globalThis[k] === undefined) {
+      try {
+        Object.defineProperty(globalThis, k, {
+          value: win[k], configurable: true, writable: true,
+        });
+      } catch {}
+    }
+  }
+  // Always expose window/document explicitly.
+  globalThis.window = win;
+  globalThis.document = win.document;
+  globalThis.self = win;
 }
 
 // --- 2. Routes to prerender (Wave 1: static-content public pages) ---------
