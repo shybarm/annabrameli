@@ -441,7 +441,5 @@ const WhoIs = () => {
   );
 };
 
-  );
-};
 
 export default WhoIs;
