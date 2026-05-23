@@ -61,8 +61,8 @@ if (typeof globalThis.window === "undefined") {
     addEventListener() {},
     removeEventListener() {},
   });
-  globalThis.navigator = globalThis.window.navigator;
-  globalThis.matchMedia = globalThis.window.matchMedia;
+  try { Object.defineProperty(globalThis, "navigator", { value: globalThis.window.navigator, configurable: true }); } catch {}
+  try { Object.defineProperty(globalThis, "matchMedia", { value: globalThis.window.matchMedia, configurable: true }); } catch {}
   globalThis.HTMLElement = class {};
   globalThis.Element = class {};
   globalThis.Node = class {};
