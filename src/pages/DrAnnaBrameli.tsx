@@ -302,9 +302,8 @@ const internalResources = [
 
 const DrAnnaBrameli = () => {
   return (
-    <div className="min-h-screen flex flex-col" dir="rtl">
-      <Header />
-      <main className="flex-1">
+    <>
+
         <Helmet>
           <title>ד״ר אנה ברמלי - רופאת אלרגיה ואלרגולוגית | קליניקה פרטית בישראל</title>
           <meta 
