@@ -1,17 +1,26 @@
 import React from "react";
-import { createRoot } from "react-dom/client";
+import { createRoot, hydrateRoot } from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import App from "./App.tsx";
 import "./index.css";
 
 const container = document.getElementById("root");
 if (container) {
-  const root = createRoot(container);
-  root.render(
+  const tree = (
     <React.StrictMode>
       <HelmetProvider>
-        <App />
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
       </HelmetProvider>
     </React.StrictMode>
   );
+  // If the container was prerendered to static HTML at build time, hydrate it.
+  // Otherwise mount fresh (dev and non-prerendered routes).
+  if (container.hasAttribute("data-ssr") || container.childElementCount > 0) {
+    hydrateRoot(container, tree);
+  } else {
+    createRoot(container).render(tree);
+  }
 }
