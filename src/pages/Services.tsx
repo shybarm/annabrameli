@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SchemaMarkup } from "@/components/seo/SchemaMarkup";
-import { buildFaqSchema } from "@/utils/medicalSchema";
+import { buildFaqSchema, buildBreadcrumbSchema } from "@/utils/medicalSchema";
 
 const servicesFaqs = [
   { question: "מהו תהליך האבחנה של אלרגיה פרטית בארץ?", answer: "לרוב מתחיל בקליניקה ובאיסוף היסטוריה, לאחר מכן נעשות בדיקות מתאימות. ד\"ר אנה ברמלי מסבירה את הצעדים וממליצה על הבדיקות המשלימות במידת הצורך." },
