@@ -6,13 +6,8 @@ for (const k of ["window","document","navigator","location","history","localStor
   }
 }
 globalThis.window = win; globalThis.document = win.document; globalThis.self = win;
-
-const { render } = await import("/dev-server/dist-ssr-test/entry-server.mjs");
+const { render } = await import("/dev-server/dist-ssr/entry-server.mjs");
 for (const url of ["/", "/services", "/faq", "/dr-anna-brameli"]) {
   const r = render(url);
-  console.log("==", url);
-  console.log("title:", r.head.title.slice(0,200));
-  console.log("script len:", r.head.script.length);
-  console.log("html includes Services?", r.html.includes("שירותים ואבחונים"));
-  console.log("html includes FAQ heading?", r.html.includes("שאלות נפוצות"));
+  console.log("==", url, "| title:", (r.head.title||"").replace(/<[^>]+>/g,"").slice(0,80), "| script chars:", r.head.script.length, "| Services in html:", r.html.includes("שירותים ואבחונים"), "| FAQ in html:", r.html.includes("מתי כדאי לקחת ילד"));
 }
