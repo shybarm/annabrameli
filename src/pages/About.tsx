@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { GraduationCap, Award, Heart, Stethoscope, BookOpen, Users } from "lucide-react";
 import { SchemaMarkup } from "@/components/seo/SchemaMarkup";
+import { buildBreadcrumbSchema } from "@/utils/medicalSchema";
 import { usePageContent } from "@/contexts/PageContentContext";
 import drAnnaImage from "@/assets/dr-anna-brameli.jpeg";
 
