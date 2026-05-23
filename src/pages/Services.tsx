@@ -238,6 +238,9 @@ const Services = () => {
         <meta property="og:title" content="שירותי אבחון וטיפול באלרגיה - ד״ר אנה ברמלי" />
         <meta property="og:description" content="אבחון וטיפול במגוון אלרגיות: מזון, תרופות, אבק, חיות מחמד, אסתמה ואימונותרפיה. מרפאת אלרגיה בהוד השרון." />
         <script type="application/ld+json">{JSON.stringify(buildFaqSchema(servicesFaqs))}</script>
+        <script type="application/ld+json">{JSON.stringify(conditionsItemList)}</script>
+        <script type="application/ld+json">{JSON.stringify(diagnosticServiceSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
       </Helmet>
       <SchemaMarkup type="medicalWebPage" />
 
