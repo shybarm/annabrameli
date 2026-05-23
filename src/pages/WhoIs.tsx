@@ -437,9 +437,10 @@ const WhoIs = () => {
             </motion.div>
           </div>
         </section>
-      </main>
-      <Footer />
-    </div>
+    </>
+  );
+};
+
   );
 };
 
