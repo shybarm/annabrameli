@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { z } from 'zod';
@@ -339,6 +340,19 @@ export default function GuestBooking() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-medical-50 to-white py-8 px-4" dir="rtl">
+      <Helmet>
+        <title>קביעת תור לאלרגולוג ילדים פרטי בהוד השרון | ד״ר אנה ברמלי</title>
+        <meta
+          name="description"
+          content="קביעת תור לייעוץ אלרגיה פרטי לילדים אצל ד״ר אנה ברמלי בהוד השרון. בדיקות עור, IgE, תגרי מזון ותכנית טיפול בביקור אחד. תור תוך ימים, לא חודשים."
+        />
+        <link rel="canonical" href="https://ihaveallergy.com/book" />
+        <meta name="robots" content="index, follow" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://ihaveallergy.com/book" />
+        <meta property="og:title" content="קביעת תור לאלרגולוג ילדים פרטי בהוד השרון" />
+        <meta property="og:description" content="ייעוץ אלרגיה פרטי לילדים ולמבוגרים בהוד השרון. בדיקות עור, IgE ותגרי מזון בביקור אחד." />
+      </Helmet>
       <div className="max-w-md mx-auto">
         {/* Header */}
         <div className="text-center mb-6">
@@ -348,10 +362,32 @@ export default function GuestBooking() {
           </Link>
           <div className="flex items-center justify-center gap-3 mb-2">
             <Stethoscope className="h-8 w-8 text-medical-600" />
-            <h1 className="text-2xl font-bold text-medical-800">קביעת תור</h1>
+            <h1 className="text-2xl font-bold text-medical-800">קביעת תור לייעוץ אלרגיה פרטי</h1>
           </div>
-          <p className="text-muted-foreground">ד״ר אנה ברמלי</p>
+          <p className="text-muted-foreground">ד״ר אנה ברמלי - רופאת ילדים ואלרגולוגית, הוד השרון</p>
         </div>
+
+        {/* Trust + clarity block - what this is, what to bring, when ER instead */}
+        <div className="mb-6 rounded-xl border border-medical-200 bg-white/70 p-4 text-sm leading-relaxed text-foreground space-y-3">
+          <div>
+            <p className="font-semibold mb-1">מה כולל הביקור</p>
+            <p className="text-muted-foreground">ייעוץ פרטי לאלרגיות ילדים: אנמנזה מפורטת, תבחיני עור (Skin Prick) במידת הצורך, פענוח בדיקות IgE קודמות, ותכנית טיפול כתובה - הכול בביקור אחד של כ-45 דקות במרפאה בהוד השרון.</p>
+          </div>
+          <div>
+            <p className="font-semibold mb-1">מה להביא</p>
+            <ul className="text-muted-foreground list-disc pr-5 space-y-0.5">
+              <li>תיעוד תגובות קודמות (תמונות פריחה, תאריך ומזון)</li>
+              <li>בדיקות דם או IgE קודמות, אם יש</li>
+              <li>רשימת תרופות קבועות ומשאפים</li>
+              <li>שמיכה/בקבוק נוחות לילדים קטנים</li>
+            </ul>
+          </div>
+          <div>
+            <p className="font-semibold mb-1">מתי לפנות למיון במקום</p>
+            <p className="text-muted-foreground">במקרה של קוצר נשימה, צפצוף, נפיחות בלשון או בשפתיים, חיוורון או רפיון - אל תמתינו לתור. תנו אדרנלין (אם רשום) והתקשרו ל-101 מיד. ייעוץ במרפאה מתאים לבירור לא דחוף ולתכנון מניעה.</p>
+          </div>
+        </div>
+
 
         {/* Progress - 3 steps */}
         <div className="flex items-center justify-center gap-1.5 mb-6">
