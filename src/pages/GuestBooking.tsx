@@ -278,7 +278,10 @@ export default function GuestBooking() {
       setCaptchaToken(null);
 
       trackEvent('booking_submitted', {
-        event_category: 'conversion',
+        event_category: 'Lead',
+        event_label: 'Appointment Booking',
+        form_name: 'appointment_booking',
+        page_path: typeof window !== 'undefined' ? window.location.pathname : undefined,
         appointment_type: selectedType?.name_he,
         clinic_id: selectedClinic?.id,
       });
