@@ -1,77 +1,55 @@
 project_id = "ftatmcyrmeyhghgckvbj"
 
-[functions.send-visit-summary]
-verify_jwt = false
-
-[functions.summarize-documents]
-verify_jwt = false
-
-[functions.tag-document]
-verify_jwt = true
-
-[functions.notify-intake-complete]
-verify_jwt = true
-
-[functions.send-appointment-reminders]
-verify_jwt = false
-
-[functions.guest-upload-document]
-verify_jwt = false
-
-[functions.guest-booking]
-verify_jwt = false
-
-[functions.get-intake-patient]
-verify_jwt = false
-
-[functions.submit-intake]
-verify_jwt = false
-
-[functions.transcribe-audio]
-verify_jwt = false
-
-[functions.chat-assistant]
-verify_jwt = false
-
-[functions.send-team-invite]
-verify_jwt = false
-
-[functions.verify-team-invite]
-verify_jwt = false
-
-[functions.verify-patient-invite]
-verify_jwt = false
-
-[functions.accept-patient-invite]
-verify_jwt = true
-
-[functions.scan-file]
-verify_jwt = true
-
-[functions.send-otp]
-verify_jwt = false
-
-[functions.verify-otp]
-verify_jwt = false
-
-[functions.verify-booking]
-verify_jwt = false
-
-[functions.send-email-verification]
-verify_jwt = false
-
-[functions.verify-email-token]
-verify_jwt = false
-
-[functions.send-appointment-confirmation]
-verify_jwt = false
-
-[functions.sync-medical-updates]
-verify_jwt = false
-
-[functions.reset-staff-mfa]
-verify_jwt = false
-
-[functions.process-email-queue]
-verify_jwt = true
-
+[functions]
+  [functions.accept-patient-invite]
+    verify_jwt = true
+  [functions.auth-email-hook]
+    verify_jwt = false
+  [functions.chat-assistant]
+    verify_jwt = false
+  [functions.get-intake-patient]
+    verify_jwt = false
+  [functions.guest-booking]
+    verify_jwt = false
+  [functions.guest-upload-document]
+    verify_jwt = false
+  [functions.notify-intake-complete]
+    verify_jwt = true
+  [functions.process-email-queue]
+    verify_jwt = true
+  [functions.reset-staff-mfa]
+    verify_jwt = false
+  [functions.scan-file]
+    verify_jwt = true
+  [functions.send-appointment-confirmation]
+    verify_jwt = false
+  [functions.send-appointment-reminders]
+    verify_jwt = false
+  [functions.send-email-verification]
+    verify_jwt = false
+  [functions.send-otp]
+    verify_jwt = false
+  [functions.send-team-invite]
+    verify_jwt = false
+  [functions.send-visit-summary]
+    verify_jwt = false
+  [functions.submit-intake]
+    verify_jwt = false
+  [functions.summarize-documents]
+    verify_jwt = false
+  [functions.sync-medical-updates]
+    verify_jwt = false
+  [functions.tag-document]
+    verify_jwt = true
+  [functions.transcribe-audio]
+    verify_jwt = false
+  [functions.verify-booking]
+    verify_jwt = false
+  [functions.verify-email-token]
+    verify_jwt = false
+  [functions.verify-otp]
+    verify_jwt = false
+  [functions.verify-patient-invite]
+    verify_jwt = false
+  [functions.verify-team-invite]
+    verify_jwt = false
