@@ -55,7 +55,10 @@ const Contact = () => {
     setIsSubmitting(false);
     setIsSubmitted(true);
     trackEvent('contact_form_submitted', {
-      event_category: 'conversion',
+      event_category: 'Lead',
+      event_label: 'Contact Form',
+      form_name: 'contact_form',
+      page_path: typeof window !== 'undefined' ? window.location.pathname : undefined,
       subject: formData.subject || undefined,
     });
     toast({
