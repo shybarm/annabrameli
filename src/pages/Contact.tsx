@@ -34,8 +34,8 @@ const hours = [
 
 const Contact = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -48,23 +48,26 @@ const Contact = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate form submission
-    // TODO: Connect to backend API for form handling
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      // Simulate form submission
+      // TODO: Connect to backend API for form handling
+      await new Promise((resolve) => setTimeout(resolve, 1500));
 
-    setIsSubmitting(false);
-    setIsSubmitted(true);
-    trackEvent('contact_form_submitted', {
-      event_category: 'Lead',
-      event_label: 'Contact Form',
-      form_name: 'contact_form',
-      page_path: typeof window !== 'undefined' ? window.location.pathname : undefined,
-      subject: formData.subject || undefined,
-    });
-    toast({
-      title: "הפנייה נשלחה בהצלחה",
-      description: "נחזור אליכם בהקדם האפשרי",
-    });
+      trackEvent('contact_form_submitted', {
+        event_category: 'Lead',
+        event_label: 'Contact Form',
+        form_name: 'contact_form',
+        page_path: typeof window !== 'undefined' ? window.location.pathname : undefined,
+        subject: formData.subject || undefined,
+      });
+      toast({
+        title: "הפנייה נשלחה בהצלחה",
+        description: "נחזור אליכם בהקדם האפשרי",
+      });
+      navigate('/contact/success');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
