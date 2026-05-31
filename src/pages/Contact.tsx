@@ -1,5 +1,6 @@
 import { Helmet } from "react-helmet-async";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Mail, MapPin, Clock, Send, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -129,27 +130,7 @@ const Contact = () => {
                   טופס פנייה
                 </h2>
 
-                {isSubmitted ? (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="text-center py-14"
-                  >
-                    <div className="w-16 h-16 rounded-2xl bg-accent flex items-center justify-center mx-auto mb-6">
-                      <CheckCircle className="w-8 h-8 text-primary" />
-                    </div>
-                    <h3 className="text-xl font-semibold text-foreground mb-2">
-                      הפנייה נשלחה בהצלחה!
-                    </h3>
-                    <p className="text-muted-foreground mb-6">
-                      נחזור אליכם בהקדם האפשרי לתיאום התור.
-                    </p>
-                    <Button onClick={() => setIsSubmitted(false)} variant="outline">
-                      שלח פנייה נוספת
-                    </Button>
-                  </motion.div>
-                ) : (
-                  <form onSubmit={handleSubmit} className="space-y-5">
+                <form onSubmit={handleSubmit} className="space-y-5">
                     <div className="grid sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="name">שם מלא *</Label>
@@ -233,7 +214,6 @@ const Contact = () => {
                       )}
                     </Button>
                   </form>
-                )}
               </div>
             </motion.div>
 
