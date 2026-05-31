@@ -51,7 +51,7 @@ function normalizePhone(phone: string): string {
 
 export default function GuestBooking() {
   const navigate = useNavigate();
-  const [step, setStep] = useState<'clinic' | 'info' | 'appointment' | 'success'>('clinic');
+  const [step, setStep] = useState<'clinic' | 'info' | 'appointment'>('clinic');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const captchaRef = useRef<HCaptcha>(null);
@@ -286,7 +286,15 @@ export default function GuestBooking() {
         clinic_id: selectedClinic?.id,
       });
 
-      setStep('success');
+      navigate('/book/success', {
+        state: {
+          email,
+          clinicName: selectedClinic?.name,
+          typeName: selectedType?.name_he,
+          dateLabel: date ? format(date, 'EEEE, d בMMMM yyyy', { locale: he }) : undefined,
+          time,
+        },
+      });
     } catch (error: any) {
       console.error('Booking error:', error);
       
@@ -311,35 +319,6 @@ export default function GuestBooking() {
     }
   };
 
-  if (step === 'success') {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-medical-50 to-white flex items-center justify-center p-4" dir="rtl">
-        <Card className="w-full max-w-md border-medical-200">
-          <CardContent className="pt-8 pb-8 text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="h-8 w-8 text-green-600" />
-            </div>
-            <h2 className="text-2xl font-bold text-foreground mb-2">התור נקבע בהצלחה!</h2>
-            <p className="text-muted-foreground mb-6">
-              פרטי התור נשמרו במערכת.
-              {email && <><br />אישור נשלח לכתובת <strong>{email}</strong>.</>}
-            </p>
-            <div className="bg-muted p-4 rounded-lg mb-6 text-right">
-              <p className="text-sm text-muted-foreground">פרטי התור:</p>
-              <p className="font-medium">{selectedClinic?.name}</p>
-              <p className="font-medium">{selectedType?.name_he}</p>
-              <p className="text-sm text-muted-foreground">
-                {date && format(date, 'EEEE, d בMMMM yyyy', { locale: he })} בשעה {time}
-              </p>
-            </div>
-            <Button onClick={() => navigate('/')} className="w-full">
-              חזרה לאתר
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-medical-50 to-white py-8 px-4" dir="rtl">
