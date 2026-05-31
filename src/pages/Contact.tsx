@@ -1,5 +1,6 @@
 import { Helmet } from "react-helmet-async";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Mail, MapPin, Clock, Send, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -34,8 +35,8 @@ const hours = [
 
 const Contact = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -48,23 +49,26 @@ const Contact = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate form submission
-    // TODO: Connect to backend API for form handling
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      // Simulate form submission
+      // TODO: Connect to backend API for form handling
+      await new Promise((resolve) => setTimeout(resolve, 1500));
 
-    setIsSubmitting(false);
-    setIsSubmitted(true);
-    trackEvent('contact_form_submitted', {
-      event_category: 'Lead',
-      event_label: 'Contact Form',
-      form_name: 'contact_form',
-      page_path: typeof window !== 'undefined' ? window.location.pathname : undefined,
-      subject: formData.subject || undefined,
-    });
-    toast({
-      title: "הפנייה נשלחה בהצלחה",
-      description: "נחזור אליכם בהקדם האפשרי",
-    });
+      trackEvent('contact_form_submitted', {
+        event_category: 'Lead',
+        event_label: 'Contact Form',
+        form_name: 'contact_form',
+        page_path: typeof window !== 'undefined' ? window.location.pathname : undefined,
+        subject: formData.subject || undefined,
+      });
+      toast({
+        title: "הפנייה נשלחה בהצלחה",
+        description: "נחזור אליכם בהקדם האפשרי",
+      });
+      navigate('/contact/success');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -126,27 +130,7 @@ const Contact = () => {
                   טופס פנייה
                 </h2>
 
-                {isSubmitted ? (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="text-center py-14"
-                  >
-                    <div className="w-16 h-16 rounded-2xl bg-accent flex items-center justify-center mx-auto mb-6">
-                      <CheckCircle className="w-8 h-8 text-primary" />
-                    </div>
-                    <h3 className="text-xl font-semibold text-foreground mb-2">
-                      הפנייה נשלחה בהצלחה!
-                    </h3>
-                    <p className="text-muted-foreground mb-6">
-                      נחזור אליכם בהקדם האפשרי לתיאום התור.
-                    </p>
-                    <Button onClick={() => setIsSubmitted(false)} variant="outline">
-                      שלח פנייה נוספת
-                    </Button>
-                  </motion.div>
-                ) : (
-                  <form onSubmit={handleSubmit} className="space-y-5">
+                <form onSubmit={handleSubmit} className="space-y-5">
                     <div className="grid sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="name">שם מלא *</Label>
@@ -230,7 +214,6 @@ const Contact = () => {
                       )}
                     </Button>
                   </form>
-                )}
               </div>
             </motion.div>
 

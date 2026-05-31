@@ -45,6 +45,8 @@ import WorkHoursPage from "./pages/admin/WorkHoursPage";
 import CancellationsReport from "./pages/admin/CancellationsReport";
 import PatientPortal from "./pages/patient/PatientPortal";
 import GuestBooking from "./pages/GuestBooking";
+import BookingSuccess from "./pages/BookingSuccess";
+import ContactSuccess from "./pages/ContactSuccess";
 import JoinTeam from "./pages/JoinTeam";
 import PatientInviteAccept from "./pages/PatientInviteAccept";
 import VerifyBooking from "./pages/VerifyBooking";
@@ -194,6 +196,8 @@ const App = () => {
               
               {/* Guest Booking (public) */}
               <Route path="/book" element={<GuestBooking />} />
+              <Route path="/book/success" element={<BookingSuccess />} />
+              <Route path="/contact/success" element={<PublicLayout><ContactSuccess /></PublicLayout>} />
               
               {/* Booking Verification (public) */}
               <Route path="/verify-booking" element={<VerifyBooking />} />
