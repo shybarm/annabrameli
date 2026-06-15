@@ -80,6 +80,7 @@ import PositiveWithoutSymptoms from "./pages/knowledge/PositiveWithoutSymptoms";
 import PrivateVsPublic from "./pages/knowledge/PrivateVsPublic";
 import AllergyPillar from "./pages/AllergyPillar";
 import AllergyChildrenGuide from "./pages/AllergyChildrenGuide";
+import Desensitization from "./pages/Desensitization";
 import GeoOptimizationPage from "./pages/admin/GeoOptimizationPage";
 
 // Layout for public pages
