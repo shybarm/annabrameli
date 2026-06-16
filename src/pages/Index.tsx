@@ -20,6 +20,8 @@ import {
   School,
   HelpCircle,
   Clock,
+  Newspaper,
+  ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ServiceCard } from "@/components/ui/service-card";
@@ -107,6 +109,16 @@ const goldenGuides = [
     description: "מה מגיע לילד שלכם, איך לדרוש התאמות, וצ׳קליסט מוכן להורדה.",
     href: "/guides/זכויות-ילד-אלרגי-ישראל",
     badge: "מדריך זכויות",
+  },
+];
+
+const pressFeatures = [
+  {
+    outlet: "וואלה! בריאות",
+    title: "כשהעקיצה נראית מפחידה: איך תדעו אם עקיצת היתוש מסוכנת?",
+    description: "ד״ר אנה ברמלי מסבירה מתי תגובה לעקיצת יתוש מצריכה התייחסות רפואית, איך מבדילים בין גירוי רגיל לתגובה אלרגית, ומה ההורים יכולים לעשות בבית.",
+    href: "https://healthy.walla.co.il/item/3845811",
+    date: "2025",
   },
 ];
 
@@ -388,6 +400,56 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Press / Media Section */}
+      <section className="section-spacing-lg bg-surface-warm">
+        <div className="container-medical">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-14"
+          >
+            <h2 className="font-bold text-foreground mb-4">בעיתונות</h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              ד״ר אנה ברמלי מתראיינת ומצוטטת במגוון פרסומים בתחום בריאות הילד והאלרגיה.
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
+            {pressFeatures.map((item, index) => (
+              <motion.a
+                key={item.href}
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.08 }}
+                className="group block h-full bg-card rounded-2xl border border-border/60 p-6 md:p-7 card-hover"
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center">
+                    <Newspaper className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-primary">{item.outlet}</p>
+                    <p className="text-xs text-muted-foreground">{item.date}</p>
+                  </div>
+                </div>
+                <h3 className="text-base font-bold text-foreground mb-2 leading-snug group-hover:text-primary transition-colors">
+                  {item.title}
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed mb-4">{item.description}</p>
+                <span className="inline-flex items-center gap-1.5 text-sm font-medium text-primary">
+                  לכתבה המלאה
+                  <ExternalLink className="w-4 h-4" />
+                </span>
+              </motion.a>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* FAQ Section */}
       <section className="section-spacing-lg bg-surface">
