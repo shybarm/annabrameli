@@ -22,6 +22,7 @@ import {
   buildBreadcrumbSchema,
   buildFaqSchema,
 } from "@/utils/medicalSchema";
+import drAnnaConsultation from "@/assets/dr-anna-brameli-consultation.png.asset.json";
 
 const CANONICAL = "https://ihaveallergy.com/desensitization";
 const CLINIC_ADDRESS = "יגאל אלון 82, בניין סוזוקי, קומה 4, תל אביב";
@@ -223,6 +224,14 @@ const Desensitization = () => {
           <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-5">
             למה דווקא ד״ר אנה ברמלי?
           </h2>
+
+          <img
+            src={drAnnaConsultation.url}
+            alt="ד״ר אנה ברמלי בייעוץ עם הורה וילד במרפאה"
+            loading="lazy"
+            className="w-full max-w-xl rounded-2xl object-cover mb-6"
+          />
+
           <div className="text-muted-foreground leading-relaxed space-y-4">
             <p>
               כאשר מדובר בילד עם אלרגיה למזון, ההורים צריכים יותר מתשובה כללית.
