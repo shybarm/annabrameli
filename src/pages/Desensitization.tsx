@@ -22,6 +22,7 @@ import {
   buildBreadcrumbSchema,
   buildFaqSchema,
 } from "@/utils/medicalSchema";
+import drAnnaConsultation from "@/assets/dr-anna-brameli-consultation.png.asset.json";
 
 const CANONICAL = "https://ihaveallergy.com/desensitization";
 const CLINIC_ADDRESS = "יגאל אלון 82, בניין סוזוקי, קומה 4, תל אביב";
