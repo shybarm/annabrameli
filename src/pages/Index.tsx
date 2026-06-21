@@ -31,7 +31,7 @@ import { useMedicalUpdates } from "@/hooks/useMedicalUpdates";
 import { blogArticles } from "@/data/blog-articles";
 import { usePageContent } from "@/contexts/PageContentContext";
 import { trackBookAppointmentClick } from "@/lib/analytics";
-import drAnnaImage from "@/assets/dr-anna-brameli.jpeg";
+import drAnnaImage from "@/assets/dr-anna-brameli.png.asset.json";
 
 const services = [
   {
