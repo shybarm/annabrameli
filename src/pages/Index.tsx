@@ -31,7 +31,7 @@ import { useMedicalUpdates } from "@/hooks/useMedicalUpdates";
 import { blogArticles } from "@/data/blog-articles";
 import { usePageContent } from "@/contexts/PageContentContext";
 import { trackBookAppointmentClick } from "@/lib/analytics";
-import drAnnaImage from "@/assets/dr-anna-brameli.jpeg";
+import drAnnaImage from "@/assets/dr-anna-brameli.png.asset.json";
 
 const services = [
   {
@@ -222,7 +222,7 @@ const Index = () => {
               <div className="relative">
                 <div className="absolute inset-0 gradient-teal rounded-3xl transform rotate-3 opacity-15 blur-sm" />
                 <img
-                  src={drAnnaImage}
+                  src={drAnnaImage.url}
                   alt="ד״ר אנה ברמלי - מומחית לאלרגיה ואימונולוגיה"
                   className="relative w-72 h-72 sm:w-80 sm:h-80 md:w-96 md:h-96 object-cover rounded-3xl shadow-xl"
                   loading="eager"
