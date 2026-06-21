@@ -224,6 +224,14 @@ const Desensitization = () => {
           <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-5">
             למה דווקא ד״ר אנה ברמלי?
           </h2>
+
+          <img
+            src={drAnnaConsultation.url}
+            alt="ד״ר אנה ברמלי בייעוץ עם הורה וילד במרפאה"
+            loading="lazy"
+            className="w-full max-w-xl rounded-2xl object-cover mb-6"
+          />
+
           <div className="text-muted-foreground leading-relaxed space-y-4">
             <p>
               כאשר מדובר בילד עם אלרגיה למזון, ההורים צריכים יותר מתשובה כללית.
