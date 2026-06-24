@@ -378,10 +378,25 @@ const FoodDesensitization = () => {
           viewport={{ once: true }}
           className="bg-surface-warm border border-border/40 rounded-3xl p-6 md:p-10"
         >
+          <figure className="mb-6 -mx-6 md:-mx-10 -mt-6 md:-mt-10">
+            <img
+              src={desensitizationImage.url}
+              alt="ייעוץ דה-סנסיטיזציה למזון עם ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה קלינית, במרפאה פרטית בתל אביב"
+              title="דה-סנסיטיזציה למזון - ד״ר אנה ברמלי"
+              className="w-full h-56 md:h-72 object-cover rounded-t-3xl"
+              loading="lazy"
+              width={1600}
+              height={900}
+            />
+            <figcaption className="sr-only">
+              ד״ר אנה ברמלי בייעוץ פרטי להורים בנושא אלרגיה למזון ודה-סנסיטיזציה (OIT) בתל אביב
+            </figcaption>
+          </figure>
           <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
             רופא פרטי לדה-סנסיטיזציה למזון: מה באמת צריך לבדוק?
           </h2>
           <div className="text-muted-foreground leading-relaxed space-y-4 mb-6">
+
             <p>
               כאשר מחפשים רופא פרטי בנושא דה-סנסיטיזציה למזון, חשוב להבין שהשלב
               הראשון הוא לא התחלת חשיפה, אלא בדיקת התאמה רפואית. דה-סנסיטיזציה
