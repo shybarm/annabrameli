@@ -32,6 +32,9 @@ import { blogArticles } from "@/data/blog-articles";
 import { usePageContent } from "@/contexts/PageContentContext";
 import { trackBookAppointmentClick } from "@/lib/analytics";
 import drAnnaImage from "@/assets/dr-anna-brameli.png.asset.json";
+import desensitizationImage from "@/assets/desensitization-dr-brameli.webp.asset.json";
+import desensitizationConsultImage from "@/assets/dr-anna-brameli-desensitization.webp.asset.json";
+import foodAllergyImage from "@/assets/dr-anna-brameli-food-allergy.webp.asset.json";
 
 const services = [
   {
