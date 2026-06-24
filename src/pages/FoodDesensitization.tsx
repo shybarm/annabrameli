@@ -495,6 +495,20 @@ const FoodDesensitization = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
+          <figure className="mb-8 rounded-3xl overflow-hidden border border-border/40">
+            <img
+              src={desensitizationConsultImage.url}
+              alt="ד״ר ברמלי - מומחית אלרגיה ואימונולוגיה - בייעוץ פרטי לילד עם אלרגיה למזון לבדיקת התאמה לטיפול OIT (אימונותרפיה פומית) ודה-סנסיטיזציה"
+              title="ייעוץ פרטי לאלרגיה למזון - ד״ר אנה ברמלי"
+              className="w-full h-56 md:h-80 object-cover"
+              loading="lazy"
+              width={1600}
+              height={900}
+            />
+            <figcaption className="sr-only">
+              ייעוץ פרטי עם ד״ר אנה ברמלי בנושא אלרגיה למזון, OIT ודה-סנסיטיזציה למזון לילדים
+            </figcaption>
+          </figure>
           <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-6">
             למי הייעוץ מתאים?
           </h2>
