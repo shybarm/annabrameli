@@ -81,6 +81,7 @@ import PrivateVsPublic from "./pages/knowledge/PrivateVsPublic";
 import AllergyPillar from "./pages/AllergyPillar";
 import AllergyChildrenGuide from "./pages/AllergyChildrenGuide";
 import Desensitization from "./pages/Desensitization";
+import FoodDesensitization from "./pages/FoodDesensitization";
 import GeoOptimizationPage from "./pages/admin/GeoOptimizationPage";
 
 // Layout for public pages
@@ -171,6 +172,7 @@ const App = () => {
               <Route path="/guides/אלרגיה-מדריך-מקיף" element={<PublicLayout><AllergyPillar /></PublicLayout>} />
               <Route path="/אלרגיה-בילדים-מדריך-מלא" element={<PublicLayout><AllergyChildrenGuide /></PublicLayout>} />
               <Route path="/desensitization" element={<PublicLayout><Desensitization /></PublicLayout>} />
+              <Route path="/food-desensitization" element={<PublicLayout><FoodDesensitization /></PublicLayout>} />
 
               {/* Knowledge satellite articles */}
               <Route path="/knowledge/פריחה-אחרי-במבה" element={<PublicLayout><RashAfterBamba /></PublicLayout>} />
