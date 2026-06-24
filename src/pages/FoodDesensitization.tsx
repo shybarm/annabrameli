@@ -24,6 +24,7 @@ import {
   buildFaqSchema,
 } from "@/utils/medicalSchema";
 import drAnnaImage from "@/assets/dr-anna-brameli.png.asset.json";
+import { UrgencyPopup } from "@/components/marketing/UrgencyPopup";
 
 const CANONICAL = "https://ihaveallergy.com/food-desensitization";
 const CLINIC_ADDRESS = "יגאל אלון 82, בניין סוזוקי, קומה 4, תל אביב";
@@ -698,6 +699,8 @@ const FoodDesensitization = () => {
           <Link to="/contact">השארת פרטים</Link>
         </Button>
       </div>
+
+      <UrgencyPopup ctaHref="/book" />
     </>
   );
 };
