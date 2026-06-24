@@ -699,6 +699,8 @@ const FoodDesensitization = () => {
           <Link to="/contact">השארת פרטים</Link>
         </Button>
       </div>
+
+      <UrgencyPopup ctaHref="/book" />
     </>
   );
 };
