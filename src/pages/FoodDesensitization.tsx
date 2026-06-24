@@ -24,6 +24,9 @@ import {
   buildFaqSchema,
 } from "@/utils/medicalSchema";
 import drAnnaImage from "@/assets/dr-anna-brameli.png.asset.json";
+import desensitizationImage from "@/assets/desensitization-dr-brameli.webp.asset.json";
+import desensitizationConsultImage from "@/assets/dr-anna-brameli-desensitization.webp.asset.json";
+import foodAllergyImage from "@/assets/dr-anna-brameli-food-allergy.webp.asset.json";
 import { UrgencyPopup } from "@/components/marketing/UrgencyPopup";
 
 const CANONICAL = "https://ihaveallergy.com/food-desensitization";
@@ -375,10 +378,25 @@ const FoodDesensitization = () => {
           viewport={{ once: true }}
           className="bg-surface-warm border border-border/40 rounded-3xl p-6 md:p-10"
         >
+          <figure className="mb-6 -mx-6 md:-mx-10 -mt-6 md:-mt-10">
+            <img
+              src={desensitizationImage.url}
+              alt="ייעוץ דה-סנסיטיזציה למזון עם ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה קלינית, במרפאה פרטית בתל אביב"
+              title="דה-סנסיטיזציה למזון - ד״ר אנה ברמלי"
+              className="w-full h-56 md:h-72 object-cover rounded-t-3xl"
+              loading="lazy"
+              width={1600}
+              height={900}
+            />
+            <figcaption className="sr-only">
+              ד״ר אנה ברמלי בייעוץ פרטי להורים בנושא אלרגיה למזון ודה-סנסיטיזציה (OIT) בתל אביב
+            </figcaption>
+          </figure>
           <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
             רופא פרטי לדה-סנסיטיזציה למזון: מה באמת צריך לבדוק?
           </h2>
           <div className="text-muted-foreground leading-relaxed space-y-4 mb-6">
+
             <p>
               כאשר מחפשים רופא פרטי בנושא דה-סנסיטיזציה למזון, חשוב להבין שהשלב
               הראשון הוא לא התחלת חשיפה, אלא בדיקת התאמה רפואית. דה-סנסיטיזציה
@@ -477,6 +495,20 @@ const FoodDesensitization = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
+          <figure className="mb-8 rounded-3xl overflow-hidden border border-border/40">
+            <img
+              src={desensitizationConsultImage.url}
+              alt="ד״ר ברמלי - מומחית אלרגיה ואימונולוגיה - בייעוץ פרטי לילד עם אלרגיה למזון לבדיקת התאמה לטיפול OIT (אימונותרפיה פומית) ודה-סנסיטיזציה"
+              title="ייעוץ פרטי לאלרגיה למזון - ד״ר אנה ברמלי"
+              className="w-full h-56 md:h-80 object-cover"
+              loading="lazy"
+              width={1600}
+              height={900}
+            />
+            <figcaption className="sr-only">
+              ייעוץ פרטי עם ד״ר אנה ברמלי בנושא אלרגיה למזון, OIT ודה-סנסיטיזציה למזון לילדים
+            </figcaption>
+          </figure>
           <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-6">
             למי הייעוץ מתאים?
           </h2>
@@ -583,13 +615,16 @@ const FoodDesensitization = () => {
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="grid md:grid-cols-[180px_1fr] gap-6 items-start"
+          className="grid md:grid-cols-[260px_1fr] gap-6 items-start"
         >
           <img
-            src={drAnnaImage.url}
-            alt="ד״ר אנה ברמלי"
-            className="w-40 h-40 rounded-2xl object-cover"
+            src={foodAllergyImage.url}
+            alt="ד״ר אנה ברמלי, אלרגולוגית ילדים, בייעוץ פרטי לאם ולילד עם אלרגיה למזון - טיפול OIT ודה-סנסיטיזציה"
+            title="ד״ר אנה ברמלי - מומחית אלרגיה למזון בילדים"
+            className="w-full h-64 md:h-72 rounded-2xl object-cover"
             loading="lazy"
+            width={520}
+            height={520}
           />
           <div>
             <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
