@@ -601,13 +601,16 @@ const FoodDesensitization = () => {
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="grid md:grid-cols-[180px_1fr] gap-6 items-start"
+          className="grid md:grid-cols-[260px_1fr] gap-6 items-start"
         >
           <img
-            src={drAnnaImage.url}
-            alt="ד״ר אנה ברמלי"
-            className="w-40 h-40 rounded-2xl object-cover"
+            src={foodAllergyImage.url}
+            alt="ד״ר אנה ברמלי, אלרגולוגית ילדים, בייעוץ פרטי לאם ולילד עם אלרגיה למזון - טיפול OIT ודה-סנסיטיזציה"
+            title="ד״ר אנה ברמלי - מומחית אלרגיה למזון בילדים"
+            className="w-full h-64 md:h-72 rounded-2xl object-cover"
             loading="lazy"
+            width={520}
+            height={520}
           />
           <div>
             <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
