@@ -240,7 +240,7 @@ const Index = () => {
                       <Baby className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                      <p className="font-semibold text-foreground text-sm">מומחית בילדים</p>
+                      <p className="font-semibold text-foreground text-sm">מומחית לאלרגיה בילדים</p>
                       <p className="text-xs text-muted-foreground">ומבוגרים</p>
                     </div>
                   </div>
