@@ -201,7 +201,7 @@ const Index = () => {
               className="order-2 lg:order-1"
             >
               <h1 className="font-bold text-foreground leading-[1.1] mb-6">
-                {heroSection?.heading || 'ד״ר אנה ברמלי'}
+                מרפאת אלרגיה לילדים - ד״ר אנה ברמלי
                 <span className="block text-primary mt-3 text-[26px] md:text-[34px] lg:text-[40px]">מומחית לאלרגיה ואימונולוגיה</span>
               </h1>
               <p className="text-lg md:text-xl text-muted-foreground leading-relaxed mb-10 max-w-lg">
