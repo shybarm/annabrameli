@@ -31,10 +31,13 @@ import { useMedicalUpdates } from "@/hooks/useMedicalUpdates";
 import { blogArticles } from "@/data/blog-articles";
 import { usePageContent } from "@/contexts/PageContentContext";
 import { trackBookAppointmentClick } from "@/lib/analytics";
-import drAnnaImage from "@/assets/dr-anna-brameli.png.asset.json";
+import drAnnaImage from "@/assets/dr-anna-brameli-portrait.png.asset.json";
 import desensitizationImage from "@/assets/desensitization-dr-brameli.webp.asset.json";
 import desensitizationConsultImage from "@/assets/dr-anna-brameli-desensitization.webp.asset.json";
 import foodAllergyImage from "@/assets/dr-anna-brameli-food-allergy.webp.asset.json";
+import drAnnaFamilyImage from "@/assets/dr-anna-family-consultation.png.asset.json";
+import drAnnaSkinTestImage from "@/assets/dr-anna-skin-prick-test.png.asset.json";
+import drAnnaInhalerImage from "@/assets/dr-anna-asthma-inhaler.png.asset.json";
 
 const services = [
   {
