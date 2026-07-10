@@ -204,6 +204,9 @@ const Index = () => {
                 מרפאת אלרגיה - ד״ר אנה ברמלי
                 <span className="block text-primary mt-3 text-[26px] md:text-[34px] lg:text-[40px]">מומחית לאלרגיה ואימונולוגיה</span>
               </h1>
+              <p className="text-lg md:text-xl text-muted-foreground leading-relaxed mb-6 max-w-2xl">
+                מאבחנת ומטפלת באלרגיות מזון, מחלות עור אטופיות ואסתמה אלרגית, אצל ילדים ומבוגרים. כל מטופל מקבל בירור מדוקדק והתאמת תוכנית טיפול ברורה שמתאימה לו ולמשפחתו
+              </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button size="lg" asChild>
                   <Link to="/book" onClick={() => trackBookAppointmentClick("hero")}>
