@@ -9,7 +9,7 @@ export const CURRENT_PAGE_CONTENT: Record<string, CurrentPageSection[]> = {
     {
       heading: 'מרפאת אלרגיה - ד״ר אנה ברמלי',
       tag: 'h1',
-      content: '',
+      content: 'בוגרת לימודי רפואה באוניברסיטת בן גוריון בנגב והתמחות ברפואת ילדים בבית החולים שניידר. את תת ההתמחות באלרגיה ואימונולוגיה קלינית השלימה בארה"ב בבית החולים Vanderbilt University Medical Center ושבה כרופאה בכירה למכון האלרגיה בבית החולים שניידר לרפואת ילדים.',
     },
     {
       heading: 'כמה מילים על ד"ר אנה ברמלי',
