@@ -260,9 +260,6 @@ const Index = () => {
             viewport={{ once: true }}
             className="text-center mb-14"
           >
-            <h2 className="font-bold text-foreground mb-4">
-              {whySection?.heading || 'כמה מילים על ד"ר אנה ברמלי'}
-            </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
               {whySection?.content || 'ד״ר ברמלי היא רופאה בכירה לאלרגיה ואימונולוגיה, בעלת ניסיון רב בליווי מטופלים במצבים חריפים וכרוניים.'}
             </p>
