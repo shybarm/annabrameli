@@ -100,7 +100,7 @@ export const CONTENT_TRANSFORMS: ContentTransform[] = [
     },
     recommendedStructure: {
       sections: [
-        { tag: 'H1', heading: 'מרפאת אלרגיה לילדים - ד״ר אנה ברמלי', purpose: 'Entity + התמחות בשורה אחת. AI חולץ H1 כ-entity identifier.' },
+        { tag: 'H1', heading: 'מרפאת אלרגיה - ד״ר אנה ברמלי', purpose: 'Entity + התמחות בשורה אחת. AI חולץ H1 כ-entity identifier.' },
         { tag: 'p.lead', heading: 'פסקת הגדרה', purpose: 'תשובה ישירה ל"מה זה ihaveallergy" - פסקה ראשונה = מה ש-AI מצטט.' },
         { tag: 'H2', heading: 'מי אנחנו', purpose: 'Credentials כטקסט: שם, רישיון, מוסדות הכשרה, שנות ניסיון.' },
         { tag: 'H2', heading: 'מה אנחנו מטפלים', purpose: 'מיפוי שירותים לפי מצב רפואי, לא לפי שם בדיקה.' },
@@ -114,7 +114,7 @@ export const CONTENT_TRANSFORMS: ContentTransform[] = [
     },
     draft: [
       {
-        heading: 'מרפאת אלרגיה לילדים - ד״ר אנה ברמלי',
+        heading: 'מרפאת אלרגיה - ד״ר אנה ברמלי',
         tag: 'h1',
         content: '',
       },

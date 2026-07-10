@@ -7,7 +7,7 @@ export interface CurrentPageSection {
 export const CURRENT_PAGE_CONTENT: Record<string, CurrentPageSection[]> = {
   homepage: [
     {
-      heading: 'מרפאת אלרגיה לילדים - ד״ר אנה ברמלי',
+      heading: 'מרפאת אלרגיה - ד״ר אנה ברמלי',
       tag: 'h1',
       content: '',
     },
