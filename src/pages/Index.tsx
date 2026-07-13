@@ -36,6 +36,7 @@ import { trackBookAppointmentClick } from "@/lib/analytics";
 import drAnnaImage from "@/assets/dr-anna-brameli-portrait.png.asset.json";
 import desensitizationImage from "@/assets/desensitization-dr-brameli.webp.asset.json";
 import foodAllergyImage from "@/assets/dr-anna-brameli-food-allergy.webp.asset.json";
+import skinTestImage from "@/assets/dr-anna-consultation-2.png.asset.json";
 
 const services = [
   {
