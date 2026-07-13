@@ -23,6 +23,7 @@ import {
   Newspaper,
   ExternalLink,
   Building2,
+  ImageIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ServiceCard } from "@/components/ui/service-card";
@@ -34,11 +35,7 @@ import { usePageContent } from "@/contexts/PageContentContext";
 import { trackBookAppointmentClick } from "@/lib/analytics";
 import drAnnaImage from "@/assets/dr-anna-brameli-portrait.png.asset.json";
 import desensitizationImage from "@/assets/desensitization-dr-brameli.webp.asset.json";
-import desensitizationConsultImage from "@/assets/dr-anna-brameli-desensitization.webp.asset.json";
 import foodAllergyImage from "@/assets/dr-anna-brameli-food-allergy.webp.asset.json";
-import drAnnaFamilyImage from "@/assets/dr-anna-family-consultation.png.asset.json";
-import drAnnaSkinTestImage from "@/assets/dr-anna-skin-prick-test.png.asset.json";
-import drAnnaInhalerImage from "@/assets/dr-anna-asthma-inhaler.png.asset.json";
 
 const services = [
   {
@@ -314,20 +311,6 @@ const Index = () => {
       {/* Clinic Moments / SEO Gallery */}
       <section className="section-spacing-lg bg-surface-warm">
         <div className="container-medical">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-10"
-          >
-            <h2 className="font-bold text-foreground mb-4">
-              רגעים מהמרפאה של ד״ר אנה ברמלי
-            </h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              ייעוץ אישי למשפחות, תבחיני עור לאבחון אלרגיה, והדרכה מעשית על שימוש במשאף ואירוצ׳מבר לאסתמה - בגישה רגועה, ברורה ומותאמת לילדים.
-            </p>
-          </motion.div>
-
           <div className="grid md:grid-cols-3 gap-5">
             <motion.figure
               initial={{ opacity: 0, y: 16 }}
@@ -336,82 +319,13 @@ const Index = () => {
               className="rounded-2xl overflow-hidden border border-border/60 bg-card"
             >
               <img
-                src={drAnnaFamilyImage.url}
-                alt="ד״ר אנה ברמלי בייעוץ אלרגיה עם אם וילדה במרפאה הפרטית"
-                title="ייעוץ אלרגיה למשפחה - ד״ר אנה ברמלי"
-                className="w-full h-64 object-cover"
-                loading="lazy"
-                width={1280}
-                height={1024}
-              />
-              <figcaption className="p-4 text-sm text-muted-foreground">
-                שיחה אישית עם הורים וילדים - אבחון אלרגיה למזון, אסתמה ואטופיק דרמטיטיס בגישה רגועה.
-              </figcaption>
-            </motion.figure>
-
-            <motion.figure
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.08 }}
-              className="rounded-2xl overflow-hidden border border-border/60 bg-card"
-            >
-              <img
-                src={drAnnaSkinTestImage.url}
-                alt="ד״ר אנה ברמלי מבצעת תבחין עור (Skin Prick Test) לאבחון אלרגיה בילדים"
-                title="תבחיני עור לאלרגיה - ד״ר ברמלי"
-                className="w-full h-64 object-cover"
-                loading="lazy"
-                width={1280}
-                height={1024}
-              />
-              <figcaption className="p-4 text-sm text-muted-foreground">
-                תבחיני עור (Skin Prick Test) לאבחון אלרגיה למזון, אבקנים וקרדית אבק - תוצאה תוך 15-20 דקות.
-              </figcaption>
-            </motion.figure>
-
-            <motion.figure
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.16 }}
-              className="rounded-2xl overflow-hidden border border-border/60 bg-card"
-            >
-              <img
-                src={drAnnaInhalerImage.url}
-                alt="ד״ר אנה ברמלי מדריכה ילד והורה על שימוש במשאף ואירוצ׳מבר לטיפול באסתמה"
-                title="הדרכה על משאף ואירוצ׳מבר לאסתמה - ד״ר ברמלי"
-                className="w-full h-64 object-cover"
-                loading="lazy"
-                width={1280}
-                height={1024}
-              />
-              <figcaption className="p-4 text-sm text-muted-foreground">
-                הדרכה מעשית על שימוש נכון במשאף עם אירוצ׳מבר (Spacer) לטיפול באסתמה אלרגית בילדים.
-              </figcaption>
-            </motion.figure>
-          </div>
-
-          {/* Existing SEO gallery: desensitization & food allergy */}
-          <div className="grid md:grid-cols-3 gap-5 mt-6">
-            <motion.figure
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="rounded-2xl overflow-hidden border border-border/60 bg-card"
-            >
-              <img
                 src={desensitizationImage.url}
-                alt="ד״ר אנה ברמלי - ייעוץ דה-סנסיטיזציה למזון בקליניקה פרטית בתל אביב"
-                title="דה-סנסיטיזציה - ד״ר ברמלי"
-                className="w-full h-64 object-cover"
+                alt="ד״ר אנה ברמלי"
+                className="w-full h-64 md:h-80 object-cover"
                 loading="lazy"
                 width={800}
                 height={600}
               />
-              <figcaption className="p-4 text-sm text-muted-foreground">
-                ייעוץ פרטי לדה-סנסיטיזציה למזון עם ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה קלינית.
-              </figcaption>
             </motion.figure>
 
             <motion.figure
@@ -421,18 +335,15 @@ const Index = () => {
               transition={{ delay: 0.08 }}
               className="rounded-2xl overflow-hidden border border-border/60 bg-card"
             >
-              <img
-                src={desensitizationConsultImage.url}
-                alt="ד״ר אנה ברמלי - אלרגולוגית ילדים - בייעוץ פרטי על אלרגיה למזון וטיפולי OIT (אימונותרפיה פומית)"
-                title="ד״ר אנה ברמלי - אלרגיה למזון ו-OIT"
-                className="w-full h-64 object-cover"
-                loading="lazy"
-                width={800}
-                height={600}
-              />
-              <figcaption className="p-4 text-sm text-muted-foreground">
-                אבחון והערכת התאמה לטיפול OIT ודה-סנסיטיזציה לילדים עם אלרגיה למזון.
-              </figcaption>
+              <div
+                role="img"
+                aria-label="תבחיני עור לאלרגיה"
+                className="w-full h-64 md:h-80 bg-muted flex items-center justify-center"
+              >
+                <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
+                  <ImageIcon className="w-7 h-7 text-primary" />
+                </div>
+              </div>
             </motion.figure>
 
             <motion.figure
@@ -444,16 +355,12 @@ const Index = () => {
             >
               <img
                 src={foodAllergyImage.url}
-                alt="ד״ר ברמלי בייעוץ אלרגיה למזון לילד והורה במרפאה הפרטית בתל אביב - אבחון, מעקב וטיפול"
-                title="אלרגיה למזון בילדים - ד״ר אנה ברמלי"
-                className="w-full h-64 object-cover"
+                alt="טיפול באלרגיה למזון"
+                className="w-full h-64 md:h-80 object-cover"
                 loading="lazy"
                 width={800}
                 height={600}
               />
-              <figcaption className="p-4 text-sm text-muted-foreground">
-                ליווי הורים לילדים עם אלרגיה למזון - אבחון, מעקב והכוונה לטיפול מותאם.
-              </figcaption>
             </motion.figure>
           </div>
         </div>
