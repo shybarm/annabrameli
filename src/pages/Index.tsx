@@ -23,7 +23,6 @@ import {
   Newspaper,
   ExternalLink,
   Building2,
-  ImageIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ServiceCard } from "@/components/ui/service-card";
@@ -36,6 +35,7 @@ import { trackBookAppointmentClick } from "@/lib/analytics";
 import drAnnaImage from "@/assets/dr-anna-brameli-portrait.png.asset.json";
 import desensitizationImage from "@/assets/desensitization-dr-brameli.webp.asset.json";
 import foodAllergyImage from "@/assets/dr-anna-brameli-food-allergy.webp.asset.json";
+import skinTestImage from "@/assets/dr-anna-consultation-2.png.asset.json";
 
 const services = [
   {
@@ -335,15 +335,14 @@ const Index = () => {
               transition={{ delay: 0.08 }}
               className="rounded-2xl overflow-hidden border border-border/60 bg-card"
             >
-              <div
-                role="img"
-                aria-label="תבחיני עור לאלרגיה"
-                className="w-full h-64 md:h-80 bg-muted flex items-center justify-center"
-              >
-                <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
-                  <ImageIcon className="w-7 h-7 text-primary" />
-                </div>
-              </div>
+              <img
+                src={skinTestImage.url}
+                alt="תבחיני עור לאלרגיה"
+                className="w-full h-64 md:h-80 object-cover"
+                loading="lazy"
+                width={800}
+                height={600}
+              />
             </motion.figure>
 
             <motion.figure
