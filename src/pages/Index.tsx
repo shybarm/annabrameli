@@ -22,6 +22,7 @@ import {
   Clock,
   Newspaper,
   ExternalLink,
+  Building2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ServiceCard } from "@/components/ui/service-card";
@@ -85,9 +86,21 @@ const formatDate = (dateStr: string) => {
 };
 
 const whyChooseReasons = [
-  "מומחיות באבחון וטיפול באלרגיות בילדים ובמבוגרים",
-  "ניסיון קליני רחב מבתי חולים מובילים בארץ ובעולם",
-  "זמינות גבוהה וקשר ישיר עם הרופאה",
+  {
+    icon: ShieldCheck,
+    title: "מומחיות באבחון וטיפול באלרגיות בילדים ובמבוגרים",
+    description: "מענה מקצועי ומקיף לכל קשת האלרגיות והמחלות האימונולוגיות תחת קורת גג אחת.",
+  },
+  {
+    icon: Building2,
+    title: "ניסיון קליני רחב מבתי חולים מובילים בארץ ובעולם",
+    description: "ידע רפואי עדכני המבוסס על שנות עבודה במרכזים הרפואיים המתקדמים ביותר.",
+  },
+  {
+    icon: MessageCircle,
+    title: "זמינות גבוהה וקשר ישיר עם הרופאה",
+    description: "ליווי אישי ומסור המאפשר ביטחון ושקט נפשי לאורך כל תהליך האבחון והטיפול.",
+  },
 ];
 const goldenGuides = [
   {
@@ -267,22 +280,33 @@ const Index = () => {
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {whyChooseReasons.map((reason, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.08 }}
-                className="flex items-start gap-4 p-5 rounded-2xl bg-card border border-border/60 card-hover"
-              >
-                <div className="w-9 h-9 rounded-xl bg-accent flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <CheckCircle2 className="w-5 h-5 text-primary" />
-                </div>
-                <p className="text-foreground font-medium text-sm leading-relaxed">{reason}</p>
-              </motion.div>
-            ))}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {whyChooseReasons.map((reason, index) => {
+              const Icon = reason.icon;
+              return (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.08 }}
+                  className="group relative bg-card p-8 rounded-3xl border border-border/60 shadow-lg shadow-foreground/5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                >
+                  <div className="absolute top-0 right-0 w-2 h-full bg-primary/20 rounded-r-3xl" />
+                  <div className="flex flex-col gap-5">
+                    <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:bg-primary transition-colors duration-300">
+                      <Icon className="w-7 h-7 text-primary group-hover:text-primary-foreground transition-colors duration-300" />
+                    </div>
+                    <h3 className="text-xl font-bold text-foreground leading-tight">
+                      {reason.title}
+                    </h3>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                      {reason.description}
+                    </p>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>
