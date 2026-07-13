@@ -205,7 +205,7 @@ const Index = () => {
                 <span className="block text-primary mt-3 text-[26px] md:text-[34px] lg:text-[40px]">מומחית לאלרגיה ואימונולוגיה</span>
               </h1>
               <p className="text-lg md:text-xl text-muted-foreground leading-relaxed mb-6 max-w-2xl">
-                בוגרת לימודי רפואה באוניברסיטת בן גוריון בנגב והתמחות ברפואת ילדים בבית החולים שניידר. את תת ההתמחות באלרגיה ואימונולוגיה קלינית השלימה בארה"ב בבית החולים Vanderbilt University Medical Center ושבה כרופאה בכירה למכון האלרגיה בבית החולים שניידר לרפואת ילדים.
+                מאבחנת ומטפלת באלרגיות מזון, מחלות עור אטופיות ואסתמה אלרגית, אצל ילדים ומבוגרים. כל מטופל מקבל בירור מדוקדק והתאמת תוכנית טיפול ברורה שמתאימה לו ולמשפחתו.
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button size="lg" asChild>
