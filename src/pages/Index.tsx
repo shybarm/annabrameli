@@ -22,6 +22,7 @@ import {
   Clock,
   Newspaper,
   ExternalLink,
+  Building2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ServiceCard } from "@/components/ui/service-card";
