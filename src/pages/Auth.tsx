@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useMFA } from '@/hooks/useMFA';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,11 @@ export default function Auth() {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  // Same-origin relative path only, so OAuth consent flows can return here safely.
+  const nextParam = searchParams.get('next');
+  const safeNext = nextParam && nextParam.startsWith('/') && !nextParam.startsWith('//') ? nextParam : null;
+
   const { signIn, signUp, user, loading, rolesLoading, isStaff, isPatient, isAdmin, isDoctor, roles } = useAuth();
   const { needsMFAVerification, hasMFAEnabled, isLoading: mfaLoading, refreshMFAStatus } = useMFA();
 
