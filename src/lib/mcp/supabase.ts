@@ -1,6 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
 import type { ToolContext } from "@lovable.dev/mcp-js";
 
+// These tools run inside the generated Deno edge function, where env vars are
+// exposed as `process.env`. Declared locally so the Vite/TS build stays clean.
+declare const process: { env: Record<string, string | undefined> };
+
+
 /**
  * Supabase client that acts as the signed-in MCP user.
  * RLS runs as that user, so tools can never see more than the user can.
