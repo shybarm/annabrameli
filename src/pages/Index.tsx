@@ -23,6 +23,8 @@ import {
   Newspaper,
   ExternalLink,
   Building2,
+  Mail,
+  MapPin,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ServiceCard } from "@/components/ui/service-card";
@@ -221,6 +223,12 @@ const Index = () => {
                   <Link to="/book" onClick={() => trackBookAppointmentClick("hero")}>
                     <Phone className="w-5 h-5 ml-2" />
                     קביעת תור
+                  </Link>
+                </Button>
+                <Button size="lg" variant="outline" asChild>
+                  <Link to="/contact">
+                    <Mail className="w-5 h-5 ml-2" />
+                    צור קשר
                   </Link>
                 </Button>
               </div>
@@ -575,6 +583,84 @@ const Index = () => {
           </div>
 
           {/* "לכל השאלות" link, Knowledge Center, and Blog Articles sections temporarily hidden pending content review */}
+        </div>
+      </section>
+
+      {/* Contact Section */}
+      <section className="section-spacing-lg bg-surface-warm">
+        <div className="container-medical">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-14"
+          >
+            <h2 className="font-bold text-foreground mb-4">צור קשר</h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              שאלות? רוצים לתאם ייעוץ או לשמוע פרטים נוספים? אנחנו כאן לעזור.
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-5 max-w-4xl mx-auto mb-10">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="bg-card rounded-2xl border border-border/60 p-6 text-center"
+            >
+              <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center mx-auto mb-4">
+                <Phone className="w-6 h-6 text-primary" />
+              </div>
+              <h3 className="text-base font-semibold text-foreground mb-1">טלפון</h3>
+              <a href="tel:+972545808008" className="text-primary hover:underline" dir="ltr">
+                054-580-8008
+              </a>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.08 }}
+              className="bg-card rounded-2xl border border-border/60 p-6 text-center"
+            >
+              <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center mx-auto mb-4">
+                <Mail className="w-6 h-6 text-primary" />
+              </div>
+              <h3 className="text-base font-semibold text-foreground mb-1">דוא״ל</h3>
+              <a href="mailto:info@drbrameli.co.il" className="text-primary hover:underline">
+                info@drbrameli.co.il
+              </a>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.16 }}
+              className="bg-card rounded-2xl border border-border/60 p-6 text-center"
+            >
+              <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center mx-auto mb-4">
+                <MapPin className="w-6 h-6 text-primary" />
+              </div>
+              <h3 className="text-base font-semibold text-foreground mb-1">כתובת</h3>
+              <p className="text-muted-foreground text-sm">הוד השרון</p>
+            </motion.div>
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center"
+          >
+            <Button size="lg" asChild>
+              <Link to="/contact">
+                <Mail className="w-5 h-5 ml-2" />
+                לטופס יצירת קשר
+              </Link>
+            </Button>
+          </motion.div>
         </div>
       </section>
 
