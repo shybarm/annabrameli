@@ -337,6 +337,40 @@ export default function GuestBooking() {
   };
 
 
+  const handleJoinWaitlist = async () => {
+    setWaitlistSending(true);
+    try {
+      const { error } = await supabase.functions.invoke('notify-waitlist', {
+        body: {
+          name: `${firstName} ${lastName}`.trim(),
+          phone,
+          email,
+          clinicName: selectedClinic?.name || '',
+          notes: 'הצטרפות לרשימת המתנה מתוך דף קביעת התור',
+        },
+      });
+      if (error) throw error;
+      setWaitlistJoined(true);
+      trackEvent('waitlist_joined', {
+        event_category: 'Lead',
+        event_label: 'Booking Waitlist',
+      });
+      toast({
+        title: 'נרשמתם לרשימת ההמתנה',
+        description: 'ניצור איתכם קשר ברגע שיתפנה תור מתאים',
+      });
+    } catch (err) {
+      console.error('waitlist error:', err);
+      toast({
+        title: 'שגיאה בשליחה',
+        description: 'לא הצלחנו לשלוח את הבקשה, נסו שוב מאוחר יותר',
+        variant: 'destructive',
+      });
+    } finally {
+      setWaitlistSending(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-medical-50 to-white py-8 px-4" dir="rtl">
       <Helmet>
