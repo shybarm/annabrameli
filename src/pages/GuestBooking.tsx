@@ -776,6 +776,46 @@ export default function GuestBooking() {
           )}
         </Card>
       </div>
+
+      {/* Waitlist popup */}
+      <Dialog open={waitlistOpen} onOpenChange={setWaitlistOpen}>
+        <DialogContent dir="rtl" className="sm:max-w-md text-right">
+          <DialogHeader className="text-right">
+            <DialogTitle>
+              {waitlistJoined ? 'נרשמתם לרשימת ההמתנה' : 'לצערנו אין תורים בטווח הזמן הקרוב'}
+            </DialogTitle>
+            <DialogDescription className="text-right leading-relaxed">
+              {waitlistJoined
+                ? 'הפרטים שלכם נשלחו למרפאה. ניצור איתכם קשר ברגע שיתפנה תור מתאים.'
+                : 'מוזמנים להיכנס לרשימת ההמתנה - ניצור איתכם קשר ברגע שיתפנה תור מוקדם יותר.'}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col gap-2 sm:flex-row sm:justify-start">
+            {waitlistJoined ? (
+              <Button className="w-full sm:w-auto" onClick={() => setWaitlistOpen(false)}>
+                סגירה
+              </Button>
+            ) : (
+              <>
+                <Button
+                  className="w-full sm:w-auto"
+                  onClick={handleJoinWaitlist}
+                  disabled={waitlistSending}
+                >
+                  {waitlistSending ? 'שולח...' : 'להיכנס לרשימת המתנה'}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full sm:w-auto"
+                  onClick={() => setWaitlistOpen(false)}
+                >
+                  אמשיך לבחור תאריך
+                </Button>
+              </>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
