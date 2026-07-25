@@ -84,8 +84,7 @@ serve(async (req: Request): Promise<Response> => {
 
     const emailResponse = await resend.emails.send({
       from: `${senderName} <info@ihaveallergy.com>`,
-      to: [notificationEmail],
-      bcc: [COPY_TO_EMAIL],
+      to: Array.from(new Set([notificationEmail, COPY_TO_EMAIL].filter(Boolean))),
       subject: `בקשה חדשה לרשימת המתנה - ${name}`,
       html: `
         <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">

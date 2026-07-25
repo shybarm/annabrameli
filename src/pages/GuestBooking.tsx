@@ -31,7 +31,7 @@ const guestSchema = z.object({
   firstName: z.string().trim().min(2, 'שם פרטי חייב להכיל לפחות 2 תווים').max(100),
   lastName: z.string().trim().min(2, 'שם משפחה חייב להכיל לפחות 2 תווים').max(100),
   phone: z.string().trim().min(9, 'מספר טלפון לא תקין').max(20),
-  email: z.string().trim().min(1, 'כתובת אימייל נדרשת').email('כתובת אימייל לא תקינה').max(255),
+  email: z.string().trim().email('כתובת אימייל לא תקינה').max(255).optional().or(z.literal('')),
 });
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -557,7 +557,7 @@ export default function GuestBooking() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">אימייל *</Label>
+                  <Label htmlFor="email">אימייל (אופציונלי)</Label>
                   <Input
                     id="email"
                     type="email"
@@ -566,9 +566,8 @@ export default function GuestBooking() {
                     placeholder="email@example.com"
                     maxLength={255}
                     dir="ltr"
-                    required
                   />
-                  <p className="text-xs text-muted-foreground">אופציונלי - לשליחת אישור</p>
+                  <p className="text-xs text-muted-foreground">אופציונלי - לשליחת אישור בדוא״ל</p>
                 </div>
                 <Button
                   onClick={handleContinueToAppointment}
