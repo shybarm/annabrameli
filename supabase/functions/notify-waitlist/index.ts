@@ -73,7 +73,7 @@ serve(async (req: Request): Promise<Response> => {
 
     const notificationEmail = settingsData?.value || clinicData?.email ||
       "info@ihaveallergy.com";
-    const senderName = clinicData?.name || 'מרפאת ד"ר אנה ברמלי';
+    const senderName = 'ד"ר אנה ברמלי';
 
     const row = (label: string, value: string) =>
       value

@@ -129,7 +129,7 @@ serve(async (req) => {
       const resendClient = new ResendClass(resendApiKey);
       
       const emailResponse = await resendClient.emails.send({
-        from: "המרפאה <info@ihaveallergy.com>",
+        from: "ד\"ר אנה ברמלי <info@ihaveallergy.com>",
         to: [email],
         subject: `הזמנה להצטרף לצוות ${clinicNames}`,
         html: `

@@ -415,7 +415,7 @@ serve(async (req) => {
 </html>`;
 
         const emailRes = await resend.emails.send({
-          from: `${clinicName} <noreply@ihaveallergy.com>`,
+          from: `ד"ר אנה ברמלי <noreply@ihaveallergy.com>`,
           to: [trimmedEmail],
           subject: `אישור תור - ${dateStr}`,
           html: emailHtml,
@@ -520,7 +520,7 @@ serve(async (req) => {
 </html>`;
 
           await resend.emails.send({
-            from: `${clinicName} <noreply@ihaveallergy.com>`,
+            from: `ד"ר אנה ברמלי <noreply@ihaveallergy.com>`,
             to: [trimmedEmail],
             subject: "אמת את האימייל שלך – צעד אחרון",
             html: verifyEmailHtml,

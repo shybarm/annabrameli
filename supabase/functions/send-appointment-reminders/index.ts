@@ -250,7 +250,7 @@ async function processReminders(runId: string) {
             
             // Email contains ONLY: date, time, clinic name, clinic address, clinic phone (no PHI)
             const emailResponse = await resend.emails.send({
-              from: 'מרפאה <info@ihaveallergy.com>',
+              from: 'ד"ר אנה ברמלי <info@ihaveallergy.com>',
               to: [patient.email],
               subject: `תזכורת לתור - ${dateStr} ${timeStr}`,
               html: `
