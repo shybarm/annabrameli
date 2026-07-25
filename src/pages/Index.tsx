@@ -225,6 +225,12 @@ const Index = () => {
                     קביעת תור
                   </Link>
                 </Button>
+                <Button size="lg" variant="outline" asChild>
+                  <Link to="/contact">
+                    <Mail className="w-5 h-5 ml-2" />
+                    צור קשר
+                  </Link>
+                </Button>
               </div>
             </motion.div>
 
