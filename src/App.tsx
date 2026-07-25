@@ -21,7 +21,9 @@ import Updates from "./pages/Updates";
 import FAQ from "./pages/FAQ";
 import Contact from "./pages/Contact";
 import Auth from "./pages/Auth";
+import OAuthConsent from "./pages/OAuthConsent";
 import ResetPassword from "./pages/ResetPassword";
+
 import PatientIntake from "./pages/PatientIntake";
 import AdminDashboard from "./pages/admin/Dashboard";
 import PatientsList from "./pages/admin/PatientsList";
@@ -194,6 +196,8 @@ const App = () => {
               <Route path="/knowledge/בדיקות-אלרגיה-פרטי-או-קופה" element={<PublicLayout><PrivateVsPublic /></PublicLayout>} />
               {/* Auth */}
               <Route path="/auth" element={<Auth />} />
+              <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
+
               <Route path="/reset-password" element={<ResetPassword />} />
               
               {/* Patient Intake (public) */}

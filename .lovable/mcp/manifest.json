@@ -1,0 +1,123 @@
+{
+  "version": 1,
+  "sdk_version": "0.24.0",
+  "path": "/functions/v1/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://ftatmcyrmeyhghgckvbj.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "ihaveallergy-mcp",
+      "version": "0.1.0",
+      "title": "Dr. Anna Brameli Clinic MCP"
+    },
+    "tools": [
+      {
+        "name": "whoami",
+        "title": "Who am I",
+        "description": "Return the signed-in user's identity and clinic roles. Use it to verify the connection works and what access is available.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_clinics",
+        "title": "List clinics",
+        "description": "List the active clinics the signed-in user can access, including name, city, phone and doctor details.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_appointments",
+        "title": "List appointments",
+        "description": "List clinic appointments in a date range. Returns scheduling data only (time, duration, status, clinic) and never patient identifiers or medical details.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "from": {
+              "type": "string",
+              "description": "Start of the range, ISO date or datetime. Defaults to now."
+            },
+            "to": {
+              "type": "string",
+              "description": "End of the range, ISO date or datetime. Defaults to 14 days after `from`."
+            },
+            "clinic_id": {
+              "type": "string",
+              "description": "Optional clinic id to filter by. Pass an empty string for all clinics."
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum rows to return. Capped at 200."
+            }
+          },
+          "required": [
+            "from",
+            "to",
+            "clinic_id",
+            "limit"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_schedule_summary",
+        "title": "Get schedule summary",
+        "description": "Aggregate appointment counts per day and per status for a date range. Contains no patient data.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "from": {
+              "type": "string",
+              "description": "Start of the range, ISO date or datetime. Defaults to today."
+            },
+            "days": {
+              "type": "number",
+              "description": "Number of days to summarize, capped at 60. Defaults to 7."
+            }
+          },
+          "required": [
+            "from",
+            "days"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
