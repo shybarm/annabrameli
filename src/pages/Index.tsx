@@ -23,6 +23,8 @@ import {
   Newspaper,
   ExternalLink,
   Building2,
+  Mail,
+  MapPin,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ServiceCard } from "@/components/ui/service-card";
