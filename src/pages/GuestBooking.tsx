@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { format } from 'date-fns';
@@ -18,6 +18,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Stethoscope, Calendar as CalendarIcon, Clock, ArrowRight, CheckCircle, Upload, X, FileText, MapPin, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
@@ -69,6 +70,22 @@ export default function GuestBooking() {
   const [documents, setDocuments] = useState<File[]>([]);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [calendarOpen, setCalendarOpen] = useState(false);
+
+  // Waitlist popup (shown once when the appointment/calendar step opens)
+  const [waitlistOpen, setWaitlistOpen] = useState(false);
+  const [waitlistShown, setWaitlistShown] = useState(false);
+  const [waitlistSending, setWaitlistSending] = useState(false);
+  const [waitlistJoined, setWaitlistJoined] = useState(false);
+
+  useEffect(() => {
+    if (step === 'appointment' && !waitlistShown) {
+      const timer = setTimeout(() => {
+        setWaitlistOpen(true);
+        setWaitlistShown(true);
+      }, 600);
+      return () => clearTimeout(timer);
+    }
+  }, [step, waitlistShown]);
 
   const { data: clinics, isLoading: loadingClinics } = usePublicClinics();
   const { data: appointmentTypes } = useAppointmentTypes();
@@ -319,6 +336,40 @@ export default function GuestBooking() {
     }
   };
 
+
+  const handleJoinWaitlist = async () => {
+    setWaitlistSending(true);
+    try {
+      const { error } = await supabase.functions.invoke('notify-waitlist', {
+        body: {
+          name: `${firstName} ${lastName}`.trim(),
+          phone,
+          email,
+          clinicName: selectedClinic?.name || '',
+          notes: 'הצטרפות לרשימת המתנה מתוך דף קביעת התור',
+        },
+      });
+      if (error) throw error;
+      setWaitlistJoined(true);
+      trackEvent('waitlist_joined', {
+        event_category: 'Lead',
+        event_label: 'Booking Waitlist',
+      });
+      toast({
+        title: 'נרשמתם לרשימת ההמתנה',
+        description: 'ניצור איתכם קשר ברגע שיתפנה תור מתאים',
+      });
+    } catch (err) {
+      console.error('waitlist error:', err);
+      toast({
+        title: 'שגיאה בשליחה',
+        description: 'לא הצלחנו לשלוח את הבקשה, נסו שוב מאוחר יותר',
+        variant: 'destructive',
+      });
+    } finally {
+      setWaitlistSending(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-medical-50 to-white py-8 px-4" dir="rtl">
@@ -725,6 +776,46 @@ export default function GuestBooking() {
           )}
         </Card>
       </div>
+
+      {/* Waitlist popup */}
+      <Dialog open={waitlistOpen} onOpenChange={setWaitlistOpen}>
+        <DialogContent dir="rtl" className="sm:max-w-md text-right">
+          <DialogHeader className="text-right">
+            <DialogTitle>
+              {waitlistJoined ? 'נרשמתם לרשימת ההמתנה' : 'לצערנו אין תורים בטווח הזמן הקרוב'}
+            </DialogTitle>
+            <DialogDescription className="text-right leading-relaxed">
+              {waitlistJoined
+                ? 'הפרטים שלכם נשלחו למרפאה. ניצור איתכם קשר ברגע שיתפנה תור מתאים.'
+                : 'מוזמנים להיכנס לרשימת ההמתנה - ניצור איתכם קשר ברגע שיתפנה תור מוקדם יותר.'}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col gap-2 sm:flex-row sm:justify-start">
+            {waitlistJoined ? (
+              <Button className="w-full sm:w-auto" onClick={() => setWaitlistOpen(false)}>
+                סגירה
+              </Button>
+            ) : (
+              <>
+                <Button
+                  className="w-full sm:w-auto"
+                  onClick={handleJoinWaitlist}
+                  disabled={waitlistSending}
+                >
+                  {waitlistSending ? 'שולח...' : 'להיכנס לרשימת המתנה'}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full sm:w-auto"
+                  onClick={() => setWaitlistOpen(false)}
+                >
+                  אמשיך לבחור תאריך
+                </Button>
+              </>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
