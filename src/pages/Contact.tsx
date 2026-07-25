@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { SchemaMarkup } from "@/components/seo/SchemaMarkup";
 import { buildBreadcrumbSchema } from "@/utils/medicalSchema";
 import { trackEvent } from "@/lib/analytics";
+import { supabase } from "@/integrations/supabase/client";
 
 const contactInfo = [
   {
@@ -50,9 +51,16 @@ const Contact = () => {
     setIsSubmitting(true);
 
     try {
-      // Simulate form submission
-      // TODO: Connect to backend API for form handling
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const { error } = await supabase.functions.invoke('notify-contact', {
+        body: {
+          name: formData.name.trim(),
+          phone: formData.phone.trim(),
+          email: formData.email.trim(),
+          subject: formData.subject.trim(),
+          message: formData.message.trim(),
+        },
+      });
+      if (error) throw error;
 
       trackEvent('contact_form_submitted', {
         event_category: 'Lead',
@@ -66,6 +74,12 @@ const Contact = () => {
         description: "נחזור אליכם בהקדם האפשרי",
       });
       navigate('/contact/success');
+    } catch (error) {
+      toast({
+        title: "שליחת הפנייה נכשלה",
+        description: "נסו שוב או התקשרו אלינו ישירות",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
