@@ -71,6 +71,22 @@ export default function GuestBooking() {
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [calendarOpen, setCalendarOpen] = useState(false);
 
+  // Waitlist popup (shown once when the appointment/calendar step opens)
+  const [waitlistOpen, setWaitlistOpen] = useState(false);
+  const [waitlistShown, setWaitlistShown] = useState(false);
+  const [waitlistSending, setWaitlistSending] = useState(false);
+  const [waitlistJoined, setWaitlistJoined] = useState(false);
+
+  useEffect(() => {
+    if (step === 'appointment' && !waitlistShown) {
+      const timer = setTimeout(() => {
+        setWaitlistOpen(true);
+        setWaitlistShown(true);
+      }, 600);
+      return () => clearTimeout(timer);
+    }
+  }, [step, waitlistShown]);
+
   const { data: clinics, isLoading: loadingClinics } = usePublicClinics();
   const { data: appointmentTypes } = useAppointmentTypes();
   const selectedType = appointmentTypes?.find(t => t.id === appointmentTypeId);
