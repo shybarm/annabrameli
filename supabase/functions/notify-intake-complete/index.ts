@@ -63,9 +63,13 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`notify-intake-complete: Sending notification to ${notificationEmail}`);
 
+    // Copy of every clinic notification goes to the operations mailbox
+    const COPY_TO_EMAIL = "shy@createit.tv";
+
     const emailResponse = await resend.emails.send({
       from: `${clinicName} <info@ihaveallergy.com>`,
       to: [notificationEmail],
+      bcc: [COPY_TO_EMAIL],
       subject: `טופס קליטה הושלם - ${patientName}`,
       html: `
         <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
