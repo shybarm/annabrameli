@@ -69,7 +69,7 @@ export default function Auth() {
       
       // Only staff can access admin - patients are not allowed to login
       if (isStaff) {
-        navigate('/admin');
+        navigate(safeNext ?? '/admin');
       } else {
         // Non-staff users: sign them out and show error
         toast({
@@ -79,7 +79,8 @@ export default function Auth() {
         });
       }
     }
-  }, [loading, rolesLoading, mfaLoading, user, isStaff, needsMFAVerification, hasMFAEnabled, requiresMandatoryMFA, showMFAVerify, showMFAEnroll, navigate]);
+  }, [loading, rolesLoading, mfaLoading, user, isStaff, needsMFAVerification, hasMFAEnabled, requiresMandatoryMFA, showMFAVerify, showMFAEnroll, navigate, safeNext]);
+
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
