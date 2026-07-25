@@ -419,7 +419,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send email with ICS attachment
     const emailResponse = await resend.emails.send({
-      from: `${safeClinicName} <info@ihaveallergy.com>`,
+      from: `ד"ר אנה ברמלי <info@ihaveallergy.com>`,
       to: [patientEmail],
       subject: 'אישור קביעת תור',
       html: emailHtml,

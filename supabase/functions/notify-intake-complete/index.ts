@@ -59,7 +59,7 @@ const handler = async (req: Request): Promise<Response> => {
       .maybeSingle();
 
     const notificationEmail = settingsData?.value || clinicData?.email || "diamondscom@gmail.com";
-    const clinicName = clinicData?.name || "מרפאת ד\"ר אנה ברמלי";
+    const clinicName = "ד\"ר אנה ברמלי";
 
     console.log(`notify-intake-complete: Sending notification to ${notificationEmail}`);
 
