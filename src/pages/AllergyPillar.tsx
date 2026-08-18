@@ -26,7 +26,7 @@ import { ArticleCTA } from "@/components/blog/ArticleCTA";
 import { FAQAccordion } from "@/components/ui/faq-accordion";
 
 const WHATSAPP_URL =
-  "https://wa.me/972545808008?text=%D7%A9%D7%9C%D7%95%D7%9D%2C%20%D7%90%D7%A9%D7%9E%D7%97%20%D7%9C%D7%99%D7%99%D7%A2%D7%95%D7%A5%20%D7%9C%D7%92%D7%91%D7%99%20%D7%90%D7%9C%D7%A8%D7%92%D7%99%D7%94";
+  "https://wa.me/972525916393?text=%D7%A9%D7%9C%D7%95%D7%9D%2C%20%D7%90%D7%A9%D7%9E%D7%97%20%D7%9C%D7%99%D7%99%D7%A2%D7%95%D7%A5%20%D7%9C%D7%92%D7%91%D7%99%20%D7%90%D7%9C%D7%A8%D7%92%D7%99%D7%94";
 
 const SectionIcon = ({ icon: Icon }: { icon: React.ElementType }) => (
   <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
