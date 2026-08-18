@@ -612,8 +612,8 @@ const Index = () => {
                 <Phone className="w-6 h-6 text-primary" />
               </div>
               <h3 className="text-base font-semibold text-foreground mb-1">טלפון</h3>
-              <a href="tel:+972545808008" className="text-primary hover:underline" dir="ltr">
-                054-580-8008
+              <a href="tel:+972525916393" className="text-primary hover:underline" dir="ltr">
+                052-5916393
               </a>
             </motion.div>
 
