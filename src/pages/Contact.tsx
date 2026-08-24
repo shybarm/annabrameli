@@ -289,7 +289,7 @@ const Contact = () => {
               {/* Google Maps Embed */}
               <div className="bg-surface rounded-2xl overflow-hidden h-64 border border-border/60">
                 <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3379.8!2d34.8947!3d32.1524!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2z15jXkdehIDMsINeU15XXkyDXlNep16jXldefLCDXmdep16jXkNec!5e0!3m2!1she!2sil!4v1"
+                  src="https://www.google.com/maps?q=%D7%94%D7%98%D7%95%D7%95%D7%A1%203%2C%20%D7%94%D7%95%D7%93%20%D7%94%D7%A9%D7%A8%D7%95%D7%9F&output=embed"
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}
