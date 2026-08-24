@@ -99,7 +99,7 @@ const Contact = () => {
         <title>יצירת קשר וקביעת תור | ד״ר אנה ברמלי – מרפאת אלרגיה בהוד השרון</title>
         <meta 
           name="description" 
-          content="קביעת תור במרפאת אלרגיה של ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה. כתובת: הוד השרון. ייעוץ אלרגיה פרטי." 
+          content="קביעת תור במרפאת אלרגיה של ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה. כתובת: הטווס 3, הוד השרון. ייעוץ אלרגיה פרטי." 
         />
         <link rel="canonical" href="https://ihaveallergy.com/contact" />
         <meta property="og:type" content="website" />
