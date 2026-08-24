@@ -23,8 +23,9 @@ const contactInfo = [
   {
     icon: MapPin,
     title: "כתובת",
-    value: "הוד השרון",
-    href: "https://maps.google.com/?q=הוד+השרון",
+    value: "הטווס 3, הוד השרון",
+    href: "https://maps.google.com/?q=%D7%94%D7%98%D7%95%D7%95%D7%A1+3+%D7%94%D7%95%D7%93+%D7%94%D7%A9%D7%A8%D7%95%D7%9F",
+
   },
 ];
 
