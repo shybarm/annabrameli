@@ -16,10 +16,12 @@ export const SiteWideSchema = () => {
     email: "info@drbrameli.co.il",
     address: {
       "@type": "PostalAddress",
+      streetAddress: "הטווס 3",
       addressLocality: "הוד השרון",
       postalCode: "4501303",
       addressCountry: "IL",
     },
+
     sameAs: [],
     medicalSpecialty: "AllergyAndImmunology",
   };
