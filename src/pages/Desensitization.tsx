@@ -25,14 +25,14 @@ import {
 import drAnnaConsultation from "@/assets/dr-anna-brameli-consultation.png.asset.json";
 
 const CANONICAL = "https://ihaveallergy.com/desensitization";
-const CLINIC_ADDRESS = "יגאל אלון 82, בניין סוזוקי, קומה 4, תל אביב";
+const CLINIC_ADDRESS = "הטווס 3, הוד השרון";
 
 const trustPoints = [
   "ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה קלינית",
   "רופאה בכירה במחלקת אלרגיה ואימונולוגיה במרכז שניידר לרפואת ילדים",
   "בוגרת תת-התמחות ב-Vanderbilt University Medical Center",
   "ייעוץ התאמה רפואי לפני תהליך דה-סנסיטיזציה למזון",
-  `מרפאה בתל אביב, ${CLINIC_ADDRESS.split(",").slice(0, 2).join(",").trim()}`,
+  `מרפאה בהוד השרון, ${CLINIC_ADDRESS.split(",").slice(0, 2).join(",").trim()}`,
 ];
 
 const valueCards = [
@@ -101,7 +101,7 @@ const Desensitization = () => {
     headline:
       "דה-סנסיטיזציה למזון - ייעוץ התאמה רפואי | ד״ר אנה ברמלי",
     description:
-      "ייעוץ התאמה לתהליך דה-סנסיטיזציה למזון (OIT) אצל ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה קלינית, רופאה בכירה בשניידר ובוגרת Vanderbilt University Medical Center. מרפאה בתל אביב.",
+      "ייעוץ התאמה לתהליך דה-סנסיטיזציה למזון (OIT) אצל ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה קלינית, רופאה בכירה בשניידר ובוגרת Vanderbilt University Medical Center. מרפאה בהוד השרון.",
     datePublished: "2026-06-15",
     dateModified: "2026-06-15",
     canonicalUrl: CANONICAL,
@@ -123,7 +123,7 @@ const Desensitization = () => {
         <title>דה-סנסיטיזציה למזון - ייעוץ התאמה | ד״ר אנה ברמלי</title>
         <meta
           name="description"
-          content="ייעוץ התאמה לתהליך דה-סנסיטיזציה למזון (OIT) אצל ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה קלינית. הערכה רפואית מסודרת לפני תחילת התהליך. מרפאה בתל אביב."
+          content="ייעוץ התאמה לתהליך דה-סנסיטיזציה למזון (OIT) אצל ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה קלינית. הערכה רפואית מסודרת לפני תחילת התהליך. מרפאה בהוד השרון."
         />
         <link rel="canonical" href={CANONICAL} />
         <meta name="robots" content="index, follow" />
@@ -135,7 +135,7 @@ const Desensitization = () => {
         />
         <meta
           property="og:description"
-          content="ייעוץ התאמה לדה-סנסיטיזציה למזון (OIT) עם מומחית לאלרגיה ואימונולוגיה קלינית. מרפאה בתל אביב."
+          content="ייעוץ התאמה לדה-סנסיטיזציה למזון (OIT) עם מומחית לאלרגיה ואימונולוגיה קלינית. מרפאה בהוד השרון."
         />
         <meta property="og:image" content="https://ihaveallergy.com/og-logo.png" />
         <meta name="twitter:card" content="summary_large_image" />

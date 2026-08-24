@@ -61,7 +61,7 @@ export const Footer = () => {
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">כתובת</p>
-                  <p className="text-sm text-foreground">הוד השרון</p>
+                  <p className="text-sm text-foreground">הטווס 3, הוד השרון</p>
                 </div>
               </li>
             </ul>
