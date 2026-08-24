@@ -296,7 +296,7 @@ const Contact = () => {
                   allowFullScreen
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
-                  title="מרפאת אלרגיה - ד״ר אנה ברמלי, הוד השרון"
+                  title="מרפאת אלרגיה - ד״ר אנה ברמלי, הטווס 3, הוד השרון"
                 ></iframe>
               </div>
             </motion.div>
