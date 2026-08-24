@@ -15,9 +15,11 @@ export const SchemaMarkup = ({ type = "physician" }: SchemaMarkupProps) => {
     "priceRange": "$$",
     "address": {
       "@type": "PostalAddress",
+      "streetAddress": "הטווס 3",
       "addressLocality": "הוד השרון",
       "postalCode": "4501303",
       "addressCountry": "IL",
+
     },
     "geo": {
       "@type": "GeoCoordinates",
