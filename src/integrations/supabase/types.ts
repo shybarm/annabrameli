@@ -1020,6 +1020,39 @@ export type Database = {
         }
         Relationships: []
       }
+      gsc_dataset_sync_cursor: {
+        Row: {
+          attempts: number
+          dataset: string
+          date: string
+          last_error: string | null
+          property: string
+          rows_written: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          dataset: string
+          date: string
+          last_error?: string | null
+          property: string
+          rows_written?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          dataset?: string
+          date?: string
+          last_error?: string | null
+          property?: string
+          rows_written?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       gsc_sync_cursor: {
         Row: {
           attempts: number
@@ -2057,6 +2090,78 @@ export type Database = {
         }
         Relationships: []
       }
+      search_console_page_daily: {
+        Row: {
+          clicks: number
+          ctr: number
+          date: string
+          fetched_at: string
+          impressions: number
+          page_host: string
+          page_path: string
+          page_url: string
+          page_url_variants: number
+          position: number
+          property: string
+        }
+        Insert: {
+          clicks?: number
+          ctr?: number
+          date: string
+          fetched_at?: string
+          impressions?: number
+          page_host: string
+          page_path: string
+          page_url: string
+          page_url_variants?: number
+          position?: number
+          property: string
+        }
+        Update: {
+          clicks?: number
+          ctr?: number
+          date?: string
+          fetched_at?: string
+          impressions?: number
+          page_host?: string
+          page_path?: string
+          page_url?: string
+          page_url_variants?: number
+          position?: number
+          property?: string
+        }
+        Relationships: []
+      }
+      search_console_totals_daily: {
+        Row: {
+          clicks: number
+          ctr: number
+          date: string
+          fetched_at: string
+          impressions: number
+          position: number
+          property: string
+        }
+        Insert: {
+          clicks?: number
+          ctr?: number
+          date: string
+          fetched_at?: string
+          impressions?: number
+          position?: number
+          property: string
+        }
+        Update: {
+          clicks?: number
+          ctr?: number
+          date?: string
+          fetched_at?: string
+          impressions?: number
+          position?: number
+          property?: string
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string
@@ -2337,6 +2442,23 @@ export type Database = {
           page_url: string | null
           position: number | null
           query: string | null
+          source_property: string | null
+          source_property_domain: string | null
+        }
+        Relationships: []
+      }
+      search_console_page_canonical: {
+        Row: {
+          clicks: number | null
+          ctr: number | null
+          date: string | null
+          fetched_at: string | null
+          impressions: number | null
+          page_host: string | null
+          page_path: string | null
+          page_url: string | null
+          page_url_variants: number | null
+          position: number | null
           source_property: string | null
           source_property_domain: string | null
         }
