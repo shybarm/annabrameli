@@ -115,6 +115,38 @@ export function trackPageView(path: string): void {
 }
 
 /** Conversion: user clicked a "schedule appointment" CTA. */
+/**
+ * A visitor opening WhatsApp to contact the clinic.
+ *
+ * Deliberately NOT fired by the share-via-WhatsApp helper in
+ * src/utils/shareHelper.ts: sharing an article is a different intent from
+ * contacting the clinic, and counting the two together would inflate this
+ * number with traffic that never reached the practice.
+ */
+export function trackWhatsAppClick(location: string, destinationUrl: string): void {
+  trackEvent("whatsapp_click", {
+    cta_location: location,
+    destination_url: destinationUrl,
+    page_path: typeof window !== "undefined" ? window.location.pathname : undefined,
+    event_category: "conversion",
+  });
+}
+
+/**
+ * A visitor tapping a phone number on the public site.
+ *
+ * Not fired from the admin area - staff dialling a patient is an internal
+ * action, not a conversion, and it sits next to patient data.
+ */
+export function trackPhoneClick(location: string, phoneNumber: string): void {
+  trackEvent("phone_click", {
+    cta_location: location,
+    destination_url: `tel:${phoneNumber}`,
+    page_path: typeof window !== "undefined" ? window.location.pathname : undefined,
+    event_category: "conversion",
+  });
+}
+
 export function trackBookAppointmentClick(
   location: string,
   destinationUrl: string = "/book"

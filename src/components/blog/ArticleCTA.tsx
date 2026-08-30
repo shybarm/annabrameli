@@ -1,5 +1,6 @@
 import { MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { trackWhatsAppClick } from "@/lib/analytics";
 
 interface ArticleCTAProps {
   variant?: "inline" | "section";
@@ -7,6 +8,11 @@ interface ArticleCTAProps {
 
 export const ArticleCTA = ({ variant = "inline" }: ArticleCTAProps) => {
   const whatsappUrl = "https://wa.me/972525916393?text=%D7%A9%D7%9C%D7%95%D7%9D%2C%20%D7%90%D7%A9%D7%9E%D7%97%20%D7%9C%D7%A7%D7%91%D7%95%D7%A2%20%D7%99%D7%99%D7%A2%D7%95%D7%A5";
+
+  // Fire-and-forget: trackWhatsAppClick swallows its own errors, so the link
+  // navigates exactly as before whether or not analytics is available.
+  const handleWhatsAppClick = () =>
+    trackWhatsAppClick(`article_cta_${variant}`, whatsappUrl);
 
   if (variant === "section") {
     return (
@@ -16,7 +22,12 @@ export const ArticleCTA = ({ variant = "inline" }: ArticleCTAProps) => {
           ייעוץ אלרגולוג ילדים מותאם אישית, עם מענה מהיר ובדיקות מקיפות
         </p>
         <Button size="lg" asChild>
-          <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={handleWhatsAppClick}
+          >
             <MessageCircle className="w-5 h-5 ml-2" />
             לקביעת ייעוץ ראשוני
           </a>
@@ -34,6 +45,7 @@ export const ArticleCTA = ({ variant = "inline" }: ArticleCTAProps) => {
           href={whatsappUrl}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={handleWhatsAppClick}
           className="text-primary font-medium hover:underline"
         >
           דברו איתנו בוואטסאפ

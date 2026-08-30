@@ -33,7 +33,7 @@ import { SchemaMarkup } from "@/components/seo/SchemaMarkup";
 import { useMedicalUpdates } from "@/hooks/useMedicalUpdates";
 import { blogArticles } from "@/data/blog-articles";
 import { usePageContent } from "@/contexts/PageContentContext";
-import { trackBookAppointmentClick } from "@/lib/analytics";
+import { trackBookAppointmentClick, trackPhoneClick } from "@/lib/analytics";
 import drAnnaImage from "@/assets/dr-anna-brameli-portrait.png.asset.json";
 import desensitizationImage from "@/assets/desensitization-dr-brameli.webp.asset.json";
 import foodAllergyImage from "@/assets/dr-anna-brameli-food-allergy.webp.asset.json";
@@ -612,7 +612,12 @@ const Index = () => {
                 <Phone className="w-6 h-6 text-primary" />
               </div>
               <h3 className="text-base font-semibold text-foreground mb-1">טלפון</h3>
-              <a href="tel:+972525916393" className="text-primary hover:underline" dir="ltr">
+              <a
+                href="tel:+972525916393"
+                onClick={() => trackPhoneClick("homepage_contact", "+972525916393")}
+                className="text-primary hover:underline"
+                dir="ltr"
+              >
                 052-5916393
               </a>
             </motion.div>
