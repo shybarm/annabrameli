@@ -268,7 +268,23 @@ function injectIntoTemplate(template, route, appHtml, head) {
 function writeRouteFile(route, html) {
   // "/" -> dist/index.html (overwrites the empty template with hydrated version)
   // "/services" -> dist/services/index.html
-  const relativePath = route === "/" ? "index.html" : `${route.replace(/^\//, "")}/index.html`;
+  //
+  // Non-ASCII routes are written under their PERCENT-ENCODED name:
+  //   "/guides/אלרגיה-מדריך-מקיף" -> dist/guides/%D7%90%D7%9C.../index.html
+  //
+  // The production host matches the raw, undecoded request path against
+  // filenames - it never percent-decodes before lookup. Verified against
+  // production with the public/_probe/* experiment: a request for
+  // /_probe/%D7%A2... resolved to the directory literally named
+  // "%D7%A2...", while the directory named "עברית" was unreachable by every
+  // request form tried. Since a browser always sends the encoded form on the
+  // wire, encoding the filename is what makes the Hebrew URLs resolve.
+  //
+  // encodeURI leaves "/" and every ASCII route untouched, so ASCII output
+  // paths are byte-identical to before.
+  const encodedRoute = encodeURI(route);
+  const relativePath =
+    encodedRoute === "/" ? "index.html" : `${encodedRoute.replace(/^\//, "")}/index.html`;
   const fullPath = join(DIST_DIR, relativePath);
   mkdirSync(dirname(fullPath), { recursive: true });
   writeFileSync(fullPath, html, "utf8");

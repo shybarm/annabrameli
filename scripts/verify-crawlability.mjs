@@ -90,8 +90,13 @@ function visibleText(html) {
 // ── Route resolution ──────────────────────────────────────────────────────
 
 function readFromDisk(route) {
-  const rel = route === "/" ? "index.html" : `${route.replace(/^\//, "")}/index.html`;
-  const full = join(DIST_DIR, decodeURIComponent(rel));
+  // Must mirror writeRouteFile in scripts/prerender.mjs: routes are written
+  // under their percent-encoded name, because the production host matches the
+  // raw undecoded request path against filenames.
+  const encodedRoute = encodeURI(route);
+  const rel =
+    encodedRoute === "/" ? "index.html" : `${encodedRoute.replace(/^\//, "")}/index.html`;
+  const full = join(DIST_DIR, rel);
   if (existsSync(full)) {
     return { html: readFileSync(full, "utf8"), status: 200, prerendered: true };
   }
