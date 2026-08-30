@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { trackBookAppointmentClick } from "@/lib/analytics";
+import drAnnaAvatar from "@/assets/dr-anna-avatar.png.asset.json";
 
 // Navigation links temporarily hidden — content pending review.
 // Do not delete; restore by re-adding entries to this array.
@@ -40,9 +41,11 @@ export const Header = () => {
         <div className="flex items-center justify-between h-[72px]">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-xl gradient-teal flex items-center justify-center shadow-teal transition-transform duration-200 group-hover:scale-105">
-              <span className="text-primary-foreground font-bold text-lg">א</span>
-            </div>
+            <img
+              src={drAnnaAvatar.url}
+              alt="ד״ר אנה ברמלי - אלרגיה ואימונולוגיה"
+              className="w-10 h-10 rounded-xl object-cover object-top shadow-teal transition-transform duration-200 group-hover:scale-105"
+            />
             <div>
               <span className="block text-base font-bold text-foreground leading-tight">ד״ר אנה ברמלי</span>
               <p className="text-[11px] text-muted-foreground leading-tight">אלרגיה ואימונולוגיה</p>

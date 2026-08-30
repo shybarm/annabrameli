@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Mail, MapPin, Clock } from "lucide-react";
+import drAnnaAvatar from "@/assets/dr-anna-avatar.png.asset.json";
 
 export const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -11,9 +12,11 @@ export const Footer = () => {
           {/* About */}
           <div>
             <div className="flex items-center gap-3 mb-5">
-              <div className="w-10 h-10 rounded-xl gradient-teal flex items-center justify-center shadow-teal">
-                <span className="text-primary-foreground font-bold text-lg">א</span>
-              </div>
+              <img
+                src={drAnnaAvatar.url}
+                alt="ד״ר אנה ברמלי - אלרגיה ואימונולוגיה"
+                className="w-10 h-10 rounded-xl object-cover object-top shadow-teal"
+              />
               <div>
                 <h3 className="text-base font-bold text-foreground">ד״ר אנה ברמלי</h3>
                 <p className="text-xs text-muted-foreground">אלרגיה ואימונולוגיה</p>
