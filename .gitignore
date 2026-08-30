@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local env overrides. `.env` itself is tracked and holds only the public
+# VITE_ values that the build needs; anything genuinely secret belongs in
+# Supabase Edge Function secrets, never in a file here.
+.env.local
+.env.*.local
