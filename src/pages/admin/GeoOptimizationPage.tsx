@@ -1,6 +1,7 @@
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { GeoDashboard } from '@/components/admin/geo/GeoDashboard';
+import { GeoOrganicOpportunities } from '@/components/admin/geo/GeoOrganicOpportunities';
 import { GeoSprint4Clusters } from '@/components/admin/geo/GeoSprint4Clusters';
 import { GeoSprint5Scoring } from '@/components/admin/geo/GeoSprint5Scoring';
 import { GeoTemplatesAndChecklist } from '@/components/admin/geo/GeoTemplatesAndChecklist';
@@ -8,7 +9,7 @@ import { GeoSprint6Planner } from '@/components/admin/geo/GeoSprint6Planner';
 import { GeoWorkspace } from '@/components/admin/geo/GeoWorkspace';
 import { GeoContentTransform } from '@/components/admin/geo/GeoContentTransform';
 import { GeoLiveDataProvider } from '@/contexts/GeoLiveDataContext';
-import { Brain, BarChart3, Layers, Target, Layout, CalendarDays, PenLine, Microscope } from 'lucide-react';
+import { Brain, BarChart3, Layers, Target, Layout, CalendarDays, PenLine, Microscope, Sprout } from 'lucide-react';
 
 export default function GeoOptimizationPage() {
   return (
@@ -27,8 +28,11 @@ export default function GeoOptimizationPage() {
           </div>
 
           {/* 5 unified tabs */}
-          <Tabs defaultValue="dashboard" className="w-full">
+          <Tabs defaultValue="opportunities" className="w-full">
             <TabsList className="w-full flex-wrap h-auto gap-1 bg-muted/30 p-1.5 rounded-xl">
+              <TabsTrigger value="opportunities" className="text-xs rounded-lg gap-1">
+                <Sprout className="h-3 w-3" />הזדמנויות אורגניות
+              </TabsTrigger>
               <TabsTrigger value="dashboard" className="text-xs rounded-lg gap-1">
                 <BarChart3 className="h-3 w-3" />סקירה
               </TabsTrigger>
@@ -52,6 +56,7 @@ export default function GeoOptimizationPage() {
               </TabsTrigger>
             </TabsList>
 
+            <TabsContent value="opportunities" className="mt-4"><GeoOrganicOpportunities /></TabsContent>
             <TabsContent value="dashboard" className="mt-4"><GeoDashboard /></TabsContent>
             <TabsContent value="workspace" className="mt-4"><GeoWorkspace /></TabsContent>
             <TabsContent value="clusters" className="mt-4"><GeoSprint4Clusters /></TabsContent>

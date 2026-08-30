@@ -12,7 +12,9 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "verify:crawl": "node scripts/verify-crawlability.mjs",
-    "sitemap": "node scripts/generate-sitemap.mjs"
+    "sitemap": "node scripts/generate-sitemap.mjs",
+    "test:engine": "npx deno test tests/",
+    "test": "npx deno test tests/"
   },
   "dependencies": {
     "@hcaptcha/react-hcaptcha": "^1.17.2",
