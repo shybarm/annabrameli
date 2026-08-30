@@ -2325,7 +2325,23 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      search_console_canonical: {
+        Row: {
+          clicks: number | null
+          ctr: number | null
+          date: string | null
+          fetched_at: string | null
+          impressions: number | null
+          page_host: string | null
+          page_path: string | null
+          page_url: string | null
+          position: number | null
+          query: string | null
+          source_property: string | null
+          source_property_domain: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       accept_team_invitation: {

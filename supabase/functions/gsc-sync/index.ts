@@ -146,8 +146,24 @@ serve(async (req) => {
   const providedToken = req.headers.get("x-internal-token");
   let authorised = Boolean(cronToken && providedToken && providedToken === cronToken);
 
+  // Scheduled pg_cron runs authenticate with the service role key held in the
+  // database vault; they have no user JWT and no access to the internal token.
+  const bearer = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
+  if (!authorised && bearer) {
+    if (bearer === SERVICE_ROLE) {
+      authorised = true;
+    } else {
+      // Vault-held keys may be rotated/alternate service keys: accept any token
+      // whose JWT payload carries the service_role claim.
+      try {
+        const payload = JSON.parse(atob(bearer.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+        if (payload?.role === "service_role") authorised = true;
+      } catch (_) { /* not a JWT */ }
+    }
+  }
+
   if (!authorised) {
-    const jwt = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
+    const jwt = bearer;
     if (jwt) {
       const { data: userData } = await supabase.auth.getUser(jwt);
       const userId = userData?.user?.id;
@@ -219,6 +235,56 @@ serve(async (req) => {
       await logSyncRun(supabase, "gsc_sync_probe", summary);
       return respond(summary);
     }
+
+    // --- Audit: reconcile our stored totals against Search Console itself ---
+    // Read-only, writes nothing. Compares, for one date range and property:
+    //   a) totals with NO dimensions (what the Search Console UI shows)
+    //   b) totals grouped by page+query (what we ingest - Google withholds
+    //      anonymised/rare queries here, so this is usually lower)
+    //   c) the same, with dataState "all" instead of "final"
+    if (mode === "audit") {
+      const endDate: string = body.endDate ?? isoDate(latest);
+      const startDate: string = body.startDate ?? isoDate(addDays(new Date(endDate), -27));
+      const results: Record<string, unknown> = {};
+
+      for (const property of properties) {
+        const endpoint =
+          `https://searchconsole.googleapis.com/webmasters/v3/sites/` +
+          `${encodeURIComponent(property)}/searchAnalytics/query`;
+
+        const call = async (payload: Record<string, unknown>) => {
+          const res = await fetch(endpoint, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+            body: JSON.stringify({ startDate, endDate, rowLimit: 25000, ...payload }),
+          });
+          if (!res.ok) throw new Error(`${res.status}: ${(await res.text()).slice(0, 200)}`);
+          const data = await res.json();
+          const rows = (data.rows ?? []) as GscRow[];
+          return {
+            rows: rows.length,
+            clicks: rows.reduce((s, r) => s + (r.clicks ?? 0), 0),
+            impressions: rows.reduce((s, r) => s + (r.impressions ?? 0), 0),
+          };
+        };
+
+        try {
+          results[property] = {
+            totalsNoDimensions_final: await call({ dimensions: [], dataState: "final" }),
+            totalsNoDimensions_all: await call({ dimensions: [], dataState: "all" }),
+            byPageQuery_final: await call({ dimensions: ["page", "query"], dataState: "final" }),
+            byPageQuery_all: await call({ dimensions: ["page", "query"], dataState: "all" }),
+            byPage_final: await call({ dimensions: ["page"], dataState: "final" }),
+          };
+        } catch (err) {
+          results[property] = { error: err instanceof Error ? err.message : String(err) };
+        }
+        await sleep(PACE_MS);
+      }
+
+      return respond({ mode, startDate, endDate, results });
+    }
+
 
     // --- Decide which (property, day) pairs to process ----------------------
     let targets: { property: string; date: string }[] = [];
