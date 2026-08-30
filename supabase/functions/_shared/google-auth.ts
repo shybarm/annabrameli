@@ -134,8 +134,8 @@ export async function getGoogleAccessToken(scope: string): Promise<string> {
  * not narrow to a hand-written structural type, and pinning it here would mean
  * duplicating the generated Database types into edge-function scope.
  */
-// deno-lint-ignore no-explicit-any
 export async function logSyncRun(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the repo's ESLint config also covers supabase/functions
   supabase: any,
   action: string,
   summary: Record<string, unknown>,
