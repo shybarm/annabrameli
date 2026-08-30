@@ -11,8 +11,8 @@ export const SiteWideSchema = () => {
     "@id": "https://ihaveallergy.com/#organization",
     name: "ד״ר אנה ברמלי – מומחית לאלרגיה ואימונולוגיה",
     url: "https://ihaveallergy.com",
-    logo: "https://ihaveallergy.com/og-logo.png",
-    image: "https://ihaveallergy.com/og-logo.png",
+    logo: "https://ihaveallergy.com/og-logo.png?v=2",
+    image: "https://ihaveallergy.com/og-logo.png?v=2",
     email: "info@drbrameli.co.il",
     address: {
       "@type": "PostalAddress",
