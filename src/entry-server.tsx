@@ -4,6 +4,15 @@ import { StaticRouter } from "react-router-dom/server";
 import { HelmetProvider, HelmetData } from "react-helmet-async";
 import App from "./App";
 
+// Re-exported so scripts/prerender.mjs can read the route table from the
+// compiled SSR bundle instead of keeping its own copy in sync by hand.
+export {
+  PUBLIC_ROUTES,
+  NOINDEX_ROUTES,
+  SITEMAP_EXCLUDED,
+  SAMPLE_ROUTES,
+} from "./data/public-routes";
+
 // Force react-helmet-async into server mode (happy-dom provides a `window`
 // at SSR time, otherwise Helmet tries to mutate document.head and crashes).
 (HelmetProvider as unknown as { canUseDOM: boolean }).canUseDOM = false;

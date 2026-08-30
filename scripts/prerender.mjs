@@ -49,25 +49,9 @@ if (typeof globalThis.window === "undefined") {
   globalThis.self = win;
 }
 
-// --- 2. Routes to prerender (Wave 1: static-content public pages) ---------
-const PRERENDER_ROUTES = [
-  "/",
-  "/about",
-  "/services",
-  "/contact",
-  "/faq",
-  "/dr-anna-brameli",
-  "/whois",
-  "/book",
-  "/privacy",
-  "/accessibility",
-  "/security",
-  "/guides/טעימות-ראשונות-אלרגנים",
-  "/guides/זכויות-ילד-אלרגי-ישראל",
-  "/guides/בדיקות-אלרגיה-ילדים-ישראל",
-  "/guides/אלרגיה-מדריך-מקיף",
-  "/אלרגיה-בילדים-מדריך-מלא",
-];
+// --- 2. Routes come from src/data/public-routes.ts -------------------------
+// Read off the compiled SSR bundle below, so this script and the app can
+// never disagree about which routes exist.
 
 const PROJECT_ROOT = resolve(process.cwd());
 const DIST_DIR = resolve(PROJECT_ROOT, "dist");
@@ -106,8 +90,10 @@ async function main() {
 
   const entryUrl = pathToFileURL(join(SSR_DIR, "entry-server.mjs")).href;
   let render;
+  let PRERENDER_ROUTES;
+  let NOINDEX_ROUTES;
   try {
-    ({ render } = await import(entryUrl));
+    ({ render, PUBLIC_ROUTES: PRERENDER_ROUTES, NOINDEX_ROUTES } = await import(entryUrl));
   } catch (err) {
     console.error("[prerender] Failed to import SSR bundle - skipping.");
     console.error(err);
@@ -132,15 +118,62 @@ async function main() {
     }
   }
 
+  // --- Private surfaces: ship `noindex` in the initial HTML ----------------
+  // These are not rendered with app content. They get the plain client shell
+  // plus a robots directive, so a crawler that never runs JavaScript still
+  // sees noindex. Access control remains Supabase auth + RLS; this only
+  // controls indexing.
+  for (const route of NOINDEX_ROUTES) {
+    try {
+      writeRouteFile(route, injectNoindex(template));
+      console.log(`[prerender] ⊘ ${route} (noindex shell)`);
+    } catch (err) {
+      console.warn(`[prerender] ✗ noindex ${route} - ${err?.message || err}`);
+    }
+  }
+
+  // Manifest for scripts/verify-crawlability.mjs and generate-sitemap.mjs.
+  writeFileSync(
+    join(DIST_DIR, "prerendered-routes.json"),
+    JSON.stringify({ generatedAt: new Date().toISOString(), routes: succeeded }, null, 2),
+    "utf8",
+  );
+
   // Cleanup SSR build artifacts (keep when DEBUG_SSR=1)
   if (!process.env.DEBUG_SSR) rmSync(SSR_DIR, { recursive: true, force: true });
-
 
   console.log(`\n[prerender] Done. ${succeeded.length} succeeded, ${failed.length} failed.`);
   if (failed.length) {
     console.log("[prerender] Failed routes (will fall back to CSR):");
     for (const f of failed) console.log(`  - ${f.route}: ${f.error}`);
   }
+
+  // A partial failure is tolerable - those routes fall back to CSR, which is
+  // where the whole site was before. Zero successes means prerendering is
+  // broken outright, and shipping that would silently restore the old
+  // "every URL is an empty shell" behaviour. Fail loudly instead.
+  if (succeeded.length === 0 && !process.env.PRERENDER_ALLOW_EMPTY) {
+    console.error(
+      "\n[prerender] FATAL: no routes prerendered. Refusing to ship a build " +
+        "with no crawlable HTML. Set PRERENDER_ALLOW_EMPTY=1 to override.",
+    );
+    process.exit(1);
+  }
+
+  // Importing the app for SSR leaves handles open that never settle - the
+  // supabase client's auth refresh timer, happy-dom timers, react-query.
+  // Without an explicit exit the build hangs here forever after doing all
+  // of its work. Everything is written to disk by this point.
+  process.exit(0);
+}
+
+/** Add a robots noindex directive to the plain client shell. */
+function injectNoindex(template) {
+  if (/<meta[^>]*name=["']robots["']/i.test(template)) return template;
+  return template.replace(
+    "</head>",
+    '    <meta name="robots" content="noindex, nofollow" />\n  </head>',
+  );
 }
 
 function injectIntoTemplate(template, route, appHtml, head) {
