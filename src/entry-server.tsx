@@ -11,6 +11,8 @@ export {
   NOINDEX_ROUTES,
   SITEMAP_EXCLUDED,
   SAMPLE_ROUTES,
+  CRITICAL_ROUTES,
+  MIN_SUCCESSFUL_ROUTES,
 } from "./data/public-routes";
 
 // Force react-helmet-async into server mode (happy-dom provides a `window`

@@ -92,8 +92,16 @@ async function main() {
   let render;
   let PRERENDER_ROUTES;
   let NOINDEX_ROUTES;
+  let CRITICAL_ROUTES;
+  let MIN_SUCCESSFUL_ROUTES;
   try {
-    ({ render, PUBLIC_ROUTES: PRERENDER_ROUTES, NOINDEX_ROUTES } = await import(entryUrl));
+    ({
+      render,
+      PUBLIC_ROUTES: PRERENDER_ROUTES,
+      NOINDEX_ROUTES,
+      CRITICAL_ROUTES,
+      MIN_SUCCESSFUL_ROUTES,
+    } = await import(entryUrl));
   } catch (err) {
     console.error("[prerender] Failed to import SSR bundle - skipping.");
     console.error(err);
@@ -142,22 +150,60 @@ async function main() {
   // Cleanup SSR build artifacts (keep when DEBUG_SSR=1)
   if (!process.env.DEBUG_SSR) rmSync(SSR_DIR, { recursive: true, force: true });
 
-  console.log(`\n[prerender] Done. ${succeeded.length} succeeded, ${failed.length} failed.`);
+  // A single broken page falls back to CSR, which is where the whole site was
+  // before, so it should not block a release. Two things should:
+  //   • a systemic regression, caught by the count threshold
+  //   • losing a route the site's identity depends on, caught by the critical list
   if (failed.length) {
-    console.log("[prerender] Failed routes (will fall back to CSR):");
+    console.log("\n[prerender] Failed routes (will fall back to CSR):");
     for (const f of failed) console.log(`  - ${f.route}: ${f.error}`);
   }
 
-  // A partial failure is tolerable - those routes fall back to CSR, which is
-  // where the whole site was before. Zero successes means prerendering is
-  // broken outright, and shipping that would silently restore the old
-  // "every URL is an empty shell" behaviour. Fail loudly instead.
-  if (succeeded.length === 0 && !process.env.PRERENDER_ALLOW_EMPTY) {
+  const succeededSet = new Set(succeeded);
+
+  // A critical route missing from the route table is a configuration error,
+  // not a render failure - surface it as its own reason to stop.
+  const unknownCritical = CRITICAL_ROUTES.filter(
+    (route) => !PRERENDER_ROUTES.includes(route),
+  );
+  const failedCritical = CRITICAL_ROUTES.filter(
+    (route) => PRERENDER_ROUTES.includes(route) && !succeededSet.has(route),
+  );
+
+  const criticalPass = failedCritical.length === 0 && unknownCritical.length === 0;
+  const thresholdPass = succeeded.length >= MIN_SUCCESSFUL_ROUTES;
+
+  console.log(
+    `\nPrerender:\n` +
+      `${PRERENDER_ROUTES.length} expected\n` +
+      `${succeeded.length} succeeded\n` +
+      `${failed.length} failed\n` +
+      `Critical routes: ${criticalPass ? "PASS" : "FAIL"}\n` +
+      `Threshold: ${thresholdPass ? "PASS" : "FAIL"}`,
+  );
+
+  if (!criticalPass || !thresholdPass) {
+    console.error("\n[prerender] FATAL: refusing to ship this build.");
+    if (unknownCritical.length) {
+      console.error(
+        `  Critical routes not present in the route table: ${unknownCritical.join(", ")}`,
+      );
+    }
+    if (failedCritical.length) {
+      console.error(`  Critical routes that failed: ${failedCritical.join(", ")}`);
+    }
+    if (!thresholdPass) {
+      console.error(
+        `  Only ${succeeded.length} of ${PRERENDER_ROUTES.length} routes prerendered; ` +
+          `${MIN_SUCCESSFUL_ROUTES} required.`,
+      );
+    }
     console.error(
-      "\n[prerender] FATAL: no routes prerendered. Refusing to ship a build " +
-        "with no crawlable HTML. Set PRERENDER_ALLOW_EMPTY=1 to override.",
+      "  Set PRERENDER_SKIP_GATES=1 to override, but understand that shipping " +
+        "restores the empty-shell behaviour for the affected pages.",
     );
-    process.exit(1);
+    if (!process.env.PRERENDER_SKIP_GATES) process.exit(1);
+    console.error("  PRERENDER_SKIP_GATES=1 set - continuing anyway.");
   }
 
   // Importing the app for SSR leaves handles open that never settle - the

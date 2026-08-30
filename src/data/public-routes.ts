@@ -72,6 +72,37 @@ export const PUBLIC_ROUTES: string[] = [
 ];
 
 /**
+ * Routes whose prerender failure must fail the build outright, regardless of
+ * how many other routes succeeded. These are the pages that carry the site's
+ * identity, its entity signals and its main entry points from search - losing
+ * any one of them to a silent CSR fallback is not an acceptable deploy.
+ *
+ * Deliberately short. This is a stop-the-build list, not a priority list.
+ *
+ * Note there is no `/guides` index route in App.tsx; the content hub is the
+ * comprehensive allergy pillar below, which is what `/guides` would link to.
+ *
+ * Every entry must also appear in PUBLIC_ROUTES - scripts/prerender.mjs
+ * verifies that, so a typo here fails loudly instead of silently passing.
+ */
+export const CRITICAL_ROUTES = [
+  "/",                              // homepage
+  "/dr-anna-brameli",               // physician profile / entity anchor
+  "/blog",                          // blog index
+  "/guides/אלרגיה-מדריך-מקיף",      // guides content hub
+  "/faq",                           // FAQ
+  "/services",                      // main service page
+] as const;
+
+/**
+ * Minimum successful public routes required to ship a build. Set below the
+ * expected count so a single broken page does not block a release, but high
+ * enough that a systemic prerender regression cannot slip out as a
+ * mostly-empty site.
+ */
+export const MIN_SUCCESSFUL_ROUTES = 45;
+
+/**
  * Private surfaces. These are NOT prerendered with app content — the build
  * writes a minimal shell carrying `noindex, nofollow` in the initial HTML,
  * so the directive reaches crawlers that never run JavaScript.
