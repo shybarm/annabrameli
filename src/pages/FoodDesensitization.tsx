@@ -236,7 +236,7 @@ const FoodDesensitization = () => {
           property="og:description"
           content="קביעת ייעוץ התאמה עם מומחית לאלרגיה ואימונולוגיה קלינית, רופאה בכירה בשניידר. מרפאה בתל אביב."
         />
-        <meta property="og:image" content="https://ihaveallergy.com/og-logo.png" />
+        <meta property="og:image" content="https://ihaveallergy.com/og-logo.png?v=2" />
         <meta name="twitter:card" content="summary_large_image" />
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(physicianSchema)}</script>

@@ -154,13 +154,13 @@ const GoldenGuideTesting = () => {
         <meta property="og:url" content="https://ihaveallergy.com/guides/בדיקות-אלרגיה-ילדים-ישראל" />
         <meta property="og:title" content="בדיקות אלרגיה לילדים בישראל: מדריך מלא להורים | ד״ר אנה ברמלי" />
         <meta property="og:description" content="מדריך מקיף: סוגי בדיקות אלרגיה לילדים, עלויות פרטי מול ציבורי, מאיזה גיל, ומה לצפות." />
-        <meta property="og:image" content="https://ihaveallergy.com/og-logo.png" />
+        <meta property="og:image" content="https://ihaveallergy.com/og-logo.png?v=2" />
         <meta property="article:published_time" content="2026-02-08" />
         <meta property="article:modified_time" content="2026-02-08" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="בדיקות אלרגיה לילדים בישראל: מדריך מלא להורים | ד״ר אנה ברמלי" />
         <meta name="twitter:description" content="מדריך מקיף: סוגי בדיקות אלרגיה לילדים, עלויות פרטי מול ציבורי, מאיזה גיל, ומה לצפות." />
-        <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png" />
+        <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png?v=2" />
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(articleSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>

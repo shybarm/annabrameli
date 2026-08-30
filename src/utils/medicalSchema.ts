@@ -20,7 +20,7 @@ const PUBLISHER = {
   url: "https://ihaveallergy.com",
   logo: {
     "@type": "ImageObject" as const,
-    url: "https://ihaveallergy.com/og-logo.png",
+    url: "https://ihaveallergy.com/og-logo.png?v=2",
     width: 512,
     height: 512,
   },
