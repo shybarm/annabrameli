@@ -83,6 +83,81 @@ export type Database = {
         }
         Relationships: []
       }
+      analytics_daily: {
+        Row: {
+          date: string
+          engaged_sessions: number
+          engagement_rate: number
+          fetched_at: string
+          key_events: number
+          organic_sessions: number
+          pageviews: number
+          sessions: number
+          users: number
+        }
+        Insert: {
+          date: string
+          engaged_sessions?: number
+          engagement_rate?: number
+          fetched_at?: string
+          key_events?: number
+          organic_sessions?: number
+          pageviews?: number
+          sessions?: number
+          users?: number
+        }
+        Update: {
+          date?: string
+          engaged_sessions?: number
+          engagement_rate?: number
+          fetched_at?: string
+          key_events?: number
+          organic_sessions?: number
+          pageviews?: number
+          sessions?: number
+          users?: number
+        }
+        Relationships: []
+      }
+      analytics_landing_daily: {
+        Row: {
+          channel_group: string
+          date: string
+          engaged_sessions: number
+          engagement_rate: number
+          fetched_at: string
+          key_events: number
+          landing_page_path: string
+          landing_page_url: string
+          sessions: number
+          users: number
+        }
+        Insert: {
+          channel_group: string
+          date: string
+          engaged_sessions?: number
+          engagement_rate?: number
+          fetched_at?: string
+          key_events?: number
+          landing_page_path: string
+          landing_page_url?: string
+          sessions?: number
+          users?: number
+        }
+        Update: {
+          channel_group?: string
+          date?: string
+          engaged_sessions?: number
+          engagement_rate?: number
+          fetched_at?: string
+          key_events?: number
+          landing_page_path?: string
+          landing_page_url?: string
+          sessions?: number
+          users?: number
+        }
+        Relationships: []
+      }
       appointment_internal_notes: {
         Row: {
           appointment_id: string
@@ -942,6 +1017,36 @@ export type Database = {
           scanned_at?: string
           strengths?: Json
           weaknesses?: Json
+        }
+        Relationships: []
+      }
+      gsc_sync_cursor: {
+        Row: {
+          attempts: number
+          date: string
+          last_error: string | null
+          property: string
+          rows_written: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          date: string
+          last_error?: string | null
+          property: string
+          rows_written?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          date?: string
+          last_error?: string | null
+          property?: string
+          rows_written?: number
+          status?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -1904,6 +2009,51 @@ export type Database = {
           send_email?: boolean | null
           send_whatsapp?: boolean | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      search_console_daily: {
+        Row: {
+          clicks: number
+          ctr: number
+          date: string
+          fetched_at: string
+          impressions: number
+          page_host: string
+          page_path: string
+          page_url: string
+          page_url_variants: number
+          position: number
+          property: string
+          query: string
+        }
+        Insert: {
+          clicks?: number
+          ctr?: number
+          date: string
+          fetched_at?: string
+          impressions?: number
+          page_host: string
+          page_path: string
+          page_url: string
+          page_url_variants?: number
+          position?: number
+          property: string
+          query: string
+        }
+        Update: {
+          clicks?: number
+          ctr?: number
+          date?: string
+          fetched_at?: string
+          impressions?: number
+          page_host?: string
+          page_path?: string
+          page_url?: string
+          page_url_variants?: number
+          position?: number
+          property?: string
+          query?: string
         }
         Relationships: []
       }
