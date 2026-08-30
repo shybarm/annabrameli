@@ -1,15 +1,124 @@
+# robots.txt for ihaveallergy.com
+#
+# Note on scope: this file is a crawling *request*, not access control. Every
+# private surface below is protected by Supabase auth and row-level security,
+# and also ships `noindex, nofollow` in its initial HTML (see
+# scripts/prerender.mjs). Nothing here is relied on for security.
+#
+# Each named agent gets its own copy of the disallow list: a crawler that
+# matches a named group ignores the `*` group entirely, so omitting the
+# disallows from a named group would grant that crawler the whole site.
+
+# ── Search engines ────────────────────────────────────────────────────────
 User-agent: Googlebot
 Allow: /
+Disallow: /admin
+Disallow: /auth
+Disallow: /intake/
+Disallow: /join/
+Disallow: /patient-invite/
+Disallow: /portal
+Disallow: /verify-booking
+Disallow: /verify-email
+Disallow: /magic
+Disallow: /*?category=
 
 User-agent: Bingbot
 Allow: /
+Disallow: /admin
+Disallow: /auth
+Disallow: /intake/
+Disallow: /join/
+Disallow: /patient-invite/
+Disallow: /portal
+Disallow: /verify-booking
+Disallow: /verify-email
+Disallow: /magic
+Disallow: /*?category=
 
+# ── AI / LLM crawlers ─────────────────────────────────────────────────────
+# Explicitly welcome on the public medical content. These crawlers do not
+# execute JavaScript, which is why the public routes are prerendered to static
+# HTML - without that, everything below is an empty page to them.
+
+User-agent: GPTBot
+Allow: /
+Disallow: /admin
+Disallow: /auth
+Disallow: /intake/
+Disallow: /join/
+Disallow: /patient-invite/
+Disallow: /portal
+Disallow: /verify-booking
+Disallow: /verify-email
+Disallow: /magic
+
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /admin
+Disallow: /auth
+Disallow: /intake/
+Disallow: /join/
+Disallow: /patient-invite/
+Disallow: /portal
+Disallow: /verify-booking
+Disallow: /verify-email
+Disallow: /magic
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /admin
+Disallow: /auth
+Disallow: /intake/
+Disallow: /join/
+Disallow: /patient-invite/
+Disallow: /portal
+Disallow: /verify-booking
+Disallow: /verify-email
+Disallow: /magic
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /admin
+Disallow: /auth
+Disallow: /intake/
+Disallow: /join/
+Disallow: /patient-invite/
+Disallow: /portal
+Disallow: /verify-booking
+Disallow: /verify-email
+Disallow: /magic
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /admin
+Disallow: /auth
+Disallow: /intake/
+Disallow: /join/
+Disallow: /patient-invite/
+Disallow: /portal
+Disallow: /verify-booking
+Disallow: /verify-email
+Disallow: /magic
+
+# ── Social preview fetchers ───────────────────────────────────────────────
 User-agent: Twitterbot
 Allow: /
+Disallow: /admin
+Disallow: /intake/
+Disallow: /join/
+Disallow: /patient-invite/
+Disallow: /portal
 
 User-agent: facebookexternalhit
 Allow: /
+Disallow: /admin
+Disallow: /intake/
+Disallow: /join/
+Disallow: /patient-invite/
+Disallow: /portal
 
+# ── Everything else ───────────────────────────────────────────────────────
 User-agent: *
 Allow: /
 Disallow: /admin

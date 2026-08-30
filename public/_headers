@@ -1,3 +1,21 @@
+# ⚠️  NOT ACTIVE IN PRODUCTION — Netlify/Cloudflare Pages `_headers` syntax.
+#
+# Verified against production on 2026-08-30:
+#   • GET /admin           → 200 with NO X-Robots-Tag response header
+#   • GET /sitemap.xml     → content-type: text/xml (this file asks for
+#                            application/xml) and no Cache-Control
+#   • response headers show `server: cloudflare` + `x-deployment-id`,
+#     i.e. the Lovable publish pipeline, which does not read this file.
+#
+# Kept because it is correct for Netlify and Cloudflare Pages, and would take
+# effect immediately if hosting moves there. Until then, treat it as a
+# statement of intent, not as a control that is running.
+#
+# The controls that ARE running today:
+#   • noindex in the initial HTML for private routes  → scripts/prerender.mjs
+#   • crawl directives                                → public/robots.txt
+#   • access control                                  → Supabase auth + RLS
+#
 # Admin routes - prevent indexing at server level
 /admin
   X-Robots-Tag: noindex, nofollow

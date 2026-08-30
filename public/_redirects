@@ -1,3 +1,15 @@
+# ⚠️  NOT ACTIVE IN PRODUCTION — Netlify/Cloudflare Pages `_redirects` syntax.
+#
+# Verified against production on 2026-08-30: https://www.ihaveallergy.com/
+# returns a 302 to the apex domain, not the 301! this file specifies, so the
+# redirect being served is the host's own, not this rule. The SPA 200 rewrites
+# below are likewise handled by the host's default SPA fallback.
+#
+# Kept for the same reason as _headers: correct for Netlify / Cloudflare Pages,
+# inert here. Note that with prerendering in place the host must resolve
+# /route → /route/index.html for the static HTML to be served; verify this
+# after the first deploy (see the deploy checklist in the Stage 0 report).
+#
 # Force HTTPS and non-www canonical domain
 http://www.ihaveallergy.com/*    https://ihaveallergy.com/:splat    301!
 https://www.ihaveallergy.com/*   https://ihaveallergy.com/:splat    301!
