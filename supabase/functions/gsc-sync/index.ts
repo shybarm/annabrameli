@@ -286,7 +286,7 @@ serve(async (req) => {
           const { error } = await supabase
             .from("search_console_daily")
             .upsert(records.slice(i, i + 500), {
-              onConflict: "property,date,page_path,query",
+              onConflict: "property,date,page_host,page_path,query",
             });
           if (error) throw new Error(`Upsert failed: ${error.message}`);
         }
