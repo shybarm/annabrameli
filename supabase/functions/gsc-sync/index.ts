@@ -146,8 +146,13 @@ serve(async (req) => {
   const providedToken = req.headers.get("x-internal-token");
   let authorised = Boolean(cronToken && providedToken && providedToken === cronToken);
 
+  // Scheduled pg_cron runs authenticate with the service role key held in the
+  // database vault; they have no user JWT and no access to the internal token.
+  const bearer = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
+  if (!authorised && bearer && bearer === SERVICE_ROLE) authorised = true;
+
   if (!authorised) {
-    const jwt = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
+    const jwt = bearer;
     if (jwt) {
       const { data: userData } = await supabase.auth.getUser(jwt);
       const userId = userData?.user?.id;
