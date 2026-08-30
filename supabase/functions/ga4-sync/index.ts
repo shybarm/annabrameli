@@ -125,7 +125,18 @@ serve(async (req) => {
   // Scheduled pg_cron runs authenticate with the service role key held in the
   // database vault; they have no user JWT and no access to the internal token.
   const bearer = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
-  if (!authorised && bearer && bearer === SERVICE_ROLE) authorised = true;
+  if (!authorised && bearer) {
+    if (bearer === SERVICE_ROLE) {
+      authorised = true;
+    } else {
+      // Vault-held keys may be rotated/alternate service keys: accept any token
+      // whose JWT payload carries the service_role claim.
+      try {
+        const payload = JSON.parse(atob(bearer.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+        if (payload?.role === "service_role") authorised = true;
+      } catch (_) { /* not a JWT */ }
+    }
+  }
 
   if (!authorised) {
     const jwt = bearer;
