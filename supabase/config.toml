@@ -7,6 +7,12 @@ project_id = "ftatmcyrmeyhghgckvbj"
     verify_jwt = false
   [functions.chat-assistant]
     verify_jwt = false
+  # Growth-data syncs: gateway requires a valid project JWT, and each function
+  # additionally requires staff role or the internal cron token. Never public.
+  [functions.gsc-sync]
+    verify_jwt = true
+  [functions.ga4-sync]
+    verify_jwt = true
   [functions.get-intake-patient]
     verify_jwt = false
   [functions.guest-booking]
