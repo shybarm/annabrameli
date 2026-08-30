@@ -34,7 +34,11 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getGoogleAccessToken, logSyncRun } from "../_shared/google-auth.ts";
 import { normalizeUrl, hostFromProperty } from "../_shared/url-normalize.ts";
-import { aggregateGscRows, type GscRow } from "../_shared/gsc-aggregate.ts";
+import {
+  aggregateGscRows,
+  aggregateGscPageRows,
+  type GscRow,
+} from "../_shared/gsc-aggregate.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -80,6 +84,7 @@ async function fetchDay(
   token: string,
   property: string,
   date: string,
+  dimensions: string[] = ["page", "query"],
 ): Promise<GscRow[]> {
   const endpoint =
     `https://searchconsole.googleapis.com/webmasters/v3/sites/` +
@@ -99,8 +104,9 @@ async function fetchDay(
         startDate: date,
         endDate: date,
         // No "date" dimension: the range already pins the day, and omitting it
-        // keeps each response smaller.
-        dimensions: ["page", "query"],
+        // keeps each response smaller. An empty array asks Google for the
+        // property's undimensioned daily totals.
+        dimensions,
         rowLimit: ROW_LIMIT,
         startRow,
         dataState: "final",
@@ -110,7 +116,8 @@ async function fetchDay(
     if (!res.ok) {
       const detail = await res.text();
       throw new Error(
-        `Search Console API ${res.status} for ${property} on ${date}: ${detail.slice(0, 300)}`,
+        `Search Console API ${res.status} for ${property} on ${date} ` +
+          `[${dimensions.join(",") || "totals"}]: ${detail.slice(0, 300)}`,
       );
     }
 
@@ -124,6 +131,132 @@ async function fetchDay(
   }
 
   return rows;
+}
+
+
+/**
+ * Ingest one non-query grain for a set of property-days.
+ *
+ * Kept separate from the query-grain loop, and tracked in its own cursor table,
+ * because the three grains carry different truths and must fail independently:
+ *
+ *   totals  dimensions []        the property's true daily traffic
+ *   page    dimensions ["page"]  true per-page performance
+ *   query   dimensions [page,query] (elsewhere) which queries reach a page,
+ *                                heavily suppressed by Google's anonymisation
+ *                                of rare queries and never a traffic measure
+ *
+ * Days where Google returns nothing are recorded as ok with rows_written 0 -
+ * no row is fabricated for a zero-data day.
+ */
+async function ingestGrain(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the repo's ESLint config also covers supabase/functions
+  supabase: any,
+  token: string,
+  dataset: "page" | "totals",
+  targets: { property: string; date: string }[],
+  startMs: number,
+): Promise<{
+  daysProcessed: number;
+  rowsWritten: number;
+  failures: { property: string; date: string; error: string }[];
+  timedOut: boolean;
+}> {
+  const failures: { property: string; date: string; error: string }[] = [];
+  let daysProcessed = 0;
+  let rowsWritten = 0;
+  let timedOut = false;
+
+  const table =
+    dataset === "page" ? "search_console_page_daily" : "search_console_totals_daily";
+  const conflict =
+    dataset === "page" ? "property,date,page_host,page_path" : "property,date";
+  const dimensions = dataset === "page" ? ["page"] : [];
+
+  for (const target of targets) {
+    if (Date.now() - startMs > TIME_BUDGET_MS) {
+      timedOut = true;
+      break;
+    }
+
+    try {
+      const raw = await fetchDay(token, target.property, target.date, dimensions);
+
+      let records: unknown[] = [];
+      if (dataset === "page") {
+        records = aggregateGscPageRows(raw, target.property, target.date);
+      } else if (raw.length > 0) {
+        // Undimensioned request: Google returns at most one row, which IS the
+        // property total. Never derive this by summing page or query rows.
+        const row = raw[0];
+        records = [{
+          property: target.property,
+          date: target.date,
+          clicks: Math.round(row.clicks ?? 0),
+          impressions: Math.round(row.impressions ?? 0),
+          ctr: Number((row.ctr ?? 0).toFixed(6)),
+          position: Number((row.position ?? 0).toFixed(2)),
+          fetched_at: new Date().toISOString(),
+        }];
+      }
+
+      for (let i = 0; i < records.length; i += 500) {
+        const { error } = await supabase
+          .from(table)
+          .upsert(records.slice(i, i + 500), { onConflict: conflict });
+        if (error) throw new Error(`Upsert failed: ${error.message}`);
+      }
+
+      await supabase.from("gsc_dataset_sync_cursor").upsert(
+        {
+          property: target.property,
+          dataset,
+          date: target.date,
+          status: "ok",
+          rows_written: records.length,
+          last_error: null,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "property,dataset,date" },
+      );
+
+      daysProcessed++;
+      rowsWritten += records.length;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      failures.push({ ...target, error: message.slice(0, 300) });
+
+      const { data: existing } = await supabase
+        .from("gsc_dataset_sync_cursor")
+        .select("attempts")
+        .eq("property", target.property)
+        .eq("dataset", dataset)
+        .eq("date", target.date)
+        .maybeSingle();
+
+      await supabase.from("gsc_dataset_sync_cursor").upsert(
+        {
+          property: target.property,
+          dataset,
+          date: target.date,
+          status: "error",
+          attempts: ((existing?.attempts as number) ?? 0) + 1,
+          last_error: message.slice(0, 500),
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "property,dataset,date" },
+      );
+
+      if (/40[13]/.test(message)) {
+        console.error(`[gsc-sync] ${dataset}: access error - aborting grain:`, message);
+        break;
+      }
+    }
+
+    await sleep(PACE_MS);
+  }
+
+  return { daysProcessed, rowsWritten, failures, timedOut };
 }
 
 serve(async (req) => {
@@ -405,6 +538,80 @@ serve(async (req) => {
       await sleep(PACE_MS);
     }
 
+    // --- New grains: page and property totals -------------------------------
+    // Independent of the query grain above: separate cursor, separate failure
+    // accounting. One grain failing must never make the others look current.
+    const requestedDatasets: ("page" | "totals")[] =
+      Array.isArray(body.datasets) && body.datasets.length
+        ? body.datasets.filter((d: string) => d === "page" || d === "totals")
+        : ["totals", "page"];
+
+    const grainResults: Record<string, unknown> = {};
+
+    for (const dataset of requestedDatasets) {
+      let grainTargets: { property: string; date: string }[] = [];
+
+      if (mode === "backfill") {
+        const days = Number(body.days) || 480;
+        const start = body.startDate ?? isoDate(addDays(latest, -days));
+        const end = body.endDate ?? isoDate(latest);
+
+        for (const property of properties) {
+          const seeds: { property: string; dataset: string; date: string; status: string }[] = [];
+          for (let d = new Date(start); isoDate(d) <= end; d = addDays(d, 1)) {
+            seeds.push({ property, dataset, date: isoDate(d), status: "pending" });
+          }
+          for (let i = 0; i < seeds.length; i += 500) {
+            const { error } = await supabase
+              .from("gsc_dataset_sync_cursor")
+              .upsert(seeds.slice(i, i + 500), {
+                onConflict: "property,dataset,date",
+                ignoreDuplicates: true,
+              });
+            if (error) throw new Error(`Dataset cursor seed failed: ${error.message}`);
+          }
+        }
+
+        const { data: pending, error } = await supabase
+          .from("gsc_dataset_sync_cursor")
+          .select("property, date")
+          .eq("dataset", dataset)
+          .in("property", properties)
+          .neq("status", "ok")
+          .lte("date", end)
+          .gte("date", start)
+          .order("date", { ascending: true })
+          .limit(maxDays);
+        if (error) throw new Error(`Dataset cursor read failed: ${error.message}`);
+        grainTargets = pending ?? [];
+      } else {
+        for (const property of properties) {
+          for (let i = RESETTLE_DAYS; i >= 0; i--) {
+            grainTargets.push({ property, date: isoDate(addDays(latest, -i)) });
+          }
+        }
+      }
+
+      const result = await ingestGrain(supabase, token, dataset, grainTargets, startMs);
+
+      const { count: grainRemaining } = await supabase
+        .from("gsc_dataset_sync_cursor")
+        .select("*", { count: "exact", head: true })
+        .eq("dataset", dataset)
+        .in("property", properties)
+        .neq("status", "ok");
+
+      grainResults[dataset] = {
+        status: result.failures.length === 0 ? "ok" : "partial",
+        daysProcessed: result.daysProcessed,
+        rowsWritten: result.rowsWritten,
+        failureCount: result.failures.length,
+        failures: result.failures.slice(0, 5),
+        remainingDays: grainRemaining ?? 0,
+        timedOut: result.timedOut,
+      };
+    }
+
     // What is still outstanding, so the caller knows whether to run again.
     const { count: remaining } = await supabase
       .from("gsc_sync_cursor")
@@ -412,19 +619,52 @@ serve(async (req) => {
       .in("property", properties)
       .neq("status", "ok");
 
+    // Overall status is the WORST of the three grains, so a page-grain failure
+    // can never be hidden behind a healthy query-grain run.
+    const grainFailureCount = Object.values(grainResults).reduce(
+      (acc: number, g) => acc + ((g as { failureCount: number }).failureCount ?? 0),
+      0,
+    );
+    const grainRemainingTotal = Object.values(grainResults).reduce(
+      (acc: number, g) => acc + ((g as { remainingDays: number }).remainingDays ?? 0),
+      0,
+    );
+    const grainTimedOut = Object.values(grainResults).some(
+      (g) => (g as { timedOut: boolean }).timedOut,
+    );
+
     const summary = {
-      status: failures.length === 0 ? "ok" : "partial",
+      status:
+        failures.length === 0 && grainFailureCount === 0 ? "ok" : "partial",
       mode,
       startedAt,
       finishedAt: new Date().toISOString(),
       properties,
+      grains: {
+        // Query grain: discovery only. Never a traffic or page-performance
+        // measure - Google suppresses anonymised queries.
+        query: {
+          status: failures.length === 0 ? "ok" : "partial",
+          daysProcessed,
+          rowsWritten,
+          failureCount: failures.length,
+          failures: failures.slice(0, 5),
+          remainingDays: remaining ?? 0,
+          timedOut,
+        },
+        ...grainResults,
+      },
       daysProcessed,
       rowsWritten,
       failures: failures.slice(0, 10),
       failureCount: failures.length,
       remainingDays: remaining ?? 0,
       timedOut,
-      done: !timedOut && (remaining ?? 0) === 0,
+      done:
+        !timedOut &&
+        !grainTimedOut &&
+        (remaining ?? 0) === 0 &&
+        grainRemainingTotal === 0,
     };
 
     await logSyncRun(supabase, "gsc_sync", summary);
