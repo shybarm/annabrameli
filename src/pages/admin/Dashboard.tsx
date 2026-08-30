@@ -363,12 +363,25 @@ export default function AdminDashboard() {
             <CardContent className="py-4">
               <div className="flex items-center justify-between">
                 <div className="flex-1 text-center">
-                  <div className="text-3xl font-bold text-purple-700">
-                    {analyticsLoading ? '...' : analyticsData?.visitors.today || 0}
+                  <div className={cn(
+                    "font-bold text-purple-700",
+                    analyticsData?.available === false && !analyticsLoading
+                      ? "text-base py-2"
+                      : "text-3xl"
+                  )}>
+                    {analyticsLoading
+                      ? '...'
+                      : analyticsData?.available
+                        ? analyticsData.visitors.today
+                        : 'אין נתונים זמינים'}
                   </div>
-                  <p className="text-sm text-purple-600">מבקרים באתר היום</p>
+                  <p className="text-sm text-purple-600">
+                    {analyticsData?.available === false && !analyticsLoading
+                      ? analyticsData.unavailableReason ?? 'מבקרים באתר היום'
+                      : 'מבקרים באתר היום'}
+                  </p>
                 </div>
-                {analyticsData && !analyticsLoading && (
+                {analyticsData?.available && !analyticsLoading && (
                   <div className={cn(
                     "flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full",
                     analyticsData.visitors.trend === 'up' 
