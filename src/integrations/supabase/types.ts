@@ -2519,6 +2519,88 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      geo_ctr_curve: {
+        Args: { p_end_date?: string; p_host?: string; p_window_days?: number }
+        Returns: {
+          clicks: number
+          impressions: number
+          observations: number
+          position_bucket: number
+        }[]
+      }
+      geo_ga4_page_window: {
+        Args: {
+          p_channel?: string
+          p_end_date?: string
+          p_window_days?: number
+        }
+        Returns: {
+          days_with_data: number
+          engaged_sessions: number
+          engagement_rate: number
+          key_events: number
+          landing_page_path: string
+          sessions: number
+          users: number
+        }[]
+      }
+      geo_latest_page_date: { Args: { p_host: string }; Returns: string }
+      geo_page_window: {
+        Args: { p_end_date?: string; p_host?: string; p_window_days?: number }
+        Returns: {
+          avg_position: number
+          clicks: number
+          ctr: number
+          days_with_data: number
+          first_seen: string
+          impressions: number
+          last_seen: string
+          page_host: string
+          page_path: string
+          page_url: string
+          prev_avg_position: number
+          prev_clicks: number
+          prev_ctr: number
+          prev_days: number
+          prev_impressions: number
+          source_property: string
+        }[]
+      }
+      geo_query_window: {
+        Args: {
+          p_end_date?: string
+          p_host?: string
+          p_min_impressions?: number
+          p_window_days?: number
+        }
+        Returns: {
+          avg_position: number
+          clicks: number
+          impressions: number
+          page_path: string
+          query: string
+        }[]
+      }
+      geo_totals_window: {
+        Args: {
+          p_end_date?: string
+          p_property?: string
+          p_window_days?: number
+        }
+        Returns: {
+          avg_position: number
+          clicks: number
+          ctr: number
+          days_with_data: number
+          impressions: number
+          prev_clicks: number
+          prev_days: number
+          prev_impressions: number
+          property: string
+          window_end: string
+          window_start: string
+        }[]
+      }
       get_available_slots: {
         Args: {
           p_clinic_id: string
