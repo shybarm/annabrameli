@@ -88,14 +88,14 @@ const AllergyChildrenGuide = () => {
         <meta property="og:url" content={CANONICAL} />
         <meta property="og:title" content="אלרגיה בילדים – מדריך מלא להורים | ד״ר אנה ברמלי" />
         <meta property="og:description" content="מדריך רפואי מקיף על אלרגיה בילדים: סוגי אלרגיה, תסמינים, אבחון, טיפול, מניעה וזכויות." />
-        <meta property="og:image" content="https://ihaveallergy.com/og-logo.png?v=3" />
+        <meta property="og:image" content="https://ihaveallergy.com/og-logo.png?v=4" />
         <meta property="og:locale" content="he_IL" />
         <meta property="article:published_time" content="2026-02-26" />
         <meta property="article:modified_time" content="2026-02-26" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="אלרגיה בילדים – מדריך מלא להורים | ד״ר אנה ברמלי" />
         <meta name="twitter:description" content="מדריך רפואי מקיף על אלרגיה בילדים: תסמינים, אבחון, טיפול וזכויות." />
-        <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png?v=3" />
+        <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png?v=4" />
         <script type="application/ld+json">{JSON.stringify(articleSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
