@@ -163,13 +163,13 @@ const GoldenGuide = () => {
         <meta property="og:url" content="https://ihaveallergy.com/guides/טעימות-ראשונות-אלרגנים" />
         <meta property="og:title" content="טעימות ראשונות לתינוקות: מדריך חשיפה לאלרגנים בישראל | ד״ר אנה ברמלי" />
         <meta property="og:description" content="מדריך רפואי מקיף להורים: איך לחשוף תינוק לבמבה, טחינה, ביצים וחלב בבטחה." />
-        <meta property="og:image" content="https://ihaveallergy.com/og-logo.png?v=3" />
+        <meta property="og:image" content="https://ihaveallergy.com/og-logo.png?v=4" />
         <meta property="article:published_time" content="2026-02-08" />
         <meta property="article:modified_time" content="2026-02-08" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="טעימות ראשונות לתינוקות: מדריך חשיפה לאלרגנים בישראל | ד״ר אנה ברמלי" />
         <meta name="twitter:description" content="מדריך רפואי מקיף להורים: איך לחשוף תינוק לבמבה, טחינה, ביצים וחלב בבטחה." />
-        <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png?v=3" />
+        <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png?v=4" />
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(articleSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>

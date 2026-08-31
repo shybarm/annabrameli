@@ -137,7 +137,7 @@ const Desensitization = () => {
           property="og:description"
           content="ייעוץ התאמה לדה-סנסיטיזציה למזון (OIT) עם מומחית לאלרגיה ואימונולוגיה קלינית. מרפאה בהוד השרון."
         />
-        <meta property="og:image" content="https://ihaveallergy.com/og-logo.png?v=3" />
+        <meta property="og:image" content="https://ihaveallergy.com/og-logo.png?v=4" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta
           name="twitter:title"
@@ -147,7 +147,7 @@ const Desensitization = () => {
           name="twitter:description"
           content="ייעוץ התאמה לדה-סנסיטיזציה למזון (OIT). הערכה רפואית מסודרת לפני תחילת התהליך."
         />
-        <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png?v=3" />
+        <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png?v=4" />
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(articleSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>

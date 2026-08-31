@@ -190,10 +190,10 @@ const Index = () => {
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://ihaveallergy.com/" />
         <meta property="og:title" content="ד״ר אנה ברמלי | מומחית לאלרגיה ואימונולוגיה" />
-        <meta property="og:image" content="https://ihaveallergy.com/og-logo.png?v=3" />
+        <meta property="og:image" content="https://ihaveallergy.com/og-logo.png?v=4" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="ד״ר אנה ברמלי | מומחית לאלרגיה ואימונולוגיה" />
-        <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png?v=3" />
+        <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png?v=4" />
       </Helmet>
       <SchemaMarkup type="physician" />
       <Helmet>
