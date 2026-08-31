@@ -52,11 +52,15 @@ function parseJwtClaims(token: string): Record<string, unknown> | null {
   }
 }
 
+// Queue message shape returned by read_email_batch.
+type QueueMessage = { msg_id: number; read_ct?: number; message: Record<string, any> }
+
 // Move a message to the dead letter queue and log the reason.
 async function moveToDlq(
-  supabase: ReturnType<typeof createClient>,
+  // deno-lint-ignore no-explicit-any
+  supabase: any,
   queue: string,
-  msg: { msg_id: number; message: Record<string, unknown> },
+  msg: QueueMessage,
   reason: string
 ): Promise<void> {
   const payload = msg.message
@@ -73,6 +77,7 @@ async function moveToDlq(
     message_id: msg.msg_id,
     payload,
   })
+
   if (error) {
     console.error('Failed to move message to DLQ', { queue, msg_id: msg.msg_id, reason, error })
   }
