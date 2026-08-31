@@ -7,6 +7,15 @@
  *
  * DATA CONTRACT: traffic figures come from the page and totals grains. Query
  * rows are fetched for themes only and are never summed into traffic.
+ *
+ * The RPC calls below are deliberately UNCAST. The generated Supabase types
+ * now carry the live Stage 1B function signatures, so assigning each result
+ * into the engine's own input type is a compile-time check that the database
+ * contract still matches what the engine expects. If a returned column is
+ * renamed or dropped in the database - the failure mode that produced the
+ * position/avg_position break - this file stops compiling instead of silently
+ * handing the engine undefined at runtime. Do not reintroduce `as never`,
+ * `as any` or `as unknown as`: each of them switches that check off.
  */
 
 import { useQuery } from '@tanstack/react-query';
@@ -69,17 +78,17 @@ export function useOrganicOpportunities(
     queryKey: ['organic-opportunities', windowDays, host],
     queryFn: async () => {
       // Page grain — the page-performance source of truth.
-      const pagesRes = await supabase.rpc('geo_page_window' as never, {
+      const pagesRes = await supabase.rpc('geo_page_window', {
         p_host: host,
         p_window_days: windowDays,
-      } as never);
+      });
 
       // A missing function means the Stage 1B migration has not been applied.
       // Report that honestly instead of rendering an empty dashboard that
       // looks like "no opportunities".
       if (pagesRes.error) return { ...EMPTY, unavailableReason: pagesRes.error.message };
 
-      const pages = (pagesRes.data ?? []) as unknown as PageWindow[];
+      const pages: PageWindow[] = pagesRes.data ?? [];
       if (pages.length === 0) {
         return {
           opportunities: [],
@@ -90,29 +99,29 @@ export function useOrganicOpportunities(
       }
 
       const [queriesRes, ga4Res, curveRes, totalsRes] = await Promise.all([
-        supabase.rpc('geo_query_window' as never, {
+        supabase.rpc('geo_query_window', {
           p_host: host,
           p_window_days: windowDays,
-        } as never),
-        supabase.rpc('geo_ga4_page_window' as never, {
+        }),
+        supabase.rpc('geo_ga4_page_window', {
           p_window_days: windowDays,
-        } as never),
-        supabase.rpc('geo_ctr_curve' as never, {
+        }),
+        supabase.rpc('geo_ctr_curve', {
           p_host: host,
           p_window_days: 90,
-        } as never),
-        supabase.rpc('geo_totals_window' as never, {
+        }),
+        supabase.rpc('geo_totals_window', {
           p_property: MAIN_PROPERTY,
           p_window_days: windowDays,
-        } as never),
+        }),
       ]);
 
       // Queries, GA4 and the CTR curve are all optional enrichment: if any of
       // them fails the page grain still stands on its own.
-      const queries = (queriesRes.data ?? []) as unknown as QueryRow[];
-      const ga4Rows = (ga4Res.data ?? []) as unknown as Ga4PageRow[];
-      const curve = (curveRes.data ?? []) as unknown as CtrCurveRow[];
-      const totalsRows = (totalsRes.data ?? []) as unknown as SiteTotals[];
+      const queries: QueryRow[] = queriesRes.data ?? [];
+      const ga4Rows: Ga4PageRow[] = ga4Res.data ?? [];
+      const curve: CtrCurveRow[] = curveRes.data ?? [];
+      const totalsRows: SiteTotals[] = totalsRes.data ?? [];
 
       return {
         opportunities: buildOpportunities(pages, queries, ga4Rows, curve, {
