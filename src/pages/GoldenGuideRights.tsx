@@ -128,13 +128,13 @@ const GoldenGuideRights = () => {
         <meta property="og:url" content="https://ihaveallergy.com/guides/זכויות-ילד-אלרגי-ישראל" />
         <meta property="og:title" content="זכויות של ילד אלרגי בישראל: גן, בית ספר וצהרונים | ד״ר אנה ברמלי" />
         <meta property="og:description" content="מדריך מלא להורים: מהן הזכויות של ילד עם אלרגיה למזון בגן ובבית הספר." />
-        <meta property="og:image" content="https://ihaveallergy.com/og-logo.png?v=2" />
+        <meta property="og:image" content="https://ihaveallergy.com/og-logo.png?v=3" />
         <meta property="article:published_time" content="2026-02-08" />
         <meta property="article:modified_time" content="2026-02-08" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="זכויות של ילד אלרגי בישראל: גן, בית ספר וצהרונים | ד״ר אנה ברמלי" />
         <meta name="twitter:description" content="מדריך מלא להורים: מהן הזכויות של ילד עם אלרגיה למזון בגן ובבית הספר." />
-        <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png?v=2" />
+        <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png?v=3" />
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(articleSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
