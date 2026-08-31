@@ -177,8 +177,13 @@ export interface Opportunity {
     prevClicks: number;
   };
   upside: UpsideEstimate;
-  /** Provenance of the CTR benchmark used for this page. */
+  /**
+   * Provenance of the CTR BENCHMARK CURVE. Not a statement about confidence,
+   * and not a statement about whether the CTR conclusion is evidenced.
+   */
   ctrBenchmarkSource: CtrBenchmarkSource;
+  /** What the CTR conclusion actually rests on. Report provenance from this. */
+  ctrEvidenceBasis: CtrEvidenceBasis;
   ctrBenchmarkNote: string;
   ga4: Ga4PageRow | null;
   ga4Note: string;
@@ -258,8 +263,30 @@ export const FALLBACK_CTR_CURVE: Record<number, number> = {
   21: 0.005,
 };
 
-/** Where the expected-CTR number for a given position actually came from. */
+/**
+ * Where the expected-CTR NUMBER came from. This describes the benchmark curve
+ * only — it says nothing about whether the CTR conclusion is evidenced, and it
+ * must not be used to decide that. See CtrEvidenceBasis.
+ */
 export type CtrBenchmarkSource = "first_party" | "fallback" | "insufficient";
+
+/**
+ * What the CTR CONCLUSION actually rests on. Deliberately separate from
+ * CtrBenchmarkSource: a page can sit on an assumed fallback curve and still
+ * have a fully evidenced CTR conclusion drawn from its own previous window.
+ * Reporting such a page as "outside assumption" because of the curve conflates
+ * the benchmark with the evidence, and understates a real finding.
+ *
+ *   first_party_curve  the site's own observed CTR in this position bucket
+ *   self_comparison    the page's own previous window (no curve involved)
+ *   assumption         only the fallback curve — capped, never actionable alone
+ *   insufficient       not enough impressions to judge CTR at all
+ */
+export type CtrEvidenceBasis =
+  | "first_party_curve"
+  | "self_comparison"
+  | "assumption"
+  | "insufficient";
 
 export interface ExpectedCtrModel {
   ctrAt(position: number): number;
@@ -434,14 +461,29 @@ export function assessConfidence(
     );
   }
 
-  // A CTR judgement resting only on an assumed curve must not be reported at
-  // high confidence, even when the page has plenty of impressions.
-  if (
-    ctrAssessment &&
-    ctrAssessment.benchmarkSource === "fallback" &&
-    !ctrAssessment.hasSelfComparisonEvidence
-  ) {
+  // CONFIDENCE IS ABOUT THE OPPORTUNITY, NOT ABOUT THE CTR BENCHMARK.
+  //
+  // An earlier comment here claimed a fallback curve must cap the page at
+  // medium confidence. It never did so, and it should not: confidence answers
+  // "how much of this page's own data is behind this?", and impressions, day
+  // coverage, real previous-window performance and rank are all first-party
+  // Search Console evidence that an assumed CTR curve does not weaken. Capping
+  // on the curve alone would downgrade well-evidenced pages for a fact about a
+  // lookup table.
+  //
+  // A CTR judgement resting only on an assumption is contained where it is
+  // actually made, not here: evidencedShortfallRatio is null without real
+  // evidence, so no high_impressions_low_ctr signal and no improve_title_meta
+  // recommendation can be produced, and ctrPoints caps the contribution at
+  // ctrFallbackMaxPoints. The assumption is reported rather than suppressed.
+  if (ctrAssessment && ctrAssessment.evidenceBasis === "assumption") {
     reasons.push(ctrAssessment.note);
+  } else if (ctrAssessment && ctrAssessment.evidenceBasis === "self_comparison") {
+    // State the positive basis too, so the confidence panel shows WHY the CTR
+    // conclusion stands without a site curve.
+    reasons.push(
+      `השוואת ה-CTR נשענת על ההיסטוריה של העמוד עצמו (${page.prev_impressions} חשיפות בתקופה הקודמת), ולא על עקומה מונחת`,
+    );
   }
 
   reasons.push(
@@ -661,6 +703,11 @@ export interface CtrAssessment {
   hasFirstPartyEvidence: boolean;
   /** The page's CTR fell materially against its own previous window. */
   hasSelfComparisonEvidence: boolean;
+  /**
+   * What the conclusion rests on, as opposed to which curve supplied the
+   * benchmark number. This is the field to report provenance from.
+   */
+  evidenceBasis: CtrEvidenceBasis;
   note: string;
 }
 
@@ -674,6 +721,7 @@ export function assessCtr(page: PageWindow, expected: ExpectedCtrModel): CtrAsse
       evidencedShortfallRatio: null,
       hasFirstPartyEvidence: false,
       hasSelfComparisonEvidence: false,
+      evidenceBasis: "insufficient",
       note: `אין מספיק חשיפות (${page.impressions}) להערכת CTR`,
     };
   }
@@ -713,6 +761,14 @@ export function assessCtr(page: PageWindow, expected: ExpectedCtrModel): CtrAsse
       ? "אין מספיק נתוני CTR של האתר במיקום זה — ההשוואה נשענת על ההיסטוריה של העמוד עצמו"
       : `אין מספיק נתוני CTR של האתר במיקום ${round(page.avg_position, 1)} — ערך הייחוס הוא הנחה חיצונית ולא ראיה על האתר`;
 
+  // First-party curve evidence outranks self-comparison as a label because it
+  // is the stronger claim; hasSelfComparisonEvidence still reports the rest.
+  const evidenceBasis: CtrEvidenceBasis = hasFirstPartyEvidence
+    ? "first_party_curve"
+    : hasSelfComparisonEvidence
+      ? "self_comparison"
+      : "assumption";
+
   return {
     benchmarkSource: source,
     expectedCtr,
@@ -721,6 +777,7 @@ export function assessCtr(page: PageWindow, expected: ExpectedCtrModel): CtrAsse
     evidencedShortfallRatio,
     hasFirstPartyEvidence,
     hasSelfComparisonEvidence,
+    evidenceBasis,
     note,
   };
 }
@@ -1153,6 +1210,7 @@ export function buildOpportunities(
       },
       upside: estimateUpside(page, expected, windowDays),
       ctrBenchmarkSource: ctrAssessment.benchmarkSource,
+      ctrEvidenceBasis: ctrAssessment.evidenceBasis,
       ctrBenchmarkNote: ctrAssessment.note,
       ga4,
       ga4Note,

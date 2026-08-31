@@ -788,3 +788,130 @@ Deno.test("confidence factor row is an adjustment and the components sum to the 
     0.5,
   );
 });
+
+// ── 29. Confidence vs CTR provenance are separate axes ────────────────────
+//
+// DECIDED SEMANTICS:
+//   * Opportunity.confidence answers "how much of this page's OWN data backs
+//     this?" — impressions, day coverage, real previous-window performance.
+//     An assumed CTR curve is a fact about a lookup table, not about the page,
+//     and must never downgrade it.
+//   * A CTR judgement resting only on an assumption is contained where it is
+//     made: no signal, no rewrite recommendation, capped points.
+//   * ctrEvidenceBasis reports what the CTR CONCLUSION rests on.
+//     ctrBenchmarkSource reports which curve supplied the number. They are not
+//     the same thing and must not be conflated.
+
+Deno.test("A: fallback curve alone never produces a high-confidence CTR conclusion", () => {
+  // Plenty of volume, but CTR is flat against its own history and there is no
+  // site curve — so nothing evidences a CTR claim.
+  const p = page({
+    clicks: 8, impressions: 1000, ctr: 0.008, avg_position: 9, days_with_data: 28,
+    prev_clicks: 8, prev_impressions: 1000, prev_ctr: 0.008, prev_days: 28,
+  });
+  const a = assessCtr(p, fallbackModel);
+  assertEquals(a.evidenceBasis, "assumption");
+  assertEquals(a.hasFirstPartyEvidence, false);
+  assertEquals(a.hasSelfComparisonEvidence, false);
+  assertEquals(a.evidencedShortfallRatio, null, "no evidenced magnitude exists");
+
+  const [opp] = buildOpportunities([p], [], [], []);
+
+  // The CTR conclusion is contained: no claim, no rewrite, capped points.
+  assert(!opp.signals.some((s) => s.type === "high_impressions_low_ctr"));
+  assert(!opp.signals.some((s) => s.type === "ctr_decline_vs_self"));
+  assert(!opp.recommendations.some((r) => r.action === "improve_title_meta"));
+  assert(!opp.recommendations.some((r) => r.action === "investigate_ctr_drop"));
+  const ctrComp = opp.scoreComponents.find((c) => c.key === "ctr")!;
+  assert(ctrComp.points <= THRESHOLDS.ctrFallbackMaxPoints,
+    "an assumption can nudge the ranking but never drive it");
+
+  // The assumption is labelled, not hidden.
+  assertEquals(opp.ctrEvidenceBasis, "assumption");
+  assert(opp.confidenceReasons.some((r) => r.includes("הנחה חיצונית")),
+    "the confidence panel states that the CTR benchmark is an assumption");
+
+  // But the page itself is still well evidenced, so the OPPORTUNITY stands.
+  assertEquals(opp.confidence, "high",
+    "1000 impressions over 28/28 days is first-party evidence; the curve is not");
+});
+
+Deno.test("B: live allergen guide keeps HIGH confidence on self-comparison evidence", () => {
+  const [opp] = buildOpportunities([LIVE_GUIDE_CASE()], [], [], []);
+
+  assertEquals(opp.confidence, "high",
+    "292 impressions over 28/28 days qualifies; the fallback curve must not downgrade it");
+
+  // Provenance is reported from what the conclusion rests on, NOT from the curve.
+  assertEquals(opp.ctrBenchmarkSource, "fallback", "the curve really is the fallback");
+  assertEquals(opp.ctrEvidenceBasis, "self_comparison", "but the conclusion is evidenced");
+
+  // The confidence panel must not call this an outside assumption.
+  assert(!opp.confidenceReasons.some((r) => r.includes("הנחה חיצונית")),
+    "an evidenced conclusion must not be reported as an assumption");
+  assert(opp.confidenceReasons.some((r) => r.includes("ההיסטוריה של העמוד עצמו")),
+    "the positive basis is stated");
+
+  assert(opp.signals.some((s) => s.type === "ctr_decline_vs_self"));
+  assert(opp.recommendations.some((r) => r.action === "investigate_ctr_drop"));
+  assert(!opp.recommendations.some((r) => r.action === "improve_title_meta"));
+});
+
+Deno.test("C: a low sample stays LOW however attractive the rank and CTR", () => {
+  const tiny = page({
+    clicks: 1, impressions: 20, ctr: 0.05, avg_position: 3, days_with_data: 2,
+    prev_clicks: 4, prev_impressions: 60, prev_ctr: 4 / 60, prev_days: 28,
+  });
+  const [opp] = buildOpportunities([tiny], [], [], []);
+  assertEquals(opp.confidence, "low");
+  assertEquals(opp.ctrEvidenceBasis, "insufficient");
+  assertEquals(opp.signals.length, 0, "below the signal floor entirely");
+
+  // And a first-party curve cannot rescue a sample this small either.
+  const curve: CtrCurveRow[] = [
+    { position_bucket: 3, clicks: 300, impressions: 1000, observations: 60 },
+  ];
+  const [withCurve] = buildOpportunities([tiny], [], [], curve);
+  assertEquals(withCurve.confidence, "low", "sample size gates confidence, not the curve");
+});
+
+Deno.test("D: a first-party bucket curve supports normal confidence behaviour", () => {
+  const p = page({
+    clicks: 10, impressions: 1000, ctr: 0.01, avg_position: 6, days_with_data: 28,
+    prev_clicks: 10, prev_impressions: 1000, prev_ctr: 0.01, prev_days: 28,
+  });
+  const curve: CtrCurveRow[] = [
+    { position_bucket: 6, clicks: 80, impressions: 1000, observations: 50 },
+  ];
+  const [opp] = buildOpportunities([p], [], [], curve);
+
+  assertEquals(opp.confidence, "high");
+  assertEquals(opp.ctrBenchmarkSource, "first_party");
+  assertEquals(opp.ctrEvidenceBasis, "first_party_curve");
+
+  // Stronger evidence — so here a rewrite IS warranted, and the full range opens.
+  assert(opp.signals.some((s) => s.type === "high_impressions_low_ctr"));
+  assert(opp.recommendations.some((r) => r.action === "improve_title_meta"));
+  const ctrComp = opp.scoreComponents.find((c) => c.key === "ctr")!;
+  assert(ctrComp.points > THRESHOLDS.ctrFallbackMaxPoints);
+  assert(!opp.confidenceReasons.some((r) => r.includes("הנחה חיצונית")));
+});
+
+Deno.test("the fallback curve alone never moves overall confidence", () => {
+  // Same page, judged with and without a first-party curve for its bucket.
+  // Only the CTR provenance may differ; confidence is a sample-size question.
+  const p = page({
+    clicks: 30, impressions: 1000, ctr: 0.03, avg_position: 6, days_with_data: 28,
+    prev_clicks: 30, prev_impressions: 1000, prev_ctr: 0.03, prev_days: 28,
+  });
+  const curve: CtrCurveRow[] = [
+    { position_bucket: 6, clicks: 50, impressions: 1000, observations: 50 },
+  ];
+  const [onFallback] = buildOpportunities([p], [], [], []);
+  const [onFirstParty] = buildOpportunities([p], [], [], curve);
+
+  assertEquals(onFallback.confidence, onFirstParty.confidence,
+    "the curve changes CTR provenance, never the confidence in the opportunity");
+  assertEquals(onFallback.ctrEvidenceBasis, "assumption");
+  assertEquals(onFirstParty.ctrEvidenceBasis, "first_party_curve");
+});

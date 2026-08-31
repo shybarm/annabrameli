@@ -31,7 +31,7 @@ import {
   type WindowDays,
 } from '@/hooks/useOrganicOpportunities';
 import type {
-  Confidence, Opportunity, SignalType, CtrBenchmarkSource,
+  Confidence, Opportunity, SignalType, CtrEvidenceBasis,
 } from '@/lib/geo/opportunity-engine';
 
 const WINDOWS: { value: WindowDays; label: string }[] = [
@@ -58,10 +58,14 @@ const CONFIDENCE_META: Record<Confidence, { label: string; cls: string }> = {
   low:    { label: 'ביטחון נמוך', cls: 'bg-slate-100 text-slate-700 border-slate-200' },
 };
 
-const CTR_SOURCE_META: Record<CtrBenchmarkSource, { label: string; cls: string }> = {
-  first_party: { label: 'CTR: נתוני האתר', cls: 'bg-green-50 text-green-700 border-green-200' },
-  fallback:    { label: 'CTR: הנחה חיצונית', cls: 'bg-slate-50 text-slate-600 border-slate-200' },
-  insufficient:{ label: 'CTR: אין מספיק נתונים', cls: 'bg-slate-50 text-slate-500 border-slate-200' },
+// Keyed on what the CTR CONCLUSION rests on, not on which curve supplied the
+// benchmark: a page on the fallback curve whose own history evidences the
+// conclusion must not be labelled an outside assumption.
+const CTR_SOURCE_META: Record<CtrEvidenceBasis, { label: string; cls: string }> = {
+  first_party_curve: { label: 'CTR: נתוני האתר', cls: 'bg-green-50 text-green-700 border-green-200' },
+  self_comparison:   { label: 'CTR: היסטוריית העמוד', cls: 'bg-green-50 text-green-700 border-green-200' },
+  assumption:        { label: 'CTR: הנחה חיצונית', cls: 'bg-slate-50 text-slate-600 border-slate-200' },
+  insufficient:      { label: 'CTR: אין מספיק נתונים', cls: 'bg-slate-50 text-slate-500 border-slate-200' },
 };
 
 const pct = (n: number, dp = 1) => `${(n * 100).toFixed(dp)}%`;
@@ -99,10 +103,10 @@ function OpportunityCard({ opp }: { opp: Opportunity }) {
               <Badge variant="outline" className={cn('text-[10px]', conf.cls)}>{conf.label}</Badge>
               <Badge
                 variant="outline"
-                className={cn('text-[10px]', CTR_SOURCE_META[opp.ctrBenchmarkSource].cls)}
+                className={cn('text-[10px]', CTR_SOURCE_META[opp.ctrEvidenceBasis].cls)}
                 title={opp.ctrBenchmarkNote}
               >
-                {CTR_SOURCE_META[opp.ctrBenchmarkSource].label}
+                {CTR_SOURCE_META[opp.ctrEvidenceBasis].label}
               </Badge>
             </div>
 
