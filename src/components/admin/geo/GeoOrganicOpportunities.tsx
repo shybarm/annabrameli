@@ -46,6 +46,7 @@ const SIGNAL_META: Record<SignalType, { label: string; icon: typeof Target; cls:
   rising:                   { label: 'עלייה',              icon: TrendingUp,         cls: 'bg-green-100 text-green-800 border-green-200' },
   declining:                { label: 'ירידה',              icon: TrendingDown,       cls: 'bg-red-100 text-red-800 border-red-200' },
   emerging:                 { label: 'נראות חדשה',         icon: Sparkles,           cls: 'bg-purple-100 text-purple-800 border-purple-200' },
+  ctr_decline_vs_self:      { label: 'ירידת CTR',          icon: MousePointerClick,  cls: 'bg-rose-100 text-rose-800 border-rose-200' },
   high_potential_winner:    { label: 'פוטנציאל גבוה',      icon: Trophy,             cls: 'bg-blue-100 text-blue-800 border-blue-200' },
   query_opportunity:        { label: 'הזדמנות שאילתה',     icon: Info,               cls: 'bg-slate-100 text-slate-800 border-slate-200' },
   content_gap:              { label: 'פער תוכן',           icon: AlertTriangle,      cls: 'bg-pink-100 text-pink-800 border-pink-200' },

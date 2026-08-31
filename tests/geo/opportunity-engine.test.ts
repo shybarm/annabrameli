@@ -627,3 +627,164 @@ Deno.test("a flat high-volume page does not outrank one with real headroom", () 
   const out = buildOpportunities([flatBig, headroom], [], [], []);
   assertEquals(out[0].pagePath, "/headroom");
 });
+
+// ── 28. Production case: self-comparison must survive a fallback curve ────
+//
+// Live shape from /guides/טעימות-ראשונות-אלרגנים. The page BEATS the assumed
+// fallback curve for position 9 (3.42% vs 2.8%) while having lost a third of
+// its CTR against its own previous window, on a 290-impression base. The old
+// implementation measured the shortfall only against the curve, so the curve
+// ratio of 1.22 tripped an early "meets expectation" return and the
+// self-comparison evidence — which was correctly computed — could never be
+// acted on.
+//
+// DECIDED EXPECTED BEHAVIOUR (the approved rule is retained):
+//   * self-comparison evidence is true and carries its OWN magnitude
+//   * the fallback bucket curve must not block that path
+//   * the CTR score is evidenced, so it is NOT capped at ctrFallbackMaxPoints
+//   * high_impressions_low_ctr must NOT fire — the page is above the expected
+//     CTR for its position, so that claim would be false
+//   * no title rewrite is prescribed; the action is to investigate
+const LIVE_GUIDE_CASE = () =>
+  page({
+    page_path: GUIDE,
+    clicks: 10, impressions: 292, ctr: 10 / 292, avg_position: 9.02,
+    days_with_data: 28,
+    prev_clicks: 15, prev_impressions: 290, prev_ctr: 15 / 290,
+    prev_avg_position: 10.21, prev_days: 28,
+  });
+
+Deno.test("live case: CTR decline vs own history is evidence despite a fallback curve", () => {
+  const live = LIVE_GUIDE_CASE();
+  const a = assessCtr(live, fallbackModel);
+
+  // The curve says the page is fine for position 9 — that must not decide it.
+  assertEquals(a.benchmarkSource, "fallback");
+  assert(a.shortfallRatio !== null && a.shortfallRatio > 1,
+    "page beats the assumed curve for its position");
+
+  // The self-comparison path has its own magnitude and is evidenced.
+  assert(a.hasSelfComparisonEvidence, "290 prev impressions and a 34% drop qualify");
+  assertAlmostEquals(a.selfShortfallRatio!, 0.6621, 0.001);
+  assertAlmostEquals(a.evidencedShortfallRatio!, 0.6621, 0.001);
+  assert(a.evidencedShortfallRatio! < THRESHOLDS.ctrSelfDropRatio);
+});
+
+Deno.test("live case: self-comparison CTR evidence is scored and not capped", () => {
+  const [opp] = buildOpportunities([LIVE_GUIDE_CASE()], [], [], []);
+  const ctrComp = opp.scoreComponents.find((c) => c.key === "ctr")!;
+
+  // (1 - 0.6621) * 20 ≈ 6.76 — real points, from a real base.
+  assert(ctrComp.points > 0, "the self-comparison drop must score");
+  assert(ctrComp.points > THRESHOLDS.ctrFallbackMaxPoints,
+    "evidenced shortfall is not subject to the assumption cap");
+  assertAlmostEquals(ctrComp.points, 6.8, 0.1);
+
+  // The reason must name the base the gap was measured against.
+  assert(ctrComp.reason.includes("5.17%"), "cites the previous-window CTR");
+  assert(ctrComp.reason.includes("3.42%"), "cites the current CTR");
+});
+
+Deno.test("live case: investigate the SERP, do not prescribe a rewrite", () => {
+  const [opp] = buildOpportunities([LIVE_GUIDE_CASE()], [], [], []);
+  const sigs = opp.signals.map((s) => s.type);
+  const acts = opp.recommendations.map((r) => r.action);
+
+  assert(sigs.includes("ctr_decline_vs_self"), "the decline is surfaced");
+  assert(!sigs.includes("high_impressions_low_ctr"),
+    "the page is ABOVE expected CTR for position 9 — that claim would be false");
+
+  assert(acts.includes("investigate_ctr_drop"), "look before you rewrite");
+  assert(!acts.includes("improve_title_meta"),
+    "a CTR drop alone must never prescribe a title rewrite");
+
+  // The evidence must state that ranking improved, so a reader cannot conclude
+  // the drop was caused by slipping down the results.
+  const s = opp.signals.find((x) => x.type === "ctr_decline_vs_self")!;
+  assert(s.evidence.includes("המיקום דווקא השתפר"), "ranking movement is stated");
+});
+
+Deno.test("self-comparison base uses the PREVIOUS window, not the current one", () => {
+  // Current window is huge, previous base is below the 50-impression floor.
+  // The rule must look at the previous window, so this must NOT qualify.
+  const thinBase = page({
+    clicks: 1, impressions: 5000, ctr: 1 / 5000, avg_position: 9,
+    days_with_data: 28,
+    prev_clicks: 4, prev_impressions: 40, prev_ctr: 4 / 40, prev_days: 28,
+  });
+  const a = assessCtr(thinBase, fallbackModel);
+  assertEquals(a.hasSelfComparisonEvidence, false,
+    "40 previous impressions is below the comparison floor");
+  assertEquals(a.selfShortfallRatio, null);
+
+  // And a previous window exactly on the floor does qualify.
+  const onFloor = page({
+    clicks: 1, impressions: 500, ctr: 1 / 500, avg_position: 9, days_with_data: 28,
+    prev_clicks: 5, prev_impressions: 50, prev_ctr: 5 / 50, prev_days: 28,
+  });
+  assert(assessCtr(onFloor, fallbackModel).hasSelfComparisonEvidence);
+});
+
+Deno.test("self-comparison compares like units and is not inverted", () => {
+  // A page whose CTR ROSE against its own history must never be flagged.
+  const improving = page({
+    clicks: 30, impressions: 292, ctr: 30 / 292, avg_position: 9.02,
+    days_with_data: 28,
+    prev_clicks: 10, prev_impressions: 290, prev_ctr: 10 / 290, prev_days: 28,
+  });
+  const a = assessCtr(improving, fallbackModel);
+  assertEquals(a.hasSelfComparisonEvidence, false, "a rise is not a shortfall");
+  assert(a.selfShortfallRatio !== null && a.selfShortfallRatio > 1);
+
+  const [opp] = buildOpportunities([improving], [], [], []);
+  assert(!opp.signals.some((s) => s.type === "ctr_decline_vs_self"));
+  assert(!opp.recommendations.some((r) => r.action === "investigate_ctr_drop"));
+
+  // Both ratios are fractions of 1, never percentages: a 0.034 vs 3.42 unit
+  // mismatch would put this ratio around 100x off.
+  assert(a.selfShortfallRatio! < 10, "ratio is fraction/fraction, not fraction/percent");
+});
+
+Deno.test("a drop just short of the threshold stays silent", () => {
+  // 0.72 of the previous CTR — above the 0.70 gate, so no evidence, no signal.
+  const mild = page({
+    clicks: 72, impressions: 10_000, ctr: 0.0072, avg_position: 9, days_with_data: 28,
+    prev_clicks: 100, prev_impressions: 10_000, prev_ctr: 0.01, prev_days: 28,
+  });
+  const a = assessCtr(mild, fallbackModel);
+  assertAlmostEquals(a.selfShortfallRatio!, 0.72, 0.001);
+  assertEquals(a.hasSelfComparisonEvidence, false, "the rule is a threshold, not a slope");
+
+  const [opp] = buildOpportunities([mild], [], [], []);
+  assert(!opp.signals.some((s) => s.type === "ctr_decline_vs_self"));
+});
+
+Deno.test("confidence factor row is an adjustment and the components sum to the score", () => {
+  const [opp] = buildOpportunities([LIVE_GUIDE_CASE()], [], [], []);
+  const factorRow = opp.scoreComponents.find((c) => c.key === "confidence_factor")!;
+
+  // High confidence -> multiplier 1.0 -> adjustment 0. That is arithmetic, not
+  // a bug: the row carries the adjustment so the components still sum.
+  assertEquals(opp.confidence, "high");
+  assertEquals(factorRow.points, 0);
+  assert(factorRow.reason.includes("מכפיל 1"), "the multiplier itself is reported");
+
+  const sum = opp.scoreComponents.reduce((t, c) => t + c.points, 0);
+  assertAlmostEquals(sum, opp.score, 0.5);
+
+  // A low-confidence page must produce a NEGATIVE adjustment, proving the row
+  // is a delta rather than a constant zero.
+  const tiny = page({
+    clicks: 1, impressions: 60, ctr: 1 / 60, avg_position: 9, days_with_data: 2,
+    prev_clicks: 5, prev_impressions: 60, prev_ctr: 5 / 60, prev_days: 28,
+  });
+  const [lowOpp] = buildOpportunities([tiny], [], [], []);
+  const lowRow = lowOpp.scoreComponents.find((c) => c.key === "confidence_factor")!;
+  assert(lowOpp.confidence !== "high");
+  assert(lowRow.points < 0, "a sub-1.0 multiplier shows up as a negative adjustment");
+  assertAlmostEquals(
+    lowOpp.scoreComponents.reduce((t, c) => t + c.points, 0),
+    lowOpp.score,
+    0.5,
+  );
+});

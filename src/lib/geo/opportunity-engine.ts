@@ -89,6 +89,7 @@ export type SignalType =
   | "declining"
   | "emerging"
   | "high_potential_winner"
+  | "ctr_decline_vs_self"
   | "query_opportunity"
   | "content_gap";
 
@@ -97,6 +98,7 @@ export type Confidence = "high" | "medium" | "low";
 export type ActionType =
   | "strengthen_page"
   | "improve_title_meta"
+  | "investigate_ctr_drop"
   | "expand_section"
   | "add_faq"
   | "improve_internal_linking"
@@ -478,9 +480,8 @@ export function detectSignals(
   if (
     page.impressions >= THRESHOLDS.ctrMinImpressions &&
     page.avg_position <= 20 &&
-    assessment.shortfallRatio !== null &&
-    assessment.shortfallRatio < THRESHOLDS.ctrShortfallRatio &&
-    (assessment.hasFirstPartyEvidence || assessment.hasSelfComparisonEvidence)
+    assessment.evidencedShortfallRatio !== null &&
+    assessment.evidencedShortfallRatio < THRESHOLDS.ctrShortfallRatio
   ) {
     signals.push({
       type: "high_impressions_low_ctr",
@@ -488,6 +489,36 @@ export function detectSignals(
       evidence:
         `CTR בפועל ${round(page.ctr * 100, 2)}% מול ${round((assessment.expectedCtr ?? 0) * 100, 2)}% צפוי ` +
         `במיקום ${round(page.avg_position, 1)}. ${assessment.note}`,
+    });
+  }
+
+  // A material CTR drop against the page's OWN previous window is evidence in
+  // its own right and needs no curve. It is reported separately from
+  // high_impressions_low_ctr on purpose: a page can beat the expected CTR for
+  // its position and still have lost a third of its CTR against itself, and
+  // calling that "low CTR for this position" would be untrue.
+  if (
+    page.impressions >= THRESHOLDS.ctrMinImpressions &&
+    assessment.hasSelfComparisonEvidence &&
+    assessment.selfShortfallRatio !== null
+  ) {
+    const dropPct = round((1 - assessment.selfShortfallRatio) * 100, 0);
+    const posMove = round(page.prev_avg_position - page.avg_position, 2);
+    const posNote =
+      page.prev_avg_position > 0 && page.avg_position > 0
+        ? posMove > 0
+          ? ` המיקום דווקא השתפר ב-${round(posMove, 2)} (${round(page.prev_avg_position, 2)} ← ${round(page.avg_position, 2)}), ולכן הירידה אינה מוסברת בדירוג.`
+          : posMove < 0
+            ? ` המיקום נחלש ב-${round(Math.abs(posMove), 2)} (${round(page.prev_avg_position, 2)} ← ${round(page.avg_position, 2)}), מה שעשוי להסביר חלק מהירידה.`
+            : ""
+        : "";
+    signals.push({
+      type: "ctr_decline_vs_self",
+      label: "ירידת CTR מול ההיסטוריה של העמוד",
+      evidence:
+        `CTR ${round(page.prev_ctr * 100, 2)}% ← ${round(page.ctr * 100, 2)}% ` +
+        `(ירידה של ${dropPct}%) על בסיס ${page.prev_impressions} חשיפות בתקופה הקודמת.` +
+        posNote,
     });
   }
 
@@ -606,7 +637,26 @@ function impressionPoints(impressions: number): { points: number; reason: string
 export interface CtrAssessment {
   benchmarkSource: CtrBenchmarkSource;
   expectedCtr: number | null;
+  /**
+   * Current CTR as a fraction of the position-bucket benchmark. This is a
+   * CURVE ratio: when the curve is the assumed fallback it is not evidence
+   * about this site, and it says nothing about the page's own history.
+   */
   shortfallRatio: number | null;
+  /**
+   * Current CTR as a fraction of the page's OWN previous-window CTR. Null when
+   * there is no usable base. This is the magnitude behind
+   * hasSelfComparisonEvidence, and it is independent of any curve.
+   */
+  selfShortfallRatio: number | null;
+  /**
+   * The ratio that may actually be acted on: the strongest ratio that rests on
+   * real evidence about this site (first-party curve and/or own history). Null
+   * when neither evidence path applies, in which case only the capped
+   * assumption-based contribution is available. Signals, scoring and
+   * recommendations all gate on THIS, never on shortfallRatio directly.
+   */
+  evidencedShortfallRatio: number | null;
   /** True only when the shortfall rests on real first-party evidence. */
   hasFirstPartyEvidence: boolean;
   /** The page's CTR fell materially against its own previous window. */
@@ -620,6 +670,8 @@ export function assessCtr(page: PageWindow, expected: ExpectedCtrModel): CtrAsse
       benchmarkSource: "insufficient",
       expectedCtr: null,
       shortfallRatio: null,
+      selfShortfallRatio: null,
+      evidencedShortfallRatio: null,
       hasFirstPartyEvidence: false,
       hasSelfComparisonEvidence: false,
       note: `אין מספיק חשיפות (${page.impressions}) להערכת CTR`,
@@ -630,23 +682,44 @@ export function assessCtr(page: PageWindow, expected: ExpectedCtrModel): CtrAsse
   const shortfallRatio = expectedCtr > 0 ? page.ctr / expectedCtr : null;
 
   // Self-comparison: needs a real previous base, and a material drop.
+  // The base is the PREVIOUS window's impressions, because that is the window
+  // whose CTR we are treating as the comparison point.
+  const hasSelfBase =
+    page.prev_impressions >= THRESHOLDS.ctrMinImpressions && page.prev_ctr > 0;
+  const selfShortfallRatio = hasSelfBase ? page.ctr / page.prev_ctr : null;
   const hasSelfComparisonEvidence =
-    page.prev_impressions >= THRESHOLDS.ctrMinImpressions &&
-    page.prev_ctr > 0 &&
-    page.ctr < page.prev_ctr * THRESHOLDS.ctrSelfDropRatio;
+    selfShortfallRatio !== null && selfShortfallRatio < THRESHOLDS.ctrSelfDropRatio;
 
-  const note =
-    source === "first_party"
-      ? `הציפייה מבוססת על נתוני האתר עצמו במיקום ${round(page.avg_position, 1)}`
-      : hasSelfComparisonEvidence
-        ? "אין מספיק נתוני CTR של האתר במיקום זה — ההשוואה נשענת על ההיסטוריה של העמוד עצמו"
-        : `אין מספיק נתוני CTR של האתר במיקום ${round(page.avg_position, 1)} — ערך הייחוס הוא הנחה חיצונית ולא ראיה על האתר`;
+  const hasFirstPartyEvidence = source === "first_party";
+
+  // The ratio that may be acted on. Each evidence path carries its OWN
+  // magnitude: a first-party curve gives a curve ratio, the page's own history
+  // gives a self ratio. Taking the strongest (lowest) of the ratios that are
+  // actually evidenced is what stops a fallback curve from silently deciding
+  // the question — the previous implementation only ever measured against the
+  // curve, so a page over-performing an ASSUMED curve could never register a
+  // real, evidenced collapse against its own history.
+  const evidencedRatios: number[] = [];
+  if (hasFirstPartyEvidence && shortfallRatio !== null) evidencedRatios.push(shortfallRatio);
+  if (hasSelfComparisonEvidence && selfShortfallRatio !== null) {
+    evidencedRatios.push(selfShortfallRatio);
+  }
+  const evidencedShortfallRatio =
+    evidencedRatios.length > 0 ? Math.min(...evidencedRatios) : null;
+
+  const note = hasFirstPartyEvidence
+    ? `הציפייה מבוססת על נתוני האתר עצמו במיקום ${round(page.avg_position, 1)}`
+    : hasSelfComparisonEvidence
+      ? "אין מספיק נתוני CTR של האתר במיקום זה — ההשוואה נשענת על ההיסטוריה של העמוד עצמו"
+      : `אין מספיק נתוני CTR של האתר במיקום ${round(page.avg_position, 1)} — ערך הייחוס הוא הנחה חיצונית ולא ראיה על האתר`;
 
   return {
     benchmarkSource: source,
     expectedCtr,
     shortfallRatio,
-    hasFirstPartyEvidence: source === "first_party",
+    selfShortfallRatio,
+    evidencedShortfallRatio,
+    hasFirstPartyEvidence,
     hasSelfComparisonEvidence,
     note,
   };
@@ -663,22 +736,37 @@ function ctrPoints(
   page: PageWindow,
   assessment: CtrAssessment,
 ): { points: number; reason: string } {
-  if (assessment.benchmarkSource === "insufficient" || assessment.shortfallRatio === null) {
+  if (assessment.benchmarkSource === "insufficient") {
     return { points: 0, reason: assessment.note };
   }
-  if (assessment.shortfallRatio >= 1) {
+
+  const evidenced = assessment.hasFirstPartyEvidence || assessment.hasSelfComparisonEvidence;
+
+  // Score the strongest EVIDENCED shortfall. Falling back to the curve ratio
+  // only when nothing is evidenced is what keeps an assumed curve capped, and
+  // measuring the evidenced ratio here is what lets a page that beats the
+  // assumed curve still be scored on a real collapse against its own history.
+  const ratio = evidenced ? assessment.evidencedShortfallRatio : assessment.shortfallRatio;
+  if (ratio === null) return { points: 0, reason: assessment.note };
+
+  if (ratio >= 1) {
     return {
       points: 0,
       reason: `CTR ${round(page.ctr * 100, 2)}% עומד בציפייה או עולה עליה`,
     };
   }
 
-  const raw = Math.min(20, (1 - assessment.shortfallRatio) * 20);
-  const evidenced = assessment.hasFirstPartyEvidence || assessment.hasSelfComparisonEvidence;
+  const raw = Math.min(20, (1 - ratio) * 20);
   const points = evidenced ? raw : Math.min(THRESHOLDS.ctrFallbackMaxPoints, raw);
+  const gap = round((1 - ratio) * 100, 0);
 
-  const gap = round((1 - assessment.shortfallRatio) * 100, 0);
-  const base = `CTR ${round(page.ctr * 100, 2)}% מול ${round((assessment.expectedCtr ?? 0) * 100, 2)}% צפוי — פער של ${gap}%`;
+  // Name the base the gap was actually measured against, so the number in the
+  // UI can always be reconstructed from what is written next to it.
+  const selfDrove =
+    evidenced && assessment.selfShortfallRatio !== null && ratio === assessment.selfShortfallRatio;
+  const base = selfDrove
+    ? `CTR ${round(page.ctr * 100, 2)}% מול ${round(page.prev_ctr * 100, 2)}% בתקופה הקודמת — ירידה של ${gap}%`
+    : `CTR ${round(page.ctr * 100, 2)}% מול ${round((assessment.expectedCtr ?? 0) * 100, 2)}% צפוי — פער של ${gap}%`;
 
   return {
     points: round(points, 1),
@@ -784,12 +872,17 @@ export function scoreOpportunity(
   const factor = CONFIDENCE_FACTOR[confidence];
   const score = Math.max(0, Math.min(100, Math.round(raw * factor)));
 
+  // This row carries the ADJUSTMENT the multiplier produced, not the
+  // multiplier itself, so that the component points still sum to the score.
+  // At high confidence the multiplier is 1.0 and the adjustment is therefore
+  // legitimately 0 - the label says "adjustment" so that reads as arithmetic
+  // rather than as a multiplier of zero.
   components.push({
     key: "confidence_factor",
-    label: "מקדם ביטחון",
+    label: "התאמת ביטחון",
     points: round(raw * factor - raw, 1),
     max: 0,
-    reason: `ביטחון ${confidence} → מכפיל ${factor}`,
+    reason: `ביטחון ${confidence} → מכפיל ${factor} (${round(raw, 1)} → ${score})`,
   });
 
   return { score, components };
@@ -902,12 +995,31 @@ export function buildRecommendations(
   const ctrEvidenced =
     ctrAssessment?.hasFirstPartyEvidence || ctrAssessment?.hasSelfComparisonEvidence;
 
-  if (has("high_impressions_low_ctr") && ctrEvidenced) {
+  const recommendedRewrite = has("high_impressions_low_ctr") && ctrEvidenced;
+
+  if (recommendedRewrite) {
     const s = signals.find((x) => x.type === "high_impressions_low_ctr")!;
     recs.push({
       action: "improve_title_meta",
       label: "לשפר כותרת ותיאור מטא",
       evidence: s.evidence,
+    });
+  }
+
+  // A CTR drop against the page's own history is real evidence that something
+  // changed, but it does NOT on its own say the title is the thing that is
+  // wrong: the SERP layout, a new competitor, or a shift in the query mix all
+  // produce the same shape. So the default action is to look, not to rewrite.
+  // A rewrite is only recommended when the shortfall also shows up against a
+  // benchmark, which is the stronger evidence — and then this is redundant.
+  if (has("ctr_decline_vs_self") && !recommendedRewrite) {
+    const s = signals.find((x) => x.type === "ctr_decline_vs_self")!;
+    recs.push({
+      action: "investigate_ctr_drop",
+      label: "לבדוק SERP, כותרת, תיאור והרכב שאילתות",
+      evidence:
+        `${s.evidence} יש לבחון את תוצאת החיפוש בפועל, את הכותרת והתיאור, ` +
+        `ואת הרכב השאילתות — לפני כל שינוי תוכן.`,
     });
   }
 
