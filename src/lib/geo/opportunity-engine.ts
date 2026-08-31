@@ -135,6 +135,12 @@ export interface UpsideEstimate {
   /** Conservative incremental clicks per window. Null when data is insufficient. */
   incrementalClicks: number | null;
   targetPosition: number | null;
+  /**
+   * True when the target CTR came from the assumed fallback curve rather than
+   * this site's own data. Such an estimate is still shown, but must be
+   * presented as an assumption and never as evidence.
+   */
+  basedOnAssumedCtr: boolean;
   assumptions: string;
 }
 
@@ -161,6 +167,9 @@ export interface Opportunity {
     prevClicks: number;
   };
   upside: UpsideEstimate;
+  /** Provenance of the CTR benchmark used for this page. */
+  ctrBenchmarkSource: CtrBenchmarkSource;
+  ctrBenchmarkNote: string;
   ga4: Ga4PageRow | null;
   ga4Note: string;
   /** Suppressed. Intent only. Never traffic. */
@@ -185,6 +194,14 @@ export const THRESHOLDS = {
   ctrMinImpressions: 50,
   /** Actual CTR below this fraction of expected counts as an opportunity. */
   ctrShortfallRatio: 0.6,
+  /**
+   * Ceiling on the CTR score contribution when the benchmark is an assumed
+   * fallback rather than this site's own data. Keeps an assumption from
+   * driving the ranking.
+   */
+  ctrFallbackMaxPoints: 5,
+  /** CTR below this fraction of the page's OWN previous window is evidence. */
+  ctrSelfDropRatio: 0.7,
   /** Trend needs a real base in the previous window. */
   trendMinPrevImpressions: 20,
   risingRatio: 1.25,
@@ -231,8 +248,13 @@ export const FALLBACK_CTR_CURVE: Record<number, number> = {
   21: 0.005,
 };
 
+/** Where the expected-CTR number for a given position actually came from. */
+export type CtrBenchmarkSource = "first_party" | "fallback" | "insufficient";
+
 export interface ExpectedCtrModel {
   ctrAt(position: number): number;
+  /** Expected CTR together with its provenance for THIS position bucket. */
+  benchmarkAt(position: number): { ctr: number; source: "first_party" | "fallback" };
   /** Which buckets came from this site's own data. */
   siteDerivedBuckets: number[];
   source: "site" | "fallback" | "mixed";
@@ -259,15 +281,21 @@ export function buildExpectedCtrModel(curve: CtrCurveRow[]): ExpectedCtrModel {
         ? "site"
         : "mixed";
 
+  const benchmarkAt = (position: number) => {
+    const bucket = Math.min(Math.max(Math.round(position) || 1, 1), 21);
+    const site = siteCtr.get(bucket);
+    if (site !== undefined) return { ctr: site, source: "first_party" as const };
+    return {
+      ctr: FALLBACK_CTR_CURVE[bucket] ?? FALLBACK_CTR_CURVE[21],
+      source: "fallback" as const,
+    };
+  };
+
   return {
     siteDerivedBuckets,
     source,
-    ctrAt(position: number) {
-      const bucket = Math.min(Math.max(Math.round(position) || 1, 1), 21);
-      const site = siteCtr.get(bucket);
-      if (site !== undefined) return site;
-      return FALLBACK_CTR_CURVE[bucket] ?? FALLBACK_CTR_CURVE[21];
-    },
+    benchmarkAt,
+    ctrAt: (position: number) => benchmarkAt(position).ctr,
   };
 }
 
@@ -351,6 +379,7 @@ export function assessConfidence(
   page: PageWindow,
   ga4: Ga4PageRow | null,
   windowDays = 28,
+  ctrAssessment?: CtrAssessment,
 ): { confidence: Confidence; reasons: string[] } {
   const reasons: string[] = [];
   let confidence: Confidence;
@@ -395,6 +424,16 @@ export function assessConfidence(
     );
   }
 
+  // A CTR judgement resting only on an assumed curve must not be reported at
+  // high confidence, even when the page has plenty of impressions.
+  if (
+    ctrAssessment &&
+    ctrAssessment.benchmarkSource === "fallback" &&
+    !ctrAssessment.hasSelfComparisonEvidence
+  ) {
+    reasons.push(ctrAssessment.note);
+  }
+
   reasons.push(
     "נתוני שאילתות מוגבלים בשל הסתרת שאילתות נדירות ע\"י גוגל — לא שימשו לחישוב תנועה",
   );
@@ -404,11 +443,15 @@ export function assessConfidence(
 
 // ── Signals ───────────────────────────────────────────────────────────────
 
-export function detectSignals(page: PageWindow, expected: ExpectedCtrModel): Signal[] {
+export function detectSignals(
+  page: PageWindow,
+  expected: ExpectedCtrModel,
+  ctrAssessment?: CtrAssessment,
+): Signal[] {
   const signals: Signal[] = [];
   if (page.impressions < THRESHOLDS.minImpressionsForSignal) return signals;
 
-  const expectedCtr = expected.ctrAt(page.position);
+  const assessment = ctrAssessment ?? assessCtr(page, expected);
 
   if (
     page.position >= THRESHOLDS.strikingMinPosition &&
@@ -421,15 +464,22 @@ export function detectSignals(page: PageWindow, expected: ExpectedCtrModel): Sig
     });
   }
 
+  // Only raise a CTR shortfall when there is real evidence for it. Without
+  // first-party data or a self-comparison the "expected" figure is an outside
+  // assumption, and flagging a page on that alone is a false positive.
   if (
     page.impressions >= THRESHOLDS.ctrMinImpressions &&
     page.position <= 20 &&
-    page.ctr < expectedCtr * THRESHOLDS.ctrShortfallRatio
+    assessment.shortfallRatio !== null &&
+    assessment.shortfallRatio < THRESHOLDS.ctrShortfallRatio &&
+    (assessment.hasFirstPartyEvidence || assessment.hasSelfComparisonEvidence)
   ) {
     signals.push({
       type: "high_impressions_low_ctr",
       label: "CTR נמוך ביחס למיקום",
-      evidence: `CTR בפועל ${round(page.ctr * 100, 2)}% מול ${round(expectedCtr * 100, 2)}% צפוי במיקום ${round(page.position, 1)}`,
+      evidence:
+        `CTR בפועל ${round(page.ctr * 100, 2)}% מול ${round((assessment.expectedCtr ?? 0) * 100, 2)}% צפוי ` +
+        `במיקום ${round(page.position, 1)}. ${assessment.note}`,
     });
   }
 
@@ -532,36 +582,135 @@ function impressionPoints(impressions: number): { points: number; reason: string
   };
 }
 
-function ctrPoints(
-  page: PageWindow,
-  expected: ExpectedCtrModel,
-): { points: number; reason: string } {
+/**
+ * How much we are entitled to say about this page's CTR, and on what basis.
+ *
+ * The distinction matters: an assumed external curve is not evidence about
+ * THIS site. Judging the homepage's 6.67% CTR against an assumed 25% at
+ * position 1 produced exactly the false positive this function exists to
+ * prevent.
+ *
+ * Two things count as real evidence:
+ *   first_party  the site's own observed CTR in this position bucket
+ *   self         the page's own previous window - a material CTR drop against
+ *                its own history needs no external benchmark at all
+ */
+export interface CtrAssessment {
+  benchmarkSource: CtrBenchmarkSource;
+  expectedCtr: number | null;
+  shortfallRatio: number | null;
+  /** True only when the shortfall rests on real first-party evidence. */
+  hasFirstPartyEvidence: boolean;
+  /** The page's CTR fell materially against its own previous window. */
+  hasSelfComparisonEvidence: boolean;
+  note: string;
+}
+
+export function assessCtr(page: PageWindow, expected: ExpectedCtrModel): CtrAssessment {
   if (page.impressions < THRESHOLDS.ctrMinImpressions) {
-    return { points: 0, reason: "אין מספיק חשיפות להערכת CTR" };
+    return {
+      benchmarkSource: "insufficient",
+      expectedCtr: null,
+      shortfallRatio: null,
+      hasFirstPartyEvidence: false,
+      hasSelfComparisonEvidence: false,
+      note: `אין מספיק חשיפות (${page.impressions}) להערכת CTR`,
+    };
   }
-  const exp = expected.ctrAt(page.position);
-  if (exp <= 0) return { points: 0, reason: "אין ציפיית CTR למיקום זה" };
-  const ratio = page.ctr / exp;
-  if (ratio >= 1) {
-    return { points: 0, reason: `CTR ${round(page.ctr * 100, 2)}% עומד בציפייה או עולה עליה` };
-  }
-  const points = Math.min(20, (1 - ratio) * 20);
+
+  const { ctr: expectedCtr, source } = expected.benchmarkAt(page.position);
+  const shortfallRatio = expectedCtr > 0 ? page.ctr / expectedCtr : null;
+
+  // Self-comparison: needs a real previous base, and a material drop.
+  const hasSelfComparisonEvidence =
+    page.prev_impressions >= THRESHOLDS.ctrMinImpressions &&
+    page.prev_ctr > 0 &&
+    page.ctr < page.prev_ctr * THRESHOLDS.ctrSelfDropRatio;
+
+  const note =
+    source === "first_party"
+      ? `הציפייה מבוססת על נתוני האתר עצמו במיקום ${round(page.position, 1)}`
+      : hasSelfComparisonEvidence
+        ? "אין מספיק נתוני CTR של האתר במיקום זה — ההשוואה נשענת על ההיסטוריה של העמוד עצמו"
+        : `אין מספיק נתוני CTR של האתר במיקום ${round(page.position, 1)} — ערך הייחוס הוא הנחה חיצונית ולא ראיה על האתר`;
+
   return {
-    points: round(points, 1),
-    reason: `CTR ${round(page.ctr * 100, 2)}% מול ${round(exp * 100, 2)}% צפוי — פער של ${round((1 - ratio) * 100, 0)}%`,
+    benchmarkSource: source,
+    expectedCtr,
+    shortfallRatio,
+    hasFirstPartyEvidence: source === "first_party",
+    hasSelfComparisonEvidence,
+    note,
   };
 }
 
+/**
+ * CTR contribution to the score.
+ *
+ * With first-party evidence the full 0-20 range is available. Without it the
+ * contribution is capped at ctrFallbackMaxPoints, so an assumed benchmark can
+ * nudge the ranking but can never drive it.
+ */
+function ctrPoints(
+  page: PageWindow,
+  assessment: CtrAssessment,
+): { points: number; reason: string } {
+  if (assessment.benchmarkSource === "insufficient" || assessment.shortfallRatio === null) {
+    return { points: 0, reason: assessment.note };
+  }
+  if (assessment.shortfallRatio >= 1) {
+    return {
+      points: 0,
+      reason: `CTR ${round(page.ctr * 100, 2)}% עומד בציפייה או עולה עליה`,
+    };
+  }
+
+  const raw = Math.min(20, (1 - assessment.shortfallRatio) * 20);
+  const evidenced = assessment.hasFirstPartyEvidence || assessment.hasSelfComparisonEvidence;
+  const points = evidenced ? raw : Math.min(THRESHOLDS.ctrFallbackMaxPoints, raw);
+
+  const gap = round((1 - assessment.shortfallRatio) * 100, 0);
+  const base = `CTR ${round(page.ctr * 100, 2)}% מול ${round((assessment.expectedCtr ?? 0) * 100, 2)}% צפוי — פער של ${gap}%`;
+
+  return {
+    points: round(points, 1),
+    reason: evidenced
+      ? `${base}. ${assessment.note}`
+      : `${base}. ${assessment.note} — לכן התרומה לניקוד הוגבלה ל-${THRESHOLDS.ctrFallbackMaxPoints} נק' בלבד`,
+  };
+}
+
+/**
+ * Trend contribution, symmetric about a neutral midpoint of 5/10.
+ *
+ * Flat is NOT growth. A stable high-volume page should not collect trend
+ * points it did not earn, or it starts outranking pages with real headroom.
+ * The mapping, by change in impressions against the previous equal window:
+ *
+ *     >= +50%   10    strong rise
+ *   +25..+50%    8    clear rise
+ *   +10..+25%  6.5    mild rise
+ *   -10..+10%    5    flat - neutral midpoint, no credit either way
+ *   -25..-10%  3.5    mild decline
+ *   -50..-25%    2    clear decline
+ *     <= -50%     1    steep decline
+ *
+ * No comparable base -> 5, the same neutral midpoint, so an unmeasurable
+ * trend neither helps nor hurts.
+ */
 function trendPoints(page: PageWindow): { points: number; reason: string } {
   const change = pctChange(page.impressions, page.prev_impressions);
   if (change === null || page.prev_impressions < THRESHOLDS.trendMinPrevImpressions) {
-    return { points: 5, reason: "אין בסיס השוואה מספק — ניקוד ניטרלי" };
+    return { points: 5, reason: "אין בסיס השוואה מספק — ניקוד ניטרלי (5/10)" };
   }
-  if (change >= 50) return { points: 10, reason: `חשיפות +${round(change, 0)}% — מומנטום חזק` };
-  if (change >= 25) return { points: 8, reason: `חשיפות +${round(change, 0)}%` };
-  if (change >= 0) return { points: 6, reason: `חשיפות +${round(change, 0)}% — יציב` };
-  if (change >= -25) return { points: 4, reason: `חשיפות ${round(change, 0)}% — ירידה קלה` };
-  return { points: 2, reason: `חשיפות ${round(change, 0)}% — ירידה משמעותית, נדרשת בדיקה` };
+  const pctText = `${change > 0 ? "+" : ""}${round(change, 0)}%`;
+  if (change >= 50) return { points: 10, reason: `חשיפות ${pctText} — מומנטום חזק` };
+  if (change >= 25) return { points: 8, reason: `חשיפות ${pctText} — עלייה ברורה` };
+  if (change >= 10) return { points: 6.5, reason: `חשיפות ${pctText} — עלייה מתונה` };
+  if (change > -10) return { points: 5, reason: `חשיפות ${pctText} — יציב, ללא זכות ניקוד לכאן או לכאן` };
+  if (change > -25) return { points: 3.5, reason: `חשיפות ${pctText} — ירידה מתונה` };
+  if (change > -50) return { points: 2, reason: `חשיפות ${pctText} — ירידה ברורה` };
+  return { points: 1, reason: `חשיפות ${pctText} — ירידה חדה, נדרשת בדיקה` };
 }
 
 function existingClicksPoints(clicks: number): { points: number; reason: string } {
@@ -604,10 +753,12 @@ export function scoreOpportunity(
   expected: ExpectedCtrModel,
   confidence: Confidence,
   windowDays = 28,
+  ctrAssessment?: CtrAssessment,
 ): { score: number; components: ScoreComponent[] } {
+  const assessment = ctrAssessment ?? assessCtr(page, expected);
   const imp = impressionPoints(page.impressions);
   const pos = positionOpportunityPoints(page.position);
-  const ctr = ctrPoints(page, expected);
+  const ctr = ctrPoints(page, assessment);
   const trend = trendPoints(page);
   const clicks = existingClicksPoints(page.clicks);
   const sample = sampleSizePoints(page, windowDays);
@@ -662,6 +813,7 @@ export function estimateUpside(
     return {
       incrementalClicks: null,
       targetPosition: null,
+      basedOnAssumedCtr: false,
       assumptions: "אין מספיק נתונים להערכה שמרנית — לא הוצגה הערכה",
     };
   }
@@ -674,6 +826,7 @@ export function estimateUpside(
     return {
       incrementalClicks: 0,
       targetPosition: null,
+      basedOnAssumedCtr: false,
       assumptions:
         `העמוד כבר במיקום ${round(page.position, 1)} — אין מרווח דירוג משמעותי למדל, ` +
         "ולכן לא חושב אפסייד משיפור מיקום. שיפור CTR עשוי עדיין להועיל.",
@@ -681,20 +834,24 @@ export function estimateUpside(
   }
 
   const target = Math.max(3, round(page.position - 3, 1));
+  const targetBenchmark = expected.benchmarkAt(target);
+  const basedOnAssumedCtr = targetBenchmark.source === "fallback";
   if (target >= page.position) {
     return {
       incrementalClicks: 0,
       targetPosition: null,
+      basedOnAssumedCtr: false,
       assumptions: "יעד הדירוג אינו טוב מהמיקום הנוכחי — לא חושב אפסייד.",
     };
   }
-  const targetCtr = expected.ctrAt(target);
+  const targetCtr = targetBenchmark.ctr;
   const gain = (targetCtr - page.ctr) * page.impressions * THRESHOLDS.upsideConservatismFactor;
 
   if (gain <= 0) {
     return {
       incrementalClicks: 0,
       targetPosition: target,
+      basedOnAssumedCtr,
       assumptions:
         `CTR הנוכחי כבר עומד בציפייה למיקום ${target} — אין אפסייד מחושב משיפור דירוג בלבד`,
     };
@@ -710,7 +867,9 @@ export function estimateUpside(
   return {
     incrementalClicks: Math.round(gain),
     targetPosition: target,
+    basedOnAssumedCtr,
     assumptions:
+      (basedOnAssumedCtr ? "⚠ הנחה, לא ראיה על האתר: " : "") +
       `הערכה שמרנית: מעבר ממיקום ${round(page.position, 1)} ל-${target}, ` +
       `${curveNote}, כפול מקדם שמרנות ${THRESHOLDS.upsideConservatismFactor}. ` +
       "הערכה בלבד — לא תחזית, ואינה מביאה בחשבון תגובת מתחרים.",
@@ -723,11 +882,19 @@ export function buildRecommendations(
   page: PageWindow,
   signals: Signal[],
   themes: QueryTheme[],
+  ctrAssessment?: CtrAssessment,
 ): Recommendation[] {
   const recs: Recommendation[] = [];
   const has = (t: SignalType) => signals.some((s) => s.type === t);
 
-  if (has("high_impressions_low_ctr")) {
+  // A rewrite recommendation must rest on evidence about THIS site: either the
+  // site's own CTR curve for this position, or the page's own history. An
+  // assumed external curve is not sufficient grounds to tell someone to
+  // rewrite a page that may be performing perfectly well.
+  const ctrEvidenced =
+    ctrAssessment?.hasFirstPartyEvidence || ctrAssessment?.hasSelfComparisonEvidence;
+
+  if (has("high_impressions_low_ctr") && ctrEvidenced) {
     const s = signals.find((x) => x.type === "high_impressions_low_ctr")!;
     recs.push({
       action: "improve_title_meta",
@@ -831,9 +998,12 @@ export function buildOpportunities(
         : "אין נתוני GA4 תואמים — ייתכן הפרש אזור זמן או היעדר תנועה; לא נזקף לחובת העמוד"
       : `GA4 אינו מבחין בין דומיינים — לא שויכו נתונים לעמוד ב-${page.page_host}`;
 
-    const { confidence, reasons } = assessConfidence(page, ga4, windowDays);
-    const signals = detectSignals(page, expected);
-    const { score, components } = scoreOpportunity(page, expected, confidence, windowDays);
+    const ctrAssessment = assessCtr(page, expected);
+    const { confidence, reasons } = assessConfidence(page, ga4, windowDays, ctrAssessment);
+    const signals = detectSignals(page, expected, ctrAssessment);
+    const { score, components } = scoreOpportunity(
+      page, expected, confidence, windowDays, ctrAssessment,
+    );
     const rows = queriesByPath.get(page.page_path) ?? [];
     const themes = groupQueryThemes(rows);
 
@@ -862,6 +1032,8 @@ export function buildOpportunities(
         prevClicks: page.prev_clicks,
       },
       upside: estimateUpside(page, expected, windowDays),
+      ctrBenchmarkSource: ctrAssessment.benchmarkSource,
+      ctrBenchmarkNote: ctrAssessment.note,
       ga4,
       ga4Note,
       knownQueries: {
@@ -872,7 +1044,7 @@ export function buildOpportunities(
           "שאילתות ידועות בלבד. גוגל מסתיר שאילתות נדירות, ולכן אלה אינם סך התנועה לעמוד — " +
           "מספרי התנועה נלקחים מנתוני העמוד (page grain).",
       },
-      recommendations: buildRecommendations(page, signals, themes),
+      recommendations: buildRecommendations(page, signals, themes, ctrAssessment),
     });
   }
 

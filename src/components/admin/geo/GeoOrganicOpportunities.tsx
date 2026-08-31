@@ -30,7 +30,9 @@ import {
   SEO_HOST,
   type WindowDays,
 } from '@/hooks/useOrganicOpportunities';
-import type { Confidence, Opportunity, SignalType } from '@/lib/geo/opportunity-engine';
+import type {
+  Confidence, Opportunity, SignalType, CtrBenchmarkSource,
+} from '@/lib/geo/opportunity-engine';
 
 const WINDOWS: { value: WindowDays; label: string }[] = [
   { value: 7, label: '7 ימים' },
@@ -53,6 +55,12 @@ const CONFIDENCE_META: Record<Confidence, { label: string; cls: string }> = {
   high:   { label: 'ביטחון גבוה', cls: 'bg-green-100 text-green-800 border-green-200' },
   medium: { label: 'ביטחון בינוני', cls: 'bg-amber-100 text-amber-800 border-amber-200' },
   low:    { label: 'ביטחון נמוך', cls: 'bg-slate-100 text-slate-700 border-slate-200' },
+};
+
+const CTR_SOURCE_META: Record<CtrBenchmarkSource, { label: string; cls: string }> = {
+  first_party: { label: 'CTR: נתוני האתר', cls: 'bg-green-50 text-green-700 border-green-200' },
+  fallback:    { label: 'CTR: הנחה חיצונית', cls: 'bg-slate-50 text-slate-600 border-slate-200' },
+  insufficient:{ label: 'CTR: אין מספיק נתונים', cls: 'bg-slate-50 text-slate-500 border-slate-200' },
 };
 
 const pct = (n: number, dp = 1) => `${(n * 100).toFixed(dp)}%`;
@@ -88,6 +96,13 @@ function OpportunityCard({ opp }: { opp: Opportunity }) {
                 <Badge variant="outline" className="text-[10px]">{opp.pageHost}</Badge>
               )}
               <Badge variant="outline" className={cn('text-[10px]', conf.cls)}>{conf.label}</Badge>
+              <Badge
+                variant="outline"
+                className={cn('text-[10px]', CTR_SOURCE_META[opp.ctrBenchmarkSource].cls)}
+                title={opp.ctrBenchmarkNote}
+              >
+                {CTR_SOURCE_META[opp.ctrBenchmarkSource].label}
+              </Badge>
             </div>
 
             <div className="flex flex-wrap gap-1.5 mb-2">
@@ -160,6 +175,15 @@ function OpportunityCard({ opp }: { opp: Opportunity }) {
 
               <Section title="אפסייד משוער">
                 <p className="text-muted-foreground">{opp.upside.assumptions}</p>
+                {opp.upside.basedOnAssumedCtr && opp.upside.incrementalClicks !== null && (
+                  <p className="text-amber-700 mt-1">
+                    ההערכה נשענת על עקומת CTR מונחת ולא על נתוני האתר — יש להתייחס אליה כהשערה.
+                  </p>
+                )}
+              </Section>
+
+              <Section title="בסיס ההשוואה ל-CTR">
+                <p className="text-muted-foreground">{opp.ctrBenchmarkNote}</p>
               </Section>
 
               <Section title="התנהגות בפועל (GA4)">

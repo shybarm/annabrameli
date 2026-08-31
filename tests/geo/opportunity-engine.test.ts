@@ -17,6 +17,7 @@ import {
 import {
   buildOpportunities,
   buildExpectedCtrModel,
+  assessCtr,
   scoreOpportunity,
   assessConfidence,
   detectSignals,
@@ -232,28 +233,40 @@ Deno.test("declining page produces an investigate recommendation, not a silent d
 // ── 6. CTR opportunity ────────────────────────────────────────────────────
 
 Deno.test("CTR shortfall is detected and scored, sufficiency respected", () => {
-  // Position 3 expects ~10% in the fallback curve; 1% is a clear shortfall.
+  // First-party evidence: the site's own data says position 3 earns ~10% here.
+  const siteModel = buildExpectedCtrModel([
+    { position_bucket: 3, clicks: 100, impressions: 1000, observations: 50 },
+  ]);
+
   const weak = page({
     impressions: 1000, clicks: 10, ctr: 0.01, position: 3, days_with_data: 28,
   });
-  const types = detectSignals(weak, fallbackModel).map((s) => s.type);
+  const types = detectSignals(weak, siteModel).map((s) => s.type);
   assert(types.includes("high_impressions_low_ctr"));
 
-  const { components } = scoreOpportunity(weak, fallbackModel, "high");
+  const { components } = scoreOpportunity(weak, siteModel, "high");
   const ctrComp = components.find((c) => c.key === "ctr")!;
   assert(ctrComp.points > 10, `expected a large CTR component, got ${ctrComp.points}`);
+
+  // The identical page judged only against the assumed curve must NOT be
+  // flagged, and its CTR contribution is capped.
+  const assumedTypes = detectSignals(weak, fallbackModel).map((s) => s.type);
+  assert(!assumedTypes.includes("high_impressions_low_ctr"));
+  const cappedCtr = scoreOpportunity(weak, fallbackModel, "high")
+    .components.find((c) => c.key === "ctr")!;
+  assert(cappedCtr.points <= THRESHOLDS.ctrFallbackMaxPoints);
 
   // A page meeting expectation gets nothing from this component.
   const healthy = page({
     impressions: 1000, clicks: 100, ctr: 0.1, position: 3, days_with_data: 28,
   });
-  const healthyCtr = scoreOpportunity(healthy, fallbackModel, "high")
+  const healthyCtr = scoreOpportunity(healthy, siteModel, "high")
     .components.find((c) => c.key === "ctr")!;
   assertEquals(healthyCtr.points, 0);
 
   // Below the volume floor, CTR is not judged at all.
   const thin = page({ impressions: 20, clicks: 0, ctr: 0, position: 3, days_with_data: 5 });
-  assert(!detectSignals(thin, fallbackModel).map((s) => s.type)
+  assert(!detectSignals(thin, siteModel).map((s) => s.type)
     .includes("high_impressions_low_ctr"));
 });
 
@@ -481,4 +494,136 @@ Deno.test("a top-ranked page is never given upside for ranking worse", () => {
   });
   const midUp = estimateUpside(mid, fallbackModel);
   assert(midUp.targetPosition !== null && midUp.targetPosition < mid.position);
+});
+
+// ── 14. CTR fallback must not manufacture false positives ────────────────
+
+Deno.test("homepage is NOT told to rewrite its snippet on an assumed CTR curve", () => {
+  // The exact false positive that prompted this rule: position 1.5, CTR 6.67%,
+  // judged against an ASSUMED 25% at position 1. No first-party curve exists.
+  const homepage = page({
+    page_path: "/", clicks: 60, impressions: 900, ctr: 60 / 900,
+    position: 1.5, days_with_data: 28,
+    prev_clicks: 58, prev_impressions: 880, prev_ctr: 58 / 880, prev_days: 28,
+  });
+
+  const [opp] = buildOpportunities([homepage], [], [], []); // empty curve -> fallback
+
+  assertEquals(opp.ctrBenchmarkSource, "fallback");
+  assert(
+    !opp.signals.some((s) => s.type === "high_impressions_low_ctr"),
+    "must not raise a CTR shortfall from an assumption alone",
+  );
+  assert(
+    !opp.recommendations.some((r) => r.action === "improve_title_meta"),
+    "must not recommend a snippet rewrite from an assumption alone",
+  );
+
+  // And the CTR score contribution is capped rather than dominating.
+  const ctrComp = opp.scoreComponents.find((c) => c.key === "ctr")!;
+  assert(
+    ctrComp.points <= THRESHOLDS.ctrFallbackMaxPoints,
+    `fallback CTR contributed ${ctrComp.points}, expected <= ${THRESHOLDS.ctrFallbackMaxPoints}`,
+  );
+});
+
+Deno.test("with first-party CTR data the same shortfall IS actionable", () => {
+  // Site's own data says position 1-2 really does earn ~20% here.
+  const curve: CtrCurveRow[] = [
+    { position_bucket: 2, clicks: 200, impressions: 1000, observations: 60 },
+  ];
+  const weak = page({
+    page_path: "/", clicks: 20, impressions: 1000, ctr: 0.02,
+    position: 1.6, days_with_data: 28, prev_impressions: 950, prev_days: 28,
+  });
+
+  const [opp] = buildOpportunities([weak], [], [], curve);
+  assertEquals(opp.ctrBenchmarkSource, "first_party");
+  assert(opp.signals.some((s) => s.type === "high_impressions_low_ctr"));
+  assert(opp.recommendations.some((r) => r.action === "improve_title_meta"));
+
+  const ctrComp = opp.scoreComponents.find((c) => c.key === "ctr")!;
+  assert(ctrComp.points > THRESHOLDS.ctrFallbackMaxPoints, "first-party evidence unlocks the full range");
+});
+
+Deno.test("a page's own CTR collapse counts as evidence without any curve", () => {
+  // No first-party curve, but the page halved against its own history.
+  const collapsed = page({
+    page_path: "/slipping", clicks: 5, impressions: 800, ctr: 5 / 800,
+    position: 6, days_with_data: 28,
+    prev_clicks: 40, prev_impressions: 800, prev_ctr: 40 / 800, prev_days: 28,
+  });
+  const assessment = assessCtr(collapsed, fallbackModel);
+  assertEquals(assessment.benchmarkSource, "fallback");
+  assert(assessment.hasSelfComparisonEvidence);
+
+  const [opp] = buildOpportunities([collapsed], [], [], []);
+  assert(opp.signals.some((s) => s.type === "high_impressions_low_ctr"));
+  assert(opp.recommendations.some((r) => r.action === "improve_title_meta"));
+});
+
+Deno.test("upside built on an assumed curve is labelled as an assumption", () => {
+  const p = page({
+    impressions: 1000, clicks: 10, ctr: 0.01, position: 9, days_with_data: 28,
+  });
+  const up = estimateUpside(p, fallbackModel);
+  assertEquals(up.basedOnAssumedCtr, true);
+  assert(up.assumptions.includes("הנחה"));
+
+  const curve: CtrCurveRow[] = [
+    { position_bucket: 6, clicks: 40, impressions: 1000, observations: 50 },
+  ];
+  const firstParty = estimateUpside(p, buildExpectedCtrModel(curve));
+  assertEquals(firstParty.basedOnAssumedCtr, false);
+});
+
+Deno.test("insufficient impressions report an insufficient benchmark", () => {
+  const thin = page({ impressions: 20, clicks: 0, ctr: 0, position: 5, days_with_data: 6 });
+  assertEquals(assessCtr(thin, fallbackModel).benchmarkSource, "insufficient");
+});
+
+// ── 15. Trend is symmetric around a neutral midpoint ─────────────────────
+
+Deno.test("flat trend is neutral, not positive", () => {
+  const flat = page({
+    impressions: 1000, prev_impressions: 1000, clicks: 30, ctr: 0.03,
+    position: 8, days_with_data: 28, prev_days: 28,
+  });
+  const comp = scoreOpportunity(flat, fallbackModel, "high")
+    .components.find((c) => c.key === "trend")!;
+  assertEquals(comp.points, 5, "flat must sit exactly on the neutral midpoint");
+});
+
+Deno.test("trend mapping is symmetric about the midpoint", () => {
+  const at = (impressions: number, prev: number) =>
+    scoreOpportunity(
+      page({ impressions, prev_impressions: prev, position: 8, days_with_data: 28 }),
+      fallbackModel, "high",
+    ).components.find((c) => c.key === "trend")!.points;
+
+  assertEquals(at(200, 100), 10);   // +100%
+  assertEquals(at(130, 100), 8);    // +30%
+  assertEquals(at(115, 100), 6.5);  // +15%
+  assertEquals(at(100, 100), 5);    // flat
+  assertEquals(at(85, 100), 3.5);   // -15%
+  assertEquals(at(70, 100), 2);     // -30%
+  assertEquals(at(40, 100), 1);     // -60%
+
+  // Rises and falls of equal magnitude sit equally far from the midpoint.
+  assertAlmostEquals(at(130, 100) - 5, 5 - at(70, 100), 1.0);
+  // No comparable base is neutral, not favourable.
+  assertEquals(at(500, 3), 5);
+});
+
+Deno.test("a flat high-volume page does not outrank one with real headroom", () => {
+  const flatBig = page({
+    page_path: "/flat-big", clicks: 40, impressions: 2000, ctr: 0.02,
+    position: 3.2, days_with_data: 28, prev_impressions: 2000, prev_clicks: 40, prev_days: 28,
+  });
+  const headroom = page({
+    page_path: "/headroom", clicks: 12, impressions: 700, ctr: 12 / 700,
+    position: 8.5, days_with_data: 28, prev_impressions: 600, prev_clicks: 9, prev_days: 28,
+  });
+  const out = buildOpportunities([flatBig, headroom], [], [], []);
+  assertEquals(out[0].pagePath, "/headroom");
 });
