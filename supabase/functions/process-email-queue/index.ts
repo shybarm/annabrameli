@@ -53,12 +53,13 @@ function parseJwtClaims(token: string): Record<string, unknown> | null {
 }
 
 // Queue message shape returned by read_email_batch.
-type QueueMessage = { msg_id: number; read_ct?: number; message: Record<string, any> }
+// deno-lint-ignore no-explicit-any
+type QueueMessage = { msg_id: number; read_ct?: number; message: Record<string, any> } // eslint-disable-line @typescript-eslint/no-explicit-any
 
 // Move a message to the dead letter queue and log the reason.
 async function moveToDlq(
   // deno-lint-ignore no-explicit-any
-  supabase: any,
+  supabase: any, // eslint-disable-line @typescript-eslint/no-explicit-any
   queue: string,
   msg: QueueMessage,
   reason: string
