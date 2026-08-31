@@ -91,13 +91,13 @@ export const ArticleTemplate = ({ article }: ArticleTemplateProps) => {
         <meta property="og:url" content={canonicalUrl} />
         <meta property="og:title" content={article.metaTitle} />
         <meta property="og:description" content={article.metaDescription} />
-        <meta property="og:image" content="https://ihaveallergy.com/og-logo.png?v=2" />
+        <meta property="og:image" content="https://ihaveallergy.com/og-logo.png?v=3" />
         <meta property="article:published_time" content={article.publishedAt} />
         <meta property="article:modified_time" content={article.updatedAt} />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={article.metaTitle} />
         <meta name="twitter:description" content={article.metaDescription} />
-        <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png?v=2" />
+        <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png?v=3" />
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(articleSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
