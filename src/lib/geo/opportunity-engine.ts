@@ -24,7 +24,15 @@
 
 // ── Inputs ────────────────────────────────────────────────────────────────
 
-/** One row of public.geo_page_window — page-grain, the traffic truth. */
+/**
+ * One row of public.geo_page_window — page-grain, the traffic truth.
+ *
+ * avg_position (and prev_avg_position) is the RPC contract name for the
+ * impression-weighted average Search Console position over the window. The
+ * raw Stage 1A column is still called `position`; the RPC cannot reuse that
+ * name because POSITION is not a legal function parameter name in PostgreSQL,
+ * and a RETURNS TABLE column is a parameter name.
+ */
 export interface PageWindow {
   page_host: string;
   page_path: string;
@@ -32,12 +40,12 @@ export interface PageWindow {
   clicks: number;
   impressions: number;
   ctr: number;
-  position: number;
+  avg_position: number;
   days_with_data: number;
   prev_clicks: number;
   prev_impressions: number;
   prev_ctr: number;
-  prev_position: number;
+  prev_avg_position: number;
   prev_days: number;
   first_seen?: string | null;
   last_seen?: string | null;
@@ -50,7 +58,7 @@ export interface QueryRow {
   query: string;
   clicks: number;
   impressions: number;
-  position: number;
+  avg_position: number;
 }
 
 /** One row of public.geo_ga4_page_window — corroboration only. */
@@ -341,7 +349,7 @@ export function groupQueryThemes(rows: QueryRow[]): QueryTheme[] {
       existing.queries.push(row.query);
       existing.impressions += row.impressions;
       existing.clicks += row.clicks;
-      existing.bestPosition = Math.min(existing.bestPosition, row.position || 99);
+      existing.bestPosition = Math.min(existing.bestPosition, row.avg_position || 99);
     } else {
       map.set(theme, {
         theme,
@@ -349,7 +357,7 @@ export function groupQueryThemes(rows: QueryRow[]): QueryTheme[] {
         queries: [row.query],
         impressions: row.impressions,
         clicks: row.clicks,
-        bestPosition: row.position || 99,
+        bestPosition: row.avg_position || 99,
       });
     }
   }
@@ -454,13 +462,13 @@ export function detectSignals(
   const assessment = ctrAssessment ?? assessCtr(page, expected);
 
   if (
-    page.position >= THRESHOLDS.strikingMinPosition &&
-    page.position <= THRESHOLDS.strikingMaxPosition
+    page.avg_position >= THRESHOLDS.strikingMinPosition &&
+    page.avg_position <= THRESHOLDS.strikingMaxPosition
   ) {
     signals.push({
       type: "striking_distance",
       label: "מרחק נגיעה",
-      evidence: `מיקום ממוצע ${round(page.position, 1)} עם ${page.impressions} חשיפות — שיפור צנוע בדירוג עשוי להניב קליקים`,
+      evidence: `מיקום ממוצע ${round(page.avg_position, 1)} עם ${page.impressions} חשיפות — שיפור צנוע בדירוג עשוי להניב קליקים`,
     });
   }
 
@@ -469,7 +477,7 @@ export function detectSignals(
   // assumption, and flagging a page on that alone is a false positive.
   if (
     page.impressions >= THRESHOLDS.ctrMinImpressions &&
-    page.position <= 20 &&
+    page.avg_position <= 20 &&
     assessment.shortfallRatio !== null &&
     assessment.shortfallRatio < THRESHOLDS.ctrShortfallRatio &&
     (assessment.hasFirstPartyEvidence || assessment.hasSelfComparisonEvidence)
@@ -479,7 +487,7 @@ export function detectSignals(
       label: "CTR נמוך ביחס למיקום",
       evidence:
         `CTR בפועל ${round(page.ctr * 100, 2)}% מול ${round((assessment.expectedCtr ?? 0) * 100, 2)}% צפוי ` +
-        `במיקום ${round(page.position, 1)}. ${assessment.note}`,
+        `במיקום ${round(page.avg_position, 1)}. ${assessment.note}`,
     });
   }
 
@@ -519,13 +527,13 @@ export function detectSignals(
 
   if (
     page.impressions >= THRESHOLDS.winnerMinImpressions &&
-    page.position >= THRESHOLDS.winnerMinPosition &&
-    page.position <= THRESHOLDS.winnerMaxPosition
+    page.avg_position >= THRESHOLDS.winnerMinPosition &&
+    page.avg_position <= THRESHOLDS.winnerMaxPosition
   ) {
     signals.push({
       type: "high_potential_winner",
       label: "פוטנציאל גבוה",
-      evidence: `${page.impressions} חשיפות במיקום ${round(page.position, 1)} — נפח משמעותי סביב גבול עמוד ראשון/שני`,
+      evidence: `${page.impressions} חשיפות במיקום ${round(page.avg_position, 1)} — נפח משמעותי סביב גבול עמוד ראשון/שני`,
     });
   }
 
@@ -618,7 +626,7 @@ export function assessCtr(page: PageWindow, expected: ExpectedCtrModel): CtrAsse
     };
   }
 
-  const { ctr: expectedCtr, source } = expected.benchmarkAt(page.position);
+  const { ctr: expectedCtr, source } = expected.benchmarkAt(page.avg_position);
   const shortfallRatio = expectedCtr > 0 ? page.ctr / expectedCtr : null;
 
   // Self-comparison: needs a real previous base, and a material drop.
@@ -629,10 +637,10 @@ export function assessCtr(page: PageWindow, expected: ExpectedCtrModel): CtrAsse
 
   const note =
     source === "first_party"
-      ? `הציפייה מבוססת על נתוני האתר עצמו במיקום ${round(page.position, 1)}`
+      ? `הציפייה מבוססת על נתוני האתר עצמו במיקום ${round(page.avg_position, 1)}`
       : hasSelfComparisonEvidence
         ? "אין מספיק נתוני CTR של האתר במיקום זה — ההשוואה נשענת על ההיסטוריה של העמוד עצמו"
-        : `אין מספיק נתוני CTR של האתר במיקום ${round(page.position, 1)} — ערך הייחוס הוא הנחה חיצונית ולא ראיה על האתר`;
+        : `אין מספיק נתוני CTR של האתר במיקום ${round(page.avg_position, 1)} — ערך הייחוס הוא הנחה חיצונית ולא ראיה על האתר`;
 
   return {
     benchmarkSource: source,
@@ -757,7 +765,7 @@ export function scoreOpportunity(
 ): { score: number; components: ScoreComponent[] } {
   const assessment = ctrAssessment ?? assessCtr(page, expected);
   const imp = impressionPoints(page.impressions);
-  const pos = positionOpportunityPoints(page.position);
+  const pos = positionOpportunityPoints(page.avg_position);
   const ctr = ctrPoints(page, assessment);
   const trend = trendPoints(page);
   const clicks = existingClicksPoints(page.clicks);
@@ -808,7 +816,7 @@ export function estimateUpside(
   if (
     page.impressions < THRESHOLDS.upsideMinImpressions ||
     page.days_with_data < Math.min(THRESHOLDS.upsideMinDays, windowDays) ||
-    page.position <= 0
+    page.avg_position <= 0
   ) {
     return {
       incrementalClicks: null,
@@ -822,21 +830,21 @@ export function estimateUpside(
   // the expected-CTR curve is least reliable exactly there. Without this guard
   // a page at position 1.5 gets a "target" of 3 - i.e. an upside for ranking
   // WORSE - which is nonsense.
-  if (page.position <= 3) {
+  if (page.avg_position <= 3) {
     return {
       incrementalClicks: 0,
       targetPosition: null,
       basedOnAssumedCtr: false,
       assumptions:
-        `העמוד כבר במיקום ${round(page.position, 1)} — אין מרווח דירוג משמעותי למדל, ` +
+        `העמוד כבר במיקום ${round(page.avg_position, 1)} — אין מרווח דירוג משמעותי למדל, ` +
         "ולכן לא חושב אפסייד משיפור מיקום. שיפור CTR עשוי עדיין להועיל.",
     };
   }
 
-  const target = Math.max(3, round(page.position - 3, 1));
+  const target = Math.max(3, round(page.avg_position - 3, 1));
   const targetBenchmark = expected.benchmarkAt(target);
   const basedOnAssumedCtr = targetBenchmark.source === "fallback";
-  if (target >= page.position) {
+  if (target >= page.avg_position) {
     return {
       incrementalClicks: 0,
       targetPosition: null,
@@ -870,7 +878,7 @@ export function estimateUpside(
     basedOnAssumedCtr,
     assumptions:
       (basedOnAssumedCtr ? "⚠ הנחה, לא ראיה על האתר: " : "") +
-      `הערכה שמרנית: מעבר ממיקום ${round(page.position, 1)} ל-${target}, ` +
+      `הערכה שמרנית: מעבר ממיקום ${round(page.avg_position, 1)} ל-${target}, ` +
       `${curveNote}, כפול מקדם שמרנות ${THRESHOLDS.upsideConservatismFactor}. ` +
       "הערכה בלבד — לא תחזית, ואינה מביאה בחשבון תגובת מתחרים.",
   };
@@ -943,11 +951,11 @@ export function buildRecommendations(
     });
   }
 
-  if (page.position > 15 && page.impressions >= THRESHOLDS.minImpressionsForSignal) {
+  if (page.avg_position > 15 && page.impressions >= THRESHOLDS.minImpressionsForSignal) {
     recs.push({
       action: "improve_internal_linking",
       label: "לחזק קישורים פנימיים אל העמוד",
-      evidence: `מיקום ${round(page.position, 1)} עם ${page.impressions} חשיפות — נראות קיימת אך דירוג חלש`,
+      evidence: `מיקום ${round(page.avg_position, 1)} עם ${page.impressions} חשיפות — נראות קיימת אך דירוג חלש`,
     });
   }
 
@@ -1019,14 +1027,14 @@ export function buildOpportunities(
       clicks: page.clicks,
       impressions: page.impressions,
       ctr: page.ctr,
-      position: page.position,
+      position: page.avg_position,
       daysWithData: page.days_with_data,
       trend: {
         impressionsChangePct: pctChange(page.impressions, page.prev_impressions),
         clicksChangePct: pctChange(page.clicks, page.prev_clicks),
         positionChange:
-          page.prev_position > 0 && page.position > 0
-            ? round(page.prev_position - page.position, 2)
+          page.prev_avg_position > 0 && page.avg_position > 0
+            ? round(page.prev_avg_position - page.avg_position, 2)
             : null,
         prevImpressions: page.prev_impressions,
         prevClicks: page.prev_clicks,

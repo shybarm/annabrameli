@@ -40,12 +40,12 @@ function page(over: Partial<PageWindow> = {}): PageWindow {
     clicks: 0,
     impressions: 0,
     ctr: 0,
-    position: 0,
+    avg_position: 0,
     days_with_data: 0,
     prev_clicks: 0,
     prev_impressions: 0,
     prev_ctr: 0,
-    prev_position: 0,
+    prev_avg_position: 0,
     prev_days: 0,
     ...over,
   };
@@ -64,17 +64,17 @@ Deno.test("query-grain totals never become page traffic totals", () => {
     clicks: 45,
     impressions: 850,
     ctr: 45 / 850,
-    position: 9.84,
+    avg_position: 9.84,
     days_with_data: 28,
     prev_clicks: 30,
     prev_impressions: 700,
-    prev_position: 11.2,
+    prev_avg_position: 11.2,
     prev_days: 28,
   });
 
   const queries: QueryRow[] = [
-    { page_path: GUIDE, query: "טחינה לתינוק", clicks: 3, impressions: 90, position: 7.5 },
-    { page_path: GUIDE, query: "טעימות טחינה לתינוק", clicks: 1, impressions: 36, position: 8.9 },
+    { page_path: GUIDE, query: "טחינה לתינוק", clicks: 3, impressions: 90, avg_position: 7.5 },
+    { page_path: GUIDE, query: "טעימות טחינה לתינוק", clicks: 1, impressions: 36, avg_position: 8.9 },
   ];
 
   const [opp] = buildOpportunities([guide], queries, [], []);
@@ -98,12 +98,12 @@ Deno.test("same path on two hosts stays two separate opportunities", () => {
   const main = page({
     page_host: "ihaveallergy.com",
     page_path: "/faq",
-    clicks: 10, impressions: 400, ctr: 0.025, position: 7, days_with_data: 28,
+    clicks: 10, impressions: 400, ctr: 0.025, avg_position: 7, days_with_data: 28,
   });
   const seo = page({
     page_host: "seo.ihaveallergy.com",
     page_path: "/faq",
-    clicks: 3, impressions: 120, ctr: 0.025, position: 12, days_with_data: 28,
+    clicks: 3, impressions: 120, ctr: 0.025, avg_position: 12, days_with_data: 28,
   });
 
   const out = buildOpportunities([main, seo], [], [], []);
@@ -122,13 +122,13 @@ Deno.test("same path on two hosts stays two separate opportunities", () => {
 Deno.test("position 8 with volume scores above position 1", () => {
   const striking = page({
     page_path: "/striking",
-    clicks: 20, impressions: 800, ctr: 20 / 800, position: 8,
+    clicks: 20, impressions: 800, ctr: 20 / 800, avg_position: 8,
     days_with_data: 28, prev_impressions: 700, prev_clicks: 18, prev_days: 28,
   });
   // Homepage-like: already first, and with MORE impressions.
   const alreadyFirst = page({
     page_path: "/",
-    clicks: 200, impressions: 1000, ctr: 0.2, position: 1.2,
+    clicks: 200, impressions: 1000, ctr: 0.2, avg_position: 1.2,
     days_with_data: 28, prev_impressions: 950, prev_clicks: 190, prev_days: 28,
   });
 
@@ -146,7 +146,7 @@ Deno.test("tiny sample can never reach high confidence, however dramatic", () =>
   // 3 -> 60 impressions is a 1900% jump, but on almost no data.
   const tiny = page({
     page_path: "/tiny",
-    clicks: 1, impressions: 12, ctr: 1 / 12, position: 6,
+    clicks: 1, impressions: 12, ctr: 1 / 12, avg_position: 6,
     days_with_data: 2, prev_impressions: 1, prev_days: 1,
   });
   const { confidence } = assessConfidence(tiny, null);
@@ -155,7 +155,7 @@ Deno.test("tiny sample can never reach high confidence, however dramatic", () =>
   // And the low-confidence multiplier keeps it off the top of the list.
   const big = page({
     page_path: "/big",
-    clicks: 20, impressions: 600, ctr: 20 / 600, position: 8, days_with_data: 28,
+    clicks: 20, impressions: 600, ctr: 20 / 600, avg_position: 8, days_with_data: 28,
     prev_impressions: 550, prev_days: 28,
   });
   const out = buildOpportunities([tiny, big], [], [], []);
@@ -192,7 +192,7 @@ Deno.test("confidence ladder follows sample size", () => {
 
 Deno.test("rising and declining are detected against the previous window", () => {
   const rising = page({
-    impressions: 300, prev_impressions: 100, position: 9,
+    impressions: 300, prev_impressions: 100, avg_position: 9,
     clicks: 5, ctr: 5 / 300, days_with_data: 28,
   });
   const risingSignals = detectSignals(rising, fallbackModel).map((s) => s.type);
@@ -200,7 +200,7 @@ Deno.test("rising and declining are detected against the previous window", () =>
   assert(!risingSignals.includes("declining"));
 
   const declining = page({
-    impressions: 60, prev_impressions: 400, position: 9,
+    impressions: 60, prev_impressions: 400, avg_position: 9,
     clicks: 1, ctr: 1 / 60, days_with_data: 28,
   });
   const decliningSignals = detectSignals(declining, fallbackModel).map((s) => s.type);
@@ -209,7 +209,7 @@ Deno.test("rising and declining are detected against the previous window", () =>
 
   // A big percentage swing on a tiny base is not a trend signal.
   const noisy = page({
-    impressions: 40, prev_impressions: 5, position: 9, days_with_data: 8,
+    impressions: 40, prev_impressions: 5, avg_position: 9, days_with_data: 8,
   });
   const noisySignals = detectSignals(noisy, fallbackModel).map((s) => s.type);
   assert(!noisySignals.includes("rising"), "must not call a 5-impression base a trend");
@@ -220,7 +220,7 @@ Deno.test("declining page produces an investigate recommendation, not a silent d
   const declining = page({
     page_path: "/dropping",
     impressions: 80, prev_impressions: 500, clicks: 2, ctr: 2 / 80,
-    position: 11, days_with_data: 28, prev_clicks: 25, prev_days: 28,
+    avg_position: 11, days_with_data: 28, prev_clicks: 25, prev_days: 28,
   });
   const [opp] = buildOpportunities([declining], [], [], []);
   const actions = opp.recommendations.map((r) => r.action);
@@ -239,7 +239,7 @@ Deno.test("CTR shortfall is detected and scored, sufficiency respected", () => {
   ]);
 
   const weak = page({
-    impressions: 1000, clicks: 10, ctr: 0.01, position: 3, days_with_data: 28,
+    impressions: 1000, clicks: 10, ctr: 0.01, avg_position: 3, days_with_data: 28,
   });
   const types = detectSignals(weak, siteModel).map((s) => s.type);
   assert(types.includes("high_impressions_low_ctr"));
@@ -258,14 +258,14 @@ Deno.test("CTR shortfall is detected and scored, sufficiency respected", () => {
 
   // A page meeting expectation gets nothing from this component.
   const healthy = page({
-    impressions: 1000, clicks: 100, ctr: 0.1, position: 3, days_with_data: 28,
+    impressions: 1000, clicks: 100, ctr: 0.1, avg_position: 3, days_with_data: 28,
   });
   const healthyCtr = scoreOpportunity(healthy, siteModel, "high")
     .components.find((c) => c.key === "ctr")!;
   assertEquals(healthyCtr.points, 0);
 
   // Below the volume floor, CTR is not judged at all.
-  const thin = page({ impressions: 20, clicks: 0, ctr: 0, position: 3, days_with_data: 5 });
+  const thin = page({ impressions: 20, clicks: 0, ctr: 0, avg_position: 3, days_with_data: 5 });
   assert(!detectSignals(thin, siteModel).map((s) => s.type)
     .includes("high_impressions_low_ctr"));
 });
@@ -275,7 +275,7 @@ Deno.test("CTR shortfall is detected and scored, sufficiency respected", () => {
 Deno.test("missing GA4 data does not break scoring or penalise the page", () => {
   const p = page({
     page_path: "/no-ga4", impressions: 500, clicks: 15, ctr: 0.03,
-    position: 8, days_with_data: 28, prev_impressions: 450, prev_days: 28,
+    avg_position: 8, days_with_data: 28, prev_impressions: 450, prev_days: 28,
   });
 
   const withGa4 = buildOpportunities([p], [], [{
@@ -293,7 +293,7 @@ Deno.test("missing GA4 data does not break scoring or penalise the page", () => 
 Deno.test("GA4 is never attached across hosts", () => {
   const seoPage = page({
     page_host: "seo.ihaveallergy.com", page_path: "/faq",
-    impressions: 300, clicks: 5, ctr: 5 / 300, position: 9, days_with_data: 28,
+    impressions: 300, clicks: 5, ctr: 5 / 300, avg_position: 9, days_with_data: 28,
   });
   const ga4: Ga4PageRow[] = [{
     landing_page_path: "/faq", sessions: 99, users: 90,
@@ -309,10 +309,10 @@ Deno.test("GA4 is never attached across hosts", () => {
 Deno.test("Hebrew paths join GA4 and queries by normalized path", () => {
   const guide = page({
     page_path: GUIDE, impressions: 850, clicks: 45, ctr: 45 / 850,
-    position: 9.84, days_with_data: 28, prev_impressions: 700, prev_days: 28,
+    avg_position: 9.84, days_with_data: 28, prev_impressions: 700, prev_days: 28,
   });
   const queries: QueryRow[] = [
-    { page_path: GUIDE, query: "טחינה לתינוק", clicks: 3, impressions: 90, position: 7.5 },
+    { page_path: GUIDE, query: "טחינה לתינוק", clicks: 3, impressions: 90, avg_position: 7.5 },
   ];
   const ga4: Ga4PageRow[] = [{
     landing_page_path: GUIDE, sessions: 51, users: 47,
@@ -333,9 +333,9 @@ Deno.test("queries group into deterministic themes", () => {
   assertEquals(classifyQuery("משהו לא קשור בכלל").theme, "other");
 
   const themes = groupQueryThemes([
-    { page_path: "/p", query: "טחינה לתינוק", clicks: 2, impressions: 80, position: 7 },
-    { page_path: "/p", query: "שומשום לתינוק", clicks: 1, impressions: 40, position: 9 },
-    { page_path: "/p", query: "בדיקת אלרגיה", clicks: 0, impressions: 10, position: 15 },
+    { page_path: "/p", query: "טחינה לתינוק", clicks: 2, impressions: 80, avg_position: 7 },
+    { page_path: "/p", query: "שומשום לתינוק", clicks: 1, impressions: 40, avg_position: 9 },
+    { page_path: "/p", query: "בדיקת אלרגיה", clicks: 0, impressions: 10, avg_position: 15 },
   ]);
   assertEquals(themes[0].theme, "tahini");
   assertEquals(themes[0].impressions, 120);
@@ -345,11 +345,11 @@ Deno.test("queries group into deterministic themes", () => {
 // ── 10. Upside methodology ────────────────────────────────────────────────
 
 Deno.test("upside is suppressed on thin data and conservative otherwise", () => {
-  const thin = page({ impressions: 20, clicks: 1, ctr: 0.05, position: 9, days_with_data: 3 });
+  const thin = page({ impressions: 20, clicks: 1, ctr: 0.05, avg_position: 9, days_with_data: 3 });
   assertEquals(estimateUpside(thin, fallbackModel).incrementalClicks, null);
 
   const solid = page({
-    impressions: 1000, clicks: 10, ctr: 0.01, position: 9, days_with_data: 28,
+    impressions: 1000, clicks: 10, ctr: 0.01, avg_position: 9, days_with_data: 28,
   });
   const up = estimateUpside(solid, fallbackModel);
   assertEquals(up.targetPosition, 6);
@@ -381,11 +381,11 @@ Deno.test("7 / 28 / 90 day windows are independent inputs, not rescaled", () => 
   // as authoritative and never extrapolate one window from another.
   const wk = page({
     page_path: GUIDE, impressions: 210, clicks: 11, ctr: 11 / 210,
-    position: 9.5, days_with_data: 7, prev_impressions: 180, prev_days: 7,
+    avg_position: 9.5, days_with_data: 7, prev_impressions: 180, prev_days: 7,
   });
   const month = page({
     page_path: GUIDE, impressions: 850, clicks: 45, ctr: 45 / 850,
-    position: 9.84, days_with_data: 28, prev_impressions: 700, prev_days: 28,
+    avg_position: 9.84, days_with_data: 28, prev_impressions: 700, prev_days: 28,
   });
 
   const [w] = buildOpportunities([wk], [], [], [], { windowDays: 7 });
@@ -402,7 +402,7 @@ Deno.test("7 / 28 / 90 day windows are independent inputs, not rescaled", () => 
   // A 7-day window with only 1 day of data is thin, even at the same volume.
   const sparse = page({
     page_path: GUIDE, impressions: 210, clicks: 11, ctr: 11 / 210,
-    position: 9.5, days_with_data: 1, prev_impressions: 180, prev_days: 7,
+    avg_position: 9.5, days_with_data: 1, prev_impressions: 180, prev_days: 7,
   });
   const [sp] = buildOpportunities([sparse], [], [], [], { windowDays: 7 });
   assertEquals(sp.confidence, "low");
@@ -415,22 +415,22 @@ Deno.test("the allergen guide surfaces as a top opportunity on its own merits", 
   // in the engine; it competes on the same rules as everything else.
   const guide = page({
     page_path: GUIDE,
-    clicks: 45, impressions: 850, ctr: 45 / 850, position: 9.84,
+    clicks: 45, impressions: 850, ctr: 45 / 850, avg_position: 9.84,
     days_with_data: 28, prev_clicks: 32, prev_impressions: 640,
-    prev_position: 11.1, prev_days: 28,
+    prev_avg_position: 11.1, prev_days: 28,
   });
   const others = [
-    page({ page_path: "/", clicks: 60, impressions: 900, ctr: 60 / 900, position: 1.5,
+    page({ page_path: "/", clicks: 60, impressions: 900, ctr: 60 / 900, avg_position: 1.5,
       days_with_data: 28, prev_impressions: 880, prev_days: 28 }),
-    page({ page_path: "/contact", clicks: 2, impressions: 40, ctr: 0.05, position: 4,
+    page({ page_path: "/contact", clicks: 2, impressions: 40, ctr: 0.05, avg_position: 4,
       days_with_data: 9, prev_impressions: 35, prev_days: 9 }),
-    page({ page_path: "/privacy", clicks: 0, impressions: 8, ctr: 0, position: 22,
+    page({ page_path: "/privacy", clicks: 0, impressions: 8, ctr: 0, avg_position: 22,
       days_with_data: 3, prev_impressions: 6, prev_days: 3 }),
   ];
   const queries: QueryRow[] = [
-    { page_path: GUIDE, query: "טחינה לתינוק", clicks: 3, impressions: 90, position: 7.5 },
-    { page_path: GUIDE, query: "טעימות טחינה לתינוק", clicks: 1, impressions: 24, position: 8.9 },
-    { page_path: GUIDE, query: "חשיפה לאלרגנים תינוקות", clicks: 0, impressions: 12, position: 11.2 },
+    { page_path: GUIDE, query: "טחינה לתינוק", clicks: 3, impressions: 90, avg_position: 7.5 },
+    { page_path: GUIDE, query: "טעימות טחינה לתינוק", clicks: 1, impressions: 24, avg_position: 8.9 },
+    { page_path: GUIDE, query: "חשיפה לאלרגנים תינוקות", clicks: 0, impressions: 12, avg_position: 11.2 },
   ];
 
   const out = buildOpportunities([guide, ...others], queries, [], []);
@@ -458,7 +458,7 @@ Deno.test("the allergen guide surfaces as a top opportunity on its own merits", 
 
 Deno.test("score stays within 0-100 and always explains itself", () => {
   const extreme = page({
-    impressions: 1_000_000, clicks: 0, ctr: 0, position: 9, days_with_data: 90,
+    impressions: 1_000_000, clicks: 0, ctr: 0, avg_position: 9, days_with_data: 90,
     prev_impressions: 1, prev_days: 90,
   });
   const { score, components } = scoreOpportunity(extreme, fallbackModel, "high");
@@ -480,7 +480,7 @@ Deno.test("a top-ranked page is never given upside for ranking worse", () => {
   // position 1.5, then "gained" clicks from the higher expected CTR at 3.
   const top = page({
     page_path: "/", impressions: 900, clicks: 60, ctr: 60 / 900,
-    position: 1.5, days_with_data: 28,
+    avg_position: 1.5, days_with_data: 28,
   });
   const up = estimateUpside(top, fallbackModel);
   assertEquals(up.incrementalClicks, 0);
@@ -490,10 +490,10 @@ Deno.test("a top-ranked page is never given upside for ranking worse", () => {
   // A page with genuine headroom still gets an estimate, and the target is
   // always better than where it stands today.
   const mid = page({
-    impressions: 900, clicks: 9, ctr: 0.01, position: 11, days_with_data: 28,
+    impressions: 900, clicks: 9, ctr: 0.01, avg_position: 11, days_with_data: 28,
   });
   const midUp = estimateUpside(mid, fallbackModel);
-  assert(midUp.targetPosition !== null && midUp.targetPosition < mid.position);
+  assert(midUp.targetPosition !== null && midUp.targetPosition < mid.avg_position);
 });
 
 // ── 14. CTR fallback must not manufacture false positives ────────────────
@@ -503,7 +503,7 @@ Deno.test("homepage is NOT told to rewrite its snippet on an assumed CTR curve",
   // judged against an ASSUMED 25% at position 1. No first-party curve exists.
   const homepage = page({
     page_path: "/", clicks: 60, impressions: 900, ctr: 60 / 900,
-    position: 1.5, days_with_data: 28,
+    avg_position: 1.5, days_with_data: 28,
     prev_clicks: 58, prev_impressions: 880, prev_ctr: 58 / 880, prev_days: 28,
   });
 
@@ -534,7 +534,7 @@ Deno.test("with first-party CTR data the same shortfall IS actionable", () => {
   ];
   const weak = page({
     page_path: "/", clicks: 20, impressions: 1000, ctr: 0.02,
-    position: 1.6, days_with_data: 28, prev_impressions: 950, prev_days: 28,
+    avg_position: 1.6, days_with_data: 28, prev_impressions: 950, prev_days: 28,
   });
 
   const [opp] = buildOpportunities([weak], [], [], curve);
@@ -550,7 +550,7 @@ Deno.test("a page's own CTR collapse counts as evidence without any curve", () =
   // No first-party curve, but the page halved against its own history.
   const collapsed = page({
     page_path: "/slipping", clicks: 5, impressions: 800, ctr: 5 / 800,
-    position: 6, days_with_data: 28,
+    avg_position: 6, days_with_data: 28,
     prev_clicks: 40, prev_impressions: 800, prev_ctr: 40 / 800, prev_days: 28,
   });
   const assessment = assessCtr(collapsed, fallbackModel);
@@ -564,7 +564,7 @@ Deno.test("a page's own CTR collapse counts as evidence without any curve", () =
 
 Deno.test("upside built on an assumed curve is labelled as an assumption", () => {
   const p = page({
-    impressions: 1000, clicks: 10, ctr: 0.01, position: 9, days_with_data: 28,
+    impressions: 1000, clicks: 10, ctr: 0.01, avg_position: 9, days_with_data: 28,
   });
   const up = estimateUpside(p, fallbackModel);
   assertEquals(up.basedOnAssumedCtr, true);
@@ -578,7 +578,7 @@ Deno.test("upside built on an assumed curve is labelled as an assumption", () =>
 });
 
 Deno.test("insufficient impressions report an insufficient benchmark", () => {
-  const thin = page({ impressions: 20, clicks: 0, ctr: 0, position: 5, days_with_data: 6 });
+  const thin = page({ impressions: 20, clicks: 0, ctr: 0, avg_position: 5, days_with_data: 6 });
   assertEquals(assessCtr(thin, fallbackModel).benchmarkSource, "insufficient");
 });
 
@@ -587,7 +587,7 @@ Deno.test("insufficient impressions report an insufficient benchmark", () => {
 Deno.test("flat trend is neutral, not positive", () => {
   const flat = page({
     impressions: 1000, prev_impressions: 1000, clicks: 30, ctr: 0.03,
-    position: 8, days_with_data: 28, prev_days: 28,
+    avg_position: 8, days_with_data: 28, prev_days: 28,
   });
   const comp = scoreOpportunity(flat, fallbackModel, "high")
     .components.find((c) => c.key === "trend")!;
@@ -597,7 +597,7 @@ Deno.test("flat trend is neutral, not positive", () => {
 Deno.test("trend mapping is symmetric about the midpoint", () => {
   const at = (impressions: number, prev: number) =>
     scoreOpportunity(
-      page({ impressions, prev_impressions: prev, position: 8, days_with_data: 28 }),
+      page({ impressions, prev_impressions: prev, avg_position: 8, days_with_data: 28 }),
       fallbackModel, "high",
     ).components.find((c) => c.key === "trend")!.points;
 
@@ -618,11 +618,11 @@ Deno.test("trend mapping is symmetric about the midpoint", () => {
 Deno.test("a flat high-volume page does not outrank one with real headroom", () => {
   const flatBig = page({
     page_path: "/flat-big", clicks: 40, impressions: 2000, ctr: 0.02,
-    position: 3.2, days_with_data: 28, prev_impressions: 2000, prev_clicks: 40, prev_days: 28,
+    avg_position: 3.2, days_with_data: 28, prev_impressions: 2000, prev_clicks: 40, prev_days: 28,
   });
   const headroom = page({
     page_path: "/headroom", clicks: 12, impressions: 700, ctr: 12 / 700,
-    position: 8.5, days_with_data: 28, prev_impressions: 600, prev_clicks: 9, prev_days: 28,
+    avg_position: 8.5, days_with_data: 28, prev_impressions: 600, prev_clicks: 9, prev_days: 28,
   });
   const out = buildOpportunities([flatBig, headroom], [], [], []);
   assertEquals(out[0].pagePath, "/headroom");

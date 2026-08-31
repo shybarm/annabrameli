@@ -18,6 +18,21 @@
 -- Query-grain clicks and impressions must never be presented as page or site
 -- traffic. These functions keep the grains in separate entry points so the two
 -- cannot be confused by accident.
+--
+-- WHY THE OUTPUT COLUMN IS CALLED avg_position:
+-- POSITION is a col_name_keyword in PostgreSQL. It is legal as a table column
+-- name (ColId), which is why the Stage 1A raw column is still `position`, but
+-- it is NOT legal as a function parameter name (type_function_name) - and a
+-- RETURNS TABLE column IS a parameter name. `position numeric` inside RETURNS
+-- TABLE is a hard syntax error (42601), so every windowing function exposes the
+-- impression-weighted average as `avg_position` instead. The name is also more
+-- honest: these are weighted averages over a window, not a rank.
+-- The Stage 1A `position` column is deliberately untouched.
+--
+-- Unqualified column references are avoided throughout. RETURNS TABLE columns
+-- are OUT parameters and are in scope inside the body, so a bare `clicks` or
+-- `property` reads as a name that could resolve two ways. Qualifying every
+-- reference keeps resolution unambiguous and independent of server version.
 
 -- ── Helper: the last reporting day we actually hold ───────────────────────
 -- Search Console days are whole days by construction, so "complete" simply
@@ -27,11 +42,13 @@ RETURNS date
 LANGUAGE sql
 STABLE
 AS $$
-  SELECT max(date) FROM public.search_console_page_canonical WHERE page_host = p_host;
+  SELECT max(c.date)
+  FROM public.search_console_page_canonical c
+  WHERE c.page_host = p_host;
 $$;
 
 COMMENT ON FUNCTION public.geo_latest_page_date(text) IS
-  'Most recent Search Console reporting day held for a host. Used as the default window end so partial or missing days are never compared.';
+  'Most recent Search Console reporting day held for a host. Used as the default window end so partial or missing days are never compared. Returns NULL when the host has no rows at all, which makes every window empty rather than silently comparing against today.';
 
 -- ── Page performance windows ──────────────────────────────────────────────
 -- Current window vs the immediately preceding window of equal length, so
@@ -48,12 +65,12 @@ RETURNS TABLE (
   clicks           bigint,
   impressions      bigint,
   ctr              numeric,
-  position         numeric,
+  avg_position     numeric,
   days_with_data   bigint,
   prev_clicks      bigint,
   prev_impressions bigint,
   prev_ctr         numeric,
-  prev_position    numeric,
+  prev_avg_position numeric,
   prev_days        bigint,
   first_seen       date,
   last_seen        date,
@@ -77,13 +94,13 @@ AS $$
   ),
   cur AS (
     SELECT
-      s.page_path,
+      s.page_path AS page_path,
       sum(s.clicks)::bigint      AS clicks,
       sum(s.impressions)::bigint AS impressions,
       -- Impression-weighted, never a mean of daily averages.
       CASE WHEN sum(s.impressions) > 0
            THEN round(sum(s.position * s.impressions) / sum(s.impressions), 2)
-           ELSE round(avg(s.position), 2) END AS position,
+           ELSE round(avg(s.position), 2) END AS avg_position,
       count(DISTINCT s.date)::bigint AS days_with_data,
       max(s.page_url)  AS page_url,
       max(s.source_property) AS source_property
@@ -93,12 +110,12 @@ AS $$
   ),
   prev AS (
     SELECT
-      s.page_path,
+      s.page_path AS page_path,
       sum(s.clicks)::bigint      AS clicks,
       sum(s.impressions)::bigint AS impressions,
       CASE WHEN sum(s.impressions) > 0
            THEN round(sum(s.position * s.impressions) / sum(s.impressions), 2)
-           ELSE round(avg(s.position), 2) END AS position,
+           ELSE round(avg(s.position), 2) END AS avg_position,
       count(DISTINCT s.date)::bigint AS days
     FROM scoped s, bounds b
     WHERE s.date BETWEEN b.prev_start_d AND b.prev_end_d
@@ -107,27 +124,29 @@ AS $$
   seen AS (
     -- Lifetime bounds, not window bounds: "first ever seen" is what tells us a
     -- page is genuinely new rather than merely absent from the previous window.
-    SELECT page_path, min(date) AS first_seen, max(date) AS last_seen
-    FROM public.search_console_page_canonical
-    WHERE page_host = p_host
-    GROUP BY page_path
+    SELECT c.page_path AS page_path,
+           min(c.date) AS first_seen,
+           max(c.date) AS last_seen
+    FROM public.search_console_page_canonical c
+    WHERE c.page_host = p_host
+    GROUP BY c.page_path
   )
   SELECT
     p_host,
     COALESCE(cur.page_path, prev.page_path),
     COALESCE(cur.page_url, ''),
-    COALESCE(cur.clicks, 0),
-    COALESCE(cur.impressions, 0),
-    CASE WHEN COALESCE(cur.impressions,0) > 0
-         THEN round(cur.clicks::numeric / cur.impressions, 6) ELSE 0 END,
-    COALESCE(cur.position, 0),
-    COALESCE(cur.days_with_data, 0),
-    COALESCE(prev.clicks, 0),
-    COALESCE(prev.impressions, 0),
-    CASE WHEN COALESCE(prev.impressions,0) > 0
-         THEN round(prev.clicks::numeric / prev.impressions, 6) ELSE 0 END,
-    COALESCE(prev.position, 0),
-    COALESCE(prev.days, 0),
+    COALESCE(cur.clicks, 0::bigint),
+    COALESCE(cur.impressions, 0::bigint),
+    CASE WHEN COALESCE(cur.impressions, 0::bigint) > 0
+         THEN round(cur.clicks::numeric / cur.impressions, 6) ELSE 0::numeric END,
+    COALESCE(cur.avg_position, 0::numeric),
+    COALESCE(cur.days_with_data, 0::bigint),
+    COALESCE(prev.clicks, 0::bigint),
+    COALESCE(prev.impressions, 0::bigint),
+    CASE WHEN COALESCE(prev.impressions, 0::bigint) > 0
+         THEN round(prev.clicks::numeric / prev.impressions, 6) ELSE 0::numeric END,
+    COALESCE(prev.avg_position, 0::numeric),
+    COALESCE(prev.days, 0::bigint),
     seen.first_seen,
     seen.last_seen,
     COALESCE(cur.source_property, '')
@@ -137,7 +156,7 @@ AS $$
 $$;
 
 COMMENT ON FUNCTION public.geo_page_window(text, int, date) IS
-  'Page-grain performance for a window and the preceding window of equal length. Reads search_console_page_canonical - the page-performance source of truth. Never derive these numbers from query-grain rows: Google suppresses anonymised queries and the query grain understates clicks by roughly 30x on this property.';
+  'Page-grain performance for a window and the preceding window of equal length. Reads search_console_page_canonical - the page-performance source of truth. avg_position and prev_avg_position are impression-weighted averages over the window, not ranks. Never derive these numbers from query-grain rows: Google suppresses anonymised queries and the query grain understates clicks by roughly 30x on this property.';
 
 -- ── Property totals windows ───────────────────────────────────────────────
 -- Straight from Google's undimensioned response. One property at a time: the
@@ -153,7 +172,7 @@ RETURNS TABLE (
   clicks           bigint,
   impressions      bigint,
   ctr              numeric,
-  position         numeric,
+  avg_position     numeric,
   days_with_data   bigint,
   prev_clicks      bigint,
   prev_impressions bigint,
@@ -166,40 +185,56 @@ STABLE
 AS $$
   WITH bounds AS (
     SELECT
-      COALESCE(p_end_date, (SELECT max(date) FROM public.search_console_totals_daily WHERE property = p_property)) AS end_d
+      COALESCE(
+        p_end_date,
+        (SELECT max(m.date)
+         FROM public.search_console_totals_daily m
+         WHERE m.property = p_property)
+      ) AS end_d
   ),
   b2 AS (
-    SELECT end_d,
-           end_d - (p_window_days-1)   AS start_d,
-           end_d - p_window_days       AS prev_end_d,
-           end_d - (2*p_window_days-1) AS prev_start_d
+    SELECT bounds.end_d                          AS end_d,
+           bounds.end_d - (p_window_days-1)      AS start_d,
+           bounds.end_d - p_window_days          AS prev_end_d,
+           bounds.end_d - (2*p_window_days-1)    AS prev_start_d
     FROM bounds
   ),
   cur AS (
-    SELECT sum(clicks)::bigint c, sum(impressions)::bigint i,
-           CASE WHEN sum(impressions) > 0
-                THEN round(sum(position*impressions)/sum(impressions),2)
-                ELSE 0 END pos,
-           count(*)::bigint d
+    SELECT sum(t.clicks)::bigint      AS c,
+           sum(t.impressions)::bigint AS i,
+           CASE WHEN sum(t.impressions) > 0
+                THEN round(sum(t.position * t.impressions) / sum(t.impressions), 2)
+                ELSE 0::numeric END   AS pos,
+           count(*)::bigint           AS d
     FROM public.search_console_totals_daily t, b2
-    WHERE t.property = p_property AND t.date BETWEEN b2.start_d AND b2.end_d
+    WHERE t.property = p_property
+      AND t.date BETWEEN b2.start_d AND b2.end_d
   ),
   prev AS (
-    SELECT sum(clicks)::bigint c, sum(impressions)::bigint i, count(*)::bigint d
+    SELECT sum(t.clicks)::bigint      AS c,
+           sum(t.impressions)::bigint AS i,
+           count(*)::bigint           AS d
     FROM public.search_console_totals_daily t, b2
-    WHERE t.property = p_property AND t.date BETWEEN b2.prev_start_d AND b2.prev_end_d
+    WHERE t.property = p_property
+      AND t.date BETWEEN b2.prev_start_d AND b2.prev_end_d
   )
   SELECT p_property,
-         COALESCE(cur.c,0), COALESCE(cur.i,0),
-         CASE WHEN COALESCE(cur.i,0) > 0 THEN round(cur.c::numeric/cur.i,6) ELSE 0 END,
-         COALESCE(cur.pos,0), COALESCE(cur.d,0),
-         COALESCE(prev.c,0), COALESCE(prev.i,0), COALESCE(prev.d,0),
-         b2.start_d, b2.end_d
+         COALESCE(cur.c, 0::bigint),
+         COALESCE(cur.i, 0::bigint),
+         CASE WHEN COALESCE(cur.i, 0::bigint) > 0
+              THEN round(cur.c::numeric / cur.i, 6) ELSE 0::numeric END,
+         COALESCE(cur.pos, 0::numeric),
+         COALESCE(cur.d, 0::bigint),
+         COALESCE(prev.c, 0::bigint),
+         COALESCE(prev.i, 0::bigint),
+         COALESCE(prev.d, 0::bigint),
+         b2.start_d,
+         b2.end_d
   FROM cur, prev, b2;
 $$;
 
 COMMENT ON FUNCTION public.geo_totals_window(text, int, date) IS
-  'Site traffic truth for one property over a window. Values come from Google''s undimensioned response and are never derived by summing page or query rows. Never call this for two properties and add the results: sc-domain:ihaveallergy.com already includes seo.ihaveallergy.com.';
+  'Site traffic truth for one property over a window. Values come from Google''s undimensioned response and are never derived by summing page or query rows. avg_position is the impression-weighted average over the window. Never call this for two properties and add the results: sc-domain:ihaveallergy.com already includes seo.ihaveallergy.com.';
 
 -- ── Query discovery windows ───────────────────────────────────────────────
 -- INTENT ONLY. These clicks and impressions are suppressed and must never be
@@ -211,11 +246,11 @@ CREATE OR REPLACE FUNCTION public.geo_query_window(
   p_min_impressions int DEFAULT 1
 )
 RETURNS TABLE (
-  page_path   text,
-  query       text,
-  clicks      bigint,
-  impressions bigint,
-  position    numeric
+  page_path    text,
+  query        text,
+  clicks       bigint,
+  impressions  bigint,
+  avg_position numeric
 )
 LANGUAGE sql
 STABLE
@@ -231,16 +266,17 @@ AS $$
     sum(c.clicks)::bigint,
     sum(c.impressions)::bigint,
     CASE WHEN sum(c.impressions) > 0
-         THEN round(sum(c.position*c.impressions)/sum(c.impressions),2)
-         ELSE round(avg(c.position),2) END
+         THEN round(sum(c.position * c.impressions) / sum(c.impressions), 2)
+         ELSE round(avg(c.position), 2) END
   FROM public.search_console_canonical c, b
-  WHERE c.page_host = p_host AND c.date BETWEEN b.start_d AND b.end_d
+  WHERE c.page_host = p_host
+    AND c.date BETWEEN b.start_d AND b.end_d
   GROUP BY c.page_path, c.query
   HAVING sum(c.impressions) >= p_min_impressions;
 $$;
 
 COMMENT ON FUNCTION public.geo_query_window(text, int, date, int) IS
-  'Known queries per page for a window. DISCOVERY AND INTENT ONLY. Google anonymises rare queries, so these totals capture a fraction of real demand (~3% of clicks on this property) and must never be used as page or site traffic.';
+  'Known queries per page for a window. DISCOVERY AND INTENT ONLY. Google anonymises rare queries, so these totals capture a fraction of real demand (~3% of clicks on this property) and must never be used as page or site traffic. avg_position is the impression-weighted average over the window.';
 
 -- ── Observed CTR by position ──────────────────────────────────────────────
 -- Feeds the site-specific expected-CTR curve. Returning raw buckets rather
@@ -273,7 +309,7 @@ AS $$
   WHERE c.page_host = p_host
     AND c.date BETWEEN b.start_d AND b.end_d
     AND c.impressions > 0
-  GROUP BY 1;
+  GROUP BY LEAST(GREATEST(round(c.position)::int, 1), 21);
 $$;
 
 COMMENT ON FUNCTION public.geo_ctr_curve(text, int, date) IS
@@ -301,8 +337,8 @@ STABLE
 AS $$
   WITH b AS (
     SELECT
-      COALESCE(p_end_date, (SELECT max(date) FROM public.analytics_landing_daily))                     AS end_d,
-      COALESCE(p_end_date, (SELECT max(date) FROM public.analytics_landing_daily)) - (p_window_days-1) AS start_d
+      COALESCE(p_end_date, (SELECT max(m.date) FROM public.analytics_landing_daily m))                     AS end_d,
+      COALESCE(p_end_date, (SELECT max(m.date) FROM public.analytics_landing_daily m)) - (p_window_days-1) AS start_d
   )
   SELECT
     a.landing_page_path,
@@ -313,7 +349,7 @@ AS $$
     -- rates would let a one-session day count as much as a hundred-session day.
     CASE WHEN sum(a.sessions) > 0
          THEN round(sum(a.engagement_rate * a.sessions) / sum(a.sessions), 4)
-         ELSE 0 END,
+         ELSE 0::numeric END,
     sum(a.key_events)::bigint,
     count(DISTINCT a.date)::bigint
   FROM public.analytics_landing_daily a, b

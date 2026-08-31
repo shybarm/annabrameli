@@ -319,7 +319,7 @@ export function GeoOrganicOpportunities() {
                 <Metric label="חשיפות" value={String(data.totals.impressions)}
                   sub={`תקופה קודמת: ${data.totals.prev_impressions}`} />
                 <Metric label="CTR" value={pct(data.totals.ctr, 2)} />
-                <Metric label="מיקום ממוצע" value={data.totals.position.toFixed(1)} />
+                <Metric label="מיקום ממוצע" value={data.totals.avg_position.toFixed(1)} />
               </div>
               <p className="text-[10px] text-muted-foreground mt-1.5">
                 מקור אמת לתנועה: נתוני סך-הכל של Search Console. אינו סכום של העמודים ואינו סכום של השאילתות.

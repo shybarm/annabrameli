@@ -36,7 +36,7 @@ export interface SiteTotals {
   clicks: number;
   impressions: number;
   ctr: number;
-  position: number;
+  avg_position: number;
   days_with_data: number;
   prev_clicks: number;
   prev_impressions: number;
