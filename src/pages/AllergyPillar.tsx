@@ -302,13 +302,13 @@ const AllergyPillar = () => {
         <meta property="og:url" content="https://ihaveallergy.com/guides/אלרגיה-מדריך-מקיף" />
         <meta property="og:title" content="אלרגיה – המדריך המקיף בעברית: סוגים, אבחון וטיפול | ד״ר אנה ברמלי" />
         <meta property="og:description" content="מדריך רפואי מקיף על אלרגיות: סוגי אלרגיה, תסמינים, שיטות אבחון, אפשרויות טיפול, מניעה וניהול חיים עם אלרגיה." />
-        <meta property="og:image" content="https://ihaveallergy.com/og-logo.png?v=4" />
+        <meta property="og:image" content="https://ihaveallergy.com/og-logo.png?v=6" />
         <meta property="article:published_time" content="2026-02-14" />
         <meta property="article:modified_time" content="2026-02-14" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="אלרגיה – המדריך המקיף בעברית: סוגים, אבחון וטיפול | ד״ר אנה ברמלי" />
         <meta name="twitter:description" content="מדריך רפואי מקיף על אלרגיות: סוגי אלרגיה, תסמינים, שיטות אבחון, אפשרויות טיפול." />
-        <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png?v=4" />
+        <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png?v=6" />
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(articleSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>

@@ -52,7 +52,7 @@ const physicianSchema = {
     latitude: 32.1524,
     longitude: 34.8947
   },
-  image: "https://ihaveallergy.com/og-logo.png?v=4",
+  image: "https://ihaveallergy.com/og-logo.png?v=6",
   sameAs: [
     "https://medicine.vumc.org/department-directory/Anna-Brameli",
     "https://pubmed.ncbi.nlm.nih.gov/?term=Brameli+A",

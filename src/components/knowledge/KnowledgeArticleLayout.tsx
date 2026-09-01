@@ -98,11 +98,11 @@ export const KnowledgeArticleLayout = ({
         <meta property="og:url" content={canonicalUrl} />
         <meta property="og:title" content={`${dynamicTitle} | ד״ר אנה ברמלי`} />
         <meta property="og:description" content={metaDescription} />
-        <meta property="og:image" content="https://ihaveallergy.com/og-logo.png?v=4" />
+        <meta property="og:image" content="https://ihaveallergy.com/og-logo.png?v=6" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={`${dynamicTitle} | ד״ר אנה ברמלי`} />
         <meta name="twitter:description" content={metaDescription} />
-        <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png?v=4" />
+        <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png?v=6" />
         <script type="application/ld+json">{JSON.stringify(articleSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
       </Helmet>

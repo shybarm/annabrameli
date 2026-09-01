@@ -9,7 +9,7 @@ export const SchemaMarkup = ({ type = "physician" }: SchemaMarkupProps) => {
     "@context": "https://schema.org",
     "@type": "Physician",
     "name": "ד״ר אנה ברמלי - מומחית לאלרגיה ואימונולוגיה",
-    "image": "https://ihaveallergy.com/og-logo.png?v=4",
+    "image": "https://ihaveallergy.com/og-logo.png?v=6",
     "@id": "https://ihaveallergy.com",
     "url": "https://ihaveallergy.com",
     "priceRange": "$$",
