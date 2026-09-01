@@ -21,8 +21,6 @@ project_id = "ftatmcyrmeyhghgckvbj"
     verify_jwt = false
   [functions.notify-intake-complete]
     verify_jwt = true
-  [functions.process-email-queue]
-    verify_jwt = true
   [functions.reset-staff-mfa]
     verify_jwt = false
   [functions.scan-file]
