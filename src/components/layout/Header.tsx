@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { trackBookAppointmentClick } from "@/lib/analytics";
-import drAnnaAvatar from "@/assets/dr-anna-avatar.png.asset.json";
 
 // Navigation links temporarily hidden — content pending review.
 // Do not delete; restore by re-adding entries to this array.
@@ -42,7 +41,10 @@ export const Header = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 group">
             <img
-              src={drAnnaAvatar.url}
+              src="/images/optimized/avatar-80.webp"
+              srcSet="/images/optimized/avatar-80.webp 2x, /images/optimized/avatar-120.webp 3x"
+              width={40}
+              height={40}
               alt="ד״ר אנה ברמלי - אלרגיה ואימונולוגיה"
               className="w-10 h-10 rounded-xl object-cover object-top shadow-teal transition-transform duration-200 group-hover:scale-105"
             />

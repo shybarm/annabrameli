@@ -68,7 +68,6 @@ const Contact = () => {
         event_label: 'Contact Form',
         form_name: 'contact_form',
         page_path: typeof window !== 'undefined' ? window.location.pathname : undefined,
-        subject: formData.subject || undefined,
       });
       toast({
         title: "הפנייה נשלחה בהצלחה",

@@ -17,9 +17,11 @@ export const AnalyticsRouteTracker = () => {
   useEffect(() => {
     // Re-check on every navigation in case the user lands deep with UTM.
     captureUtmFromUrl();
-    const path = location.pathname + location.search;
-    trackPageView(path);
   }, [location.pathname, location.search]);
+
+  useEffect(() => {
+    trackPageView(location.pathname);
+  }, [location.pathname]);
 
   return null;
 };
