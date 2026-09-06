@@ -23,8 +23,8 @@ const contactInfo = [
   {
     icon: MapPin,
     title: "כתובת",
-    value: "הטווס 3, הוד השרון",
-    href: "https://maps.google.com/?q=%D7%94%D7%98%D7%95%D7%95%D7%A1+3+%D7%94%D7%95%D7%93+%D7%94%D7%A9%D7%A8%D7%95%D7%9F",
+    value: "הוד השרון",
+    href: "https://maps.google.com/?q=%D7%94%D7%95%D7%93+%D7%94%D7%A9%D7%A8%D7%95%D7%9F",
 
   },
 ];
@@ -98,7 +98,7 @@ const Contact = () => {
         <title>יצירת קשר וקביעת תור | ד״ר אנה ברמלי – מרפאת אלרגיה בהוד השרון</title>
         <meta 
           name="description" 
-          content="קביעת תור במרפאת אלרגיה של ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה. כתובת: הטווס 3, הוד השרון. ייעוץ אלרגיה פרטי." 
+          content="קביעת תור במרפאת אלרגיה של ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה בהוד השרון. ייעוץ אלרגיה פרטי." 
         />
         <link rel="canonical" href="https://ihaveallergy.com/contact" />
         <meta property="og:type" content="website" />
@@ -288,14 +288,14 @@ const Contact = () => {
               {/* Google Maps Embed */}
               <div className="bg-surface rounded-2xl overflow-hidden h-64 border border-border/60">
                 <iframe
-                  src="https://www.google.com/maps?q=%D7%94%D7%98%D7%95%D7%95%D7%A1%203%2C%20%D7%94%D7%95%D7%93%20%D7%94%D7%A9%D7%A8%D7%95%D7%9F&output=embed"
+                  src="https://www.google.com/maps?q=%D7%94%D7%95%D7%93%20%D7%94%D7%A9%D7%A8%D7%95%D7%9F&output=embed"
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}
                   allowFullScreen
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
-                  title="מרפאת אלרגיה - ד״ר אנה ברמלי, הטווס 3, הוד השרון"
+                  title="מרפאת אלרגיה - ד״ר אנה ברמלי, הוד השרון"
                 ></iframe>
               </div>
             </motion.div>

@@ -25,14 +25,14 @@ import {
 import drAnnaConsultation from "@/assets/dr-anna-brameli-consultation.png.asset.json";
 
 const CANONICAL = "https://ihaveallergy.com/desensitization";
-const CLINIC_ADDRESS = "הטווס 3, הוד השרון";
+const CLINIC_ADDRESS = "הוד השרון";
 
 const trustPoints = [
   "ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה קלינית",
   "רופאה בכירה במחלקת אלרגיה ואימונולוגיה במרכז שניידר לרפואת ילדים",
   "בוגרת תת-התמחות ב-Vanderbilt University Medical Center",
   "ייעוץ התאמה רפואי לפני תהליך דה-סנסיטיזציה למזון",
-  `מרפאה בהוד השרון, ${CLINIC_ADDRESS.split(",").slice(0, 2).join(",").trim()}`,
+  `מרפאה בהוד השרון`,
 ];
 
 const valueCards = [
