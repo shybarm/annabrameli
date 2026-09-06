@@ -105,9 +105,16 @@ export function trackEvent(
 export function trackPageView(path: string): void {
   if (typeof window === "undefined") return;
   try {
-    window.gtag?.("config", GA_MEASUREMENT_ID, {
-      page_path: path,
-      ...getStoredUtm(),
+    const url = new URL(path, window.location.origin);
+    // Never send token-bearing or staff/patient routes as manual page views.
+    if (url.origin !== window.location.origin ||
+      /^\/(admin|auth|reset-password|intake|verify-booking|verify-email|magic|join|patient-invite|portal|\.lovable)(\/|$)/i.test(url.pathname)) return;
+    // Initial config disables automatic views; route views must be explicit.
+    // Acquisition is handled by the Google tag, not arbitrary stored URLs.
+    window.gtag?.("event", "page_view", {
+      send_to: GA_MEASUREMENT_ID,
+      page_path: url.pathname,
+      page_location: url.origin + url.pathname,
     });
   } catch {
     /* noop */

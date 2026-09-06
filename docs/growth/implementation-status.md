@@ -48,3 +48,26 @@ generated homepage exist in dist, and the hero priority hint is present.
 Header/Footer lint and whitespace checks pass. The optimized portrait and
 consultation image were visually inspected. Live LCP remains to be measured
 after deployment.
+
+## Batch 3: explicit manual page views (pending GA4 configuration verification)
+
+The route tracker previously repeated a config call after initial config set
+send_page_view:false. It now sends an explicit page_view event, targeted to
+the existing measurement ID. Query-only changes do not generate route views.
+Manual views omit query strings, hashes, stored attribution URLs and private
+staff/auth/token routes. Booking behavior and conversion names are unchanged.
+This does not establish the cause of the historical session/page-view gap.
+
+Deployment prerequisite: inspect GA4 web stream Enhanced Measurement page-view
+settings and disable history-change page views when using this manual tracker.
+Otherwise automatic history tracking may duplicate manual views. Verify one
+view on initial landing, one per public navigation, and no manual view on
+private routes in DebugView after deployment. Account settings were not changed.
+Reference: https://developers.google.com/analytics/devguides/collection/ga4/views
+
+Privacy limitation: the base Google tag and enhanced measurement still load
+globally. This change filters only manually emitted page views; stored custom
+conversion attribution and automatic collection require separate review.
+
+Validation: node scripts/verify-analytics.mjs checks emitted events, URL
+sanitization, private routes, public booking views, missing tag and SSR.
