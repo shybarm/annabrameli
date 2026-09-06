@@ -34,10 +34,6 @@ import { useMedicalUpdates } from "@/hooks/useMedicalUpdates";
 import { blogArticles } from "@/data/blog-articles";
 import { usePageContent } from "@/contexts/PageContentContext";
 import { trackBookAppointmentClick, trackPhoneClick } from "@/lib/analytics";
-import drAnnaImage from "@/assets/dr-anna-brameli-portrait.png.asset.json";
-import desensitizationImage from "@/assets/desensitization-dr-brameli.webp.asset.json";
-import foodAllergyImage from "@/assets/dr-anna-brameli-food-allergy.webp.asset.json";
-import skinTestImage from "@/assets/dr-anna-consultation-2.png.asset.json";
 
 const services = [
   {
@@ -244,7 +240,10 @@ const Index = () => {
               <div className="relative">
                 <div className="absolute inset-0 gradient-teal rounded-3xl transform rotate-3 opacity-15 blur-sm" />
                 <img
-                  src={drAnnaImage.url}
+                  src="/images/optimized/portrait-768.webp"
+                  srcSet="/images/optimized/portrait-384.webp 384w, /images/optimized/portrait-768.webp 768w"
+                  sizes="(min-width: 768px) 384px, (min-width: 640px) 320px, 288px"
+                  fetchPriority="high"
                   alt="ד״ר אנה ברמלי - מומחית לאלרגיה ואימונולוגיה"
                   className="relative w-72 h-72 sm:w-80 sm:h-80 md:w-96 md:h-96 object-cover rounded-3xl shadow-xl"
                   loading="eager"
@@ -327,7 +326,9 @@ const Index = () => {
               className="rounded-2xl overflow-hidden border border-border/60 bg-card"
             >
               <img
-                src={desensitizationImage.url}
+                src="/images/optimized/desensitization-960.webp"
+                srcSet="/images/optimized/desensitization-480.webp 480w, /images/optimized/desensitization-960.webp 960w"
+                sizes="(min-width: 1160px) 352px, (min-width: 768px) 33vw, 100vw"
                 alt="ד״ר אנה ברמלי"
                 className="w-full h-64 md:h-80 object-cover"
                 loading="lazy"
@@ -344,7 +345,9 @@ const Index = () => {
               className="rounded-2xl overflow-hidden border border-border/60 bg-card"
             >
               <img
-                src={skinTestImage.url}
+                src="/images/optimized/consultation-960.webp"
+                srcSet="/images/optimized/consultation-480.webp 480w, /images/optimized/consultation-960.webp 960w"
+                sizes="(min-width: 1160px) 352px, (min-width: 768px) 33vw, 100vw"
                 alt="תבחיני עור לאלרגיה"
                 className="w-full h-64 md:h-80 object-cover"
                 loading="lazy"
@@ -361,7 +364,9 @@ const Index = () => {
               className="rounded-2xl overflow-hidden border border-border/60 bg-card"
             >
               <img
-                src={foodAllergyImage.url}
+                src="/images/optimized/food-allergy-960.webp"
+                srcSet="/images/optimized/food-allergy-480.webp 480w, /images/optimized/food-allergy-960.webp 960w"
+                sizes="(min-width: 1160px) 352px, (min-width: 768px) 33vw, 100vw"
                 alt="טיפול באלרגיה למזון"
                 className="w-full h-64 md:h-80 object-cover"
                 loading="lazy"
