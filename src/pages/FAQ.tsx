@@ -233,16 +233,16 @@ const FAQ = () => {
   return (
     <>
       <Helmet>
-        <title>שאלות ותשובות | ד״ר אנה ברמלי</title>
+        <title>שאלות נפוצות על אלרגיה בילדים: תסמינים ובדיקות | ד״ר אנה ברמלי</title>
         <meta 
           name="description" 
-          content="תשובות מקצועיות לשאלות נפוצות על אלרגיות: אלרגיה למזון, לחלב, לבוטנים, לתרופות, לדבורים, אסתמה, אנפילקסיס ובדיקות אלרגיה." 
+          content="תשובות לשאלות נפוצות על אלרגיה בילדים: תסמינים, אלרגיה למזון, אנפילקסיס, תבחיני עור ובדיקות דם, ומתי לפנות לאלרגולוג."
         />
         <link rel="canonical" href="https://ihaveallergy.com/faq" />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://ihaveallergy.com/faq" />
-        <meta property="og:title" content="שאלות ותשובות על אלרגיות - ד״ר אנה ברמלי" />
-        <meta property="og:description" content="תשובות מקצועיות לשאלות הנפוצות ביותר של הורים בנושא אלרגיות בילדים ובמבוגרים." />
+        <meta property="og:title" content="שאלות נפוצות על אלרגיה בילדים: תסמינים ובדיקות" />
+        <meta property="og:description" content="תשובות ברורות להורים על תסמיני אלרגיה, אלרגיה למזון, אנפילקסיס ובדיקות אלרגיה לילדים." />
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(buildBreadcrumbSchema([
           { name: "דף הבית", item: "https://ihaveallergy.com/" },
@@ -260,7 +260,7 @@ const FAQ = () => {
             className="max-w-3xl"
           >
             <h1 className="font-bold text-foreground mb-6">
-              שאלות ותשובות
+              שאלות נפוצות על אלרגיה בילדים
             </h1>
             <p className="text-lg text-muted-foreground leading-relaxed">
               תשובות מקצועיות לשאלות הנפוצות ביותר של הורים בנושא אלרגיות. המידע מסייע להבין את המצבים השונים ולדעת מתי לפנות לייעוץ מקצועי.

@@ -16,6 +16,43 @@ export interface KnowledgeArticleProps {
   relatedArticles?: { to: string; label: string }[];
 }
 
+const RIGHTS_ARTICLES = new Set([
+  "גן-יכול-לסרב-לילד-אלרגי",
+  "אפיפן-בגן-מי-אחראי",
+  "סייעת-רפואית-לילד-אלרגי",
+  "טיול-שנתי-ילד-אלרגי",
+  "אישור-אלרגיה-למשרד-החינוך",
+]);
+
+const TESTING_ARTICLES = new Set([
+  "תבחיני-עור-כואב-לילדים",
+  "בדיקת-דם-לאלרגיה-ילדים",
+  "תגר-מזון-איך-זה-נראה",
+  "בדיקה-חיובית-בלי-תסמינים",
+  "בדיקות-אלרגיה-פרטי-או-קופה",
+]);
+
+const getParentGuide = (slug: string) => {
+  if (RIGHTS_ARTICLES.has(slug)) {
+    return {
+      name: "זכויות ילד אלרגי",
+      path: "/guides/זכויות-ילד-אלרגי-ישראל",
+    };
+  }
+
+  if (TESTING_ARTICLES.has(slug)) {
+    return {
+      name: "בדיקות אלרגיה לילדים",
+      path: "/guides/בדיקות-אלרגיה-ילדים-ישראל",
+    };
+  }
+
+  return {
+    name: "טעימות ראשונות",
+    path: "/guides/טעימות-ראשונות-אלרגנים",
+  };
+};
+
 const renderSectionContent = (content: string, keyPrefix: string) => {
   const blocks = content
     .split(/\n\s*\n/)
@@ -74,6 +111,7 @@ export const KnowledgeArticleLayout = ({
     ? sections.slice(1).filter((section) => section.heading || section.content)
     : [];
   const canonicalUrl = `https://ihaveallergy.com/knowledge/${slug}`;
+  const parentGuide = getParentGuide(slug);
   const articleSchema = buildMedicalPageSchema({
     headline: dynamicTitle,
     description: metaDescription,
@@ -83,8 +121,8 @@ export const KnowledgeArticleLayout = ({
   });
   const breadcrumbSchema = buildBreadcrumbSchema([
     { name: "ראשי", item: "https://ihaveallergy.com/" },
-    { name: "מדריכים", item: "https://ihaveallergy.com/guides/טעימות-ראשונות-אלרגנים" },
-    { name: title },
+    { name: parentGuide.name, item: `https://ihaveallergy.com${parentGuide.path}` },
+    { name: dynamicTitle },
   ]);
 
   return (
@@ -113,7 +151,7 @@ export const KnowledgeArticleLayout = ({
           <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-muted-foreground mb-8">
             <Link to="/" className="hover:text-foreground transition-colors">ראשי</Link>
             <ChevronLeft className="w-3.5 h-3.5" />
-            <Link to="/guides/טעימות-ראשונות-אלרגנים" className="hover:text-foreground transition-colors">מדריך טעימות ראשונות</Link>
+            <Link to={parentGuide.path} className="hover:text-foreground transition-colors">{parentGuide.name}</Link>
             <ChevronLeft className="w-3.5 h-3.5" />
             <span className="text-foreground truncate">{dynamicTitle}</span>
           </nav>
