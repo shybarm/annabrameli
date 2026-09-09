@@ -37,6 +37,9 @@ export const Footer = () => {
               <li><Link to="/about" className="text-muted-foreground hover:text-primary transition-colors">אודות</Link></li>
               <li><Link to="/dr-anna-brameli" className="text-muted-foreground hover:text-primary transition-colors">ד״ר אנה ברמלי</Link></li>
               <li><Link to="/services" className="text-muted-foreground hover:text-primary transition-colors">שירותים ומצבים</Link></li>
+              <li><Link to="/guides/אלרגיה-מדריך-מקיף" className="text-muted-foreground hover:text-primary transition-colors">מדריך אלרגיה מקיף</Link></li>
+              <li><Link to="/guides/טעימות-ראשונות-אלרגנים" className="text-muted-foreground hover:text-primary transition-colors">טחינה וחשיפה לאלרגנים</Link></li>
+              <li><Link to="/guides/בדיקות-אלרגיה-ילדים-ישראל" className="text-muted-foreground hover:text-primary transition-colors">בדיקות אלרגיה לילדים</Link></li>
               <li><Link to="/blog" className="text-muted-foreground hover:text-primary transition-colors">מאמרים</Link></li>
               <li><Link to="/faq" className="text-muted-foreground hover:text-primary transition-colors">שאלות ותשובות</Link></li>
               <li><Link to="/contact" className="text-muted-foreground hover:text-primary transition-colors">יצירת קשר</Link></li>

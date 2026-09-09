@@ -435,17 +435,27 @@ const Index = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="block h-full bg-card rounded-2xl border border-border/60 p-6 md:p-7"
+                className="h-full"
               >
-                <span className="inline-block text-[10px] font-medium text-primary bg-accent px-2.5 py-0.5 rounded-full mb-4">
-                  {guide.badge}
-                </span>
-                <div className="w-11 h-11 rounded-xl bg-accent flex items-center justify-center mb-4">
-                  <guide.icon className="w-5 h-5 text-primary" />
-                </div>
-                <h3 className="text-lg font-bold text-foreground mb-1">{guide.title}</h3>
-                <p className="text-sm font-medium text-primary/80 mb-3">{guide.subtitle}</p>
-                <p className="text-sm text-muted-foreground leading-relaxed">{guide.description}</p>
+                <Link
+                  to={guide.href}
+                  className="group block h-full bg-card rounded-2xl border border-border/60 p-6 md:p-7 card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                  aria-label={`${guide.title}: ${guide.subtitle}`}
+                >
+                  <span className="inline-block text-[10px] font-medium text-primary bg-accent px-2.5 py-0.5 rounded-full mb-4">
+                    {guide.badge}
+                  </span>
+                  <div className="w-11 h-11 rounded-xl bg-accent flex items-center justify-center mb-4">
+                    <guide.icon className="w-5 h-5 text-primary" />
+                  </div>
+                  <h3 className="text-lg font-bold text-foreground mb-1 group-hover:text-primary transition-colors">{guide.title}</h3>
+                  <p className="text-sm font-medium text-primary/80 mb-3">{guide.subtitle}</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed mb-4">{guide.description}</p>
+                  <span className="inline-flex items-center gap-1.5 text-sm font-medium text-primary">
+                    למדריך המלא
+                    <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+                  </span>
+                </Link>
               </motion.div>
             ))}
           </div>
