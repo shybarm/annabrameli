@@ -131,7 +131,7 @@ const GoldenGuide = () => {
     headline: "טעימות ראשונות לתינוק: טחינה, במבה ואלרגנים נפוצים",
     description: "מדריך להורים על טעימות ראשונות לתינוק: מתי מתחילים מזונות משלימים, איך מציעים טחינה ובמבה, אילו סימנים דורשים בדיקה ומתי לפנות לרופא.",
     datePublished: "2026-02-08",
-    dateModified: "2026-09-08",
+    dateModified: "2026-09-09",
     canonicalUrl: "https://ihaveallergy.com/guides/טעימות-ראשונות-אלרגנים",
     about: {
       "@type": "MedicalCondition",
@@ -149,21 +149,21 @@ const GoldenGuide = () => {
   return (
     <>
       <Helmet>
-        <title>טעימות ראשונות: טחינה, במבה ואלרגנים לתינוק | ד״ר אנה ברמלי</title>
+        <title>טחינה לתינוק: טעימות וחשיפה לאלרגנים | ד״ר אנה ברמלי</title>
         <meta
           name="description"
-          content="מתי מתחילים טעימות לתינוק, איך מציעים טחינה ובמבה, אילו אלרגנים חשוב להכיר ומהם סימני האזהרה. מדריך מעשי להורים לפי מקורות רפואיים."
+          content="מתי ואיך לתת טחינה לתינוק, איך להציג במבה ואלרגנים נוספים, ואילו סימנים מחייבים עצירה ופנייה לטיפול. מדריך רפואי מעשי להורים."
         />
         <link rel="canonical" href="https://ihaveallergy.com/guides/טעימות-ראשונות-אלרגנים" />
         <meta property="og:type" content="article" />
         <meta property="og:url" content="https://ihaveallergy.com/guides/טעימות-ראשונות-אלרגנים" />
-        <meta property="og:title" content="טעימות ראשונות: טחינה, במבה ואלרגנים לתינוק | ד״ר אנה ברמלי" />
+        <meta property="og:title" content="טחינה לתינוק: טעימות וחשיפה לאלרגנים | ד״ר אנה ברמלי" />
         <meta property="og:description" content="מדריך מעשי להורים: מתי מתחילים ואיך מציעים טחינה, במבה ואלרגנים נפוצים לתינוק." />
         <meta property="og:image" content="https://ihaveallergy.com/og-logo.png?v=6" />
         <meta property="article:published_time" content="2026-02-08" />
-        <meta property="article:modified_time" content="2026-09-08" />
+        <meta property="article:modified_time" content="2026-09-09" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="טעימות ראשונות: טחינה, במבה ואלרגנים לתינוק | ד״ר אנה ברמלי" />
+        <meta name="twitter:title" content="טחינה לתינוק: טעימות וחשיפה לאלרגנים | ד״ר אנה ברמלי" />
         <meta name="twitter:description" content="מדריך מעשי להורים: מתי מתחילים ואיך מציעים טחינה, במבה ואלרגנים נפוצים לתינוק." />
         <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png?v=6" />
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
