@@ -23,6 +23,11 @@ export const SiteWideSchema = () => {
     },
 
     sameAs: [],
+    employee: {
+      "@type": "Physician",
+      "@id": "https://ihaveallergy.com/dr-anna-brameli#physician",
+      name: "ד״ר אנה ברמלי",
+    },
     medicalSpecialty: "AllergyAndImmunology",
   };
 

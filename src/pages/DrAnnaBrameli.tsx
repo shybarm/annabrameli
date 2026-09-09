@@ -35,12 +35,13 @@ import drAnnaImage from "@/assets/dr-anna-brameli.jpeg";
 const physicianSchema = {
   "@context": "https://schema.org",
   "@type": "Physician",
+  "@id": "https://ihaveallergy.com/dr-anna-brameli#physician",
   name: "ד״ר אנה ברמלי",
   alternateName: "Dr. Anna Brameli",
   description: "ד״ר אנה ברמלי היא רופאת אלרגיה ואלרגולוגית בקליניקה פרטית בישראל. מומחית באבחון וטיפול באלרגיות מזון ועונתיות, בדיקות IgE ואימונותרפיה.",
   medicalSpecialty: ["Allergy and Immunology", "Pediatrics"],
   url: "https://ihaveallergy.com/dr-anna-brameli",
-  telephone: "+972-54-580-8008",
+  telephone: "+972-52-591-6393",
   address: {
     "@type": "PostalAddress",
     addressLocality: "הוד השרון",
@@ -55,8 +56,15 @@ const physicianSchema = {
   image: "https://ihaveallergy.com/og-logo.png?v=2",
   sameAs: [
     "https://medicine.vumc.org/department-directory/Anna-Brameli",
+    "https://pedendo.schneider.org.il/?ArticleID=2506&CategoryID=839",
+    "https://orcid.org/0009-0005-6489-6525",
     "https://pubmed.ncbi.nlm.nih.gov/?term=Brameli+A",
   ],
+  worksFor: {
+    "@type": "MedicalOrganization",
+    name: "Schneider Children's Medical Center of Israel",
+    url: "https://www.schneider.org.il/",
+  },
   knowsLanguage: ["he", "en"],
   availableService: [
     { "@type": "MedicalProcedure", name: "בדיקות עור (Skin Prick Tests)" },
@@ -72,7 +80,7 @@ const localBusinessSchema = {
   "@type": "MedicalBusiness",
   name: "קליניקת ד״ר אנה ברמלי - אלרגיה ואימונולוגיה",
   url: "https://ihaveallergy.com",
-  telephone: "+972-54-580-8008",
+  telephone: "+972-52-591-6393",
   address: {
     "@type": "PostalAddress",
     addressLocality: "הוד השרון",

@@ -1,7 +1,7 @@
 /**
  * Expert Authority data for Dr. Anna Brameli.
  * Structured for entity trust, GEO citation readiness, and topic-level research mapping.
- * Sources: Vanderbilt VUMC profile, PubMed, IJMS.
+ * Sources: Schneider Children's Medical Center, Vanderbilt VUMC, PubMed, IJMS.
  */
 
 export interface ExpertCredential {
@@ -71,9 +71,31 @@ export const EXPERT_PROFILE = {
   ] satisfies TrainingRecord[],
 
   vanderbiltProfileUrl: 'https://medicine.vumc.org/department-directory/Anna-Brameli',
+  schneiderInstituteUrl: 'https://pedendo.schneider.org.il/?ArticleID=2506&CategoryID=839',
+  schneiderArticleUrl: 'https://www.schneider.org.il/?ArticleID=6211&CategoryID=1003',
+  orcidUrl: 'https://orcid.org/0009-0005-6489-6525',
+  pubmedAuthorUrl: 'https://pubmed.ncbi.nlm.nih.gov/?term=Brameli+A',
 };
 
 export const PUBLICATIONS: Publication[] = [
+  {
+    id: 'pediatric-drug-anaphylaxis-2024',
+    title: 'Pediatric Drug-Induced Anaphylaxis: Clinical Features, Culprit Drugs, and Management',
+    titleHe: 'אנפילקסיס מתרופות בילדים: מאפיינים קליניים, תרופות גורמות וניהול',
+    journal: 'The Journal of Allergy and Clinical Immunology: In Practice',
+    year: 2024,
+    authors: 'Brameli A, et al.',
+    pubmedId: '38830577',
+    url: 'https://pubmed.ncbi.nlm.nih.gov/38830577/',
+    topicRelevance: 'Pediatric drug-induced anaphylaxis and allergy evaluation',
+    topicRelevanceHe: 'אנפילקסיס ותגובות אלרגיות לתרופות בילדים',
+    relatedPages: [
+      { path: '/services', label: 'אבחון אלרגיה לתרופות' },
+      { path: '/אלרגיה-בילדים-מדריך-מלא', label: 'מדריך אלרגיה בילדים' },
+    ],
+    whyItMatters: 'Provides peer-reviewed evidence of direct research in severe pediatric drug reactions.',
+    whyItMattersHe: 'מציג מחקר שפיט וישיר בתחום תגובות קשות לתרופות בילדים, נושא מרכזי באבחון אלרגיה בילדים.',
+  },
   {
     id: 'inpatient-consults-2024',
     title: 'Evolving Patterns in Inpatient Pediatric Consultations to Allergy/Immunology at an Academic Medical Center',
@@ -111,6 +133,24 @@ export const PUBLICATIONS: Publication[] = [
     whyItMatters: 'Positions Dr. Brameli at the forefront of drug allergy evaluation research, contributing to expert consensus on safe antibiotic prescribing for patients with suspected allergy.',
     whyItMattersHe: 'ממקם את ד״ר ברמלי בחזית המחקר בהערכת אלרגיה לתרופות, עם תרומה לקונצנזוס מומחים בנושא מתן אנטיביוטיקה בטוחה למטופלים עם חשד לאלרגיה.',
   },
+  {
+    id: 'penicillin-allergy-trends-2026',
+    title: 'Institutional Trends in Penicillin Allergy Evaluation and Delabeling',
+    titleHe: 'מגמות מוסדיות בהערכת אלרגיה לפניצילין והסרת תיוג שגוי',
+    journal: 'The Journal of Allergy and Clinical Immunology: In Practice',
+    year: 2026,
+    authors: 'Brameli A, et al.',
+    pubmedId: '42015504',
+    url: 'https://pubmed.ncbi.nlm.nih.gov/42015504/',
+    topicRelevance: 'Penicillin allergy evaluation and delabeling',
+    topicRelevanceHe: 'הערכת אלרגיה לפניצילין והסרת תיוג אלרגיה שאינו מוצדק',
+    relatedPages: [
+      { path: '/services', label: 'אבחון אלרגיה לתרופות' },
+      { path: '/faq', label: 'שאלות על אלרגיה לתרופות' },
+    ],
+    whyItMatters: 'Documents current research on improving penicillin allergy evaluation and delabeling practices.',
+    whyItMattersHe: 'מתעד מחקר עדכני לשיפור תהליכי הבירור והסרת תיוג אלרגיה לפניצילין כאשר הוא אינו מאומת.',
+  },
 ];
 
 /**
@@ -122,11 +162,11 @@ export const RESEARCH_PAGE_MAP: Record<string, {
   trustStatement: string;
 }> = {
   '/services': {
-    publicationIds: ['inpatient-consults-2024', 'cephalosporin-survey-2024'],
+    publicationIds: ['pediatric-drug-anaphylaxis-2024', 'inpatient-consults-2024', 'cephalosporin-survey-2024', 'penicillin-allergy-trends-2026'],
     trustStatement: 'השירותים בקליניקה מבוססים על ניסיון קליני ומחקרי ממרכזים רפואיים מובילים, כולל Vanderbilt University Medical Center.',
   },
   '/אלרגיה-בילדים-מדריך-מלא': {
-    publicationIds: ['inpatient-consults-2024'],
+    publicationIds: ['pediatric-drug-anaphylaxis-2024', 'inpatient-consults-2024'],
     trustStatement: 'תוכן מדריך זה מבוסס על ניסיון בייעוץ אלרגיה בילדים מאושפזים ועל מחקר שפורסם בכתב עת רפואי בינלאומי.',
   },
   '/allergy-testing': {
@@ -134,7 +174,7 @@ export const RESEARCH_PAGE_MAP: Record<string, {
     trustStatement: 'גישת האבחון בקליניקה משלבת ידע מחקרי עדכני בהערכת אלרגיה למזון ולתרופות.',
   },
   '/faq': {
-    publicationIds: ['cephalosporin-survey-2024'],
+    publicationIds: ['cephalosporin-survey-2024', 'penicillin-allergy-trends-2026'],
     trustStatement: 'התשובות בעמוד זה מבוססות על ניסיון קליני ומחקר בהערכת אלרגיה לתרופות.',
   },
 };

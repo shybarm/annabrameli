@@ -10,8 +10,9 @@ export const SchemaMarkup = ({ type = "physician" }: SchemaMarkupProps) => {
     "@type": "Physician",
     "name": "ד״ר אנה ברמלי - מומחית לאלרגיה ואימונולוגיה",
     "image": "https://ihaveallergy.com/og-logo.png?v=2",
-    "@id": "https://ihaveallergy.com",
+    "@id": "https://ihaveallergy.com/dr-anna-brameli#physician",
     "url": "https://ihaveallergy.com",
+    "telephone": "+972-52-591-6393",
     "priceRange": "$$",
     "address": {
       "@type": "PostalAddress",
@@ -42,6 +43,17 @@ export const SchemaMarkup = ({ type = "physician" }: SchemaMarkupProps) => {
     ],
     "medicalSpecialty": "AllergyAndImmunology",
     "knowsLanguage": ["he", "en"],
+    "sameAs": [
+      "https://medicine.vumc.org/department-directory/Anna-Brameli",
+      "https://pedendo.schneider.org.il/?ArticleID=2506&CategoryID=839",
+      "https://orcid.org/0009-0005-6489-6525",
+      "https://pubmed.ncbi.nlm.nih.gov/?term=Brameli+A",
+    ],
+    "worksFor": {
+      "@type": "MedicalOrganization",
+      "name": "Schneider Children's Medical Center of Israel",
+      "url": "https://www.schneider.org.il/",
+    },
     "description": "מומחית לאלרגיה ואימונולוגיה לילדים ומבוגרים בהוד השרון. אבחון וטיפול באלרגיות למזון, אסתמה, ואלרגיה לתרופות.",
   };
 

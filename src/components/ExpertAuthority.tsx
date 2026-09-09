@@ -16,7 +16,7 @@ export function ExpertAuthorityCard({ className = '' }: { className?: string }) 
     <div className={`bg-card rounded-2xl border border-border/60 p-6 ${className}`}>
       <div className="flex items-center gap-2 mb-4">
         <Shield className="w-5 h-5 text-primary" />
-        <h3 className="text-sm font-bold text-foreground">סמכות מקצועית מאומתת</h3>
+        <h3 className="text-sm font-bold text-foreground">רקע מקצועי ומחקרי</h3>
       </div>
 
       <div className="space-y-3 text-sm">
@@ -24,8 +24,8 @@ export function ExpertAuthorityCard({ className = '' }: { className?: string }) 
         <div className="flex items-start gap-3">
           <Landmark className="w-4 h-4 text-primary mt-0.5 shrink-0" />
           <div>
-            <p className="font-medium text-foreground">Clinical Fellow - Allergy & Immunology</p>
-            <p className="text-xs text-muted-foreground">Vanderbilt University Medical Center, Nashville, TN</p>
+            <p className="font-medium text-foreground">רופאה בכירה במכון לאימונולוגיה ואלרגיה</p>
+            <p className="text-xs text-muted-foreground">מרכז שניידר לרפואת ילדים</p>
           </div>
         </div>
 
@@ -55,16 +55,19 @@ export function ExpertAuthorityCard({ className = '' }: { className?: string }) 
         </div>
       </div>
 
-      {/* Vanderbilt link */}
-      <a
-        href={p.vanderbiltProfileUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="mt-4 flex items-center gap-1.5 text-xs text-primary hover:underline"
-      >
-        <ExternalLink className="w-3 h-3" />
-        פרופיל מאומת - Vanderbilt University
-      </a>
+      <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-xs">
+        {[
+          [p.schneiderInstituteUrl, 'צוות מכון שניידר'],
+          [p.schneiderArticleUrl, 'מאמר באתר שניידר'],
+          [p.vanderbiltProfileUrl, 'פרופיל Vanderbilt'],
+          [p.pubmedAuthorUrl, 'פרסומים ב-PubMed'],
+        ].map(([href, label]) => (
+          <a key={href} href={href} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-primary hover:underline">
+            <ExternalLink className="w-3 h-3" />
+            {label}
+          </a>
+        ))}
+      </div>
     </div>
   );
 }
@@ -204,7 +207,7 @@ export function ResearchPublicationsSection() {
             className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
           >
             <Landmark className="w-4 h-4" />
-            צפו בפרופיל המאומת - Vanderbilt University Medical Center
+            לצפייה בפרופיל המקצועי ב-Vanderbilt University Medical Center
             <ExternalLink className="w-3 h-3" />
           </a>
         </motion.div>
