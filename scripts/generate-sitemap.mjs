@@ -22,7 +22,13 @@ const MANIFEST = join(DIST_DIR, "prerendered-routes.json");
 
 // Legal/boilerplate pages: public and crawlable, but kept out of the sitemap
 // so they do not compete with medical content for crawl attention.
-const EXCLUDED = new Set(["/privacy", "/accessibility", "/security"]);
+const EXCLUDED = new Set([
+  "/privacy",
+  "/accessibility",
+  "/security",
+  // Temporarily noindexed while its medical summaries undergo review.
+  "/updates",
+]);
 
 function lastmodForRoute(route, articles) {
   if (!route.startsWith("/blog/")) return null;

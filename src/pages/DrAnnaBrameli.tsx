@@ -303,7 +303,7 @@ const internalResources = [
   { title: "מתי לבצע בדיקות אלרגיה בילדים", href: "/services" },
   { title: "הבנת תוצאות בדיקות IgE", href: "/faq" },
   { title: "אימונותרפיה: יתרונות, סיכונים ותהליך", href: "/services" },
-  { title: "אלרגיות עונתיות - מניעה וטיפול", href: "/updates" },
+  { title: "אלרגיות עונתיות - אבחון וטיפול", href: "/services#seasonal-allergy" },
 ];
 
 const DrAnnaBrameli = () => {
