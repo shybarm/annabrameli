@@ -227,16 +227,16 @@ const Services = () => {
 
     <>
       <Helmet>
-        <title>{heroSection?.heading || 'שירותים ומצבים רפואיים'} | ד״ר אנה ברמלי – מרפאת אלרגיה</title>
+        <title>אלרגולוג ילדים פרטי ובדיקות אלרגיה | ד״ר אנה ברמלי</title>
         <meta 
           name="description" 
-          content="ייעוץ אלרגיה ושירותי אבחון וטיפול: אלרגיה למזון, נזלת אלרגית, אימונותרפיה, אלרגיה לחיות מחמד, לאבק, לתרופות, אסתמה ואורטיקריה. מרפאת אלרגיה בהוד השרון." 
+          content="ייעוץ עם אלרגולוגית לילדים ולמבוגרים בהוד השרון: בירור אלרגיה למזון, תרופות, עקיצות, נזלת ואסתמה והתאמת בדיקות אלרגיה לפי הצורך."
         />
         <link rel="canonical" href="https://ihaveallergy.com/services" />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://ihaveallergy.com/services" />
-        <meta property="og:title" content="שירותי אבחון וטיפול באלרגיה - ד״ר אנה ברמלי" />
-        <meta property="og:description" content="אבחון וטיפול במגוון אלרגיות: מזון, תרופות, אבק, חיות מחמד, אסתמה ואימונותרפיה. מרפאת אלרגיה בהוד השרון." />
+        <meta property="og:title" content="אלרגולוג ילדים פרטי ובדיקות אלרגיה | ד״ר אנה ברמלי" />
+        <meta property="og:description" content="ייעוץ, אבחון וטיפול באלרגיה בילדים ובמבוגרים במרפאה בהוד השרון." />
         <script type="application/ld+json">{JSON.stringify(buildFaqSchema(servicesFaqs))}</script>
         <script type="application/ld+json">{JSON.stringify(conditionsItemList)}</script>
         <script type="application/ld+json">{JSON.stringify(diagnosticServiceSchema)}</script>
@@ -253,16 +253,16 @@ const Services = () => {
             className="max-w-3xl"
           >
             <h1 className="font-bold text-foreground mb-6">
-              {heroSection?.heading || 'שירותים ומצבים רפואיים'}
+              {heroSection?.heading || 'אלרגולוג ילדים פרטי – אבחון וטיפול באלרגיה'}
             </h1>
             <p className="text-lg text-muted-foreground leading-relaxed">
-              {introSection?.content || 'מגוון רחב של שירותי אבחון וטיפול באלרגיות, מותאמים אישית לכל מטופל. המידע להלן מסייע להורים להבין את המצבים השונים ולדעת מתי לפנות לאבחון מקצועי.'}
+              {introSection?.content || 'ייעוץ אלרגולוגי פרטי לילדים ולמבוגרים, עם בירור המבוסס על התסמינים וההיסטוריה הרפואית והתאמת בדיקות רק כאשר הן נדרשות.'}
             </p>
 
             {/* AI-extractable definition block */}
             <div className="mt-8 p-5 rounded-2xl bg-card/80 border border-border/60">
               <p className="text-sm text-muted-foreground leading-relaxed">
-                <strong className="text-foreground">רופא אלרגיה (אלרגולוג)</strong> הוא רופא מומחה לאבחון וטיפול במצבים בהם מערכת החיסון מגיבה לחשיפה לאלרגן - מזון, תרופה, עקיצה, אבקנים, אבק או חיות מחמד. האבחון משלב היסטוריה רפואית, <Link to="/faq#בדיקות-אלרגיה-לילדים" className="text-primary hover:underline">תבחיני עור או בדיקות דם IgE</Link>, ולעיתים תגר מבוקר. הטיפול נע בין הימנעות, תרופות לשליטה בתסמינים, ואימונותרפיה ארוכת טווח. <Link to="/dr-anna-brameli" className="text-primary hover:underline">קראו על ההכשרה של ד״ר ברמלי</Link>.
+                <strong className="text-foreground">רופא אלרגיה (אלרגולוג)</strong> הוא רופא מומחה לאבחון וטיפול במצבים שבהם מערכת החיסון מגיבה לחשיפה לאלרגן – מזון, תרופה, עקיצה, אבקנים, אבק או חיות מחמד. הבירור מתחיל בשיחה רפואית, ובהתאם לצורך כולל תבחיני עור, בדיקות דם IgE או תגר מבוקר. <Link to="/guides/בדיקות-אלרגיה-ילדים-ישראל" className="text-primary hover:underline">קראו כיצד בוחרים בדיקת אלרגיה לילדים</Link>, או <Link to="/knowledge/בדיקות-אלרגיה-פרטי-או-קופה" className="text-primary hover:underline">השוו בין בירור פרטי לבירור בקופה</Link>. מידע על ההכשרה והניסיון נמצא <Link to="/dr-anna-brameli" className="text-primary hover:underline">בעמוד של ד״ר ברמלי</Link>.
               </p>
             </div>
           </motion.div>
