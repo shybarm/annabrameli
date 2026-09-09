@@ -168,7 +168,9 @@ serve(async (req) => {
       .select("pubmed_id")
       .in("pubmed_id", pmids);
 
-    const existingIds = new Set((existing || []).map((e: any) => e.pubmed_id));
+    const existingIds = new Set(
+      (existing || []).map((entry: { pubmed_id: string | null }) => entry.pubmed_id)
+    );
     const newPmids = pmids.filter((id) => !existingIds.has(id));
     console.log(`${newPmids.length} new articles to process (${existingIds.size} already exist)`);
 
@@ -215,7 +217,8 @@ serve(async (req) => {
         source_url: `https://pubmed.ncbi.nlm.nih.gov/${article.pmid}/`,
         pubmed_id: article.pmid,
         published_date: publishedDate,
-        is_published: true,
+        // Medical summaries require editorial review before public display.
+        is_published: false,
       });
 
       if (error) {

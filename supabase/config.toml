@@ -42,7 +42,7 @@ project_id = "ftatmcyrmeyhghgckvbj"
   [functions.summarize-documents]
     verify_jwt = false
   [functions.sync-medical-updates]
-    verify_jwt = false
+    verify_jwt = true
   [functions.tag-document]
     verify_jwt = true
   [functions.transcribe-audio]

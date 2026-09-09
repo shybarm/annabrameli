@@ -28,9 +28,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ServiceCard } from "@/components/ui/service-card";
-import { UpdateCard } from "@/components/ui/update-card";
 import { SchemaMarkup } from "@/components/seo/SchemaMarkup";
-import { useMedicalUpdates } from "@/hooks/useMedicalUpdates";
 import { blogArticles } from "@/data/blog-articles";
 import { usePageContent } from "@/contexts/PageContentContext";
 import { trackBookAppointmentClick, trackPhoneClick } from "@/lib/analytics";
@@ -73,12 +71,6 @@ const services = [
     href: "/services#seasonal-allergy",
   },
 ];
-
-const formatDate = (dateStr: string) => {
-  const date = new Date(dateStr);
-  const months = ["ינואר", "פברואר", "מרץ", "אפריל", "מאי", "יוני", "יולי", "אוגוסט", "ספטמבר", "אוקטובר", "נובמבר", "דצמבר"];
-  return `${months[date.getMonth()]} ${date.getFullYear()}`;
-};
 
 const whyChooseReasons = [
   {
@@ -164,7 +156,6 @@ const faqSchema = {
 };
 
 const Index = () => {
-  const { data: latestUpdates } = useMedicalUpdates(3);
   const { getSection } = usePageContent('homepage');
 
   // Read dynamic content from the page content store
@@ -458,41 +449,6 @@ const Index = () => {
               </motion.div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* Latest Updates Section */}
-      <section className="section-spacing-lg">
-        <div className="container-medical">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-14"
-          >
-            <h2 className="font-bold text-foreground mb-4">
-              עדכונים אחרונים באלרגיה
-            </h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              סקירות עדכניות של מחקרים בתחום האלרגיה והאימונולוגיה, מסוכמות בשפה פשוטה וברורה.
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {(latestUpdates || []).map((update, index) => (
-              <UpdateCard
-                key={update.id}
-                title={update.title_he}
-                date={formatDate(update.published_date)}
-                source={update.source}
-                summary={update.summary_he}
-                link={update.source_url || undefined}
-                delay={index * 0.08}
-              />
-            ))}
-          </div>
-
-          {/* "לכל העדכונים" link temporarily hidden pending content review */}
         </div>
       </section>
 
