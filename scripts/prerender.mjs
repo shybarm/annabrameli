@@ -59,8 +59,8 @@ const SSR_DIR = resolve(PROJECT_ROOT, "dist-ssr");
 
 async function main() {
   if (!existsSync(DIST_DIR) || !existsSync(join(DIST_DIR, "index.html"))) {
-    console.error("[prerender] dist/index.html not found - skipping SSG.");
-    process.exit(0); // do not fail the build
+    console.error("[prerender] dist/index.html not found - refusing to ship without SSG.");
+    process.exit(1);
   }
 
   console.log("[prerender] Building SSR bundle...");
@@ -83,9 +83,9 @@ async function main() {
       },
     });
   } catch (err) {
-    console.error("[prerender] SSR build failed - skipping SSG, client bundle still ships.");
+    console.error("[prerender] SSR build failed - refusing to ship without SSG.");
     console.error(err);
-    process.exit(0);
+    process.exit(1);
   }
 
   const entryUrl = pathToFileURL(join(SSR_DIR, "entry-server.mjs")).href;
@@ -103,9 +103,9 @@ async function main() {
       MIN_SUCCESSFUL_ROUTES,
     } = await import(entryUrl));
   } catch (err) {
-    console.error("[prerender] Failed to import SSR bundle - skipping.");
+    console.error("[prerender] Failed to import SSR bundle - refusing to ship without SSG.");
     console.error(err);
-    process.exit(0);
+    process.exit(1);
   }
 
   const template = readFileSync(join(DIST_DIR, "index.html"), "utf8");
@@ -292,6 +292,6 @@ function writeRouteFile(route, html) {
 
 main().catch((err) => {
   console.error("[prerender] Fatal error:", err);
-  // Do not fail the build - CSR still works.
-  process.exit(0);
+  // A client shell alone is not an acceptable production SEO build.
+  process.exit(1);
 });

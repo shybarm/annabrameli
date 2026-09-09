@@ -22,26 +22,26 @@ import { FAQAccordion } from "@/components/ui/faq-accordion";
 const testTypes = [
   {
     name: "תבחיני עור (Skin Prick Test)",
-    age: "מגיל 4 חודשים",
-    duration: "20-30 דקות",
+    age: "אפשר גם בילדים צעירים, לפי החלטת אלרגולוג",
+    duration: "התגובה נקראת לרוב אחרי 15-20 דקות",
     what: "טיפות של אלרגנים מונחות על העור עם דקירה קלה. תגובה מקומית (נפיחות) תוך 15-20 דקות.",
-    pros: ["תוצאות מיידיות", "מדויקות מאוד", "ניתן לבדוק עשרות אלרגנים בו-זמנית"],
-    cons: ["דורש הפסקת אנטיהיסטמינים 5-7 ימים לפני", "לא מתאים לילדים עם אגזמה מפושטת"],
-    when: "הבדיקה הראשונה בהערכת אלרגיה למזון, לנשימה, או תגובה לא ברורה.",
+    pros: ["תוצאה מהירה", "ללא בדיקת דם", "אפשר לבדוק אלרגנים נבחרים בהתאם לסיפור הרפואי"],
+    cons: ["תרופות אנטיהיסטמיניות עלולות לשבש את התוצאה", "לעיתים קשה לבצע כשהעור באזור הבדיקה אינו מתאים"],
+    when: "כאשר הסיפור הרפואי מעלה חשד לאלרגיה מתווכת IgE והבדיקה מתאימה לילד.",
   },
   {
     name: "בדיקת דם (IgE ספציפי)",
     age: "כל גיל",
-    duration: "דקיקורית אחת (תוצאות תוך ימים)",
+    duration: "דקירת מחט אחת (תוצאות תוך ימים)",
     what: "בדיקת דם שמודדת נוגדנים (IgE) כלפי אלרגנים ספציפיים. מתבצעת במעבדה.",
-    pros: ["אין צורך להפסיק תרופות", "מתאימה לילדים עם אגזמה קשה", "ניתן לבדוק מרכיבים ספציפיים (Component Testing)"],
-    cons: ["תוצאות לא מיידיות", "פחות ספציפית מתבחיני עור לחלק מהאלרגנים"],
+    pros: ["אנטיהיסטמינים אינם משבשים בדרך כלל את התוצאה", "עשויה להתאים כשהעור אינו מאפשר תבחין", "ניתן לבדוק מרכיבים ספציפיים (Component Testing)"],
+    cons: ["תוצאות לא מיידיות", "תוצאה חיובית עשויה להעיד על ריגוש בלבד ולא בהכרח על אלרגיה קלינית"],
     when: "כשלא ניתן לבצע תבחיני עור, או כהשלמה לתמונה הקלינית.",
   },
   {
     name: "מבחן מאכל (Oral Food Challenge)",
     age: "כל גיל, בליווי רפואי",
-    duration: "2-4 שעות",
+    duration: "כמה שעות, בהתאם לפרוטוקול ולתגובה",
     what: "הילד מקבל כמויות הולכות וגדלות של המזון החשוד, תחת השגחה רפואית צמודה בבית חולים או מרפאה.",
     pros: ["הבדיקה המדויקת ביותר – ״תקן הזהב״", "מאפשרת לשלול אלרגיה ולהחזיר מזונות"],
     cons: ["דורשת זמן ומקום מאובזר", "סיכון מבוקר לתגובה"],
@@ -61,28 +61,28 @@ const testTypes = [
 const privatVsPublic = [
   {
     aspect: "זמן המתנה",
-    private: "ימים עד שבועות",
-    public: "חודשים עד חצי שנה",
+    private: "משתנה לפי המרפאה והרופא",
+    public: "משתנה לפי הקופה והאזור",
   },
   {
     aspect: "משך ביקור",
-    private: "30-60 דקות",
-    public: "15-20 דקות",
+    private: "לפי מורכבות המקרה",
+    public: "לפי סוג המרפאה והביקור",
   },
   {
     aspect: "בדיקות באותו ביקור",
-    private: "כן – תבחיני עור + ייעוץ",
-    public: "לעיתים דורש ביקורים נפרדים",
+    private: "לפי הצורך והציוד במרפאה",
+    public: "לפי הצורך וזמינות השירות",
   },
   {
     aspect: "עלות",
-    private: "300-800 ₪ לביקור (תלוי בהיקף)",
-    public: "השתתפות עצמית בלבד",
+    private: "מחיר משתנה; כדאי לברר מראש החזרים",
+    public: "לפי תנאי הקופה, ההפניה והביטוח המשלים",
   },
   {
     aspect: "גמישות",
-    private: "בחירת רופא, שעות גמישות",
-    public: "מוגבל לרופא ושעות הקופה",
+    private: "לעיתים יש יותר אפשרויות בחירה",
+    public: "תלוי בהסדרי הקופה ובמחוז",
   },
 ];
 
@@ -90,22 +90,22 @@ const faqs = [
   {
     question: "מאיזה גיל אפשר לעשות בדיקות אלרגיה?",
     answer:
-      "תבחיני עור ניתן לבצע כבר מגיל 4 חודשים, ובדיקות דם – בכל גיל. הבדיקה נבחרת בהתאם לגיל הילד, סוג החשד, ומצב העור. אלרגולוג ילדים ידע להתאים את הבדיקה הנכונה.",
+      "אין גיל מינימלי אחיד שמתאים לכל בדיקת אלרגיה. אפשר לבצע תבחיני עור או בדיקות דם גם בילדים צעירים כאשר יש לכך הצדקה רפואית. הבחירה תלויה בסיפור התגובה, בסוג החשד, במצב העור וביכולת לפרש את התוצאה.",
   },
   {
     question: "כמה עולות בדיקות אלרגיה פרטיות?",
     answer:
-      "ביקור אלרגולוג פרטי עם תבחיני עור עולה בדרך כלל בין 300 ל-800 ₪, תלוי בהיקף הבדיקה ובמספר האלרגנים. בדיקות דם נוספות נעות בין 100 ל-400 ₪. מומלץ לבדוק מול קופת החולים אם ניתן לקבל החזר חלקי.",
+      "המחיר משתנה בין מרפאות ובהתאם לסוג הבדיקה ולהיקף הבירור. לפני קביעת הביקור כדאי לברר מה כלול במחיר, האם תבחיני עור נעשים באותו מפגש, ומהם תנאי ההחזר של הקופה או הביטוח המשלים.",
   },
   {
     question: "האם צריך להפסיק תרופות לפני בדיקת אלרגיה?",
     answer:
-      "לתבחיני עור – כן. יש להפסיק אנטיהיסטמינים (כמו צטריזין, לורטדין) 5-7 ימים לפני הבדיקה. לבדיקות דם – אין צורך להפסיק שום תרופה. האלרגולוג ינחה אתכם מראש.",
+      "תרופות אנטיהיסטמיניות עלולות להשפיע על תבחיני עור, אך משך ההפסקה משתנה לפי התרופה והמרפאה. אין להפסיק טיפול על דעת עצמכם: בקשו הנחיה מדויקת מהמרפאה לפני הבדיקה. אנטיהיסטמינים אינם משנים בדרך כלל את תוצאת בדיקת ה-IgE בדם.",
   },
   {
     question: "מה ההבדל בין אלרגיה לאי-סבילות?",
     answer:
-      "אלרגיה היא תגובה של מערכת החיסון (IgE), שיכולה להיות מסכנת חיים. אי-סבילות (כמו אי-סבילות ללקטוז) היא בעיה עיכולית – לא נעימה, אבל לא מסוכנת. בדיקות אלרגיה בודקות את התגובה החיסונית.",
+      "אלרגיה היא תגובה של מערכת החיסון ויכולה להיות מתווכת IgE או להופיע במנגנונים אחרים. אי-סבילות, כמו אי-סבילות ללקטוז, אינה תגובה חיסונית. לכן בחירת הבדיקה מתחילה בתסמינים ובסיפור הרפואי ולא בפאנל בדיקות כללי.",
   },
   {
     question: "האם בדיקה שלילית אומרת שאין אלרגיה?",
@@ -126,7 +126,7 @@ const GoldenGuideTesting = () => {
     headline: "בדיקות אלרגיה לילדים בישראל: איזה בדיקה מתאימה, מתי ואיפה",
     description: "מדריך מקיף להורים: סוגי בדיקות אלרגיה לילדים, מתי לעשות כל בדיקה, כמה עולה פרטי מול ציבורי, ומה לצפות בביקור אצל אלרגולוג.",
     datePublished: "2026-02-08",
-    dateModified: "2026-02-08",
+    dateModified: "2026-09-08",
     canonicalUrl: "https://ihaveallergy.com/guides/בדיקות-אלרגיה-ילדים-ישראל",
     about: {
       "@type": "MedicalProcedure",
@@ -144,23 +144,23 @@ const GoldenGuideTesting = () => {
   return (
     <>
       <Helmet>
-        <title>בדיקות אלרגיה לילדים בישראל: מדריך מלא להורים | ד״ר אנה ברמלי</title>
+        <title>בדיקות אלרגיה לילדים: תבחיני עור, דם ותגר | ד״ר אנה ברמלי</title>
         <meta
           name="description"
-          content="מדריך מקיף: סוגי בדיקות אלרגיה לילדים (תבחיני עור, דם, מבחן מאכל), עלויות פרטי מול ציבורי, מאיזה גיל, ומה לצפות. נסקר רפואית ע״י אלרגולוגית ילדים."
+          content="בדיקות אלרגיה לילדים: מתי עושים תבחיני עור, בדיקת IgE בדם או תגר מזון, איך מתכוננים ומה משמעות התוצאות. מדריך רפואי ברור להורים."
         />
         <link rel="canonical" href="https://ihaveallergy.com/guides/בדיקות-אלרגיה-ילדים-ישראל" />
         <meta property="og:type" content="article" />
         <meta property="og:url" content="https://ihaveallergy.com/guides/בדיקות-אלרגיה-ילדים-ישראל" />
-        <meta property="og:title" content="בדיקות אלרגיה לילדים בישראל: מדריך מלא להורים | ד״ר אנה ברמלי" />
-        <meta property="og:description" content="מדריך מקיף: סוגי בדיקות אלרגיה לילדים, עלויות פרטי מול ציבורי, מאיזה גיל, ומה לצפות." />
-        <meta property="og:image" content="https://ihaveallergy.com/og-logo.png?v=2" />
+        <meta property="og:title" content="בדיקות אלרגיה לילדים: תבחיני עור, דם ותגר | ד״ר אנה ברמלי" />
+        <meta property="og:description" content="מתי עושים תבחיני עור, בדיקת IgE בדם או תגר מזון, איך מתכוננים ומה משמעות התוצאות." />
+        <meta property="og:image" content="https://ihaveallergy.com/og-logo.png?v=6" />
         <meta property="article:published_time" content="2026-02-08" />
-        <meta property="article:modified_time" content="2026-02-08" />
+        <meta property="article:modified_time" content="2026-09-08" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="בדיקות אלרגיה לילדים בישראל: מדריך מלא להורים | ד״ר אנה ברמלי" />
-        <meta name="twitter:description" content="מדריך מקיף: סוגי בדיקות אלרגיה לילדים, עלויות פרטי מול ציבורי, מאיזה גיל, ומה לצפות." />
-        <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png?v=2" />
+        <meta name="twitter:title" content="בדיקות אלרגיה לילדים: תבחיני עור, דם ותגר | ד״ר אנה ברמלי" />
+        <meta name="twitter:description" content="מתי עושים תבחיני עור, בדיקת IgE בדם או תגר מזון, איך מתכוננים ומה משמעות התוצאות." />
+        <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png?v=6" />
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(articleSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
@@ -189,7 +189,7 @@ const GoldenGuideTesting = () => {
             </h1>
             <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-8">
               <span className="flex items-center gap-1.5"><Clock className="w-4 h-4" />9 דקות קריאה</span>
-              <span>עודכן: פברואר 2026</span>
+              <span>עודכן: ספטמבר 2026</span>
             </div>
             <AuthorBadge compact />
           </motion.div>
@@ -211,6 +211,9 @@ const GoldenGuideTesting = () => {
               נשימה. המדריך הזה מסביר בדיוק מה כל בדיקה עושה, למי היא מתאימה, ואיך לבחור נכון – בלי ללכת לאיבוד.
             </p>
           </div>
+          <p className="text-muted-foreground leading-relaxed">
+            בדיקות אלרגיה לילדים אינן בדיקות סקר כלליות. מתחילים בסיפור הרפואי ובוחרים רק את האלרגנים והבדיקה שמתאימים לתגובה החשודה. תוצאה חיובית בתבחין עור או בדם מצביעה על ריגוש חיסוני, אך אינה מוכיחה לבדה שהילד אלרגי בפועל.
+          </p>
         </motion.section>
 
         {/* Test types */}
@@ -235,7 +238,7 @@ const GoldenGuideTesting = () => {
                 <h3 className="text-lg font-semibold text-foreground mb-3">{test.name}</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm mb-4">
                   <div>
-                    <span className="text-muted-foreground">גיל מינימלי: </span>
+                    <span className="text-muted-foreground">גיל והתאמה: </span>
                     <span className="font-medium text-foreground">{test.age}</span>
                   </div>
                   <div>
@@ -367,7 +370,7 @@ const GoldenGuideTesting = () => {
               אם הילד מאובחן עם אלרגיה למזון, אחת האפשרויות המתקדמות היא <strong className="text-foreground">טיפול בדסנסיטיזציה (Oral Immunotherapy – OIT)</strong>. בטיפול זה, הילד מקבל כמויות קטנות והולכות וגדלות של האלרגן, תחת פיקוח רפואי, במטרה ללמד את מערכת החיסון לסבול את המזון.
             </p>
             <p>
-              ישראל נחשבת למובילה עולמית ב-OIT, עם מרכזים מומחים בבתי חולים ובמרפאות פרטיות. הטיפול מתאים לילדים מגיל שנתיים ומעלה, ודורש התחייבות של ההורים לנטילה יומית.
+              ההתאמה ל-OIT תלויה בין היתר בסוג האלרגן, בגיל, במחלות הרקע וביכולת המשפחה להתמיד בפרוטוקול. זהו טיפול שדורש מעקב והנחיות בטיחות של צוות מומחה.
             </p>
             <p>
               <strong className="text-foreground">לא כל ילד מתאים ל-OIT</strong> – האלרגולוג יעריך את הסיכון מול התועלת ויכווין אתכם.
@@ -429,6 +432,27 @@ const GoldenGuideTesting = () => {
         {/* Bottom CTA */}
         <ArticleCTA variant="section" />
 
+        <section className="mt-10" aria-labelledby="professional-sources">
+          <h2 id="professional-sources" className="text-xl md:text-2xl font-bold text-foreground mb-4">מקורות מקצועיים</h2>
+          <ul className="space-y-3 text-sm text-muted-foreground">
+            <li>
+              <a className="text-primary hover:underline" href="https://me.health.gov.il/parenting/raising-children/common-childhood-diseases-and-symptoms/medical-conditions/common-allergies/" target="_blank" rel="noreferrer">
+                משרד הבריאות: אלרגיות ילדים – בדיקות וטיפול
+              </a>
+            </li>
+            <li>
+              <a className="text-primary hover:underline" href="https://www.nice.org.uk/guidance/cg116/chapter/Recommendations" target="_blank" rel="noreferrer">
+                NICE: אבחון אלרגיה למזון בילדים ובני נוער
+              </a>
+            </li>
+            <li>
+              <a className="text-primary hover:underline" href="https://www.aaaai.org/tools-for-the-public/conditions-library/allergies/what-do-patients-and-caregivers-need-to-know-about" target="_blank" rel="noreferrer">
+                AAAAI: מידע להורים על תגר מזון בהשגחה רפואית
+              </a>
+            </li>
+          </ul>
+        </section>
+
         {/* Author + disclaimer */}
         <div className="mt-10 space-y-6">
           <AuthorBadge />
@@ -436,7 +460,7 @@ const GoldenGuideTesting = () => {
             <p className="mb-2">
               <strong className="text-foreground">הבהרה רפואית:</strong> המידע בעמוד זה נועד לצרכי הסברה בלבד ואינו מהווה תחליף לייעוץ רפואי מקצועי. כל החלטה בנוגע לבריאות ילדכם צריכה להתקבל בהתייעצות עם רופא מוסמך.
             </p>
-            <p>תוכן זה נכתב ונסקר רפואית על ידי ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה ורופאת ילדים. עודכן לאחרונה: פברואר 2026.</p>
+            <p>תוכן זה נכתב ונסקר רפואית על ידי ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה ורופאת ילדים. עודכן לאחרונה: ספטמבר 2026.</p>
           </div>
         </div>
       </div>

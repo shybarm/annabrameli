@@ -9,14 +9,13 @@ export const SchemaMarkup = ({ type = "physician" }: SchemaMarkupProps) => {
     "@context": "https://schema.org",
     "@type": "Physician",
     "name": "ד״ר אנה ברמלי - מומחית לאלרגיה ואימונולוגיה",
-    "image": "https://ihaveallergy.com/og-logo.png?v=2",
+    "image": "https://ihaveallergy.com/og-logo.png?v=6",
     "@id": "https://ihaveallergy.com/dr-anna-brameli#physician",
     "url": "https://ihaveallergy.com",
     "telephone": "+972-52-591-6393",
     "priceRange": "$$",
     "address": {
       "@type": "PostalAddress",
-      "streetAddress": "הטווס 3",
       "addressLocality": "הוד השרון",
       "postalCode": "4501303",
       "addressCountry": "IL",
@@ -84,7 +83,6 @@ export const SchemaMarkup = ({ type = "physician" }: SchemaMarkupProps) => {
       name: "ד״ר אנה ברמלי",
       address: {
         "@type": "PostalAddress",
-        streetAddress: "הטווס 3",
         addressLocality: "הוד השרון",
         addressCountry: "IL",
       },

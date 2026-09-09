@@ -14,7 +14,6 @@ import {
   ShieldCheck,
   Heart,
   ArrowRight,
-  Info,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AuthorBadge } from "@/components/blog/AuthorBadge";
@@ -27,35 +26,35 @@ const WHATSAPP_URL =
 const allergenTable = [
   {
     name: "במבה (בוטנים)",
-    startAge: "4-6 חודשים",
+    startAge: "סביב גיל 6 חודשים, לפי סימני מוכנות",
     howToStart: "מחית במבה ברוטב / במבה ממוסמסת בחלב אם / תמ\"ל",
-    firstAmount: "½ כפית",
-    frequency: "3 פעמים בשבוע, באופן קבוע",
-    notes: "מחקר LEAP הוכיח הפחתה של 80% באלרגיה",
+    firstAmount: "כמות קטנה ולהגדיל בהדרגה",
+    frequency: "להמשיך לשלב בתפריט לאחר חשיפה מוצלחת",
+    notes: "בתינוקות עם אקזמה קשה או אלרגיה לביצה יש להתייעץ עם רופא לפני החשיפה",
   },
   {
     name: "טחינה (שומשום)",
-    startAge: "4-6 חודשים",
-    howToStart: "טחינה גולמית מדוללת עם מים / מעורבת במחית",
-    firstAmount: "¼ כפית",
-    frequency: "3 פעמים בשבוע",
-    notes: "מחקר EAT תומך בחשיפה מוקדמת",
+    startAge: "סביב גיל 6 חודשים, לפי סימני מוכנות",
+    howToStart: "טחינה גולמית מדוללת היטב במים או מעורבת במחית מוכרת",
+    firstAmount: "כמות קטנה ולהגדיל בהדרגה",
+    frequency: "להמשיך לשלב בתפריט לאחר חשיפה מוצלחת",
+    notes: "אין להגיש שומשום או זרעים שלמים לתינוק בגלל סכנת חנק",
   },
   {
     name: "ביצה",
-    startAge: "4-6 חודשים",
-    howToStart: "ביצה קשה מרוסקת, מעורבת במחית ירקות",
-    firstAmount: "¼ כפית חלמון מבושל",
-    frequency: "2-3 פעמים בשבוע",
-    notes: "להתחיל בחלמון, לעבור לביצה שלמה בהדרגה",
+    startAge: "סביב גיל 6 חודשים, לפי סימני מוכנות",
+    howToStart: "ביצה מבושלת היטב ומרוסקת במרקם המתאים לתינוק",
+    firstAmount: "כמות קטנה ולהגדיל בהדרגה",
+    frequency: "להמשיך לשלב בתפריט לאחר חשיפה מוצלחת",
+    notes: "יש להגיש ביצה מבושלת היטב",
   },
   {
     name: "חלב פרה",
-    startAge: "לאחר גיל שנה (כמשקה)",
-    howToStart: "מוצרי חלב מבושלים (גבינה, יוגורט) – מגיל 6-9 חודשים",
-    firstAmount: "כפית יוגורט",
-    frequency: "יומיומי לאחר חשיפה מוצלחת",
-    notes: "חלב פרה כמשקה – רק מגיל שנה",
+    startAge: "מוצרי חלב סביב גיל 6 חודשים; חלב ניגר רק מגיל שנה",
+    howToStart: "מעט מוצר חלב לא ממותק, במרקם המתאים לתינוק",
+    firstAmount: "כמות קטנה ולהגדיל בהדרגה",
+    frequency: "להמשיך לשלב בתפריט לאחר חשיפה מוצלחת",
+    notes: "אין לתת חלב פרה כמשקה או כתחליף לחלב אם או תמ\"ל לפני גיל שנה",
   },
 ];
 
@@ -83,24 +82,21 @@ const emergencySteps = [
   { step: "5", title: "אל תנסו שוב ללא ייעוץ רפואי", desc: "אלרגולוג ילדים יקבע את הצעד הבא" },
 ];
 
-const dontStartAloneCriteria = [
-  "לתינוק יש אגזמה (אטופיק דרמטיטיס) בינונית עד חמורה",
-  "אח/ות מאובחנים עם אלרגיה למזון",
-  "תגובה קודמת לאחד מהמזונות",
-  "ההורים חרדים ולא בטוחים – וזה בסדר גמור",
-  "הרופא המטפל המליץ על ליווי אלרגולוג",
-];
-
 const faqs = [
   {
     question: "האם מותר לתת במבה בגיל 4 חודשים?",
     answer:
-      "כן. לפי ההנחיות העדכניות של משרד הבריאות הישראלי ומחקר LEAP, מומלץ להתחיל חשיפה לבוטנים (כמו במבה) החל מגיל 4 חודשים, במיוחד לתינוקות בסיכון מוגבר. יש להתחיל בכמות קטנה ולוודא שהתינוק מוכן מבחינה התפתחותית (יושב בתמיכה, מגלה עניין באוכל).",
+      "משרד הבריאות ממליץ להתחיל מזונות משלימים סביב גיל חצי שנה ובהתאם לסימני המוכנות, ולא לפני גיל 4 חודשים. בתינוקות עם אקזמה קשה או אלרגיה לביצה קיימות הנחיות ייעודיות לחשיפה לבוטנים בגיל 4–6 חודשים, ולכן חשוב להתייעץ עם רופא הילדים או אלרגולוג לפני החשיפה.",
   },
   {
     question: "מה ההבדל בין תגובה רגילה לאלרגיה?",
     answer:
       "תגובה רגילה: סומק קל סביב הפה שחולף תוך שעה, סלידה מהטעם, או שלשול קל. אלרגיה: פריחה מפושטת (חרלות), נפיחות בשפתיים/עיניים, הקאות חוזרות, שיעול, צפצופים, או חיוורון. ההבדל העיקרי – תגובה רגילה מוגבלת לאזור המגע וחולפת מהר; אלרגיה מערבת אזורים נוספים בגוף.",
+  },
+  {
+    question: "איך נותנים טחינה לתינוק בפעם הראשונה?",
+    answer:
+      "סביב גיל חצי שנה, לאחר הופעת סימני מוכנות למזונות משלימים, אפשר להציע כמות קטנה של טחינה גולמית שדוללה היטב במים או עורבבה במחית מוכרת. יש להגיש במרקם חלק, כשהתינוק יושב זקוף ובהשגחה. אם הייתה תגובה קודמת למזון, או אם לתינוק יש אקזמה קשה או אלרגיה ידועה, יש להתייעץ עם רופא לפני החשיפה.",
   },
   {
     question: "מתי לפנות לאלרגולוג לפני הטעימות הראשונות?",
@@ -110,7 +106,7 @@ const faqs = [
   {
     question: "האם חשיפה מוקדמת באמת מונעת אלרגיה?",
     answer:
-      "כן, המחקר המדעי תומך בכך. מחקר LEAP הראה הפחתה של 80% באלרגיה לבוטנים בקרב תינוקות בסיכון שצרכו בוטנים מגיל 4-6 חודשים. מחקרי EAT ו-PETIT תומכים בעקרון דומה לשומשום וביצה. ההמלצה: חשיפה מוקדמת, עקבית, ובכמויות קטנות.",
+      "הראיות החזקות ביותר הן לגבי בוטנים: מחקר LEAP מצא ירידה יחסית של 81% באלרגיה לבוטנים בגיל 5 בקרב תינוקות בסיכון גבוה שהחלו לצרוך מוצרי בוטנים בינקות. ההמלצה המעשית תלויה בגיל, במוכנות לאכילה וברמת הסיכון האישית של התינוק.",
   },
   {
     question: "מה לעשות אם התינוק סירב לטעום?",
@@ -132,10 +128,10 @@ const GoldenGuide = () => {
   const faqSchema = buildFaqSchema(faqs);
 
   const articleSchema = buildMedicalPageSchema({
-    headline: "טעימות ראשונות בישראל: איך לחשוף תינוק לאלרגנים (במבה, טחינה, ביצים וחלב)",
-    description: "מדריך רפואי מקיף להורים ישראליים: איך להתחיל טעימות ראשונות של אלרגנים נפוצים לתינוקות, מתי להיבהל ומתי לנשום, מבוסס מחקר LEAP וההנחיות הישראליות.",
+    headline: "טעימות ראשונות לתינוק: טחינה, במבה ואלרגנים נפוצים",
+    description: "מדריך להורים על טעימות ראשונות לתינוק: מתי מתחילים מזונות משלימים, איך מציעים טחינה ובמבה, אילו סימנים דורשים בדיקה ומתי לפנות לרופא.",
     datePublished: "2026-02-08",
-    dateModified: "2026-02-08",
+    dateModified: "2026-09-08",
     canonicalUrl: "https://ihaveallergy.com/guides/טעימות-ראשונות-אלרגנים",
     about: {
       "@type": "MedicalCondition",
@@ -153,23 +149,23 @@ const GoldenGuide = () => {
   return (
     <>
       <Helmet>
-        <title>טעימות ראשונות לתינוקות: מדריך חשיפה לאלרגנים בישראל | ד״ר אנה ברמלי</title>
+        <title>טעימות ראשונות: טחינה, במבה ואלרגנים לתינוק | ד״ר אנה ברמלי</title>
         <meta
           name="description"
-          content="מדריך רפואי מקיף להורים: איך לחשוף תינוק לבמבה, טחינה, ביצים וחלב בבטחה. מתי להתחיל, איך לזהות אלרגיה, ומתי לפנות לרופא. מבוסס מחקר LEAP."
+          content="מתי מתחילים טעימות לתינוק, איך מציעים טחינה ובמבה, אילו אלרגנים חשוב להכיר ומהם סימני האזהרה. מדריך מעשי להורים לפי מקורות רפואיים."
         />
         <link rel="canonical" href="https://ihaveallergy.com/guides/טעימות-ראשונות-אלרגנים" />
         <meta property="og:type" content="article" />
         <meta property="og:url" content="https://ihaveallergy.com/guides/טעימות-ראשונות-אלרגנים" />
-        <meta property="og:title" content="טעימות ראשונות לתינוקות: מדריך חשיפה לאלרגנים בישראל | ד״ר אנה ברמלי" />
-        <meta property="og:description" content="מדריך רפואי מקיף להורים: איך לחשוף תינוק לבמבה, טחינה, ביצים וחלב בבטחה." />
-        <meta property="og:image" content="https://ihaveallergy.com/og-logo.png?v=2" />
+        <meta property="og:title" content="טעימות ראשונות: טחינה, במבה ואלרגנים לתינוק | ד״ר אנה ברמלי" />
+        <meta property="og:description" content="מדריך מעשי להורים: מתי מתחילים ואיך מציעים טחינה, במבה ואלרגנים נפוצים לתינוק." />
+        <meta property="og:image" content="https://ihaveallergy.com/og-logo.png?v=6" />
         <meta property="article:published_time" content="2026-02-08" />
-        <meta property="article:modified_time" content="2026-02-08" />
+        <meta property="article:modified_time" content="2026-09-08" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="טעימות ראשונות לתינוקות: מדריך חשיפה לאלרגנים בישראל | ד״ר אנה ברמלי" />
-        <meta name="twitter:description" content="מדריך רפואי מקיף להורים: איך לחשוף תינוק לבמבה, טחינה, ביצים וחלב בבטחה." />
-        <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png?v=2" />
+        <meta name="twitter:title" content="טעימות ראשונות: טחינה, במבה ואלרגנים לתינוק | ד״ר אנה ברמלי" />
+        <meta name="twitter:description" content="מדריך מעשי להורים: מתי מתחילים ואיך מציעים טחינה, במבה ואלרגנים נפוצים לתינוק." />
+        <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png?v=6" />
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(articleSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
@@ -211,7 +207,7 @@ const GoldenGuide = () => {
                 8 דקות קריאה
               </span>
               <span className="flex items-center gap-1.5">
-                עודכן: פברואר 2026
+                עודכן: ספטמבר 2026
               </span>
             </div>
 
@@ -258,16 +254,16 @@ const GoldenGuide = () => {
           </div>
           <div className="text-muted-foreground leading-relaxed space-y-4">
             <p>
-              במשך שנים, הורים קיבלו את ההמלצה לדחות חשיפה לאלרגנים. היום אנחנו יודעים שזו הייתה טעות. <strong className="text-foreground">המחקר המדעי הפך את הגישה ב-180 מעלות.</strong>
+              בעבר הומלץ לעיתים לדחות חשיפה למזונות בעלי פוטנציאל אלרגני. כיום אין המלצה לדחות אותם מעבר לשלב שבו התינוק מוכן למזונות משלימים.
             </p>
             <p>
               <strong className="text-foreground">מחקר LEAP</strong> (Learning Early About Peanut Allergy), שפורסם בשנת 2015 ב-New England Journal of Medicine, הראה שחשיפה מוקדמת לבוטנים (מגיל 4-11 חודשים) <strong className="text-foreground">הפחיתה את שיעור האלרגיה לבוטנים ב-80%</strong> בקרב תינוקות בסיכון גבוה.
             </p>
             <p>
-              בעקבות המחקר, משרד הבריאות הישראלי, האקדמיה האמריקאית לרפואת ילדים, והאגודה האירופית לאלרגולוגיה – כולם עדכנו את ההנחיות: <strong className="text-foreground">התחילו מוקדם, תמשיכו באופן קבוע.</strong>
+              משרד הבריאות ממליץ להתחיל מזונות משלימים <strong className="text-foreground">סביב גיל חצי שנה ובהתאם לסימני המוכנות</strong>. חשיפה לפני גיל 4 חודשים אינה מומלצת. בתינוקות בסיכון גבוה לאלרגיה לבוטנים קיימות הנחיות ייעודיות, ולכן יש להתייעץ עם רופא לפני חשיפה מוקדמת.
             </p>
             <p>
-              הגוף של התינוק לומד ״להכיר״ מזונות חדשים דרך מערכת החיסון במעי. כשהחשיפה מתחילה מוקדם ונמשכת באופן עקבי – הסיכוי לפתח סבילות (tolerance) גבוה משמעותית.
+              לאחר שמזון הוצג ללא תגובה, מקובל להמשיך לשלב אותו בתפריט. במקרה של תגובה קודמת, אקזמה קשה או אלרגיה ידועה למזון אחר, כדאי לקבל הנחיה אישית מרופא ילדים או אלרגולוג.
             </p>
           </div>
         </motion.section>
@@ -487,6 +483,42 @@ const GoldenGuide = () => {
         {/* Bottom CTA */}
         <ArticleCTA variant="section" />
 
+        <section className="mt-10" aria-labelledby="medical-sources">
+          <h2 id="medical-sources" className="text-lg font-bold text-foreground mb-3">מקורות רפואיים</h2>
+          <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
+            <li>
+              <a
+                href="https://me.health.gov.il/parenting/raising-children/baby-nutrition/solid-food/toddler-nutrition/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                משרד הבריאות – מעבר למזונות משלימים
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://www.niaid.nih.gov/sites/default/files/peanut-allergy-prevention-guidelines-parent-summary.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                NIAID – הנחיות להורים למניעת אלרגיה לבוטנים
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://www.nih.gov/news-events/nih-research-matters/providing-lasting-protection-peanut-allergy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                NIH – תוצאות מחקרי LEAP והמעקב ארוך הטווח
+              </a>
+            </li>
+          </ul>
+        </section>
+
         {/* Author + disclaimer */}
         <div className="mt-10 space-y-6">
           <AuthorBadge />
@@ -496,7 +528,7 @@ const GoldenGuide = () => {
               <strong className="text-foreground">הבהרה רפואית:</strong> המידע בעמוד זה נועד לצרכי הסברה בלבד ואינו מהווה תחליף לייעוץ רפואי מקצועי. כל החלטה בנוגע לבריאות תינוקכם צריכה להתקבל בהתייעצות עם רופא מוסמך.
             </p>
             <p>
-              תוכן זה נכתב ונסקר רפואית על ידי ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה ורופאת ילדים. עודכן לאחרונה: פברואר 2026.
+              תוכן זה נכתב ונסקר רפואית על ידי ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה ורופאת ילדים. עודכן לאחרונה: ספטמבר 2026.
             </p>
           </div>
         </div>

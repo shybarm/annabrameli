@@ -1,0 +1,92 @@
+[
+  {
+    "name": "portrait",
+    "source": "https://ihaveallergy.com/__l5e/assets-v1/c4eca60b-df45-4efd-8a0e-0c4e19e02e67/dr-anna-brameli-portrait.png",
+    "sourceBytes": 759389,
+    "sourceSha256": "b89721bb35a954b36fea98ea273a3aef2cd721cfa4e84fb2bfcf078bc3f5f54e",
+    "variants": [
+      {
+        "path": "/images/optimized/portrait-384.webp",
+        "width": 384,
+        "bytes": 9666
+      },
+      {
+        "path": "/images/optimized/portrait-768.webp",
+        "width": 768,
+        "bytes": 26276
+      }
+    ]
+  },
+  {
+    "name": "avatar",
+    "source": "https://ihaveallergy.com/__l5e/assets-v1/33f8799f-28d9-4be6-80f6-d4b598f2bf37/dr-anna-avatar.png",
+    "sourceBytes": 763222,
+    "sourceSha256": "002140333f38408ad10c5adbb8ddbcc9c1a868f6325e9c2d908494ff334bf350",
+    "variants": [
+      {
+        "path": "/images/optimized/avatar-80.webp",
+        "width": 80,
+        "bytes": 1228
+      },
+      {
+        "path": "/images/optimized/avatar-120.webp",
+        "width": 120,
+        "bytes": 2118
+      }
+    ]
+  },
+  {
+    "name": "consultation",
+    "source": "https://ihaveallergy.com/__l5e/assets-v1/1733d235-0d65-4379-bed5-f0599e0f39c8/dr-anna-consultation-2.png",
+    "sourceBytes": 2728551,
+    "sourceSha256": "cda5c68850bb0f90bc0007d02f5520d8e9df3ec8044440e4db1d358c1e783dd6",
+    "variants": [
+      {
+        "path": "/images/optimized/consultation-480.webp",
+        "width": 480,
+        "bytes": 31658
+      },
+      {
+        "path": "/images/optimized/consultation-960.webp",
+        "width": 960,
+        "bytes": 80992
+      }
+    ]
+  },
+  {
+    "name": "desensitization",
+    "source": "https://ihaveallergy.com/__l5e/assets-v1/29dfd989-7b92-4e2f-9a3a-51ff3b7ef188/desensitization-dr-brameli.webp",
+    "sourceBytes": 89054,
+    "sourceSha256": "9993274e040dd8f2341a3da9b7041cd37225b63ec977ce7879bafa726e4a4951",
+    "variants": [
+      {
+        "path": "/images/optimized/desensitization-480.webp",
+        "width": 480,
+        "bytes": 14734
+      },
+      {
+        "path": "/images/optimized/desensitization-960.webp",
+        "width": 960,
+        "bytes": 35482
+      }
+    ]
+  },
+  {
+    "name": "food-allergy",
+    "source": "https://ihaveallergy.com/__l5e/assets-v1/810c6e65-e589-4ec8-9ab2-ae4286741db8/dr-anna-brameli-food-allergy.webp",
+    "sourceBytes": 174576,
+    "sourceSha256": "b766915f566576c3e38aa0d1374fd813fa9a1059a03f6c81061455cdccd27d93",
+    "variants": [
+      {
+        "path": "/images/optimized/food-allergy-480.webp",
+        "width": 480,
+        "bytes": 25122
+      },
+      {
+        "path": "/images/optimized/food-allergy-960.webp",
+        "width": 960,
+        "bytes": 62304
+      }
+    ]
+  }
+]

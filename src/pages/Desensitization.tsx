@@ -25,14 +25,14 @@ import {
 import drAnnaConsultation from "@/assets/dr-anna-brameli-consultation.png.asset.json";
 
 const CANONICAL = "https://ihaveallergy.com/desensitization";
-const CLINIC_ADDRESS = "הטווס 3, הוד השרון";
+const CLINIC_ADDRESS = "הוד השרון";
 
 const trustPoints = [
   "ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה קלינית",
   "רופאה בכירה במחלקת אלרגיה ואימונולוגיה במרכז שניידר לרפואת ילדים",
   "בוגרת תת-התמחות ב-Vanderbilt University Medical Center",
   "ייעוץ התאמה רפואי לפני תהליך דה-סנסיטיזציה למזון",
-  `מרפאה בהוד השרון, ${CLINIC_ADDRESS.split(",").slice(0, 2).join(",").trim()}`,
+  `מרפאה בהוד השרון`,
 ];
 
 const valueCards = [
@@ -137,7 +137,7 @@ const Desensitization = () => {
           property="og:description"
           content="ייעוץ התאמה לדה-סנסיטיזציה למזון (OIT) עם מומחית לאלרגיה ואימונולוגיה קלינית. מרפאה בהוד השרון."
         />
-        <meta property="og:image" content="https://ihaveallergy.com/og-logo.png?v=2" />
+        <meta property="og:image" content="https://ihaveallergy.com/og-logo.png?v=6" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta
           name="twitter:title"
@@ -147,7 +147,7 @@ const Desensitization = () => {
           name="twitter:description"
           content="ייעוץ התאמה לדה-סנסיטיזציה למזון (OIT). הערכה רפואית מסודרת לפני תחילת התהליך."
         />
-        <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png?v=2" />
+        <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png?v=6" />
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(articleSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
