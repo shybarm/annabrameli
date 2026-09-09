@@ -233,7 +233,7 @@ const FAQ = () => {
   return (
     <>
       <Helmet>
-        <title>שאלות נפוצות על אלרגיה בילדים: תסמינים ובדיקות | ד״ר אנה ברמלי</title>
+        <title>אלרגיה בילדים: שאלות ותשובות | ד״ר אנה ברמלי</title>
         <meta 
           name="description" 
           content="תשובות לשאלות נפוצות על אלרגיה בילדים: תסמינים, אלרגיה למזון, אנפילקסיס, תבחיני עור ובדיקות דם, ומתי לפנות לאלרגולוג."
@@ -241,7 +241,7 @@ const FAQ = () => {
         <link rel="canonical" href="https://ihaveallergy.com/faq" />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://ihaveallergy.com/faq" />
-        <meta property="og:title" content="שאלות נפוצות על אלרגיה בילדים: תסמינים ובדיקות" />
+        <meta property="og:title" content="אלרגיה בילדים: שאלות ותשובות | ד״ר אנה ברמלי" />
         <meta property="og:description" content="תשובות ברורות להורים על תסמיני אלרגיה, אלרגיה למזון, אנפילקסיס ובדיקות אלרגיה לילדים." />
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(buildBreadcrumbSchema([
