@@ -432,6 +432,17 @@ const AllergyPillar = () => {
               </motion.div>
             ))}
           </div>
+          <p className="mt-6">
+            למידע מרוכז לפי גיל, תסמינים, אבחון והתנהלות בבית ובמסגרת החינוכית,
+            המשיכו אל{` `}
+            <Link
+              to="/אלרגיה-בילדים-מדריך-מלא"
+              className="text-primary font-medium hover:underline"
+            >
+              המדריך המלא לאלרגיה בילדים
+            </Link>
+            .
+          </p>
         </Section>
 
         {/* ── 3. תסמינים ── */}
