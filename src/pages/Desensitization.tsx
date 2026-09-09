@@ -377,6 +377,12 @@ const Desensitization = () => {
             <p className="text-xs text-muted-foreground max-w-md">
               אין להתחיל חשיפה יזומה למזון אלרגני בבית ללא הנחיה רפואית אישית.
             </p>
+            <Link
+              to="/food-desensitization"
+              className="text-sm text-primary font-medium hover:underline"
+            >
+              לעמוד הייעוץ הפרטי והכנה לפגישה
+            </Link>
           </div>
         </motion.section>
       </div>

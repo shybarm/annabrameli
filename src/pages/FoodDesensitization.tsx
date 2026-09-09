@@ -30,21 +30,20 @@ import foodAllergyImage from "@/assets/dr-anna-brameli-food-allergy.webp.asset.j
 import { UrgencyPopup } from "@/components/marketing/UrgencyPopup";
 
 const CANONICAL = "https://ihaveallergy.com/food-desensitization";
-const CLINIC_ADDRESS = "יגאל אלון 82, בניין סוזוקי, קומה 4, תל אביב";
-// TODO: לוודא עקביות כתובת בפוטר, בדף צור קשר, בסכמה וב-Google Business Profile.
+const CLINIC_ADDRESS = "הוד השרון";
 
 const trustStrip = [
   "מומחית לאלרגיה ואימונולוגיה קלינית",
   "רופאה בכירה במרכז שניידר לרפואת ילדים",
   "בוגרת תת-התמחות ב-Vanderbilt University Medical Center",
-  "ייעוץ פרטי בתל אביב",
+  "ייעוץ פרטי בהוד השרון",
 ];
 
 const heroBullets = [
   "ייעוץ פרטי לילדים ומבוגרים עם אלרגיה למזון",
   "הערכת התאמה לפני תהליך דה-סנסיטיזציה",
   "הסבר ברור על סיכונים, מגבלות ואפשרויות המשך",
-  `מרפאה בתל אביב, ${CLINIC_ADDRESS}`,
+  `מרפאה ב${CLINIC_ADDRESS}`,
 ];
 
 const inMeeting = [
@@ -195,11 +194,10 @@ const physicianSchema = {
     "מומחית לאלרגיה ואימונולוגיה קלינית, רופאה בכירה במחלקת אלרגיה ואימונולוגיה במרכז שניידר לרפואת ילדים, מעניקה ייעוץ פרטי בנושא אלרגיה למזון ודה-סנסיטיזציה.",
   address: {
     "@type": "PostalAddress",
-    streetAddress: "יגאל אלון 82, בניין סוזוקי, קומה 4",
-    addressLocality: "תל אביב",
+    addressLocality: "הוד השרון",
     addressCountry: "IL",
   },
-  areaServed: ["תל אביב", "גוש דן", "המרכז", "השרון", "ישראל"],
+  areaServed: ["הוד השרון", "השרון", "המרכז", "ישראל"],
   availableService: [
     { "@type": "MedicalProcedure", name: "ייעוץ אלרגיה למזון" },
     { "@type": "MedicalProcedure", name: "הערכת התאמה לדה-סנסיטיזציה" },
@@ -222,7 +220,7 @@ const FoodDesensitization = () => {
         <title>ייעוץ פרטי לדה-סנסיטיזציה למזון | ד״ר אנה ברמלי</title>
         <meta
           name="description"
-          content="הילד אלרגי למזון? קבעו ייעוץ פרטי עם ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה קלינית, לבדיקת התאמה והכוונה בנושא דה-סנסיטיזציה למזון בתל אביב."
+          content="הילד אלרגי למזון? קבעו ייעוץ פרטי עם ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה קלינית, לבדיקת התאמה והכוונה בנושא דה-סנסיטיזציה למזון בהוד השרון."
         />
         <link rel="canonical" href={CANONICAL} />
         <meta name="robots" content="index, follow" />
@@ -234,7 +232,7 @@ const FoodDesensitization = () => {
         />
         <meta
           property="og:description"
-          content="קביעת ייעוץ התאמה עם מומחית לאלרגיה ואימונולוגיה קלינית, רופאה בכירה בשניידר. מרפאה בתל אביב."
+          content="קביעת ייעוץ התאמה עם מומחית לאלרגיה ואימונולוגיה קלינית, רופאה בכירה בשניידר. מרפאה בהוד השרון."
         />
         <meta property="og:image" content="https://ihaveallergy.com/og-logo.png?v=6" />
         <meta name="twitter:card" content="summary_large_image" />
@@ -381,7 +379,7 @@ const FoodDesensitization = () => {
           <figure className="mb-6 -mx-6 md:-mx-10 -mt-6 md:-mt-10">
             <img
               src={desensitizationImage.url}
-              alt="ייעוץ דה-סנסיטיזציה למזון עם ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה קלינית, במרפאה פרטית בתל אביב"
+              alt="ייעוץ דה-סנסיטיזציה למזון עם ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה קלינית, במרפאה פרטית בהוד השרון"
               title="דה-סנסיטיזציה למזון - ד״ר אנה ברמלי"
               className="w-full h-56 md:h-72 object-cover rounded-t-3xl"
               loading="lazy"
@@ -389,7 +387,7 @@ const FoodDesensitization = () => {
               height={900}
             />
             <figcaption className="sr-only">
-              ד״ר אנה ברמלי בייעוץ פרטי להורים בנושא אלרגיה למזון ודה-סנסיטיזציה (OIT) בתל אביב
+              ד״ר אנה ברמלי בייעוץ פרטי להורים בנושא אלרגיה למזון ודה-סנסיטיזציה (OIT) בהוד השרון
             </figcaption>
           </figure>
           <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
@@ -637,7 +635,7 @@ const FoodDesensitization = () => {
                 ובוגרת תת-התמחות ב-Vanderbilt University Medical Center.
               </p>
               <p>
-                במרפאה הפרטית בתל אביב ד״ר ברמלי מעניקה ייעוץ לילדים ומבוגרים
+                במרפאה הפרטית בהוד השרון ד״ר ברמלי מעניקה ייעוץ לילדים ומבוגרים
                 עם אלרגיות, כולל אלרגיות מזון, אסתמה, אטופיק דרמטיטיס ונושאים
                 נוספים בתחום האלרגיה והאימונולוגיה. הגישה הרפואית משלבת מומחיות
                 קלינית, זהירות, הסבר ברור להורים והכוונה מעשית להמשך.
@@ -718,6 +716,11 @@ const FoodDesensitization = () => {
           <p className="text-xs text-muted-foreground max-w-2xl mx-auto">
             המידע בעמוד אינו מחליף ייעוץ רפואי אישי. במקרה של תגובה אלרגית
             חריפה או חשד לאנפילקסיס, יש לפנות מיד לטיפול רפואי דחוף.
+          </p>
+          <p className="mt-4 text-sm">
+            <Link to="/desensitization" className="text-primary font-medium hover:underline">
+              להסבר רפואי מפורט על תהליך דה־סנסיטיזציה, התאמה וסיכונים
+            </Link>
           </p>
         </motion.section>
       </div>

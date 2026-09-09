@@ -369,6 +369,18 @@ const Services = () => {
                     </p>
                   </div>
                 </div>
+                {condition.id === "immunotherapy" && (
+                  <p className="mt-6 text-sm text-muted-foreground">
+                    רוצים להבין אם הטיפול עשוי להתאים לילדכם? קראו על{` `}
+                    <Link
+                      to="/food-desensitization"
+                      className="text-primary font-medium hover:underline"
+                    >
+                      ייעוץ התאמה לדה־סנסיטיזציה למזון
+                    </Link>
+                    .
+                  </p>
+                )}
               </motion.article>
             ))}
           </div>
