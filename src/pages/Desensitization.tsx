@@ -12,7 +12,6 @@ import {
   CheckCircle2,
   MapPin,
   ArrowLeft,
-  Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AuthorBadge } from "@/components/blog/AuthorBadge";
@@ -31,7 +30,7 @@ const trustPoints = [
   "ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה קלינית",
   "רופאה בכירה במחלקת אלרגיה ואימונולוגיה במרכז שניידר לרפואת ילדים",
   "בוגרת תת-התמחות ב-Vanderbilt University Medical Center",
-  "ייעוץ התאמה רפואי לפני תהליך דה-סנסיטיזציה למזון",
+  "מידע רפואי על התאמה, מהלך וסיכונים בתהליך",
   `מרפאה בהוד השרון`,
 ];
 
@@ -99,11 +98,11 @@ const Desensitization = () => {
 
   const articleSchema = buildMedicalPageSchema({
     headline:
-      "דה-סנסיטיזציה למזון - ייעוץ התאמה רפואי | ד״ר אנה ברמלי",
+      "דה-סנסיטיזציה למזון (OIT): התאמה, תהליך וסיכונים",
     description:
-      "ייעוץ התאמה לתהליך דה-סנסיטיזציה למזון (OIT) אצל ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה קלינית, רופאה בכירה בשניידר ובוגרת Vanderbilt University Medical Center. מרפאה בהוד השרון.",
+      "מדריך רפואי על דה-סנסיטיזציה למזון (OIT): מה מטרת הטיפול, למי הוא עשוי להתאים, כיצד מתבצע התהליך ומהם הסיכונים והמגבלות.",
     datePublished: "2026-06-15",
-    dateModified: "2026-06-15",
+    dateModified: "2026-09-11",
     canonicalUrl: CANONICAL,
     about: {
       "@type": "MedicalProcedure",
@@ -120,10 +119,10 @@ const Desensitization = () => {
   return (
     <>
       <Helmet>
-        <title>דה-סנסיטיזציה למזון - ייעוץ התאמה | ד״ר אנה ברמלי</title>
+        <title>דה-סנסיטיזציה למזון (OIT): התאמה וסיכונים | ד״ר אנה ברמלי</title>
         <meta
           name="description"
-          content="ייעוץ התאמה לתהליך דה-סנסיטיזציה למזון (OIT) אצל ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה קלינית. הערכה רפואית מסודרת לפני תחילת התהליך. מרפאה בהוד השרון."
+          content="מהי דה-סנסיטיזציה למזון (OIT), למי התהליך עשוי להתאים, כיצד הוא מתבצע ומהם הסיכונים והמגבלות. מדריך רפואי מאת ד״ר אנה ברמלי."
         />
         <link rel="canonical" href={CANONICAL} />
         <meta name="robots" content="index, follow" />
@@ -131,21 +130,21 @@ const Desensitization = () => {
         <meta property="og:url" content={CANONICAL} />
         <meta
           property="og:title"
-          content="דה-סנסיטיזציה למזון - ייעוץ התאמה | ד״ר אנה ברמלי"
+          content="דה-סנסיטיזציה למזון (OIT): התאמה וסיכונים | ד״ר אנה ברמלי"
         />
         <meta
           property="og:description"
-          content="ייעוץ התאמה לדה-סנסיטיזציה למזון (OIT) עם מומחית לאלרגיה ואימונולוגיה קלינית. מרפאה בהוד השרון."
+          content="מדריך רפואי על מטרת התהליך, התאמה, מהלך הטיפול, סיכונים ומגבלות."
         />
         <meta property="og:image" content="https://ihaveallergy.com/og-logo.png?v=6" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta
           name="twitter:title"
-          content="דה-סנסיטיזציה למזון - ייעוץ התאמה | ד״ר אנה ברמלי"
+          content="דה-סנסיטיזציה למזון (OIT): התאמה וסיכונים | ד״ר אנה ברמלי"
         />
         <meta
           name="twitter:description"
-          content="ייעוץ התאמה לדה-סנסיטיזציה למזון (OIT). הערכה רפואית מסודרת לפני תחילת התהליך."
+          content="מהי דה-סנסיטיזציה למזון, למי היא עשויה להתאים ומהם הסיכונים והמגבלות."
         />
         <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png?v=6" />
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
@@ -173,13 +172,13 @@ const Desensitization = () => {
             transition={{ duration: 0.6 }}
           >
             <span className="inline-block text-xs font-medium text-primary bg-accent px-3 py-1 rounded-full mb-5">
-              ייעוץ התאמה רפואי
+              מדריך רפואי
             </span>
 
             <h1 className="font-bold text-foreground mb-6 text-balance">
               דה-סנסיטיזציה למזון
               <span className="block text-primary mt-2 text-[22px] md:text-[28px] lg:text-[32px]">
-                ייעוץ התאמה לפני תחילת התהליך
+                למי מתאים, כיצד מתבצע ומהם הסיכונים
               </span>
             </h1>
 
@@ -199,12 +198,8 @@ const Desensitization = () => {
 
             <div className="flex flex-wrap items-center gap-4 mb-6">
               <Button asChild size="lg" className="rounded-full">
-                <Link to="/book">קביעת תור לייעוץ התאמה</Link>
+                <Link to="/food-desensitization">מידע על ייעוץ פרטי והערכת התאמה</Link>
               </Button>
-              <span className="text-sm text-muted-foreground flex items-center gap-1.5">
-                <Clock className="w-4 h-4" />
-                זמינות בתוך ימים
-              </span>
             </div>
 
             <AuthorBadge compact />
@@ -381,7 +376,7 @@ const Desensitization = () => {
               to="/food-desensitization"
               className="text-sm text-primary font-medium hover:underline"
             >
-              לעמוד הייעוץ הפרטי והכנה לפגישה
+              לייעוץ פרטי, הערכת התאמה והכנה לפגישה
             </Link>
           </div>
         </motion.section>

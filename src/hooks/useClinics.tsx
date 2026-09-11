@@ -191,7 +191,10 @@ export function useDeleteClinic() {
 }
 
 // Get working hours for a specific day
-export function getClinicHoursForDay(clinic: Clinic | null, date: Date): { open: string; close: string } | null {
+export function getClinicHoursForDay(
+  clinic: Pick<Clinic, 'working_hours'> | null,
+  date: Date,
+): { open: string; close: string } | null {
   if (!clinic?.working_hours) return null;
   
   const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];

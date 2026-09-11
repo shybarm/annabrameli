@@ -108,7 +108,7 @@ export default function GuestBooking() {
   const isDateDisabled = (date: Date) => {
     if (date < new Date()) return true;
     if (!selectedClinic) return false;
-    const hours = getClinicHoursForDay(selectedClinic as any, date);
+    const hours = getClinicHoursForDay(selectedClinic, date);
     return !hours;
   };
 
@@ -312,7 +312,7 @@ export default function GuestBooking() {
           time,
         },
       });
-    } catch (error: any) {
+    } catch (error) {
       console.error('Booking error:', error);
       
       // Reset CAPTCHA on error
@@ -377,14 +377,14 @@ export default function GuestBooking() {
         <title>קביעת תור לאלרגולוג ילדים פרטי בהוד השרון | ד״ר אנה ברמלי</title>
         <meta
           name="description"
-          content="קביעת תור לייעוץ אלרגיה פרטי לילדים אצל ד״ר אנה ברמלי בהוד השרון. בדיקות עור, IgE, תגרי מזון ותכנית טיפול בביקור אחד. תור תוך ימים, לא חודשים."
+          content="בקשת תור לייעוץ אלרגיה פרטי לילדים ולמבוגרים אצל ד״ר אנה ברמלי בהוד השרון. השאירו פרטים או הצטרפו לרשימת ההמתנה."
         />
         <link rel="canonical" href="https://ihaveallergy.com/book" />
         <meta name="robots" content="index, follow" />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://ihaveallergy.com/book" />
         <meta property="og:title" content="קביעת תור לאלרגולוג ילדים פרטי בהוד השרון" />
-        <meta property="og:description" content="ייעוץ אלרגיה פרטי לילדים ולמבוגרים בהוד השרון. בדיקות עור, IgE ותגרי מזון בביקור אחד." />
+        <meta property="og:description" content="בקשת תור לייעוץ אלרגיה פרטי לילדים ולמבוגרים בהוד השרון." />
       </Helmet>
       <div className="max-w-md mx-auto">
         {/* Header */}

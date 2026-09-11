@@ -41,6 +41,17 @@ const PrivateVsPublic = () => (
         </p>
       </section>
 
+      <section className="rounded-2xl border border-border/60 bg-accent/30 p-5 space-y-3">
+        <h2 className="text-xl font-bold text-foreground">מחפשים אלרגולוגית פרטית בהוד השרון?</h2>
+        <p>
+          בעמוד המקצועי של ד״ר אנה ברמלי אפשר לקרוא על ההכשרה, תחומי הטיפול,
+          סוגי הבירור ומה כדאי להכין לפני פנייה למרפאה.
+        </p>
+        <Link to="/dr-anna-brameli" className="inline-flex font-medium text-primary hover:underline">
+          לפרופיל ד״ר אנה ברמלי ולמידע על ייעוץ פרטי
+        </Link>
+      </section>
+
       <section className="space-y-3">
         <h2 className="text-xl font-bold text-foreground">ארבע שאלות שכדאי לשאול לפני שקובעים</h2>
         <ol className="list-decimal list-inside space-y-2">

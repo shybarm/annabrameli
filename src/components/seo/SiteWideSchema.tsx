@@ -14,14 +14,19 @@ export const SiteWideSchema = () => {
     logo: "https://ihaveallergy.com/og-logo.png?v=6",
     image: "https://ihaveallergy.com/og-logo.png?v=6",
     email: "info@drbrameli.co.il",
+    telephone: "+972-52-591-6393",
     address: {
       "@type": "PostalAddress",
       addressLocality: "הוד השרון",
-      postalCode: "4501303",
       addressCountry: "IL",
     },
 
-    sameAs: [],
+    sameAs: [
+      "https://www.schneider.org.il/?ArticleID=2506&CategoryID=839",
+      "https://medicine.vumc.org/department-directory/Anna-Brameli",
+      "https://orcid.org/0009-0005-6489-6525",
+      "https://pubmed.ncbi.nlm.nih.gov/?term=Brameli+A",
+    ],
     employee: {
       "@type": "Physician",
       "@id": "https://ihaveallergy.com/dr-anna-brameli#physician",
