@@ -45,18 +45,12 @@ const physicianSchema = {
   address: {
     "@type": "PostalAddress",
     addressLocality: "הוד השרון",
-    postalCode: "4501303",
     addressCountry: "IL"
-  },
-  geo: {
-    "@type": "GeoCoordinates",
-    latitude: 32.1524,
-    longitude: 34.8947
   },
   image: "https://ihaveallergy.com/og-logo.png?v=6",
   sameAs: [
     "https://medicine.vumc.org/department-directory/Anna-Brameli",
-    "https://pedendo.schneider.org.il/?ArticleID=2506&CategoryID=839",
+    "https://www.schneider.org.il/?ArticleID=2506&CategoryID=839",
     "https://orcid.org/0009-0005-6489-6525",
     "https://pubmed.ncbi.nlm.nih.gov/?term=Brameli+A",
   ],
@@ -90,8 +84,14 @@ const localBusinessSchema = {
     {
       "@type": "OpeningHoursSpecification",
       dayOfWeek: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"],
-      opens: "09:00",
-      closes: "18:00"
+      opens: "08:00",
+      closes: "19:00"
+    },
+    {
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: "Friday",
+      opens: "08:00",
+      closes: "13:00"
     }
   ]
 };
@@ -121,7 +121,7 @@ const faqSchema = {
       name: "מה ההבדל בין טיפול פרטי לציבורי?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "זמינות תורים מהירה יותר, זמן שיחה ארוך יותר, טיפול מותאם אישית ומעקב צמוד."
+        text: "ההבדלים עשויים להיות בזמינות, בהסדרי התשלום, במקום ביצוע הבדיקות ובהמשך המעקב. מומלץ לברר מראש מה כולל כל ביקור."
       }
     },
     {
@@ -193,7 +193,7 @@ const faqSchema = {
       name: "מתי מומלץ לבצע בדיקות אלרגיה במסגרת פרטית?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "כשרוצים זמינות מהירה, הסבר מפורט וליווי אישי. במסגרת פרטית ניתן לקבל תור תוך ימים, להקדיש זמן ממושך לכל מטופל ולקבל תשובות במקום."
+        text: "מסלול פרטי עשוי להתאים כאשר רוצים לבחור את הרופא או לקבל הסבר ומעקב במסגרת מסוימת. הזמינות ומה שכלול בביקור משתנים ויש לברר אותם מראש."
       }
     }
   ]
@@ -226,7 +226,7 @@ const allergyTestFaqs = [
   },
   {
     question: "מתי מומלץ לבצע בדיקות אלרגיה במסגרת פרטית?",
-    answer: "כשרוצים זמינות מהירה, הסבר מפורט וליווי אישי. במסגרת פרטית ניתן לקבל תור תוך ימים, להקדיש זמן ממושך לכל מטופל ולקבל תשובות במקום."
+    answer: "מסלול פרטי עשוי להתאים כאשר רוצים לבחור את הרופא או לקבל הסבר ומעקב במסגרת מסוימת. הזמינות ומה שכלול בביקור משתנים ויש לברר אותם מראש."
   }
 ];
 
@@ -287,7 +287,7 @@ const faqs = [
   },
   {
     question: "מה ההבדל בין טיפול פרטי לציבורי?",
-    answer: "זמינות תורים מהירה יותר, זמן שיחה ארוך יותר, טיפול מותאם אישית ומעקב צמוד."
+    answer: "ההבדלים עשויים להיות בזמינות, בהסדרי התשלום, במקום ביצוע הבדיקות ובהמשך המעקב. מומלץ לברר מראש מה כולל כל ביקור."
   },
   {
     question: "האם מטופלים ילדים מקבלים טיפול בקליניקה?",
@@ -300,9 +300,10 @@ const faqs = [
 ];
 
 const internalResources = [
-  { title: "מתי לבצע בדיקות אלרגיה בילדים", href: "/services" },
-  { title: "הבנת תוצאות בדיקות IgE", href: "/faq" },
-  { title: "אימונותרפיה: יתרונות, סיכונים ותהליך", href: "/services" },
+  { title: "בדיקות אלרגיה לילדים – סוגי בדיקות והכנה", href: "/guides/בדיקות-אלרגיה-ילדים-ישראל" },
+  { title: "בדיקת אלרגיה פרטית או בקופה – מה חשוב לבדוק", href: "/knowledge/בדיקות-אלרגיה-פרטי-או-קופה" },
+  { title: "אלרגולוג ילדים בהוד השרון – מידע למשפחות באזור", href: "/blog/אלרגולוג-ילדים-הרצליה-הוד-השרון" },
+  { title: "אימונותרפיה: התאמה, יתרונות וסיכונים", href: "/desensitization" },
   { title: "אלרגיות עונתיות - אבחון וטיפול", href: "/services#seasonal-allergy" },
 ];
 
@@ -311,10 +312,10 @@ const DrAnnaBrameli = () => {
     <>
 
         <Helmet>
-          <title>ד״ר אנה ברמלי - רופאת אלרגיה ואלרגולוגית | קליניקה פרטית בישראל</title>
+          <title>אלרגולוגית פרטית בהוד השרון | ד״ר אנה ברמלי</title>
           <meta 
             name="description" 
-            content="ד״ר אנה ברמלי - רופאת אלרגיה פרטית בישראל. אבחון, בדיקות וטיפול מותאם. קבעו תור ב-ihaveallergy.com." 
+            content="אלרגולוגית פרטית לילדים ולמבוגרים בהוד השרון: ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה ורופאת ילדים. אבחון, בדיקות והכוונה טיפולית."
           />
           <meta name="keywords" content="ד״ר אנה ברמלי, אלרגיה, אלרגולוג, קליניקה פרטית, בדיקות אלרגיה, אימונותרפיה, אלרגיות מזון, אסתמה" />
           <link rel="canonical" href="https://ihaveallergy.com/dr-anna-brameli" />
@@ -335,7 +336,7 @@ const DrAnnaBrameli = () => {
                 <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6 leading-tight">
                   ד״ר אנה ברמלי
                   <span className="block text-primary mt-2 text-xl md:text-2xl font-medium">
-                    רופאת אלרגיה ואלרגולוגית (קליניקה פרטית, ישראל)
+                    אלרגולוגית פרטית לילדים ולמבוגרים בהוד השרון
                   </span>
                 </h1>
                 
@@ -594,7 +595,7 @@ const DrAnnaBrameli = () => {
               className="text-center mb-12"
             >
               <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-4">
-                ניסיון, הישגים והמלצות
+                ניסיון, הסמכות ואימות מקצועי
               </h2>
             </motion.div>
 
@@ -633,11 +634,11 @@ const DrAnnaBrameli = () => {
                   <li>• רישיון רפואה ישראלי מס׳ 132226</li>
                   <li>• ECFMG Certification מס׳ 0-829-897-8</li>
                   <li>• מומחית ברפואת ילדים - משרד הבריאות</li>
-                  <li>• חברות באגודות מקצועיות בישראל ובארה״ב</li>
+                  <li>• פרסומים רפואיים הניתנים לאימות ב-PubMed</li>
                 </ul>
               </motion.div>
 
-              {/* H3 - עדויות מטופלים */}
+              {/* H3 - independent verification */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -648,11 +649,24 @@ const DrAnnaBrameli = () => {
                 <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center mb-4">
                   <MessageCircle className="w-6 h-6 text-primary" />
                 </div>
-                <h3 className="text-lg font-bold text-foreground mb-4">עדויות מטופלים</h3>
-                <blockquote className="text-muted-foreground italic border-r-2 border-primary pr-4">
-                  ״ד״ר ברמלי הקשיבה, הסבירה בסבלנות וסייעה לנו להבין את האלרגיות של הילד שלנו. הטיפול שינה את חיינו.״
-                </blockquote>
-                <p className="text-sm text-muted-foreground/70 mt-2">- משפחת כהן, הוד השרון</p>
+                <h3 className="text-lg font-bold text-foreground mb-4">אימות ממקורות חיצוניים</h3>
+                <ul className="space-y-3 text-sm">
+                  <li>
+                    <a href="https://www.schneider.org.il/?ArticleID=2506&CategoryID=839" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-flex items-center gap-1.5">
+                      צוות מכון האלרגיה בשניידר <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  </li>
+                  <li>
+                    <a href="https://pubmed.ncbi.nlm.nih.gov/?term=Brameli+A" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-flex items-center gap-1.5">
+                      פרסומים ב-PubMed <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  </li>
+                  <li>
+                    <a href="https://orcid.org/0009-0005-6489-6525" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-flex items-center gap-1.5">
+                      מזהה ORCID <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  </li>
+                </ul>
               </motion.div>
             </div>
           </div>
@@ -831,7 +845,8 @@ const DrAnnaBrameli = () => {
                     </div>
                     <div>
                       <h3 className="font-semibold text-foreground">שעות קבלה</h3>
-                      <p className="text-muted-foreground">ראשון-חמישי: 09:00-18:00</p>
+                      <p className="text-muted-foreground">ראשון-חמישי: 08:00-19:00</p>
+                      <p className="text-muted-foreground">שישי: 08:00-13:00</p>
                     </div>
                   </div>
 

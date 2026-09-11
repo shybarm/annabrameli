@@ -13,18 +13,11 @@ export const SchemaMarkup = ({ type = "physician" }: SchemaMarkupProps) => {
     "@id": "https://ihaveallergy.com/dr-anna-brameli#physician",
     "url": "https://ihaveallergy.com",
     "telephone": "+972-52-591-6393",
-    "priceRange": "$$",
     "address": {
       "@type": "PostalAddress",
       "addressLocality": "הוד השרון",
-      "postalCode": "4501303",
       "addressCountry": "IL",
 
-    },
-    "geo": {
-      "@type": "GeoCoordinates",
-      "latitude": 32.1524,
-      "longitude": 34.8947,
     },
     "openingHoursSpecification": [
       {
@@ -44,7 +37,7 @@ export const SchemaMarkup = ({ type = "physician" }: SchemaMarkupProps) => {
     "knowsLanguage": ["he", "en"],
     "sameAs": [
       "https://medicine.vumc.org/department-directory/Anna-Brameli",
-      "https://pedendo.schneider.org.il/?ArticleID=2506&CategoryID=839",
+      "https://www.schneider.org.il/?ArticleID=2506&CategoryID=839",
       "https://orcid.org/0009-0005-6489-6525",
       "https://pubmed.ncbi.nlm.nih.gov/?term=Brameli+A",
     ],

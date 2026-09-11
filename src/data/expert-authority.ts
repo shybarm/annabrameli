@@ -71,7 +71,7 @@ export const EXPERT_PROFILE = {
   ] satisfies TrainingRecord[],
 
   vanderbiltProfileUrl: 'https://medicine.vumc.org/department-directory/Anna-Brameli',
-  schneiderInstituteUrl: 'https://pedendo.schneider.org.il/?ArticleID=2506&CategoryID=839',
+  schneiderInstituteUrl: 'https://www.schneider.org.il/?ArticleID=2506&CategoryID=839',
   schneiderArticleUrl: 'https://www.schneider.org.il/?ArticleID=6211&CategoryID=1003',
   orcidUrl: 'https://orcid.org/0009-0005-6489-6525',
   pubmedAuthorUrl: 'https://pubmed.ncbi.nlm.nih.gov/?term=Brameli+A',
@@ -80,8 +80,8 @@ export const EXPERT_PROFILE = {
 export const PUBLICATIONS: Publication[] = [
   {
     id: 'pediatric-drug-anaphylaxis-2024',
-    title: 'Pediatric Drug-Induced Anaphylaxis: Clinical Features, Culprit Drugs, and Management',
-    titleHe: 'אנפילקסיס מתרופות בילדים: מאפיינים קליניים, תרופות גורמות וניהול',
+    title: 'Pediatric drug-induced anaphylaxis reports in the FDA Adverse Event Reporting System (FAERS)',
+    titleHe: 'דיווחים על אנפילקסיס מתרופות בילדים במערכת הדיווח של ה-FDA',
     journal: 'The Journal of Allergy and Clinical Immunology: In Practice',
     year: 2024,
     authors: 'Brameli A, et al.',
@@ -110,7 +110,7 @@ export const PUBLICATIONS: Publication[] = [
     relatedPages: [
       { path: '/services', label: 'שירותי אבחון אלרגיה' },
       { path: '/אלרגיה-בילדים-מדריך-מלא', label: 'מדריך אלרגיה בילדים' },
-      { path: '/allergy-testing', label: 'בדיקות אלרגיה' },
+      { path: '/guides/בדיקות-אלרגיה-ילדים-ישראל', label: 'בדיקות אלרגיה' },
     ],
     whyItMatters: 'Demonstrates direct clinical experience with the full spectrum of pediatric allergy consultations, from drug reactions to food allergy and immunodeficiency.',
     whyItMattersHe: 'מעיד על ניסיון קליני ישיר עם כל מגוון הייעוצים באלרגיה בילדים - מתגובות לתרופות, דרך אלרגיות מזון ועד הערכת מצבי כשל חיסוני.',
@@ -135,9 +135,9 @@ export const PUBLICATIONS: Publication[] = [
   },
   {
     id: 'penicillin-allergy-trends-2026',
-    title: 'Institutional Trends in Penicillin Allergy Evaluation and Delabeling',
-    titleHe: 'מגמות מוסדיות בהערכת אלרגיה לפניצילין והסרת תיוג שגוי',
-    journal: 'The Journal of Allergy and Clinical Immunology: In Practice',
+    title: 'Institutional Trends in Penicillin Allergy: A New Era of Active Penicillin Allergy Delabeling',
+    titleHe: 'מגמות מוסדיות באלרגיה לפניצילין: עידן חדש של הסרת תיוג פעילה',
+    journal: 'Clinical and Experimental Allergy',
     year: 2026,
     authors: 'Brameli A, et al.',
     pubmedId: '42015504',
@@ -169,7 +169,7 @@ export const RESEARCH_PAGE_MAP: Record<string, {
     publicationIds: ['pediatric-drug-anaphylaxis-2024', 'inpatient-consults-2024'],
     trustStatement: 'תוכן מדריך זה מבוסס על ניסיון בייעוץ אלרגיה בילדים מאושפזים ועל מחקר שפורסם בכתב עת רפואי בינלאומי.',
   },
-  '/allergy-testing': {
+  '/guides/בדיקות-אלרגיה-ילדים-ישראל': {
     publicationIds: ['inpatient-consults-2024', 'cephalosporin-survey-2024'],
     trustStatement: 'גישת האבחון בקליניקה משלבת ידע מחקרי עדכני בהערכת אלרגיה למזון ולתרופות.',
   },
