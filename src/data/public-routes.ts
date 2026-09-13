@@ -18,6 +18,7 @@ export const STATIC_PUBLIC_ROUTES = [
   "/",
   "/about",
   "/services",
+  "/allergist-private",
   "/dr-anna-brameli",
   "/faq",
   "/contact",
