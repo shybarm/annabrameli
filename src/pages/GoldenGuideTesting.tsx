@@ -123,8 +123,8 @@ const GoldenGuideTesting = () => {
   const faqSchema = buildFaqSchema(faqs);
 
   const articleSchema = buildMedicalPageSchema({
-    headline: "בדיקות אלרגיה לילדים בישראל: איזה בדיקה מתאימה, מתי ואיפה",
-    description: "מדריך מקיף להורים: סוגי בדיקות אלרגיה לילדים, מתי לעשות כל בדיקה, כמה עולה פרטי מול ציבורי, ומה לצפות בביקור אצל אלרגולוג.",
+    headline: "בדיקות אלרגיה: תבחיני עור, בדיקת דם ותגר בילדים ובמבוגרים",
+    description: "מדריך רפואי לבדיקות אלרגיה: כיצד בוחרים בין תבחיני עור, IgE בדם ותגר, איך מתכוננים, כיצד מפרשים תוצאה ומה ההבדל בין בירור פרטי לציבורי.",
     datePublished: "2026-02-08",
     dateModified: "2026-09-08",
     canonicalUrl: "https://ihaveallergy.com/guides/בדיקות-אלרגיה-ילדים-ישראל",
@@ -144,21 +144,22 @@ const GoldenGuideTesting = () => {
   return (
     <>
       <Helmet>
-        <title>בדיקות אלרגיה לילדים: תבחיני עור, דם ותגר | ד״ר אנה ברמלי</title>
+        <title>בדיקות אלרגיה: עור, דם ותגר לילדים ומבוגרים | ד״ר ברמלי</title>
         <meta
           name="description"
-          content="בדיקות אלרגיה לילדים: מתי עושים תבחיני עור, בדיקת IgE בדם או תגר מזון, איך מתכוננים ומה משמעות התוצאות. מדריך רפואי ברור להורים."
+          content="בדיקות אלרגיה לילדים ולמבוגרים: מתי עושים תבחיני עור, בדיקת IgE בדם או תגר, איך מתכוננים ומה משמעות התוצאות. מדריך רפואי ברור."
         />
+        <meta name="robots" content="index, follow, max-image-preview:large" />
         <link rel="canonical" href="https://ihaveallergy.com/guides/בדיקות-אלרגיה-ילדים-ישראל" />
         <meta property="og:type" content="article" />
         <meta property="og:url" content="https://ihaveallergy.com/guides/בדיקות-אלרגיה-ילדים-ישראל" />
-        <meta property="og:title" content="בדיקות אלרגיה לילדים: תבחיני עור, דם ותגר | ד״ר אנה ברמלי" />
+        <meta property="og:title" content="בדיקות אלרגיה: תבחיני עור, דם ותגר | ד״ר אנה ברמלי" />
         <meta property="og:description" content="מתי עושים תבחיני עור, בדיקת IgE בדם או תגר מזון, איך מתכוננים ומה משמעות התוצאות." />
         <meta property="og:image" content="https://ihaveallergy.com/og-logo.png?v=6" />
         <meta property="article:published_time" content="2026-02-08" />
         <meta property="article:modified_time" content="2026-09-08" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="בדיקות אלרגיה לילדים: תבחיני עור, דם ותגר | ד״ר אנה ברמלי" />
+        <meta name="twitter:title" content="בדיקות אלרגיה: תבחיני עור, דם ותגר | ד״ר אנה ברמלי" />
         <meta name="twitter:description" content="מתי עושים תבחיני עור, בדיקת IgE בדם או תגר מזון, איך מתכוננים ומה משמעות התוצאות." />
         <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png?v=6" />
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
@@ -182,7 +183,7 @@ const GoldenGuideTesting = () => {
               מדריך בדיקות
             </span>
             <h1 className="font-bold text-foreground mb-6 text-balance">
-              בדיקות אלרגיה לילדים בישראל
+              בדיקות אלרגיה לילדים ולמבוגרים
               <span className="block text-primary mt-2 text-[22px] md:text-[28px] lg:text-[32px]">
                 איזה בדיקה מתאימה, מתי ואיפה
               </span>
@@ -208,11 +209,11 @@ const GoldenGuideTesting = () => {
               עכשיו אתם מול ים של אפשרויות: <strong className="text-foreground">בדיקת דם? תבחין עור? פרטי או ציבורי? ומה בכלל בודקים?</strong>
             </p>
             <p className="text-muted-foreground leading-relaxed">
-              נשימה. המדריך הזה מסביר בדיוק מה כל בדיקה עושה, למי היא מתאימה, ואיך לבחור נכון – בלי ללכת לאיבוד.
+              המדריך מסביר מה כל בדיקה עושה, למי היא עשויה להתאים ואיך מתקבלת החלטה רפואית מושכלת.
             </p>
           </div>
           <p className="text-muted-foreground leading-relaxed">
-            בדיקות אלרגיה לילדים אינן בדיקות סקר כלליות. מתחילים בסיפור הרפואי ובוחרים רק את האלרגנים והבדיקה שמתאימים לתגובה החשודה. תוצאה חיובית בתבחין עור או בדם מצביעה על ריגוש חיסוני, אך אינה מוכיחה לבדה שהילד אלרגי בפועל.
+            בדיקות אלרגיה אינן בדיקות סקר כלליות. אצל ילדים ומבוגרים מתחילים בסיפור הרפואי ובוחרים רק את האלרגנים והבדיקה שמתאימים לתגובה החשודה. תוצאה חיובית בתבחין עור או בדם מצביעה על ריגוש חיסוני, אך אינה מוכיחה לבדה אלרגיה קלינית.
           </p>
         </motion.section>
 
@@ -385,8 +386,8 @@ const GoldenGuideTesting = () => {
             {[
               { to: "/guides/טעימות-ראשונות-אלרגנים", label: "טעימות ראשונות – מדריך חשיפה לאלרגנים" },
               { to: "/guides/זכויות-ילד-אלרגי-ישראל", label: "זכויות של ילד אלרגי בישראל" },
-              { to: "/services", label: "השירותים שלנו – בדיקות וייעוץ" },
-              { to: "/about", label: "אודות ד״ר אנה ברמלי" },
+              { to: "/allergist-private", label: "ייעוץ אצל אלרגולוגית פרטית" },
+              { to: "/services", label: "שירותי אבחון וייעוץ" },
             ].map((link) => (
               <Link
                 key={link.to}

@@ -146,6 +146,7 @@ export default function PrivateAllergistLanding() {
           content="ייעוץ אלרגולוגי פרטי לילדים ולמבוגרים אצל ד״ר אנה ברמלי בהוד השרון. בירור אלרגיה והתאמת בדיקות לפי הסיפור הרפואי והתסמינים."
         />
         <link rel="canonical" href={CANONICAL_URL} />
+        <meta name="robots" content="index, follow, max-image-preview:large" />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={CANONICAL_URL} />
         <meta property="og:title" content="אלרגולוגית פרטית לילדים ולמבוגרים | ד״ר אנה ברמלי" />
@@ -154,6 +155,10 @@ export default function PrivateAllergistLanding() {
           content="ייעוץ ובירור אלרגיה במסגרת פרטית בהוד השרון, בתיאום מראש."
         />
         <meta property="og:image" content="https://ihaveallergy.com/images/optimized/portrait-768.webp" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="אלרגולוגית פרטית לילדים ולמבוגרים | ד״ר אנה ברמלי" />
+        <meta name="twitter:description" content="ייעוץ ובירור אלרגיה במסגרת פרטית בהוד השרון, בתיאום מראש." />
+        <meta name="twitter:image" content="https://ihaveallergy.com/images/optimized/portrait-768.webp" />
         <script type="application/ld+json">{JSON.stringify(medicalSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(buildFaqSchema(faqs))}</script>
         <script type="application/ld+json">

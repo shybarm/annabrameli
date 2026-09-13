@@ -91,8 +91,10 @@ export const CRITICAL_ROUTES = [
   "/dr-anna-brameli",               // physician profile / entity anchor
   "/blog",                          // blog index
   "/guides/אלרגיה-מדריך-מקיף",      // guides content hub
+  "/guides/בדיקות-אלרגיה-ילדים-ישראל", // high-intent diagnostic content hub
   "/faq",                           // FAQ
   "/services",                      // main service page
+  "/allergist-private",             // paid and commercial-organic landing page
 ] as const;
 
 /**
