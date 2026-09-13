@@ -197,7 +197,7 @@ const physicianSchema = {
     addressLocality: "הוד השרון",
     addressCountry: "IL",
   },
-  areaServed: ["הוד השרון", "השרון", "המרכז", "ישראל"],
+  areaServed: ["הוד השרון", "כפר סבא", "רעננה", "הרצליה", "נתניה", "פתח תקווה", "תל אביב", "רמת גן", "ראשון לציון", "חולון", "השרון", "המרכז"],
   availableService: [
     { "@type": "MedicalProcedure", name: "ייעוץ אלרגיה למזון" },
     { "@type": "MedicalProcedure", name: "הערכת התאמה לדה-סנסיטיזציה" },
@@ -217,10 +217,10 @@ const FoodDesensitization = () => {
   return (
     <>
       <Helmet>
-        <title>ייעוץ פרטי לדה-סנסיטיזציה למזון | ד״ר אנה ברמלי</title>
+        <title>אלרגיה למזון ואימונותרפיה פומית (OIT) | ד״ר אנה ברמלי</title>
         <meta
           name="description"
-          content="הילד אלרגי למזון? קבעו ייעוץ פרטי עם ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה קלינית, לבדיקת התאמה והכוונה בנושא דה-סנסיטיזציה למזון בהוד השרון."
+          content="ייעוץ פרטי בנושא אלרגיה למזון ואימונותרפיה פומית (OIT): הערכת התאמה, מעבר על בדיקות והכוונה רפואית אצל ד״ר אנה ברמלי בהוד השרון."
         />
         <link rel="canonical" href={CANONICAL} />
         <meta name="robots" content="index, follow" />
@@ -228,7 +228,7 @@ const FoodDesensitization = () => {
         <meta property="og:url" content={CANONICAL} />
         <meta
           property="og:title"
-          content="ייעוץ פרטי לדה-סנסיטיזציה למזון | ד״ר אנה ברמלי"
+          content="אלרגיה למזון ואימונותרפיה פומית (OIT) | ד״ר אנה ברמלי"
         />
         <meta
           property="og:description"

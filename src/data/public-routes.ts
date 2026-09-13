@@ -19,6 +19,7 @@ export const STATIC_PUBLIC_ROUTES = [
   "/about",
   "/services",
   "/allergist-private",
+  "/allergist-central-sharon",
   "/dr-anna-brameli",
   "/faq",
   "/contact",
@@ -95,6 +96,7 @@ export const CRITICAL_ROUTES = [
   "/faq",                           // FAQ
   "/services",                      // main service page
   "/allergist-private",             // paid and commercial-organic landing page
+  "/allergist-central-sharon",      // regional search hub
 ] as const;
 
 /**

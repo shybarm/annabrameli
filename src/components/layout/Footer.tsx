@@ -38,6 +38,7 @@ export const Footer = () => {
               <li><Link to="/dr-anna-brameli" className="text-muted-foreground hover:text-primary transition-colors">ד״ר אנה ברמלי</Link></li>
               <li><Link to="/services" className="text-muted-foreground hover:text-primary transition-colors">שירותים ומצבים</Link></li>
               <li><Link to="/allergist-private" className="text-muted-foreground hover:text-primary transition-colors">ייעוץ אלרגיה פרטי</Link></li>
+              <li><Link to="/allergist-central-sharon" className="text-muted-foreground hover:text-primary transition-colors">אלרגולוג במרכז ובשרון</Link></li>
               <li><Link to="/guides/אלרגיה-מדריך-מקיף" className="text-muted-foreground hover:text-primary transition-colors">מדריך אלרגיה מקיף</Link></li>
               <li><Link to="/guides/טעימות-ראשונות-אלרגנים" className="text-muted-foreground hover:text-primary transition-colors">טחינה וחשיפה לאלרגנים</Link></li>
               <li><Link to="/guides/בדיקות-אלרגיה-ילדים-ישראל" className="text-muted-foreground hover:text-primary transition-colors">בדיקות אלרגיה לילדים</Link></li>
@@ -77,22 +78,15 @@ export const Footer = () => {
             </ul>
           </div>
 
-          {/* Hours */}
+          {/* Availability */}
           <div>
-            <h4 className="text-sm font-semibold text-foreground mb-5 uppercase tracking-wider">שעות פעילות</h4>
+            <h4 className="text-sm font-semibold text-foreground mb-5 uppercase tracking-wider">קבלת מטופלים</h4>
             <ul className="space-y-3">
               <li className="flex items-center gap-2.5">
                 <Clock className="w-4 h-4 text-primary flex-shrink-0" />
                 <div>
-                  <p className="text-sm text-foreground">ראשון - חמישי</p>
-                  <p className="text-xs text-muted-foreground">08:00 - 19:00</p>
-                </div>
-              </li>
-              <li className="flex items-center gap-2.5">
-                <Clock className="w-4 h-4 text-primary flex-shrink-0" />
-                <div>
-                  <p className="text-sm text-foreground">שישי</p>
-                  <p className="text-xs text-muted-foreground">08:00 - 13:00</p>
+                  <p className="text-sm text-foreground">בתיאום מראש</p>
+                  <p className="text-xs text-muted-foreground">יש ליצור קשר עם המרפאה</p>
                 </div>
               </li>
             </ul>
@@ -102,7 +96,7 @@ export const Footer = () => {
         {/* Areas Served */}
         <div className="mt-10 pt-8 border-t border-border">
           <p className="text-xs text-muted-foreground leading-relaxed text-center max-w-2xl mx-auto">
-            מרפאת האלרגיה של ד״ר אנה ברמלי ממוקמת בהוד השרון ומספקת שירות לתושבי כפר סבא, רעננה, פתח תקווה, הרצליה ואזור השרון.
+            מרפאת האלרגיה של ד״ר אנה ברמלי ממוקמת בהוד השרון ומשרתת מטופלים מכפר סבא, רעננה, הרצליה, נתניה, פתח תקווה, תל אביב, רמת גן, ראשון לציון, חולון ואזור המרכז והשרון.
           </p>
         </div>
 

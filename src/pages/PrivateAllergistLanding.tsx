@@ -198,6 +198,7 @@ export default function PrivateAllergistLanding() {
                 </Button>
               </div>
               <p className="mt-4 text-sm text-muted-foreground">הייעוץ מתקיים בתיאום מראש.</p>
+              <p className="mt-2 text-sm text-muted-foreground">המרפאה בהוד השרון משרתת גם משפחות מאזור המרכז והשרון. <Link to="/allergist-central-sharon" className="font-medium text-primary hover:underline">מידע על אזורי השירות</Link></p>
             </motion.div>
 
             <motion.div

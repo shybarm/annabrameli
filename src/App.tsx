@@ -86,6 +86,7 @@ import Desensitization from "./pages/Desensitization";
 import FoodDesensitization from "./pages/FoodDesensitization";
 import GeoOptimizationPage from "./pages/admin/GeoOptimizationPage";
 import PrivateAllergistLanding from "./pages/PrivateAllergistLanding";
+import RegionalAllergist from "./pages/RegionalAllergist";
 
 // Layout for public pages
 const PublicLayout = ({ children }: { children: React.ReactNode }) => (
@@ -159,6 +160,7 @@ const App = () => {
               <Route path="/about" element={<PublicLayout><About /></PublicLayout>} />
               <Route path="/services" element={<PublicLayout><Services /></PublicLayout>} />
               <Route path="/allergist-private" element={<PublicLayout><PrivateAllergistLanding /></PublicLayout>} />
+              <Route path="/allergist-central-sharon" element={<PublicLayout><RegionalAllergist /></PublicLayout>} />
               <Route path="/updates" element={<PublicLayout><Updates /></PublicLayout>} />
               <Route path="/faq" element={<PublicLayout><FAQ /></PublicLayout>} />
               <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
