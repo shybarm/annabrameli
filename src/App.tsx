@@ -9,8 +9,8 @@ import { ClinicProvider } from "@/contexts/ClinicContext";
 import { PageContentProvider } from "@/contexts/PageContentContext";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { ChatWidget } from "@/components/chat/ChatWidget";
-import ChatAutoOpen from "@/components/chat/ChatAutoOpen";
+const ChatWidget = React.lazy(() => import("@/components/chat/ChatWidget").then((module) => ({ default: module.ChatWidget })));
+const ChatAutoOpen = React.lazy(() => import("@/components/chat/ChatAutoOpen"));
 import { AccessibilityMenu } from "@/components/AccessibilityMenu";
 import { SiteWideSchema } from "@/components/seo/SiteWideSchema";
 import { AnalyticsRouteTracker } from "@/components/analytics/AnalyticsRouteTracker";
@@ -20,41 +20,39 @@ import Services from "./pages/Services";
 import Updates from "./pages/Updates";
 import FAQ from "./pages/FAQ";
 import Contact from "./pages/Contact";
-import Auth from "./pages/Auth";
-import OAuthConsent from "./pages/OAuthConsent";
-import ResetPassword from "./pages/ResetPassword";
-
-import PatientIntake from "./pages/PatientIntake";
-import AdminDashboard from "./pages/admin/Dashboard";
-import PatientsList from "./pages/admin/PatientsList";
-import PatientDetail from "./pages/admin/PatientDetail";
-import NewPatient from "./pages/admin/NewPatient";
-import AppointmentsList from "./pages/admin/AppointmentsList";
-import AppointmentDetail from "./pages/admin/AppointmentDetail";
-import NewAppointment from "./pages/admin/NewAppointment";
-import BillingPage from "./pages/admin/BillingPage";
-import NewInvoice from "./pages/admin/NewInvoice";
-import InvoiceDetail from "./pages/admin/InvoiceDetail";
-import ExpensesPage from "./pages/admin/ExpensesPage";
-import MessagesPage from "./pages/admin/MessagesPage";
-import SettingsPage from "./pages/admin/SettingsPage";
-import TeamPage from "./pages/admin/TeamPage";
-import ReferralDashboard from "./pages/admin/ReferralDashboard";
-import StaffIntake from "./pages/admin/StaffIntake";
-import AuditLogPage from "./pages/admin/AuditLogPage";
-import DoctorDiaryPage from "./pages/admin/DoctorDiaryPage";
-import WorkHoursPage from "./pages/admin/WorkHoursPage";
-import CancellationsReport from "./pages/admin/CancellationsReport";
-import PatientPortal from "./pages/patient/PatientPortal";
+const Auth = React.lazy(() => import("./pages/Auth"));
+const OAuthConsent = React.lazy(() => import("./pages/OAuthConsent"));
+const ResetPassword = React.lazy(() => import("./pages/ResetPassword"));
+const PatientIntake = React.lazy(() => import("./pages/PatientIntake"));
+const AdminDashboard = React.lazy(() => import("./pages/admin/Dashboard"));
+const PatientsList = React.lazy(() => import("./pages/admin/PatientsList"));
+const PatientDetail = React.lazy(() => import("./pages/admin/PatientDetail"));
+const NewPatient = React.lazy(() => import("./pages/admin/NewPatient"));
+const AppointmentsList = React.lazy(() => import("./pages/admin/AppointmentsList"));
+const AppointmentDetail = React.lazy(() => import("./pages/admin/AppointmentDetail"));
+const NewAppointment = React.lazy(() => import("./pages/admin/NewAppointment"));
+const BillingPage = React.lazy(() => import("./pages/admin/BillingPage"));
+const NewInvoice = React.lazy(() => import("./pages/admin/NewInvoice"));
+const InvoiceDetail = React.lazy(() => import("./pages/admin/InvoiceDetail"));
+const ExpensesPage = React.lazy(() => import("./pages/admin/ExpensesPage"));
+const MessagesPage = React.lazy(() => import("./pages/admin/MessagesPage"));
+const SettingsPage = React.lazy(() => import("./pages/admin/SettingsPage"));
+const TeamPage = React.lazy(() => import("./pages/admin/TeamPage"));
+const ReferralDashboard = React.lazy(() => import("./pages/admin/ReferralDashboard"));
+const StaffIntake = React.lazy(() => import("./pages/admin/StaffIntake"));
+const AuditLogPage = React.lazy(() => import("./pages/admin/AuditLogPage"));
+const DoctorDiaryPage = React.lazy(() => import("./pages/admin/DoctorDiaryPage"));
+const WorkHoursPage = React.lazy(() => import("./pages/admin/WorkHoursPage"));
+const CancellationsReport = React.lazy(() => import("./pages/admin/CancellationsReport"));
 import GuestBooking from "./pages/GuestBooking";
-import BookingSuccess from "./pages/BookingSuccess";
-import ContactSuccess from "./pages/ContactSuccess";
-import JoinTeam from "./pages/JoinTeam";
-import PatientInviteAccept from "./pages/PatientInviteAccept";
-import VerifyBooking from "./pages/VerifyBooking";
-import VerifyEmail from "./pages/VerifyEmail";
-import MagicLink from "./pages/MagicLink";
-import NotFound from "./pages/NotFound";
+const BookingSuccess = React.lazy(() => import("./pages/BookingSuccess"));
+const ContactSuccess = React.lazy(() => import("./pages/ContactSuccess"));
+const JoinTeam = React.lazy(() => import("./pages/JoinTeam"));
+const PatientInviteAccept = React.lazy(() => import("./pages/PatientInviteAccept"));
+const VerifyBooking = React.lazy(() => import("./pages/VerifyBooking"));
+const VerifyEmail = React.lazy(() => import("./pages/VerifyEmail"));
+const MagicLink = React.lazy(() => import("./pages/MagicLink"));
+const NotFound = React.lazy(() => import("./pages/NotFound"));
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import AccessibilityStatement from "./pages/AccessibilityStatement";
 import SecurityPolicy from "./pages/SecurityPolicy";
@@ -84,7 +82,7 @@ import AllergyPillar from "./pages/AllergyPillar";
 import AllergyChildrenGuide from "./pages/AllergyChildrenGuide";
 import Desensitization from "./pages/Desensitization";
 import FoodDesensitization from "./pages/FoodDesensitization";
-import GeoOptimizationPage from "./pages/admin/GeoOptimizationPage";
+const GeoOptimizationPage = React.lazy(() => import("./pages/admin/GeoOptimizationPage"));
 import PrivateAllergistLanding from "./pages/PrivateAllergistLanding";
 import RegionalAllergist from "./pages/RegionalAllergist";
 
@@ -94,8 +92,10 @@ const PublicLayout = ({ children }: { children: React.ReactNode }) => (
     <Header />
     <main className="flex-1">{children}</main>
     <Footer />
-    <ChatWidget />
-    <ChatAutoOpen />
+    <React.Suspense fallback={null}>
+      <ChatWidget />
+      <ChatAutoOpen />
+    </React.Suspense>
   </div>
 );
 
@@ -154,6 +154,7 @@ const App = () => {
 
             <SiteWideSchema />
             <AnalyticsRouteTracker />
+            <React.Suspense fallback={<div className="min-h-[40vh]" aria-busy="true" />}>
             <Routes>
               {/* Public routes */}
               <Route path="/" element={<PublicLayout><Index /></PublicLayout>} />
@@ -253,6 +254,7 @@ const App = () => {
               
               <Route path="*" element={<NotFound />} />
             </Routes>
+            </React.Suspense>
           </>
         </TooltipProvider>
         </PageContentProvider>

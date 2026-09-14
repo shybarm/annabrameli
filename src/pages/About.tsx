@@ -76,6 +76,8 @@ const About = () => {
         <meta property="og:url" content="https://ihaveallergy.com/about" />
         <meta property="og:title" content="אודות ד״ר אנה ברמלי - מומחית לאלרגיה ואימונולוגיה" />
         <meta property="og:description" content="רקע מקצועי, השכלה והגישה הטיפולית של ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה בילדים ובמבוגרים." />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png?v=6" />
         <script type="application/ld+json">{JSON.stringify(buildBreadcrumbSchema([
           { name: "דף הבית", item: "https://ihaveallergy.com/" },
           { name: "אודות", item: "https://ihaveallergy.com/about" },

@@ -7,6 +7,8 @@ const SecurityPolicy = () => {
         <title>אבטחת מידע | iHaveAllergy</title>
         <meta name="description" content="מדיניות אבטחת המידע של iHaveAllergy - אמצעי אבטחה ואחריות" />
         <link rel="canonical" href="https://ihaveallergy.com/security" />
+        <meta property="og:title" content="אבטחת מידע | iHaveAllergy" />
+        <meta name="twitter:card" content="summary" />
       </Helmet>
 
       <div className="container-medical py-16">

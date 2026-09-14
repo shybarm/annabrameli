@@ -243,6 +243,8 @@ const FAQ = () => {
         <meta property="og:url" content="https://ihaveallergy.com/faq" />
         <meta property="og:title" content="אלרגיה בילדים: שאלות ותשובות | ד״ר אנה ברמלי" />
         <meta property="og:description" content="תשובות ברורות להורים על תסמיני אלרגיה, אלרגיה למזון, אנפילקסיס ובדיקות אלרגיה לילדים." />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png?v=6" />
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(buildBreadcrumbSchema([
           { name: "דף הבית", item: "https://ihaveallergy.com/" },

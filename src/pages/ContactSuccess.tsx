@@ -31,7 +31,7 @@ export default function ContactSuccess() {
                   הפנייה נשלחה בהצלחה!
                 </h1>
                 <p className="text-muted-foreground mb-6">
-                  נחזור אליכם בהקדם האפשרי לתיאום התור.
+                  צוות המרפאה יחזור בהתאם לזמינות. שליחת הפנייה אינה מהווה אישור לתור.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                   <Button onClick={() => navigate('/contact')} variant="outline">

@@ -19,7 +19,7 @@ export const ArticleCTA = ({ variant = "inline" }: ArticleCTAProps) => {
       <div className="bg-accent/50 rounded-2xl p-8 text-center border border-border/40">
         <h3 className="text-xl font-bold text-foreground mb-3">רוצים סדר? דברו איתנו</h3>
         <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-          ייעוץ אלרגולוג ילדים מותאם אישית, עם מענה מהיר ובדיקות מקיפות
+          ייעוץ אלרגולוגי מותאם אישית ובחירת בדיקות לפי הסיפור הרפואי
         </p>
         <Button size="lg" asChild>
           <a

@@ -30,9 +30,8 @@ const contactInfo = [
 ];
 
 const hours = [
-  { days: "ראשון - חמישי", time: "08:00 - 19:00" },
-  { days: "שישי", time: "08:00 - 13:00" },
-  { days: "שבת", time: "סגור" },
+  { days: "קבלת קהל", time: "בתיאום מראש" },
+  { days: "לתיאום ולבירורים", time: "יש ליצור קשר עם המרפאה" },
 ];
 
 const Contact = () => {
@@ -71,7 +70,7 @@ const Contact = () => {
       });
       toast({
         title: "הפנייה נשלחה בהצלחה",
-        description: "נחזור אליכם בהקדם האפשרי",
+        description: "צוות המרפאה יחזור בהתאם לזמינות",
       });
       navigate('/contact/success');
     } catch (error) {
@@ -105,6 +104,8 @@ const Contact = () => {
         <meta property="og:url" content="https://ihaveallergy.com/contact" />
         <meta property="og:title" content="קביעת תור ויצירת קשר - מרפאת אלרגיה בהוד השרון" />
         <meta property="og:description" content="קביעת תור אצל ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה. מרפאה פרטית בהוד השרון, ייעוץ ואבחון אלרגיות בילדים ובמבוגרים." />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png?v=6" />
         <script type="application/ld+json">{JSON.stringify(buildBreadcrumbSchema([
           { name: "דף הבית", item: "https://ihaveallergy.com/" },
           { name: "יצירת קשר", item: "https://ihaveallergy.com/contact" },
@@ -124,7 +125,7 @@ const Contact = () => {
               יצירת קשר וקביעת תור
             </h1>
             <p className="text-lg text-muted-foreground leading-relaxed">
-              נשמח לעזור - פנו אלינו לקביעת תור לאבחון מקצועי או לכל שאלה. אנו מתחייבים לחזור אליכם בהקדם האפשרי.
+              ניתן להשאיר פרטים לצורך בירור או בקשת תור. צוות המרפאה יחזור בהתאם לזמינות.
             </p>
           </motion.div>
         </div>

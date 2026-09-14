@@ -62,7 +62,7 @@ const faqSchema = {
       name: 'כיצד קובעים תור?',
       acceptedAnswer: {
         "@type": "Answer",
-        text: 'תור נקבע ישירות באתר בעמוד הזמנת התור (ihaveallergy.com/book). בטופס תבחרו את הקליניקה, מועד, סוג הביקור ותספקו פרטי קשר. אישור נשלח באימייל תוך זמן קצר.',
+        text: 'ניתן להשאיר בקשת תור ופרטי קשר באתר בעמוד ihaveallergy.com/book. צוות המרפאה בודק את הבקשה וחוזר בהתאם לזמינות; שליחת הבקשה אינה מהווה אישור לתור.',
       },
     },
   ],
@@ -139,6 +139,15 @@ const WhoIs = () => {
             content="ד״ר אנה ברמלי, רופאת אלרגיה, אלרגולוג פרטי, בדיקות אלרגיה, טיפול אלרגיה ילדים, ihaveallergy"
           />
           <link rel="canonical" href="https://ihaveallergy.com/whois" />
+          <meta property="og:type" content="profile" />
+          <meta property="og:url" content="https://ihaveallergy.com/whois" />
+          <meta property="og:title" content="מי היא ד״ר אנה ברמלי | רופאת אלרגיה פרטית בישראל" />
+          <meta property="og:description" content="רקע מקצועי, הכשרה ותחומי העיסוק של ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה ורופאת ילדים." />
+          <meta property="og:image" content="https://ihaveallergy.com/og-logo.png?v=6" />
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:title" content="מי היא ד״ר אנה ברמלי" />
+          <meta name="twitter:description" content="רקע מקצועי, הכשרה ותחומי העיסוק באלרגיה ואימונולוגיה." />
+          <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png?v=6" />
           <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
         </Helmet>
 
@@ -156,8 +165,7 @@ const WhoIs = () => {
                   <span className="block text-primary mt-2 text-2xl md:text-3xl">רופאת אלרגיה פרטית בישראל</span>
                 </h1>
                 <p className="text-lg text-muted-foreground leading-relaxed mb-6">
-                  ד״ר אנה ברמלי היא רופאת אלרגיה המופיעה כטיפול פרטי בישראל, המתמקדת באבחון וניהול מצבים אלרגיים ומערכת
-                  החיסון.
+                  ד״ר אנה ברמלי היא מומחית לאלרגיה ואימונולוגיה ורופאת ילדים, העוסקת בבירור ובטיפול במצבים אלרגיים אצל ילדים ומבוגרים.
                 </p>
                 <p className="text-lg text-muted-foreground leading-relaxed">
                   בקליניקה הפרטית שלה (

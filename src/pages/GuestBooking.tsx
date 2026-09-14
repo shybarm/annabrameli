@@ -385,6 +385,8 @@ export default function GuestBooking() {
         <meta property="og:url" content="https://ihaveallergy.com/book" />
         <meta property="og:title" content="קביעת תור לאלרגולוג ילדים פרטי בהוד השרון" />
         <meta property="og:description" content="בקשת תור לייעוץ אלרגיה פרטי לילדים ולמבוגרים בהוד השרון." />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png?v=6" />
       </Helmet>
       <div className="max-w-md mx-auto">
         {/* Header */}

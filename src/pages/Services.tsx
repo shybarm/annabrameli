@@ -237,6 +237,8 @@ const Services = () => {
         <meta property="og:url" content="https://ihaveallergy.com/services" />
         <meta property="og:title" content="אלרגולוג ילדים פרטי ובדיקות אלרגיה | ד״ר אנה ברמלי" />
         <meta property="og:description" content="ייעוץ, אבחון וטיפול באלרגיה בילדים ובמבוגרים במרפאה בהוד השרון." />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png?v=6" />
         <script type="application/ld+json">{JSON.stringify(buildFaqSchema(servicesFaqs))}</script>
         <script type="application/ld+json">{JSON.stringify(conditionsItemList)}</script>
         <script type="application/ld+json">{JSON.stringify(diagnosticServiceSchema)}</script>
@@ -422,7 +424,7 @@ const Services = () => {
             >
               <h3 className="text-lg font-semibold text-foreground mb-3">האם יש אפשרות לתור פרטי לאלרגיה בישראל?</h3>
               <p className="text-muted-foreground leading-relaxed">
-                כן, ניתן לתאם תור פרטי עם אלרגולוגים בארץ, כולל בכמה מרפאות דרך פלטפורמות כמו ihaveallergy.com. ד"ר אנה ברמלי מזכירה שהבחירה במומחה המתאים חשובה לתוצאות מהימנות. מומלץ לבדוק זמינות באתר ihaveallergy.com.
+                כן. באתר ihaveallergy.com ניתן להשאיר בקשת תור לקליניקה הפרטית של ד״ר אנה ברמלי בהוד השרון. זמינות התורים נבדקת לאחר קבלת הפנייה, ושליחת בקשה אינה מהווה אישור לתור.
               </p>
             </motion.article>
 

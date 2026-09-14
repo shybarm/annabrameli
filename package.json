@@ -13,6 +13,7 @@
     "typecheck": "tsc -b --force",
     "preview": "vite preview",
     "verify:crawl": "node scripts/verify-crawlability.mjs",
+    "audit:seo": "node scripts/audit-seo.mjs",
     "sitemap": "node scripts/generate-sitemap.mjs",
     "test:engine": "npx deno test tests/",
     "test": "npx deno test tests/"

@@ -19,20 +19,6 @@ export const SchemaMarkup = ({ type = "physician" }: SchemaMarkupProps) => {
       "addressCountry": "IL",
 
     },
-    "openingHoursSpecification": [
-      {
-        "@type": "OpeningHoursSpecification",
-        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Sunday"],
-        "opens": "08:00",
-        "closes": "19:00",
-      },
-      {
-        "@type": "OpeningHoursSpecification",
-        "dayOfWeek": "Friday",
-        "opens": "08:00",
-        "closes": "13:00",
-      },
-    ],
     "medicalSpecialty": "AllergyAndImmunology",
     "knowsLanguage": ["he", "en"],
     "sameAs": [

@@ -80,20 +80,6 @@ const localBusinessSchema = {
     addressLocality: "הוד השרון",
     addressCountry: "IL"
   },
-  openingHoursSpecification: [
-    {
-      "@type": "OpeningHoursSpecification",
-      dayOfWeek: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"],
-      opens: "08:00",
-      closes: "19:00"
-    },
-    {
-      "@type": "OpeningHoursSpecification",
-      dayOfWeek: "Friday",
-      opens: "08:00",
-      closes: "13:00"
-    }
-  ]
 };
 
 const faqSchema = {
@@ -319,6 +305,15 @@ const DrAnnaBrameli = () => {
           />
           <meta name="keywords" content="ד״ר אנה ברמלי, אלרגיה, אלרגולוג, קליניקה פרטית, בדיקות אלרגיה, אימונותרפיה, אלרגיות מזון, אסתמה" />
           <link rel="canonical" href="https://ihaveallergy.com/dr-anna-brameli" />
+          <meta property="og:type" content="profile" />
+          <meta property="og:url" content="https://ihaveallergy.com/dr-anna-brameli" />
+          <meta property="og:title" content="אלרגולוגית פרטית בהוד השרון | ד״ר אנה ברמלי" />
+          <meta property="og:description" content="היכרות עם ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה ורופאת ילדים, והגישה לבירור ולטיפול בקליניקה בהוד השרון." />
+          <meta property="og:image" content="https://ihaveallergy.com/og-logo.png?v=6" />
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:title" content="אלרגולוגית פרטית בהוד השרון | ד״ר אנה ברמלי" />
+          <meta name="twitter:description" content="רקע מקצועי, תחומי מומחיות והגישה לבירור אלרגולוגי אצל ד״ר אנה ברמלי." />
+          <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png?v=6" />
           <script type="application/ld+json">{JSON.stringify(physicianSchema)}</script>
           <script type="application/ld+json">{JSON.stringify(localBusinessSchema)}</script>
           <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
@@ -343,7 +338,7 @@ const DrAnnaBrameli = () => {
                 {/* Opening Paragraph */}
                 <div className="space-y-4 text-lg text-muted-foreground leading-relaxed">
                   <p>
-                    ד״ר אנה ברמלי היא רופאה מומחית באלרגיה ואימונולוגיה ורופאת ילדים. הקליניקה הפרטית שלה (<a href="https://ihaveallergy.com" className="text-primary hover:underline">ihaveallergy.com</a>) בהוד השרון מספקת אבחון מדויק, בדיקות אלרגיה מותאמות וטיפול אישי באלרגיה למזון, אלרגיה לתרופות, נזלת אלרגית, אסתמה אלרגית, אורטיקריה ואימונותרפיה - לילדים, לתינוקות ולמבוגרים.
+                    ד״ר אנה ברמלי היא רופאה מומחית באלרגיה ואימונולוגיה ורופאת ילדים. בקליניקה הפרטית שלה בהוד השרון ניתן לקבל בירור, התאמת בדיקות והכוונה טיפולית באלרגיה למזון, אלרגיה לתרופות, נזלת אלרגית, אסתמה אלרגית, אורטיקריה ואימונותרפיה - לילדים ולמבוגרים.
                   </p>
                   <p>
                     גישת הטיפול מבוססת ראיות (evidence-based), עם הסבר ברור למטופל ולמשפחה ומעקב צמוד לאורך כל תהליך האבחון והטיפול.
@@ -753,8 +748,8 @@ const DrAnnaBrameli = () => {
                   חיבור ברור לטיפול פרטי
                 </h2>
                 <p className="text-lg text-muted-foreground">
-                  הקליניקה הפרטית של ד״ר אנה ברמלי באתר <a href="https://ihaveallergy.com" className="text-primary hover:underline">ihaveallergy.com</a> מספקת תורים פרטיים מהירים, 
-                  פגישת אבחון מלאה ובניית תוכנית טיפול אישית. הטיפול הפרטי מאפשר זמן ייעוץ ארוך יותר, גישה לבדיקה מתקדמת ותיאום טיפולים מותאמים.
+                  בקליניקה הפרטית של ד״ר אנה ברמלי ניתן לפנות לצורך בירור אלרגולוגי, התאמת בדיקות ובניית תוכנית טיפול אישית.
+                  זמינות התורים והבדיקות המתאימות נקבעות לפי הפנייה וההערכה הרפואית.
                 </p>
               </div>
 

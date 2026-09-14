@@ -7,6 +7,8 @@ const AccessibilityStatement = () => {
         <title>הצהרת נגישות | iHaveAllergy</title>
         <meta name="description" content="הצהרת הנגישות של iHaveAllergy - התאמות נגישות ויצירת קשר" />
         <link rel="canonical" href="https://ihaveallergy.com/accessibility" />
+        <meta property="og:title" content="הצהרת נגישות | iHaveAllergy" />
+        <meta name="twitter:card" content="summary" />
       </Helmet>
 
       <div className="container-medical py-16">
