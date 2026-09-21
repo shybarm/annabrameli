@@ -462,6 +462,41 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Featured medical explanation */}
+      <section className="bg-surface-warm pb-12 md:pb-16">
+        <div className="container-medical">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <Link
+              to="/knowledge/בדיקה-חיובית-בלי-תסמינים"
+              className="group block rounded-2xl border border-primary/20 bg-card p-6 md:p-8 shadow-sm card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+              aria-label="הסבר רפואי מאת ד״ר אנה ברמלי: טסט אלרגיה חיובי לא תמיד אומר שיש אלרגיה"
+            >
+              <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+                <div className="max-w-3xl">
+                  <span className="mb-3 inline-block rounded-full bg-accent px-3 py-1 text-xs font-medium text-primary">
+                    הסבר רפואי מאת ד״ר אנה ברמלי
+                  </span>
+                  <h2 className="mb-3 text-2xl font-bold text-foreground transition-colors group-hover:text-primary">
+                    טסט אלרגיה חיובי לא תמיד אומר שיש אלרגיה
+                  </h2>
+                  <p className="leading-relaxed text-muted-foreground">
+                    למה הסיפור הקליני קודם לבדיקה, כיצד נוגדני IgE עלולים להופיע גם בלי תגובה למזון, ומה הסיכון בבדיקות אקראיות.
+                  </p>
+                </div>
+                <span className="inline-flex shrink-0 items-center gap-2 font-medium text-primary">
+                  לקריאת ההסבר
+                  <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
+                </span>
+              </div>
+            </Link>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Press / Media Section */}
       <section className="section-spacing-lg bg-surface-warm">
         <div className="container-medical">

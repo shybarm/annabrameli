@@ -14,6 +14,8 @@ export interface KnowledgeArticleProps {
   metaDescription: string;
   children: React.ReactNode;
   relatedArticles?: { to: string; label: string }[];
+  datePublished?: string;
+  dateModified?: string;
 }
 
 const RIGHTS_ARTICLES = new Set([
@@ -102,6 +104,8 @@ export const KnowledgeArticleLayout = ({
   metaDescription,
   children,
   relatedArticles = [],
+  datePublished = "2026-02-08",
+  dateModified = "2026-02-08",
 }: KnowledgeArticleProps) => {
   const pageId = `knowledge:${slug}`;
   const { sections, getSection, hasOverride } = usePageContent(pageId);
@@ -115,8 +119,8 @@ export const KnowledgeArticleLayout = ({
   const articleSchema = buildMedicalPageSchema({
     headline: dynamicTitle,
     description: metaDescription,
-    datePublished: "2026-02-08",
-    dateModified: "2026-02-08",
+    datePublished,
+    dateModified,
     canonicalUrl,
   });
   const breadcrumbSchema = buildBreadcrumbSchema([
@@ -124,6 +128,11 @@ export const KnowledgeArticleLayout = ({
     { name: parentGuide.name, item: `https://ihaveallergy.com${parentGuide.path}` },
     { name: dynamicTitle },
   ]);
+  const updatedLabel = new Intl.DateTimeFormat("he-IL", {
+    month: "long",
+    year: "numeric",
+    timeZone: "Asia/Jerusalem",
+  }).format(new Date(`${dateModified}T12:00:00Z`));
 
   return (
     <>
@@ -208,7 +217,7 @@ export const KnowledgeArticleLayout = ({
               <strong className="text-foreground">הבהרה רפואית:</strong> המידע בעמוד זה נועד לצרכי הסברה בלבד ואינו מהווה תחליף לייעוץ רפואי מקצועי.
             </p>
             <p>
-              תוכן זה נכתב ונסקר רפואית על ידי ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה. עודכן: פברואר 2026.
+              תוכן זה נכתב ונסקר רפואית על ידי ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה. עודכן: {updatedLabel}.
             </p>
           </div>
         </div>
