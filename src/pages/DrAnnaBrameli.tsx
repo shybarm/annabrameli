@@ -9,7 +9,6 @@ import {
   Users,
   Phone,
   MapPin,
-  Clock,
   FileText,
   Baby,
   Pill,
@@ -54,11 +53,18 @@ const physicianSchema = {
     "https://orcid.org/0009-0005-6489-6525",
     "https://pubmed.ncbi.nlm.nih.gov/?term=Brameli+A",
   ],
-  worksFor: {
-    "@type": "MedicalOrganization",
-    name: "Schneider Children's Medical Center of Israel",
-    url: "https://www.schneider.org.il/",
-  },
+  worksFor: [
+    {
+      "@type": "MedicalOrganization",
+      name: "מרכז שניידר לרפואת ילדים בישראל",
+      url: "https://www.schneider.org.il/?ArticleID=2506&CategoryID=839",
+    },
+    {
+      "@type": "MedicalOrganization",
+      name: "שירותי בריאות כללית",
+      url: "https://www.clalit.co.il/he/sefersherut/pages/doctordetails.aspx?edeptcode=45110&eservicecode=40&employeeid=F5893D4582BB72AB8A01880F37BD79D6",
+    },
+  ],
   knowsLanguage: ["he", "en"],
   availableService: [
     { "@type": "MedicalProcedure", name: "בדיקות עור (Skin Prick Tests)" },
@@ -392,6 +398,62 @@ const DrAnnaBrameli = () => {
                 </div>
               </motion.div>
             </div>
+          </div>
+        </section>
+
+        {/* מסגרות פעילות מקצועית */}
+        <section className="py-16 md:py-20 bg-background">
+          <div className="container-medical">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="max-w-5xl mx-auto"
+            >
+              <div className="text-center mb-10">
+                <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
+                  מסגרות הפעילות של ד״ר אנה ברמלי
+                </h2>
+                <p className="text-muted-foreground leading-relaxed max-w-3xl mx-auto">
+                  ד״ר ברמלי פועלת בשלוש מסגרות נפרדות. פרטי ההתקשרות וקביעת התורים משתנים בין המסגרות ומופיעים באתר הגוף המתאים.
+                </p>
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-6">
+                <article className="bg-card rounded-xl p-6 border border-border">
+                  <MapPin className="w-7 h-7 text-primary mb-4" />
+                  <h3 className="text-lg font-bold text-foreground mb-3">הקליניקה הפרטית בהוד השרון</h3>
+                  <p className="text-muted-foreground leading-relaxed">
+                    ייעוץ ובירור אלרגולוגי לילדים ולמבוגרים במסגרת הקליניקה הפרטית של ד״ר ברמלי.
+                  </p>
+                  <Link to="/contact" className="text-primary hover:underline inline-flex items-center gap-1.5 mt-4 font-medium">
+                    פרטי הקליניקה ויצירת קשר
+                  </Link>
+                </article>
+
+                <article className="bg-card rounded-xl p-6 border border-border">
+                  <Stethoscope className="w-7 h-7 text-primary mb-4" />
+                  <h3 className="text-lg font-bold text-foreground mb-3">מרכז שניידר לרפואת ילדים</h3>
+                  <p className="text-muted-foreground leading-relaxed">
+                    רופאה בכירה במכון לאלרגיה ואימונולוגיה במרכז שניידר לרפואת ילדים.
+                  </p>
+                  <a href="https://www.schneider.org.il/?ArticleID=2506&CategoryID=839" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-flex items-center gap-1.5 mt-4 font-medium">
+                    אימות באתר שניידר <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </article>
+
+                <article className="bg-card rounded-xl p-6 border border-border">
+                  <Users className="w-7 h-7 text-primary mb-4" />
+                  <h3 className="text-lg font-bold text-foreground mb-3">כללית — מרפאת שמאי באלעד</h3>
+                  <p className="text-muted-foreground leading-relaxed">
+                    במסגרת שירותי בריאות כללית, ד״ר ברמלי רשומה כרופאת ילדים במרפאת שמאי — רופאים עצמאיים באלעד.
+                  </p>
+                  <a href="https://www.clalit.co.il/he/sefersherut/pages/doctordetails.aspx?edeptcode=45110&eservicecode=40&employeeid=F5893D4582BB72AB8A01880F37BD79D6" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-flex items-center gap-1.5 mt-4 font-medium">
+                    אימות באתר כללית <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </article>
+              </div>
+            </motion.div>
           </div>
         </section>
 
@@ -831,17 +893,6 @@ const DrAnnaBrameli = () => {
                     <div>
                       <h3 className="font-semibold text-foreground">כתובת הקליניקה</h3>
                       <p className="text-muted-foreground">הוד השרון</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center">
-                      <Clock className="w-6 h-6 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground">שעות קבלה</h3>
-                      <p className="text-muted-foreground">ראשון-חמישי: 08:00-19:00</p>
-                      <p className="text-muted-foreground">שישי: 08:00-13:00</p>
                     </div>
                   </div>
 

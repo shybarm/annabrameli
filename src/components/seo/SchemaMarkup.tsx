@@ -27,11 +27,18 @@ export const SchemaMarkup = ({ type = "physician" }: SchemaMarkupProps) => {
       "https://orcid.org/0009-0005-6489-6525",
       "https://pubmed.ncbi.nlm.nih.gov/?term=Brameli+A",
     ],
-    "worksFor": {
-      "@type": "MedicalOrganization",
-      "name": "Schneider Children's Medical Center of Israel",
-      "url": "https://www.schneider.org.il/",
-    },
+    "worksFor": [
+      {
+        "@type": "MedicalOrganization",
+        "name": "מרכז שניידר לרפואת ילדים בישראל",
+        "url": "https://www.schneider.org.il/?ArticleID=2506&CategoryID=839",
+      },
+      {
+        "@type": "MedicalOrganization",
+        "name": "שירותי בריאות כללית",
+        "url": "https://www.clalit.co.il/he/sefersherut/pages/doctordetails.aspx?edeptcode=45110&eservicecode=40&employeeid=F5893D4582BB72AB8A01880F37BD79D6",
+      },
+    ],
     "description": "מומחית לאלרגיה ואימונולוגיה לילדים ומבוגרים בהוד השרון. אבחון וטיפול באלרגיות למזון, אסתמה, ואלרגיה לתרופות.",
   };
 
