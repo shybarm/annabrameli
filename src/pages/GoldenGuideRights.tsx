@@ -1,370 +1,107 @@
 import { Helmet } from "react-helmet-async";
-import { buildMedicalPageSchema, buildBreadcrumbSchema, buildFaqSchema } from "@/utils/medicalSchema";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import {
-  ChevronLeft,
-  Clock,
-  ShieldCheck,
-  FileText,
-  School,
-  CheckCircle2,
-  ArrowRight,
-  AlertTriangle,
-  ClipboardList,
-  Users,
-  Heart,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { AuthorBadge } from "@/components/blog/AuthorBadge";
-import { ArticleCTA } from "@/components/blog/ArticleCTA";
+import { buildBreadcrumbSchema, buildFaqSchema } from "@/utils/medicalSchema";
 import { FAQAccordion } from "@/components/ui/faq-accordion";
 
-const WHATSAPP_URL =
-  "https://wa.me/972525916393?text=%D7%A9%D7%9C%D7%95%D7%9D%2C%20%D7%90%D7%A9%D7%9E%D7%97%20%D7%9C%D7%99%D7%99%D7%A2%D7%95%D7%A5%20%D7%9C%D7%92%D7%91%D7%99%20%D7%96%D7%9B%D7%95%D7%99%D7%95%D7%AA%20%D7%99%D7%9C%D7%93%20%D7%90%D7%9C%D7%A8%D7%92%D7%99";
-
-const educationRights = [
-  {
-    title: "התאמות תזונתיות בגן ובצהרון",
-    desc: "המוסד החינוכי חייב להבטיח שהילד מקבל ארוחות בטוחות ומותאמות. ההורים רשאים לדרוש תפריט נפרד או להביא אוכל מהבית.",
-  },
-  {
-    title: "אחזקת אפיפן / תרופות חירום",
-    desc: "על פי חוזר מנכ\"ל משרד החינוך, המוסד נדרש לאחסן תרופות חירום (כולל אפיפן) ולוודא שלפחות איש צוות אחד יודע להשתמש בהן.",
-  },
-  {
-    title: "תוכנית פעולה אישית (Action Plan)",
-    desc: "ההורים זכאים לספק תוכנית פעולה רפואית שנכתבה על ידי אלרגולוג. המוסד מחויב ליישם אותה.",
-  },
-  {
-    title: "הדרכת צוות",
-    desc: "הצוות החינוכי חייב לעבור הדרכה בסיסית לזיהוי תגובה אלרגית ושימוש באפיפן. ניתן לדרוש זאת דרך הנהלת המוסד.",
-  },
-  {
-    title: "סייעת רפואית",
-    desc: "במקרים חמורים, ניתן לפנות לוועדת שילוב ולבקש סייעת רפואית שתלווה את הילד בשעות הפעילות.",
-  },
+const canonical = "https://ihaveallergy.com/guides/זכויות-ילד-אלרגי-ישראל";
+const title = "ילד עם אלרגיה למזון בגן ובבית הספר: סייעת, הכנה וזכויות";
+const description = "מה מציע נייר העמדה מספטמבר 2026, מה צריך לברר לגבי סייעת וקצבה, ואילו מסמכים ושאלות להכין למסגרת החינוכית.";
+const sources = [
+  { title: "נייר העמדה של האיגוד הישראלי לאלרגיה ואימונולוגיה קלינית — ספטמבר 2026", url: "https://www.ima.org.il/File.aspx?usf=e89c22ac-e718-474f-96e0-782fc2f4847c", note: "מקור מקצועי ראשוני; המלצות מדיניות אינן החלטת זכאות אישית." },
+  { title: "ביטוח לאומי — אלרגיה וזכאות לקצבת ילד נכה", url: "https://www.btl.gov.il/benefits/Disabled_Child/likuilist/Pages/allergy.aspx", note: "תנאי הזכאות, המסמכים ואופן הגשת התביעה נקבעים בידי הביטוח הלאומי." },
 ];
-
-const checklist = [
-  "קבלו אישור רפואי מאלרגולוג עם פירוט האלרגנים",
-  "הכינו תוכנית פעולה (Action Plan) עם הוראות חירום",
-  "ודאו שיש אפיפן תקף במוסד החינוכי",
-  "העבירו את המסמכים להנהלת הגן/בית הספר",
-  "בקשו פגישה עם צוות הגן לסקירת הנהלים",
-  "ודאו שהצוות עבר הדרכה לשימוש באפיפן",
-  "בדקו שתפריט הארוחות מותאם",
-  "עדכנו בתחילת כל שנה ובכל שינוי רפואי",
-];
-
-const whenToFight = [
-  "המוסד מסרב לאחסן אפיפן או תרופות חירום",
-  "הילד נחשף לאלרגן שהובא לידיעת המוסד",
-  "אין הדרכה לצוות למרות בקשה חוזרת",
-  "הילד מודר מפעילויות (ימי הולדת, טיולים) בגלל האלרגיה",
-  "המוסד דורש מההורים להישאר במקום כ\"תנאי\" לקבלת הילד",
-];
-
 const faqs = [
-  {
-    question: "האם הגן חייב לקבל ילד עם אלרגיה למזון?",
-    answer:
-      "כן. על פי חוק, מוסד חינוכי אינו רשאי לסרב לקבל ילד בגלל מצב רפואי, כולל אלרגיה למזון. המוסד מחויב לבצע התאמות סבירות כדי להבטיח את בטיחות הילד, כולל התאמות תזונתיות ואחזקת תרופות חירום.",
-  },
-  {
-    question: "מי אחראי לתת אפיפן בגן?",
-    answer:
-      "לפי חוזר מנכ\"ל משרד החינוך, לפחות שני אנשי צוות בכל מוסד חינוכי צריכים לדעת להשתמש באפיפן. ההורים מספקים את המכשיר והוראות השימוש, והמוסד אחראי לוודא שהצוות מודרך ושהמכשיר נגיש.",
-  },
-  {
-    question: "מה זו תוכנית פעולה אישית (Action Plan)?",
-    answer:
-      "תוכנית פעולה היא מסמך רפואי שנכתב על ידי אלרגולוג ומפרט: מהם האלרגנים של הילד, מהם סימני תגובה אלרגית, מתי לתת אנטיהיסטמין ומתי אפיפן, ומתי להזמין אמבולנס. המסמך מועבר למוסד החינוכי ונשמר במקום נגיש.",
-  },
-  {
-    question: "מתי אפשר לבקש סייעת רפואית?",
-    answer:
-      "ניתן לפנות לוועדת שילוב עם מסמכים רפואיים מאלרגולוג ומכתב המתאר את רמת הסיכון. סייעת רפואית מוקצית במקרים שבהם הילד צריך השגחה צמודה – למשל, אנפילקסיס חוזר, אלרגיות מרובות, או גיל צעיר מאוד.",
-  },
-  {
-    question: "מה עושים כשהגן מסרב לשתף פעולה?",
-    answer:
-      "ראשית, תעדו הכל בכתב. שנית, פנו בכתב למנהל/ת המוסד ולפיקוח. אם אין מענה – ניתן לפנות למשרד החינוך, לנציב תלונות הציבור, או לארגוני הורים לילדים אלרגיים. במקרים חמורים, ניתן להתייעץ עם עורך דין.",
-  },
-  {
-    question: "האם ילד אלרגי יכול להשתתף בטיולים?",
-    answer:
-      "בהחלט כן. המוסד חייב לוודא שיש אפיפן תקף בטיול, שאיש צוות מודרך נוכח, ושהתזונה בטיולים בטוחה לילד. אי אפשר למנוע מילד להשתתף בטיול בגלל אלרגיה – זו הפליה.",
-  },
+  { question: "האם בוטלה הזכאות לסייעת לילד אלרגי?", answer: "נייר העמדה מספטמבר 2026 מציע לבחון מחדש את מודל הסייעות ולפתח חלופות של צוות מיומן ושירותי בריאות במסגרת החינוכית. נייר עמדה מקצועי אינו כשלעצמו ביטול זכאות. יש לבדוק את ההנחיות וההחלטה החלות על הילד מול הרשות והגורם המוסמך." },
+  { question: "האם אישור מאלרגולוג מבטיח סייעת או קצבה?", answer: "לא. מסמך רפואי מתאר את האבחנה והצרכים הרפואיים. ההחלטה על סייעת או על קצבה מתקבלת בנפרד בידי הגורם המוסמך, לפי התנאים והמסמכים הנדרשים במסלול המתאים." },
+  { question: "האם בקשה לסייעת ובקשה לקצבת ילד נכה הן אותה בקשה?", answer: "לא. סיוע במסגרת חינוכית וקצבת ילד נכה הם מסלולים נפרדים. בקשה לקצבה מוגשת לביטוח הלאומי; לגבי סיוע חינוכי יש לברר את המסלול המתאים לגיל הילד ולסוג המסגרת." },
+  { question: "מה כדאי להביא לביקור אצל אלרגולוג לפני תחילת השנה?", answer: "סיכום רפואי עדכני, תוצאות בדיקות קיימות, תיעוד של תגובות קודמות והטיפול שניתן, רשימת תרופות וטפסים שהמסגרת ביקשה. אין לבצע בדיקות חדשות רק לצורך מילוי טופס בלי לברר את הצורך הרפואי בביקור." },
+];
+const checklist = [
+  "רכזו אבחנות, תוצאות בדיקות קיימות ותיעוד תגובות קודמות.",
+  "בררו עם הרופא אילו מסמכים והנחיות אישיות מתאימים לילד.",
+  "תאמו עם המסגרת כיצד מעבירים את ההנחיות לצוות ואיפה נשמרים המסמכים.",
+  "אם נרשם מזרק אדרנלין: תאמו נגישות, בדיקת תוקף והיערכות הצוות לפי ההנחיות האישיות.",
+  "בררו מראש על ארוחות, חגיגות, צהרון וטיולים ועל ההתאמות המתאימות לילד.",
+  "בקשו תשובה כתובה על מסלול הבקשה לסיוע, המסמכים, המועדים ואפשרות הערעור.",
+  "עדכנו את המסגרת כאשר ההנחיות הרפואיות משתנות.",
 ];
 
-const GoldenGuideRights = () => {
-  const faqSchema = buildFaqSchema(faqs);
-
-  const articleSchema = buildMedicalPageSchema({
-    headline: "זכויות של ילד אלרגי בישראל: גן, בית ספר וצהרונים",
-    description: "מדריך מקיף להורים: מהן הזכויות של ילד עם אלרגיה למזון במערכת החינוך הישראלית, איך לדרוש התאמות, ומתי לפנות לגורמים נוספים.",
-    datePublished: "2026-02-08",
-    dateModified: "2026-02-08",
-    canonicalUrl: "https://ihaveallergy.com/guides/זכויות-ילד-אלרגי-ישראל",
-  });
-
-  const breadcrumbSchema = buildBreadcrumbSchema([
+export default function GoldenGuideRights() {
+  const schema = {
+    "@context": "https://schema.org", "@type": "WebPage", "@id": canonical,
+    url: canonical, name: title, description, inLanguage: "he-IL",
+    datePublished: "2026-02-08", dateModified: "2026-10-06",
+    publisher: { "@type": "Organization", "@id": "https://ihaveallergy.com/#organization", name: "ihaveallergy.com" },
+    citation: sources.map(source => source.url),
+  };
+  const breadcrumb = buildBreadcrumbSchema([
     { name: "ראשי", item: "https://ihaveallergy.com/" },
     { name: "מדריכים", item: "https://ihaveallergy.com/blog" },
-    { name: "זכויות ילד אלרגי" },
+    { name: "ילד אלרגי במסגרת החינוכית", item: canonical },
   ]);
-
-  return (
-    <>
-      <Helmet>
-        <title>זכויות של ילד אלרגי בישראל: גן, בית ספר וצהרונים | ד״ר אנה ברמלי</title>
-        <meta
-          name="description"
-          content="מדריך מלא להורים: מהן הזכויות של ילד עם אלרגיה למזון בגן ובבית הספר, איך לדרוש אפיפן, תוכנית פעולה וסייעת רפואית. צ'קליסט מוכן להורדה."
-        />
-        <link rel="canonical" href="https://ihaveallergy.com/guides/זכויות-ילד-אלרגי-ישראל" />
-        <meta property="og:type" content="article" />
-        <meta property="og:url" content="https://ihaveallergy.com/guides/זכויות-ילד-אלרגי-ישראל" />
-        <meta property="og:title" content="זכויות של ילד אלרגי בישראל: גן, בית ספר וצהרונים | ד״ר אנה ברמלי" />
-        <meta property="og:description" content="מדריך מלא להורים: מהן הזכויות של ילד עם אלרגיה למזון בגן ובבית הספר." />
-        <meta property="og:image" content="https://ihaveallergy.com/og-logo.png?v=6" />
-        <meta property="article:published_time" content="2026-02-08" />
-        <meta property="article:modified_time" content="2026-02-08" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="זכויות של ילד אלרגי בישראל: גן, בית ספר וצהרונים | ד״ר אנה ברמלי" />
-        <meta name="twitter:description" content="מדריך מלא להורים: מהן הזכויות של ילד עם אלרגיה למזון בגן ובבית הספר." />
-        <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png?v=6" />
-        <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
-        <script type="application/ld+json">{JSON.stringify(articleSchema)}</script>
-        <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
-      </Helmet>
-
-      {/* Hero */}
-      <section className="gradient-hero py-14 md:py-20">
-        <div className="container-medical max-w-3xl">
-          <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-muted-foreground mb-8">
-            <Link to="/" className="hover:text-foreground transition-colors">ראשי</Link>
-            <ChevronLeft className="w-3.5 h-3.5" />
-            <Link to="/blog" className="hover:text-foreground transition-colors">בלוג</Link>
-            <ChevronLeft className="w-3.5 h-3.5" />
-            <span className="text-foreground">זכויות ילד אלרגי</span>
-          </nav>
-
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-            <span className="inline-block text-xs font-medium text-primary bg-accent px-3 py-1 rounded-full mb-5">
-              מדריך זכויות
-            </span>
-            <h1 className="font-bold text-foreground mb-6 text-balance">
-              זכויות של ילד אלרגי בישראל
-              <span className="block text-primary mt-2 text-[22px] md:text-[28px] lg:text-[32px]">
-                גן, בית ספר וצהרונים
-              </span>
-            </h1>
-            <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-8">
-              <span className="flex items-center gap-1.5"><Clock className="w-4 h-4" />7 דקות קריאה</span>
-              <span>עודכן: פברואר 2026</span>
-            </div>
-            <AuthorBadge compact />
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Body */}
-      <div className="container-medical max-w-3xl py-12 md:py-16">
-        {/* Emotional opening */}
-        <motion.section initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-12">
-          <div className="bg-surface-warm rounded-2xl p-7 border border-border/40 mb-8">
-            <p className="text-lg text-foreground leading-relaxed mb-4">
-              הילדה שלכם אלרגית לבוטנים. בשבוע הבא היא מתחילה בגן. ואתם יודעים שבגן יש חגיגות יום הולדת, ארוחות עשר, ופעילויות עם אוכל – כל יום.
-            </p>
-            <p className="text-muted-foreground leading-relaxed mb-4">
-              השאלה שלא נותנת לכם לישון: <strong className="text-foreground">״מה יקרה כשאני לא שם?״</strong>
-            </p>
-            <p className="text-muted-foreground leading-relaxed">
-              המדריך הזה נכתב כדי לתת לכם כלים ברורים. יש לילד שלכם זכויות – וחשוב שתכירו אותן.
-            </p>
-          </div>
-        </motion.section>
-
-        {/* Education Rights */}
-        <motion.section initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-12" id="education-rights">
-          <div className="flex items-center gap-3 mb-5">
-            <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
-              <School className="w-5 h-5 text-primary" />
-            </div>
-            <h2 className="text-xl md:text-2xl font-bold text-foreground">הזכויות שלכם במערכת החינוך</h2>
-          </div>
-
-          <div className="space-y-4">
-            {educationRights.map((item, index) => (
-              <motion.div
-                key={item.title}
-                initial={{ opacity: 0, y: 12 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.06 }}
-                className="bg-card rounded-2xl border border-border/60 p-5 md:p-6"
-              >
-                <h3 className="text-lg font-semibold text-foreground mb-2">{item.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </motion.section>
-
-        {/* Checklist */}
-        <motion.section initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-12" id="checklist">
-          <div className="flex items-center gap-3 mb-5">
-            <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
-              <ClipboardList className="w-5 h-5 text-primary" />
-            </div>
-            <h2 className="text-xl md:text-2xl font-bold text-foreground">צ׳קליסט: הכנה לתחילת שנה</h2>
-          </div>
-
-          <div className="bg-card rounded-2xl border border-border/60 p-6">
-            <div className="space-y-3">
-              {checklist.map((item, i) => (
-                <div key={i} className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                  <p className="text-sm text-foreground">{item}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </motion.section>
-
-        {/* Inline CTA */}
-        <ArticleCTA variant="inline" />
-
-        {/* When to escalate */}
-        <motion.section initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="my-12" id="when-to-escalate">
-          <div className="flex items-center gap-3 mb-5">
-            <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
-              <AlertTriangle className="w-5 h-5 text-primary" />
-            </div>
-            <h2 className="text-xl md:text-2xl font-bold text-foreground">מתי להעלות הילוך – מצבים שדורשים פנייה</h2>
-          </div>
-
-          <p className="text-muted-foreground leading-relaxed mb-5">
-            ברוב המקרים, שיחה פתוחה עם צוות הגן מספיקה. אבל אם נתקלתם באחד מהמצבים הבאים – <strong className="text-foreground">מגיע לכם להיאבק:</strong>
-          </p>
-
-          <div className="bg-destructive/5 rounded-2xl border border-destructive/20 p-6 space-y-3">
-            {whenToFight.map((item, i) => (
-              <div key={i} className="flex items-start gap-3">
-                <AlertTriangle className="w-4 h-4 text-destructive mt-1 flex-shrink-0" />
-                <p className="text-sm text-muted-foreground">{item}</p>
-              </div>
-            ))}
-          </div>
-
-          <p className="text-muted-foreground leading-relaxed mt-5">
-            תמיד תעדו בכתב (מייל, לא שיחת טלפון). אם צריך – פנו לפיקוח על הגנים, למשרד החינוך, או לעורך דין. הזכויות של הילד שלכם מעוגנות בחוק.
-          </p>
-        </motion.section>
-
-        {/* Action Plan section */}
-        <motion.section initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-12" id="action-plan">
-          <div className="flex items-center gap-3 mb-5">
-            <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
-              <FileText className="w-5 h-5 text-primary" />
-            </div>
-            <h2 className="text-xl md:text-2xl font-bold text-foreground">מה כוללת תוכנית פעולה טובה?</h2>
-          </div>
-
-          <div className="text-muted-foreground leading-relaxed space-y-4">
-            <p>
-              תוכנית פעולה (Allergy Action Plan) היא הכלי הכי חשוב שיש לכם. היא מתורגמת לשפה שצוות הגן מבין, וממפה בדיוק מה לעשות ברגע של תגובה.
-            </p>
-            <div className="bg-card rounded-2xl border border-border/60 p-6 space-y-3">
-              {[
-                "שם הילד, תמונה, ותאריך לידה",
-                "רשימת אלרגנים מאובחנים",
-                "תסמינים קלים + הוראות (אנטיהיסטמין, מנוחה, השגחה)",
-                "תסמינים חמורים + הוראות (אפיפן + 101)",
-                "פרטי קשר של ההורים והאלרגולוג",
-                "תאריך ותוקף המסמך",
-              ].map((item, i) => (
-                <div key={i} className="flex items-start gap-3">
-                  <FileText className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
-                  <p className="text-sm text-foreground">{item}</p>
-                </div>
-              ))}
-            </div>
-            <p>
-              <strong className="text-foreground">אלרגולוג ילדים יכול לכתוב תוכנית פעולה מותאמת אישית</strong> – זה חלק מהייעוץ, ולרוב מכוסה בביטוח הבריאות.
-            </p>
-          </div>
-        </motion.section>
-
-        {/* Internal links hub */}
-        <motion.section initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-12">
-          <h2 className="text-xl md:text-2xl font-bold text-foreground mb-5">מדריכים נוספים</h2>
-          <div className="grid sm:grid-cols-2 gap-4">
-            {[
-              { to: "/guides/טעימות-ראשונות-אלרגנים", label: "טעימות ראשונות – מדריך חשיפה לאלרגנים" },
-              { to: "/guides/בדיקות-אלרגיה-ילדים-ישראל", label: "בדיקות אלרגיה לילדים בישראל" },
-              { to: "/services", label: "השירותים שלנו – בדיקות וייעוץ" },
-              { to: "/about", label: "אודות ד״ר אנה ברמלי" },
-            ].map((link) => (
-              <Link
-                key={link.to}
-                to={link.to}
-                className="flex items-center gap-2 bg-card rounded-xl p-4 border border-border/60 card-hover group text-sm"
-              >
-                <ArrowRight className="w-4 h-4 text-primary flex-shrink-0" />
-                <span className="text-foreground group-hover:text-primary transition-colors font-medium">{link.label}</span>
-              </Link>
-            ))}
-          </div>
-        </motion.section>
-
-        {/* Satellite articles hub */}
-        <motion.section initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-12">
-          <h2 className="text-xl md:text-2xl font-bold text-foreground mb-5">הרחבות חשובות להורים</h2>
-          <div className="grid sm:grid-cols-2 gap-3">
-            {[
-              { to: "/knowledge/גן-יכול-לסרב-לילד-אלרגי", label: "האם גן יכול לסרב לילד אלרגי?" },
-              { to: "/knowledge/אפיפן-בגן-מי-אחראי", label: "אפיפן בגן – מי אחראי?" },
-              { to: "/knowledge/סייעת-רפואית-לילד-אלרגי", label: "סייעת רפואית – מי זכאי?" },
-              { to: "/knowledge/טיול-שנתי-ילד-אלרגי", label: "טיול שנתי עם ילד אלרגי" },
-              { to: "/knowledge/אישור-אלרגיה-למשרד-החינוך", label: "אישור אלרגיה למשרד החינוך" },
-            ].map((link) => (
-              <Link
-                key={link.to}
-                to={link.to}
-                className="flex items-center gap-2 bg-surface-warm rounded-xl p-4 border border-border/40 card-hover group text-sm"
-              >
-                <ArrowRight className="w-4 h-4 text-primary flex-shrink-0" />
-                <span className="text-foreground group-hover:text-primary transition-colors font-medium">{link.label}</span>
-              </Link>
-            ))}
-          </div>
-        </motion.section>
-
-        {/* FAQ */}
-        <motion.section initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-12" id="faq">
-          <h2 className="text-xl md:text-2xl font-bold text-foreground mb-6">שאלות נפוצות</h2>
-          <FAQAccordion items={faqs} />
-        </motion.section>
-
-        {/* Bottom CTA */}
-        <ArticleCTA variant="section" />
-
-        {/* Author + disclaimer */}
-        <div className="mt-10 space-y-6">
-          <AuthorBadge />
-          <div className="bg-surface rounded-2xl p-5 border border-border/40 text-xs text-muted-foreground leading-relaxed">
-            <p className="mb-2">
-              <strong className="text-foreground">הבהרה:</strong> המידע בעמוד זה נועד לצרכי הסברה בלבד ואינו מהווה ייעוץ משפטי. לייעוץ משפטי פרטני, פנו לעורך דין. המידע הרפואי נסקר על ידי ד״ר אנה ברמלי.
-            </p>
-            <p>עודכן לאחרונה: פברואר 2026.</p>
-          </div>
-        </div>
+  return <>
+    <Helmet>
+      <title>{title} | ד״ר אנה ברמלי</title>
+      <meta name="description" content={description} />
+      <link rel="canonical" href={canonical} />
+      <meta property="og:type" content="article" />
+      <meta property="og:url" content={canonical} />
+      <meta property="og:title" content={title} />
+      <meta property="og:description" content={description} />
+      <meta property="og:image" content="https://ihaveallergy.com/og-logo.png?v=6" />
+      <meta property="article:published_time" content="2026-02-08" />
+      <meta property="article:modified_time" content="2026-10-06" />
+      <script type="application/ld+json">{JSON.stringify(schema)}</script>
+      <script type="application/ld+json">{JSON.stringify(breadcrumb)}</script>
+      <script type="application/ld+json">{JSON.stringify(buildFaqSchema(faqs))}</script>
+    </Helmet>
+    <section className="gradient-hero py-14 md:py-20">
+      <div className="container-medical max-w-3xl">
+        <nav aria-label="Breadcrumb" className="text-sm mb-6"><Link to="/">ראשי</Link> / <Link to="/blog">מדריכים</Link></nav>
+        <h1 className="font-bold text-foreground mb-5">{title}</h1>
+        <p className="text-muted-foreground">עדכון מקורות: 6 באוקטובר 2026 · מערכת האתר</p>
+        <p className="text-muted-foreground mt-3">סיכום מידע ציבורי ממקורות רשמיים. העדכון אינו מציג עמדה אישית של ד״ר אנה ברמלי או סקירה רפואית חדשה שלה.</p>
       </div>
-    </>
-  );
-};
-
-export default GoldenGuideRights;
+    </section>
+    <article className="container-medical max-w-3xl py-12 space-y-10 text-muted-foreground leading-relaxed">
+      <p>היערכות למסגרת חינוכית מתחילה בהבנת הצרכים של הילד ובתיאום עם הצוות. חשוב להפריד בין ההנחיות הרפואיות האישיות, בקשה לסיוע במסגרת החינוכית ותביעה לקצבה: לכל אחד מהם מטרה וגורם מחליט שונים.</p>
+      <section id="policy-update" className="bg-surface-warm rounded-2xl border border-border/40 p-6 space-y-4">
+        <h2 className="text-xl md:text-2xl font-bold text-foreground">סייעת לילד אלרגי: מה מציע האיגוד בספטמבר 2026?</h2>
+        <p>נייר העמדה של האיגוד הישראלי לאלרגיה ואימונולוגיה קלינית מציע לבחון מחדש את מודל הסייעות, לצד הכשרת צוותים וחלופות כגון נאמן בריאות מצוות המסגרת או חיזוק שירותי הבריאות, לרבות אחות. ההמלצות מתייחסות להיערכות גם בגילים שמעבר לגיל הסיוע המקובל.</p>
+        <p>המסמך מדגיש תוכנית פעולה אישית, הכשרת צוות ונגישות למזרקי אדרנלין תקפים. אלה המלצות מקצועיות למדיניות; הן אינן החלטת זכאות אישית ואינן מוכיחות שהוראות הסיוע הקיימות בוטלו.</p>
+        <p><strong className="text-foreground">מה לבדוק עכשיו?</strong> את ההנחיות התקפות למסגרת של הילד, את החלטת הגורם המוסמך ואת ההיערכות בפועל. אין לשנות הנחיות רפואיות אישיות בעקבות כתבה.</p>
+        <a href={sources[0].url} className="text-primary underline">לנייר העמדה המקורי באתר ההסתדרות הרפואית</a>
+      </section>
+      <section className="space-y-4" id="education-rights">
+        <h2 className="text-xl md:text-2xl font-bold text-foreground">שלושה מסלולים שכדאי להפריד</h2>
+        <h3 className="font-semibold text-foreground">מעון, גן, בית ספר וצהרון</h3>
+        <p>סוג המסגרת וגיל הילד משפיעים על מסלול הבירור. בררו עם הרשות המקומית ועם הגוף המפקח על המסגרת מי מטפל בבקשה לסיוע, אילו מסמכים נדרשים ומהם המועדים. אל תניחו שאישור למסגרת אחת חל אוטומטית על צהרון, מעון או מסגרת פרטית.</p>
+        <h3 className="font-semibold text-foreground">מסמכים והיערכות רפואית</h3>
+        <p>מסמך רפואי ותוכנית פעולה אישית נועדו לתאר את מצבו של הילד ואת ההנחיות המתאימות לו. תיאום עם הצוות צריך לכלול גם ארוחות, פעילויות וטיולים. בקשו מהרופא להבהיר את ההנחיות ולא להסתפק בתוצאת בדיקה בלבד.</p>
+        <h3 className="font-semibold text-foreground">קצבת ילד נכה בביטוח הלאומי</h3>
+        <p>הביטוח הלאומי מפרסם מסלול זכאות לילדים עם אלרגיה מגיל תשעה חודשים ועד גיל עשר, בכפוף לתנאים. האתר מפרט מסמכי בדיקות, המלצה של מומחה לאלרגיה למזרק אפיפן ותיעוד רפואי נדרש. ההחלטה מתקבלת בביטוח הלאומי; עצם האבחנה או הגשת מסמך אינן מבטיחות קצבה.</p>
+        <a href={sources[1].url} className="text-primary underline">לתנאים ולמסמכים באתר הביטוח הלאומי</a>
+      </section>
+      <section className="space-y-4" id="checklist">
+        <h2 className="text-xl md:text-2xl font-bold text-foreground">רשימת הכנה לביקור ולשיחה עם המסגרת</h2>
+        <ul className="list-disc ps-6 space-y-3">{checklist.map(item => <li key={item}>{item}</li>)}</ul>
+      </section>
+      <section className="space-y-4" id="when-to-escalate">
+        <h2 className="text-xl md:text-2xl font-bold text-foreground">כשיש קושי בתיאום או מחלוקת</h2>
+        <p>רכזו את ההנחיות ואת התכתובת ופנו להנהלת המסגרת לקבלת מענה כתוב. אם הקושי אינו נפתר, בררו מי הגוף המפקח או הגורם המוסמך לטפל בבקשה. במקרה של מחלוקת על זכאות, בדקו את מסלול ההשגה המתאים; המדריך אינו קובע את הזכאות במקרה אישי.</p>
+      </section>
+      <section id="faq"><h2 className="text-xl md:text-2xl font-bold text-foreground mb-6">שאלות נפוצות</h2><FAQAccordion items={faqs} /></section>
+      <section className="bg-card rounded-2xl border border-border/60 p-6 space-y-4">
+        <h2 className="text-xl font-bold text-foreground">צריכים לברר את האבחנה וההנחיות הרפואיות?</h2>
+        <p>אפשר לפנות למרפאת ד״ר אנה ברמלי בהוד השרון לייעוץ בנושא אלרגיה למזון. הביאו תיעוד רפואי וטפסים קיימים כדי לברר מה נדרש רפואית. המרפאה אינה הגוף שמאשר סייעת או קצבה.</p>
+        <Link to="/contact" className="text-primary underline">פנייה למרפאה</Link>
+        <p><Link to="/guides/בדיקות-אלרגיה-ילדים-ישראל" className="text-primary underline">מדריך בדיקות אלרגיה לילדים</Link> · <Link to="/services" className="text-primary underline">שירותי המרפאה</Link></p>
+      </section>
+      <section id="sources" className="space-y-4">
+        <h2 className="text-xl font-bold text-foreground">מקורות ועדכניות</h2>
+        <ul className="space-y-4">{sources.map(source => <li key={source.url}><a href={source.url} className="text-primary underline">{source.title}</a><p className="text-sm">{source.note}</p></li>)}</ul>
+        <p className="text-sm">המקורות נבדקו ב־6 באוקטובר 2026. נהלים ותנאי זכאות עשויים להשתנות; יש לבדוק את המקור הרשמי וההחלטה הפרטנית בעת הגשת בקשה. העמוד אינו ייעוץ משפטי או הוראות לטיפול בתגובה אלרגית.</p>
+      </section>
+    </article>
+  </>;
+}
