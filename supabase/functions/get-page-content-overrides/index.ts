@@ -19,13 +19,14 @@ serve(async (req) => {
 
     const { data, error } = await supabaseAdmin
       .from("page_content_overrides")
-      .select("page_id, sections, updated_at")
+      .select("page_id, sections, updated_at, version_label")
+      .eq("version_label", "applied")
       .order("updated_at", { ascending: false });
 
     if (error) throw error;
 
     return new Response(
-      JSON.stringify({ overrides: data ?? [] }),
+      JSON.stringify({ overrides: data ?? [], publication_filter: "applied" }),
       {
         status: 200,
         headers: {

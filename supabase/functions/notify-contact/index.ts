@@ -1,3 +1,4 @@
+import { readLeadAttribution } from "./attribution.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
@@ -24,6 +25,17 @@ serve(async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  if (req.method === "GET") {
+    return new Response(JSON.stringify({ service: "notify-contact", version: "2026-10-06-attribution-v1" }), {
+      status: 200, headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
+  }
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405, headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
+  }
+
   try {
     const body = await req.json().catch(() => ({}));
     const name = clean(body.name, 120);
@@ -31,6 +43,8 @@ serve(async (req: Request): Promise<Response> => {
     const email = clean(body.email, 160);
     const subject = clean(body.subject, 200);
     const message = clean(body.message, 2000);
+    const attribution = readLeadAttribution(body);
+    const inquiryReference = crypto.randomUUID();
 
     if (!name || !phone) {
       return new Response(JSON.stringify({ error: "Missing name or phone" }), {
@@ -100,7 +114,14 @@ serve(async (req: Request): Promise<Response> => {
             ${row("דוא\u201dל", email)}
             ${row("נושא", subject)}
             ${row("פרטים", message)}
-            ${row("תאריך", new Date().toLocaleString("he-IL"))}
+            ${row("תאריך", new Date().toLocaleString("he-IL", { timeZone: "Asia/Jerusalem" }))}
+            ${row("מזהה פנייה", inquiryReference)}
+            ${row("טופס מקור", attribution.source)}
+            ${row("מקור מתויג", attribution.labels.utm_source || "לא מתויג")}
+            ${row("ערוץ", attribution.labels.utm_medium || "")}
+            ${row("קמפיין", attribution.labels.utm_campaign || "")}
+            ${row("קישור מתויג", attribution.labels.utm_content || "")}
+            ${row("אתר מפנה", attribution.referrer)}
           </div>
           <p style="color:#9ca3af; font-size:12px; margin-top:24px;">הודעה זו נשלחה אוטומטית מאתר המרפאה.</p>
         </div>
@@ -118,7 +139,7 @@ serve(async (req: Request): Promise<Response> => {
       );
     }
 
-    return new Response(JSON.stringify({ success: true }), {
+    return new Response(JSON.stringify({ success: true, inquiry_reference: inquiryReference }), {
       status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
