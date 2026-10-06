@@ -1,3 +1,4 @@
+import { CLINIC } from "@/data/clinic";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -655,7 +656,7 @@ const Index = () => {
                 <MapPin className="w-6 h-6 text-primary" />
               </div>
               <h3 className="text-base font-semibold text-foreground mb-1">כתובת</h3>
-              <p className="text-muted-foreground text-sm">הוד השרון</p>
+              <p className="text-muted-foreground text-sm">{CLINIC.address}</p>
             </motion.div>
           </div>
 

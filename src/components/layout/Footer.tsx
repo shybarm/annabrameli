@@ -1,3 +1,4 @@
+import { CLINIC } from "@/data/clinic";
 import { Link } from "react-router-dom";
 import { Mail, MapPin, Clock } from "lucide-react";
 
@@ -72,7 +73,7 @@ export const Footer = () => {
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">כתובת</p>
-                  <p className="text-sm text-foreground">הוד השרון</p>
+                  <p className="text-sm text-foreground">{CLINIC.address}</p>
                 </div>
               </li>
             </ul>
@@ -85,8 +86,8 @@ export const Footer = () => {
               <li className="flex items-center gap-2.5">
                 <Clock className="w-4 h-4 text-primary flex-shrink-0" />
                 <div>
-                  <p className="text-sm text-foreground">בתיאום מראש</p>
-                  <p className="text-xs text-muted-foreground">יש ליצור קשר עם המרפאה</p>
+                  <p className="text-sm text-foreground">{CLINIC.hoursLabel}</p>
+                  <p className="text-xs text-muted-foreground">בתיאום מראש עם המרפאה</p>
                 </div>
               </li>
             </ul>

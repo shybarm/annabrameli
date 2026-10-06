@@ -1,3 +1,4 @@
+import { CLINIC } from "@/data/clinic";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -24,7 +25,7 @@ import {
 import drAnnaConsultation from "@/assets/dr-anna-brameli-consultation.png.asset.json";
 
 const CANONICAL = "https://ihaveallergy.com/desensitization";
-const CLINIC_ADDRESS = "הוד השרון";
+const CLINIC_ADDRESS = CLINIC.address;
 
 const trustPoints = [
   "ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה קלינית",

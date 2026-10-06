@@ -1,3 +1,5 @@
+import { getStoredUtm } from "@/lib/analytics";
+import { CLINIC } from "@/data/clinic";
 import { Helmet } from "react-helmet-async";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -23,14 +25,14 @@ const contactInfo = [
   {
     icon: MapPin,
     title: "כתובת",
-    value: "הוד השרון",
-    href: "https://maps.google.com/?q=%D7%94%D7%95%D7%93+%D7%94%D7%A9%D7%A8%D7%95%D7%9F",
+    value: CLINIC.address,
+    href: CLINIC.mapsUrl,
 
   },
 ];
 
 const hours = [
-  { days: "קבלת קהל", time: "בתיאום מראש" },
+  { days: "ראשון, שני וחמישי", time: "16:30–21:00, בתיאום מראש" },
   { days: "לתיאום ולבירורים", time: "יש ליצור קשר עם המרפאה" },
 ];
 
@@ -58,6 +60,8 @@ const Contact = () => {
           email: formData.email.trim(),
           subject: formData.subject.trim(),
           message: formData.message.trim(),
+          attribution: getStoredUtm(),
+          source: "contact_form",
         },
       });
       if (error) throw error;
@@ -266,6 +270,8 @@ const Contact = () => {
                 </div>
               </div>
 
+              <p className="text-sm text-muted-foreground">{CLINIC.accessLabel}.</p>
+
               {/* Hours */}
               <div className="bg-card rounded-2xl border border-border/60 p-7 md:p-9">
                 <div className="flex items-center gap-3 mb-6">
@@ -289,7 +295,7 @@ const Contact = () => {
               {/* Google Maps Embed */}
               <div className="bg-surface rounded-2xl overflow-hidden h-64 border border-border/60">
                 <iframe
-                  src="https://www.google.com/maps?q=%D7%94%D7%95%D7%93%20%D7%94%D7%A9%D7%A8%D7%95%D7%9F&output=embed"
+                  src={CLINIC.mapsEmbedUrl}
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}

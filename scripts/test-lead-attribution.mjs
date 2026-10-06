@@ -1,0 +1,44 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import vm from "node:vm";
+import ts from "typescript";
+
+function load(file, globals = {}) {
+  const source = readFileSync(file, "utf8").replace(/^import .*public-routes.*;$/m, "const PUBLIC_ROUTES = ['/', '/contact', '/allergist-private'];");
+  const js = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
+  const context = { exports: {}, URL, URLSearchParams, ...globals };
+  vm.runInNewContext(js, context, { filename: file });
+  return context.exports;
+}
+const store = new Map();
+const sent = [];
+const window = { location: { origin: "https://ihaveallergy.com", pathname: "/contact", search: "?utm_source=google&utm_medium=organic&utm_campaign=gbp&utm_content=website&name=PATIENT&phone=0521234567" }, gtag: (...args) => sent.push(args) };
+const document = { referrer: "https://www.google.com/search?q=private-medical-query&email=patient@example.com" };
+const analytics = load("src/lib/analytics.ts", { window, document, sessionStorage: { getItem: k => store.get(k) ?? null, setItem: (k,v) => store.set(k,v) } });
+const landing = analytics.captureUtmFromUrl();
+assert.equal(landing.utm_campaign, "gbp");
+assert.equal(landing.landing_page, "/contact");
+assert.equal(landing.referrer, "https://www.google.com");
+assert(!JSON.stringify(landing).includes("PATIENT"));
+assert(!JSON.stringify(landing).includes("private-medical-query"));
+window.location.pathname = "/allergist-private"; window.location.search = "";
+assert.equal(analytics.captureUtmFromUrl().landing_page, "/contact", "internal navigation must preserve acquisition");
+analytics.trackEvent("contact_form_submitted", { form_name: "private_allergist_landing" });
+assert.equal(sent.length, 1);
+assert.equal(sent[0][2].page_location, "https://ihaveallergy.com/allergist-private");
+window.location.pathname = "/admin/patients/secret";
+analytics.trackEvent("phone_click"); analytics.trackPageView("/verify-booking?token=secret");
+assert.equal(sent.length, 1, "staff/token routes must not emit events");
+assert.equal(Object.keys(analytics.captureUtmFromUrl()).length, 0);
+window.location.pathname = "/contact";
+store.set("ga_utm_attribution", JSON.stringify({ landing_page: "/contact?name=PATIENT", referrer: "https://example.com/private?token=secret", utm_source: "patient@example.com", utm_campaign: "0521234567", message: "medical history", gclid: "old-id" }));
+const legacy = analytics.getStoredUtm();
+assert.equal(legacy.landing_page, "/contact");
+assert.equal(legacy.referrer, "https://example.com");
+assert.equal(legacy.utm_source, undefined); assert.equal(legacy.utm_campaign, undefined); assert.equal(legacy.message, undefined); assert.equal(legacy.gclid, undefined);
+const backend = load("supabase/functions/notify-contact/attribution.ts");
+const lead = backend.readLeadAttribution({ source: "allergist_private_landing", attribution: { utm_source: "google", utm_campaign: "gbp", referrer: "https://google.com/search?q=secret", name: "PATIENT", landing_page: "/admin/patient", utm_term: "private medical term" } });
+assert.equal(lead.source, "allergist_private_landing"); assert.equal(lead.labels.utm_campaign, "gbp"); assert.equal(lead.referrer, "https://google.com");
+assert(!JSON.stringify(lead).includes("secret")); assert(!JSON.stringify(lead).includes("PATIENT")); assert(!JSON.stringify(lead).includes("medical term"));
+assert.equal(backend.readLeadAttribution({ source: "<script>" }).source, "contact_form");
+console.log("Lead attribution privacy and acquisition checks passed; no external requests or emails sent.");

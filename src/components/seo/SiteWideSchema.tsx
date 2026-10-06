@@ -1,3 +1,4 @@
+import { CLINIC_POSTAL_ADDRESS, CLINIC_OPENING_HOURS } from "@/data/clinic";
 import { Helmet } from "react-helmet-async";
 
 /**
@@ -15,18 +16,9 @@ export const SiteWideSchema = () => {
     image: "https://ihaveallergy.com/og-logo.png?v=6",
     email: "info@drbrameli.co.il",
     telephone: "+972-52-591-6393",
-    address: {
-      "@type": "PostalAddress",
-      addressLocality: "הוד השרון",
-      addressCountry: "IL",
-    },
-
-    sameAs: [
-      "https://www.schneider.org.il/?ArticleID=2506&CategoryID=839",
-      "https://medicine.vumc.org/department-directory/Anna-Brameli",
-      "https://orcid.org/0009-0005-6489-6525",
-      "https://pubmed.ncbi.nlm.nih.gov/?term=Brameli+A",
-    ],
+    address: CLINIC_POSTAL_ADDRESS,
+    openingHoursSpecification: CLINIC_OPENING_HOURS,
+    // External institute and author profiles describe the physician, not this clinic.
     employee: {
       "@type": "Physician",
       "@id": "https://ihaveallergy.com/dr-anna-brameli#physician",

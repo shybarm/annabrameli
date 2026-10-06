@@ -44,7 +44,7 @@ export const EXPERT_PROFILE = {
   affiliations: [
     {
       type: 'affiliation' as const,
-      label: 'Clinical Fellow',
+      label: 'Clinical Fellow (2022–2024)',
       institution: 'Vanderbilt University Medical Center',
       detail: 'Division of Allergy, Pulmonary and Critical Care Medicine',
     },
@@ -119,7 +119,7 @@ export const PUBLICATIONS: Publication[] = [
     id: 'cephalosporin-survey-2024',
     title: 'Evaluation of Cephalosporin Allergy: Survey of Drug Allergy Experts',
     titleHe: 'הערכת אלרגיה לצפלוספורינים: סקר בקרב מומחי אלרגיה לתרופות',
-    journal: 'The Journal of Allergy and Clinical Immunology: In Practice',
+    journal: 'Journal of Allergy and Clinical Immunology: Global',
     year: 2024,
     authors: 'Brameli A, Stone CA Jr, et al.',
     pubmedId: '39624180',
@@ -130,8 +130,8 @@ export const PUBLICATIONS: Publication[] = [
       { path: '/services', label: 'אבחון אלרגיה לתרופות' },
       { path: '/faq', label: 'שאלות על אלרגיה לתרופות' },
     ],
-    whyItMatters: 'Positions Dr. Brameli at the forefront of drug allergy evaluation research, contributing to expert consensus on safe antibiotic prescribing for patients with suspected allergy.',
-    whyItMattersHe: 'ממקם את ד״ר ברמלי בחזית המחקר בהערכת אלרגיה לתרופות, עם תרומה לקונצנזוס מומחים בנושא מתן אנטיביוטיקה בטוחה למטופלים עם חשד לאלרגיה.',
+    whyItMatters: 'Reports a survey of drug allergy experts on cephalosporin allergy evaluation practices.',
+    whyItMattersHe: 'סקר בקרב מומחי אלרגיה לתרופות המתאר גישות להערכת אלרגיה לצפלוספורינים.',
   },
   {
     id: 'penicillin-allergy-trends-2026',

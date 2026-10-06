@@ -1,3 +1,5 @@
+import { CLINIC, CLINIC_POSTAL_ADDRESS, CLINIC_OPENING_HOURS } from "@/data/clinic";
+import { ClinicDetails } from "@/components/ClinicDetails";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -30,7 +32,7 @@ import foodAllergyImage from "@/assets/dr-anna-brameli-food-allergy.webp.asset.j
 import { UrgencyPopup } from "@/components/marketing/UrgencyPopup";
 
 const CANONICAL = "https://ihaveallergy.com/food-desensitization";
-const CLINIC_ADDRESS = "הוד השרון";
+const CLINIC_ADDRESS = CLINIC.address;
 
 const trustStrip = [
   "מומחית לאלרגיה ואימונולוגיה קלינית",
@@ -192,13 +194,12 @@ const physicianSchema = {
   medicalSpecialty: "Allergy and Immunology",
   description:
     "מומחית לאלרגיה ואימונולוגיה קלינית, רופאה בכירה במחלקת אלרגיה ואימונולוגיה במרכז שניידר לרפואת ילדים, מעניקה ייעוץ פרטי בנושא אלרגיה למזון ודה-סנסיטיזציה.",
-  address: {
-    "@type": "PostalAddress",
-    addressLocality: "הוד השרון",
-    addressCountry: "IL",
-  },
+  address: CLINIC_POSTAL_ADDRESS,
+  openingHoursSpecification: CLINIC_OPENING_HOURS,
   areaServed: ["הוד השרון", "כפר סבא", "רעננה", "הרצליה", "נתניה", "פתח תקווה", "תל אביב", "רמת גן", "ראשון לציון", "חולון", "השרון", "המרכז"],
   availableService: [
+    { "@type": "MedicalProcedure", name: "תגר מזון" },
+    { "@type": "MedicalProcedure", name: "אימונותרפיה פומית למזון (OIT)" },
     { "@type": "MedicalProcedure", name: "ייעוץ אלרגיה למזון" },
     { "@type": "MedicalProcedure", name: "הערכת התאמה לדה-סנסיטיזציה" },
     { "@type": "MedicalProcedure", name: "ייעוץ אלרגולוג פרטי" },
@@ -651,6 +652,12 @@ const FoodDesensitization = () => {
             </ul>
           </div>
         </motion.section>
+
+        <div className="container-medical">
+          <h2 className="text-2xl font-bold">אימונותרפיה פומית במרפאה הפרטית</h2>
+          <p className="text-muted-foreground leading-relaxed mt-3">במרפאה בהטווס 5 בהוד השרון מבוצעים תגרי מזון והפחתת רגישות למזון באמצעות אימונותרפיה פומית (OIT), לצד ייעוץ בנושא אלרגיה למזון. התאמה לטיפול, אופן הביצוע וההכנה נקבעים לאחר הערכה רפואית ובתיאום מראש.</p>
+          <ClinicDetails />
+        </div>
 
         {/* What to bring */}
         <motion.section

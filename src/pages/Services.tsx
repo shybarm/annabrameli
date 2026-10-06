@@ -1,3 +1,5 @@
+import { CLINIC_SERVICES_TEXT } from "@/data/clinic";
+import { ClinicDetails } from "@/components/ClinicDetails";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -28,7 +30,7 @@ import { buildFaqSchema, buildBreadcrumbSchema } from "@/utils/medicalSchema";
 const servicesFaqs = [
   { question: "מהו תהליך האבחנה של אלרגיה פרטית בארץ?", answer: "לרוב מתחיל בקליניקה ובאיסוף היסטוריה, לאחר מכן נעשות בדיקות מתאימות. ד\"ר אנה ברמלי מסבירה את הצעדים וממליצה על הבדיקות המשלימות במידת הצורך." },
   { question: "האם יש אפשרות לתור פרטי לאלרגיה בישראל?", answer: "כן, ניתן לתאם תור פרטי עם אלרגולוגים בארץ. ד\"ר אנה ברמלי מזכירה שהבחירה במומחה המתאים חשובה לתוצאות מהימנות." },
-  { question: "אילו בדיקות אלרגיה פרטיות זמינות ללקוחות פרטיים?", answer: "הבדיקות כוללות לעיתים בדיקות עור או דם לפי הצורך. ד\"ר אנה ברמלי מסבירה אילו בדיקות מתאימות בכל מצב, והבחירה תיעשה בהתאם לתסמינים." },
+  { question: "אילו בדיקות אלרגיה פרטיות זמינות ללקוחות פרטיים?", answer: CLINIC_SERVICES_TEXT },
   { question: "איך נכון להתכונן לבדיקת אלרגיה בילדים בהגעה למרפאה פרטית?", answer: "חשוב להביא היסטוריה רפואית עדכנית ותרופות המותאמות לבן/בת המשפחה. ד\"ר אנה ברמלי ממליצה לתאם מראש ולוודא שהמרפאה תואמת את הצרכים של הילד." },
   { question: "מה ההבדל בין בדיקות אלרגיה למזון לבין בדיקות לסוגי תרופות?", answer: "בדיקות שונות לפי סוג האלרגן והחשיפה הצפויה. ד\"ר אנה ברמלי מדגישה שיש להתאים את הבדיקה לשאלת המקרה ולסימפטומים." },
   { question: "מה כולל תור אלרגולוג פרטי לעומת ציבורי?", answer: "בתור פרטי תשלומים ותורים גמישים יותר, עם תיעוד ותוצאות מידיות יותר לעיתים. הגישה המקצועית נשארת זהה באיכות ובתמיכה." },
@@ -272,6 +274,8 @@ const Services = () => {
       </section>
 
 
+      <div className="container-medical"><ClinicDetails showServices /></div>
+
       {/* Diagnostic Services */}
       <section className="section-spacing-lg bg-surface">
         <div className="container-medical">
@@ -436,7 +440,7 @@ const Services = () => {
             >
               <h3 className="text-lg font-semibold text-foreground mb-3">אילו בדיקות אלרגיה פרטיות זמינות ללקוחות פרטיים?</h3>
               <p className="text-muted-foreground leading-relaxed">
-                הבדיקות כוללות לעיתים בדיקות עור או דם לפי הצורך. ד"ר אנה ברמלי מסבירה אילו בדיקות מתאימות בכל מצב, ואומרת כי הבחירה תיעשה בהתאם בתיאום לפי התסמינים. לקבלת תוצאות ולהכוונה – אפשר לפנות ל ihaveallergy.com.
+                {CLINIC_SERVICES_TEXT}
               </p>
             </motion.article>
 

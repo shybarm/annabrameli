@@ -1,4 +1,6 @@
+import { getStoredUtm } from "@/lib/analytics";
 import { FormEvent, useState } from "react";
+import { ClinicDetails } from "@/components/ClinicDetails";
 import { Helmet } from "react-helmet-async";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -114,6 +116,7 @@ export default function PrivateAllergistLanding() {
           email: formData.email.trim(),
           subject: "פנייה מעמוד אלרגולוג פרטי",
           message: formData.message.trim(),
+          attribution: getStoredUtm(),
           source: "allergist_private_landing",
         },
       });
@@ -199,6 +202,7 @@ export default function PrivateAllergistLanding() {
               </div>
               <p className="mt-4 text-sm text-muted-foreground">הייעוץ מתקיים בתיאום מראש.</p>
               <p className="mt-2 text-sm text-muted-foreground">המרפאה בהוד השרון משרתת גם משפחות מאזור המרכז והשרון. <Link to="/allergist-central-sharon" className="font-medium text-primary hover:underline">מידע על אזורי השירות</Link></p>
+              <ClinicDetails showServices />
             </motion.div>
 
             <motion.div

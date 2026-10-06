@@ -1,3 +1,4 @@
+import { CLINIC_POSTAL_ADDRESS, CLINIC_OPENING_HOURS, CLINIC_SERVICES } from "@/data/clinic";
 import { Helmet } from "react-helmet-async";
 
 interface SchemaMarkupProps {
@@ -13,19 +14,14 @@ export const SchemaMarkup = ({ type = "physician" }: SchemaMarkupProps) => {
     "@id": "https://ihaveallergy.com/dr-anna-brameli#physician",
     "url": "https://ihaveallergy.com",
     "telephone": "+972-52-591-6393",
-    "address": {
-      "@type": "PostalAddress",
-      "addressLocality": "הוד השרון",
-      "addressCountry": "IL",
-
-    },
+    "address": CLINIC_POSTAL_ADDRESS,
+    "openingHoursSpecification": CLINIC_OPENING_HOURS,
+    "availableService": CLINIC_SERVICES.map(name => ({ "@type": "MedicalProcedure", name })),
     "medicalSpecialty": "AllergyAndImmunology",
     "knowsLanguage": ["he", "en"],
     "sameAs": [
       "https://medicine.vumc.org/department-directory/Anna-Brameli",
-      "https://www.schneider.org.il/?ArticleID=2506&CategoryID=839",
       "https://orcid.org/0009-0005-6489-6525",
-      "https://pubmed.ncbi.nlm.nih.gov/?term=Brameli+A",
     ],
     "worksFor": [
       {
@@ -67,11 +63,8 @@ export const SchemaMarkup = ({ type = "physician" }: SchemaMarkupProps) => {
     mainEntity: {
       "@type": "Physician",
       name: "ד״ר אנה ברמלי",
-      address: {
-        "@type": "PostalAddress",
-        addressLocality: "הוד השרון",
-        addressCountry: "IL",
-      },
+      address: CLINIC_POSTAL_ADDRESS,
+      openingHoursSpecification: CLINIC_OPENING_HOURS,
 
     },
   };

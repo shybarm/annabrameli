@@ -1,3 +1,5 @@
+import { CLINIC } from "@/data/clinic";
+import { CLINIC_POSTAL_ADDRESS, CLINIC_OPENING_HOURS, CLINIC_SERVICES, CLINIC_SERVICES_TEXT } from "@/data/clinic";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
 import { ResearchPublicationsSection, ExpertAuthorityCard } from "@/components/ExpertAuthority";
@@ -41,17 +43,12 @@ const physicianSchema = {
   medicalSpecialty: ["Allergy and Immunology", "Pediatrics"],
   url: "https://ihaveallergy.com/dr-anna-brameli",
   telephone: "+972-52-591-6393",
-  address: {
-    "@type": "PostalAddress",
-    addressLocality: "הוד השרון",
-    addressCountry: "IL"
-  },
+  address: CLINIC_POSTAL_ADDRESS,
+  openingHoursSpecification: CLINIC_OPENING_HOURS,
   image: "https://ihaveallergy.com/og-logo.png?v=6",
   sameAs: [
     "https://medicine.vumc.org/department-directory/Anna-Brameli",
-    "https://www.schneider.org.il/?ArticleID=2506&CategoryID=839",
     "https://orcid.org/0009-0005-6489-6525",
-    "https://pubmed.ncbi.nlm.nih.gov/?term=Brameli+A",
   ],
   worksFor: [
     {
@@ -66,13 +63,7 @@ const physicianSchema = {
     },
   ],
   knowsLanguage: ["he", "en"],
-  availableService: [
-    { "@type": "MedicalProcedure", name: "בדיקות עור (Skin Prick Tests)" },
-    { "@type": "MedicalProcedure", name: "בדיקות דם IgE" },
-    { "@type": "MedicalProcedure", name: "אימונותרפיה" },
-    { "@type": "MedicalProcedure", name: "אבחון אלרגיות מזון" },
-    { "@type": "MedicalProcedure", name: "טיפול באסתמה אלרגית" }
-  ]
+  availableService: CLINIC_SERVICES.map(name => ({ "@type": "MedicalProcedure", name }))
 };
 
 const localBusinessSchema = {
@@ -81,11 +72,8 @@ const localBusinessSchema = {
   name: "קליניקת ד״ר אנה ברמלי - אלרגיה ואימונולוגיה",
   url: "https://ihaveallergy.com",
   telephone: "+972-52-591-6393",
-  address: {
-    "@type": "PostalAddress",
-    addressLocality: "הוד השרון",
-    addressCountry: "IL"
-  },
+  address: CLINIC_POSTAL_ADDRESS,
+  openingHoursSpecification: CLINIC_OPENING_HOURS,
 };
 
 const faqSchema = {
@@ -105,7 +93,7 @@ const faqSchema = {
       name: "אילו בדיקות מבוצעות בקליניקה הפרטית?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "בדיקות עור (skin prick), בדיקות דם ל-IgE, בדיקות אתגר למזון לפי צורך."
+        text: CLINIC_SERVICES_TEXT
       }
     },
     {
@@ -275,7 +263,7 @@ const faqs = [
   },
   {
     question: "אילו בדיקות מבוצעות בקליניקה הפרטית?",
-    answer: "בדיקות עור (skin prick), בדיקות דם ל-IgE, בדיקות אתגר למזון לפי צורך."
+    answer: CLINIC_SERVICES_TEXT
   },
   {
     question: "מה ההבדל בין טיפול פרטי לציבורי?",
@@ -892,7 +880,8 @@ const DrAnnaBrameli = () => {
                     </div>
                     <div>
                       <h3 className="font-semibold text-foreground">כתובת הקליניקה</h3>
-                      <p className="text-muted-foreground">הוד השרון</p>
+                      <p className="text-muted-foreground">{CLINIC.address}</p>
+                      <p className="text-muted-foreground text-sm">{CLINIC.hoursLabel}, בתיאום מראש.</p>
                     </div>
                   </div>
 
@@ -902,7 +891,7 @@ const DrAnnaBrameli = () => {
                     </div>
                     <div>
                       <h3 className="font-semibold text-foreground">נגישות וחניה</h3>
-                      <p className="text-muted-foreground">חניה זמינה, נגישות מלאה לנכים</p>
+                      <p className="text-muted-foreground">{CLINIC.accessLabel}</p>
                     </div>
                   </div>
                 </div>
@@ -915,7 +904,7 @@ const DrAnnaBrameli = () => {
                 className="bg-card rounded-xl border border-border overflow-hidden"
               >
                 <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3376.1234567890123!2d34.8876!3d32.1512!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzLCsDA5JzA0LjMiTiAzNMKwNTMnMTUuNCJF!5e0!3m2!1sen!2sil!4v1234567890123"
+                  src={CLINIC.mapsEmbedUrl}
                   width="100%"
                   height="300"
                   style={{ border: 0 }}
