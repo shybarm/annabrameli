@@ -16,6 +16,7 @@ export interface KnowledgeArticleProps {
   relatedArticles?: { to: string; label: string }[];
   datePublished?: string;
   dateModified?: string;
+  editorialUpdate?: boolean;
 }
 
 const RIGHTS_ARTICLES = new Set([
@@ -106,6 +107,7 @@ export const KnowledgeArticleLayout = ({
   relatedArticles = [],
   datePublished = "2026-02-08",
   dateModified = "2026-02-08",
+  editorialUpdate = false,
 }: KnowledgeArticleProps) => {
   const pageId = `knowledge:${slug}`;
   const { sections, getSection, hasOverride } = usePageContent(pageId);
@@ -123,6 +125,7 @@ export const KnowledgeArticleLayout = ({
     dateModified,
     canonicalUrl,
   });
+  if (editorialUpdate) Object.assign(articleSchema, { author: { "@type": "Organization", name: "מערכת ihaveallergy.com" } });
   const breadcrumbSchema = buildBreadcrumbSchema([
     { name: "ראשי", item: "https://ihaveallergy.com/" },
     { name: parentGuide.name, item: `https://ihaveallergy.com${parentGuide.path}` },
@@ -170,7 +173,7 @@ export const KnowledgeArticleLayout = ({
               הרחבה למדריך
             </span>
             <h1 className="font-bold text-foreground mb-6 text-balance">{dynamicTitle}</h1>
-            <AuthorBadge compact />
+            {editorialUpdate ? <p className="text-sm text-muted-foreground">עדכון מקורות: {updatedLabel} · מערכת האתר</p> : <AuthorBadge compact />}
           </motion.div>
         </div>
       </section>
@@ -211,13 +214,13 @@ export const KnowledgeArticleLayout = ({
 
         {/* Author + disclaimer */}
         <div className="space-y-6">
-          <AuthorBadge />
+          {!editorialUpdate && <AuthorBadge />}
           <div className="bg-surface rounded-2xl p-5 border border-border/40 text-xs text-muted-foreground leading-relaxed">
             <p className="mb-2">
               <strong className="text-foreground">הבהרה רפואית:</strong> המידע בעמוד זה נועד לצרכי הסברה בלבד ואינו מהווה תחליף לייעוץ רפואי מקצועי.
             </p>
             <p>
-              תוכן זה נכתב ונסקר רפואית על ידי ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה. עודכן: {updatedLabel}.
+              {editorialUpdate ? "סיכום מידע ציבורי; אין כאן עמדה אישית או סקירה רפואית חדשה של ד״ר אנה ברמלי. אין לראות בו קביעה משפטית של זכאות." : "תוכן זה נכתב ונסקר רפואית על ידי ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה."} עודכן: {updatedLabel}.
             </p>
           </div>
         </div>

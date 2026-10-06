@@ -13,30 +13,17 @@ const relatedArticles = [
 const EpiPenResponsibility = () => (
   <KnowledgeArticleLayout
     slug="אפיפן-בגן-מי-אחראי"
-    title="אפיפן בגן ובבית ספר – מי אחראי ומה באמת נדרש?"
-    metaDescription="אפיפן בגן ובבית ספר – מי אחראי, מה נדרש מהצוות ומההורים. מדריך רפואי-משפטי להורים בישראל."
+    title="אפיפן בגן ובבית הספר: שאלות לתיאום עם הצוות"
+    metaDescription="אפיפן בגן ובבית הספר: שאלות לתיאום עם הצוות מסמכים, תיאום והפניה למקורות רשמיים, ללא הבטחת זכאות."
     relatedArticles={relatedArticles}
+    dateModified="2026-10-06"
+    editorialUpdate
   >
-    <div className="text-muted-foreground leading-relaxed space-y-4">
-      <p>
-        כאשר לילד יש מרשם לאפיפן, עולות שאלות רבות סביב האחריות והיישום בפועל במסגרת החינוכית.
-      </p>
-      <p>
-        בישראל, האחריות מתחלקת בין ההורים, הצוות החינוכי והרשות המקומית – בהתאם לסוג המסגרת.
-      </p>
-      <p>
-        למסגרת המלאה והעדכנית, ראו:{" "}
-        <Link to={GOLDEN_GUIDE} className="text-primary font-medium hover:underline">
-          המדריך המלא לזכויות של ילד אלרגי בישראל
-        </Link>.
-      </p>
-
-      <h2 className="text-lg font-bold text-foreground pt-4">נקודות חשובות להורים:</h2>
-      <ul className="list-disc list-inside space-y-1.5">
-        <li>אפיפן חייב להיות זמין ונגיש</li>
-        <li>הצוות צריך לקבל הדרכה</li>
-        <li>אין לצפות מהילד לשאת אחריות</li>
-      </ul>
+    <div className="text-muted-foreground leading-relaxed space-y-5">
+      <p>כאשר נרשם לילד מזרק אדרנלין, בררו היכן הוא נמצא, כיצד מוודאים את תוקפו ומי מכיר את ההנחיות האישיות. יש לתאם גם צהרון, החלפת צוות ופעילויות מחוץ למסגרת.</p>
+      <p>מסרו לצוות את תוכנית הפעולה שניתנה לילד ובררו כיצד מתקיימת ההדרכה. העמוד אינו מחליף הדרכה לשימוש במזרק או הוראות לטיפול בתגובה.</p>
+      <p>את חלוקת האחריות והכללים החלים על המסגרת יש לברר מול הנהלתה והגוף המפקח. אין להסיק מספר מחייב של אנשי צוות או הסדר משפטי מהמידע הכללי בעמוד.</p>
+      <p><Link to={GOLDEN_GUIDE} className="text-primary underline">מדריך ההיערכות והזכויות — מקורות רשמיים ועדכון אוקטובר 2026</Link></p>
     </div>
   </KnowledgeArticleLayout>
 );

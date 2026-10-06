@@ -13,23 +13,17 @@ const relatedArticles = [
 const AllergyCertificate = () => (
   <KnowledgeArticleLayout
     slug="אישור-אלרגיה-למשרד-החינוך"
-    title="אישור אלרגיה למשרד החינוך – מה צריך לכלול?"
-    metaDescription="אישור אלרגיה למשרד החינוך – מה חייב להיות במסמך הרפואי כדי לשמור על זכויות הילד. מדריך להורים."
+    title="מסמכי אלרגיה למסגרת החינוכית: מה להביא לביקור?"
+    metaDescription="מסמכי אלרגיה למסגרת החינוכית: מה להביא לביקור? מסמכים, תיאום והפניה למקורות רשמיים, ללא הבטחת זכאות."
     relatedArticles={relatedArticles}
+    dateModified="2026-10-06"
+    editorialUpdate
   >
-    <div className="text-muted-foreground leading-relaxed space-y-4">
-      <p>
-        מסמך רפואי ברור הוא הבסיס לשמירה על זכויות הילד במסגרת החינוכית.
-      </p>
-      <p>
-        אישור חלקי או לא ברור עלול להקשות על שיתוף הפעולה עם המערכת.
-      </p>
-      <p>
-        להנחיות מלאות:{" "}
-        <Link to={GOLDEN_GUIDE} className="text-primary font-medium hover:underline">
-          המדריך המלא לזכויות של ילד אלרגי בישראל
-        </Link>.
-      </p>
+    <div className="text-muted-foreground leading-relaxed space-y-5">
+      <p>בקשו מהמסגרת את הטופס העדכני ואת פירוט המסמכים. הנחיות לצוות, בקשת סיוע ותביעה לביטוח הלאומי הן מסלולים שונים.</p>
+      <p>הביאו סיכומים רפואיים, בדיקות שכבר בוצעו, תיעוד תגובות וטיפול שניתן ורשימת תרופות. הרופא יקבע מה דרוש להערכה ולמסמך; אין צורך בבדיקות אקראיות רק לצורך טופס.</p>
+      <p>מסמך רפואי מתאר אבחנה והנחיות בהתאם להערכה. הגורם המוסמך מחליט על זכאות; המרפאה אינה מאשרת סייעת או קצבה.</p>
+      <p><Link to={GOLDEN_GUIDE} className="text-primary underline">מדריך ההיערכות והזכויות — מקורות רשמיים ועדכון אוקטובר 2026</Link></p>
     </div>
   </KnowledgeArticleLayout>
 );

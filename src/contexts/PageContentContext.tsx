@@ -61,11 +61,12 @@ export function PageContentProvider({ children }: { children: ReactNode }) {
         const { data: functionData, error: functionError } = await supabase.functions.invoke('get-page-content-overrides');
 
         if (!functionError && Array.isArray(functionData?.overrides)) {
-          rows = functionData.overrides;
+          rows = functionData.overrides.filter((row: { version_label?: string }) => row.version_label === "applied");
         } else {
           const { data: directData, error: directError } = await supabase
             .from('page_content_overrides' as any)
-            .select('page_id, sections');
+            .select('page_id, sections')
+            .eq('version_label', 'applied');
 
           if (directError) throw directError;
           rows = ((directData ?? []) as unknown[]).map((row) => {

@@ -13,36 +13,17 @@ const relatedArticles = [
 const GardenRefusal = () => (
   <KnowledgeArticleLayout
     slug="גן-יכול-לסרב-לילד-אלרגי"
-    title="האם גן יכול לסרב לקבל ילד עם אלרגיה למזון?"
-    metaDescription="האם גן רשאי לסרב לקבל ילד עם אלרגיה למזון? מה הזכויות שלכם ומה לעשות בפועל. מדריך להורים."
+    title="הגן מסתייג מקבלת ילד אלרגי: מה כדאי לברר?"
+    metaDescription="הגן מסתייג מקבלת ילד אלרגי: מה כדאי לברר? מסמכים, תיאום והפניה למקורות רשמיים, ללא הבטחת זכאות."
     relatedArticles={relatedArticles}
+    dateModified="2026-10-06"
+    editorialUpdate
   >
-    <div className="text-muted-foreground leading-relaxed space-y-4">
-      <p>
-        הורים רבים מופתעים לגלות שגן או מסגרת חינוכית מעלה הסתייגות כאשר ילד מאובחן עם אלרגיה למזון. חשוב לדעת: ברוב המקרים, סירוב כזה אינו לגיטימי.
-      </p>
-      <p>
-        המסגרת מחויבת להיערך בהתאם להנחיות משרד החינוך והגורמים הרפואיים, ולא להטיל את האחריות על ההורים בלבד.
-      </p>
-      <p>
-        להבנה רחבה של הזכויות והחובות של כל הצדדים, מומלץ לקרוא את{" "}
-        <Link to={GOLDEN_GUIDE} className="text-primary font-medium hover:underline">
-          המדריך המלא לזכויות של ילד אלרגי בישראל
-        </Link>.
-      </p>
-
-      <h2 className="text-lg font-bold text-foreground pt-4">מתי סירוב כן עלול לקרות:</h2>
-      <ul className="list-disc list-inside space-y-1.5">
-        <li>היעדר מסמכים רפואיים</li>
-        <li>חוסר בהירות לגבי רמת הסיכון</li>
-      </ul>
-
-      <h2 className="text-lg font-bold text-foreground pt-4">מה עושים בפועל:</h2>
-      <ul className="list-disc list-inside space-y-1.5">
-        <li>מציגים אישור רפואי מסודר</li>
-        <li>מבקשים פגישה עם הנהלת המסגרת</li>
-        <li>לא מוותרים בשלב הראשון</li>
-      </ul>
+    <div className="text-muted-foreground leading-relaxed space-y-5">
+      <p>אין להסיק כלל משפטי אחד לכל מעון, גן פרטי או מסגרת ציבורית. בקשו מההנהלה לפרט בכתב את הקושי ואת ההנחיות שעליהן היא מסתמכת.</p>
+      <p>העבירו מסמכים רפואיים והנחיות אישיות ותאמו פגישה לבירור ההתאמות. תעדו את המענה ואת הנושאים שנותרו ללא פתרון.</p>
+      <p>בררו מי הגוף המפקח על המסגרת ופנו אליו עם התיעוד. במחלוקת משפטית על קבלה או התאמות יש לקבל ייעוץ פרטני; העמוד אינו קובע אם סירוב מסוים חוקי.</p>
+      <p><Link to={GOLDEN_GUIDE} className="text-primary underline">מדריך ההיערכות והזכויות — מקורות רשמיים ועדכון אוקטובר 2026</Link></p>
     </div>
   </KnowledgeArticleLayout>
 );

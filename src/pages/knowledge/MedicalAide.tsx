@@ -13,30 +13,17 @@ const relatedArticles = [
 const MedicalAide = () => (
   <KnowledgeArticleLayout
     slug="סייעת-רפואית-לילד-אלרגי"
-    title="סייעת רפואית לילד אלרגי – מי זכאי ומתי?"
-    metaDescription="סייעת רפואית לילד אלרגי – מי זכאי, מתי מאשרים, ומה הקריטריונים. מדריך להורים בישראל."
+    title="סייעת לילד אלרגי: איך מבררים את הזכאות?"
+    metaDescription="סייעת לילד אלרגי: איך מבררים את הזכאות? מסמכים, תיאום והפניה למקורות רשמיים, ללא הבטחת זכאות."
     relatedArticles={relatedArticles}
+    dateModified="2026-10-06"
+    editorialUpdate
   >
-    <div className="text-muted-foreground leading-relaxed space-y-4">
-      <p>
-        לא כל ילד אלרגי זכאי אוטומטית לסייעת רפואית, אך במקרים מסוימים מדובר בצורך חיוני.
-      </p>
-      <p>
-        ההחלטה מתקבלת על בסיס חומרת האלרגיה, גיל הילד וסוג המסגרת החינוכית.
-      </p>
-      <p>
-        להסבר מסודר על הזכויות והקריטריונים:{" "}
-        <Link to={GOLDEN_GUIDE} className="text-primary font-medium hover:underline">
-          המדריך המלא לזכויות של ילד אלרגי בישראל
-        </Link>.
-      </p>
-
-      <h2 className="text-lg font-bold text-foreground pt-4">מה משפיע על ההחלטה:</h2>
-      <ul className="list-disc list-inside space-y-1.5">
-        <li>אלרגיה מסכנת חיים</li>
-        <li>צורך באפיפן</li>
-        <li>גיל הילד</li>
-      </ul>
+    <div className="text-muted-foreground leading-relaxed space-y-5">
+      <p>בררו עם הרשות המקומית והגוף המפקח מי מטפל בבקשה, מה התנאים ומהם המסמכים והמועדים. גיל הילד וסוג המסגרת חשובים לבחירת המסלול; רשימת גורמי סיכון אינה תחליף לתנאי זכאות רשמיים.</p>
+      <p>נייר העמדה מספטמבר 2026 אינו כשלעצמו ביטול סיוע שאושר. בדקו את ההנחיות התקפות ואת ההחלטה הפרטנית; אין להסיק זכאות או שלילתה מכותרת בכתבה.</p>
+      <p>רכזו מסמך רפואי עדכני, תיעוד קיים וטפסים שהמסגרת מבקשת. שאלו מהו מסלול ההשגה במקרה של דחייה. אישור רפואי אינו מבטיח סייעת או קצבה.</p>
+      <p><Link to={GOLDEN_GUIDE} className="text-primary underline">מדריך ההיערכות והזכויות — מקורות רשמיים ועדכון אוקטובר 2026</Link></p>
     </div>
   </KnowledgeArticleLayout>
 );
