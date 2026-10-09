@@ -480,6 +480,17 @@ const GoldenGuide = () => {
           <FAQAccordion items={faqs} />
         </motion.section>
 
+        <section className="mb-8 rounded-2xl border border-border/40 bg-surface-warm p-6" aria-labelledby="food-allergy-consultation">
+          <h2 id="food-allergy-consultation" className="text-xl font-bold mb-3">ייעוץ בעקבות חשד לאלרגיה למזון</h2>
+          <p className="text-muted-foreground mb-3">
+            אם יש צורך בבירור אישי, אפשר לקרוא על ייעוץ אלרגיה במרפאה בהוד השרון.
+            ההחלטה על בדיקות מתקבלת לפי הסיפור הרפואי.
+          </p>
+          <Link to="/services#food-allergy" className="text-primary font-medium hover:underline">מידע על שירותי המרפאה</Link>
+          <span aria-hidden="true"> · </span>
+          <Link to="/contact" className="text-primary font-medium hover:underline">יצירת קשר עם המרפאה</Link>
+        </section>
+
         {/* Bottom CTA */}
         <ArticleCTA variant="section" />
 
