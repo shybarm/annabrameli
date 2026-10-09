@@ -6,7 +6,7 @@ Owner confirmed clinic 052-5916393 routes directly to mobile; regards every inbo
 Account 664-227-1731, campaign 23876627444.
 - Calls from ads: conversion 7826673482, call length 0 seconds, Primary; renamed to "Calls from ads — no duration threshold".
 - GA4 phone_click 7742224797: Secondary, retained as a click metric.
-- Campaign phone-call goal added alongside existing Contact and Book appointment goals. Budget unchanged (2 ILS/day).
+- Campaign phone-call goal: both Website and Call from Ads selected, saved and reopened to verify both checked, alongside existing Contact and Book appointment goals. Budget unchanged (2 ILS/day).
 - Call asset: reporting on, recording off, clinic number unchanged, conversion 7826673482.
 - New actual website calls conversion 7832099908: "Calls from website after ad — no duration threshold", Primary, One, no value, 30-day window, 0 seconds. Read back from Details; status Awaiting conversions.
 - UI-generated snippet AW-18186381713/CyUZCMS40ZYdEJHT-N9D, phone_conversion_number 052-5916393.
@@ -22,3 +22,6 @@ Validation: verify-website-calls.mjs, verify-analytics.mjs, typecheck, productio
 - Google call reports count actual calls; One conversion intentionally deduplicates lead conversions per ad interaction.
 
 Sources: https://support.google.com/google-ads/answer/6095883 ; https://support.google.com/google-ads/answer/2454052 ; https://support.google.com/business/answer/14919056
+
+## Delivery
+Commit 448aee26f7bea66cbda1741ddd72b83bed8e833c pushed to origin/main. Lovable accepted the commit. Publish changes triggered explicitly; verify live asset before claiming deployed. Previous live bundle index-BIvPsPOe.js did not contain the new call tag.
