@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { startWebsiteCallTracking } from "@/lib/website-call-tracking";
 import { captureUtmFromUrl, trackPageView } from "@/lib/analytics";
 
 /**
@@ -21,6 +22,7 @@ export const AnalyticsRouteTracker = () => {
 
   useEffect(() => {
     trackPageView(location.pathname);
+    return startWebsiteCallTracking();
   }, [location.pathname]);
 
   return null;

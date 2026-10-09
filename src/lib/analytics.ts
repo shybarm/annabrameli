@@ -29,7 +29,7 @@ export type UtmParams = Partial<Record<UtmKey | "referrer" | "landing_page", str
 const STORAGE_KEY = "ga_utm_attribution";
 const publicPaths = new Set([...PUBLIC_ROUTES, "/contact/success", "/book/success"]);
 
-function publicPath(value: unknown): string | undefined {
+export function publicPath(value: unknown): string | undefined {
   if (typeof value !== "string") return undefined;
   try {
     const url = new URL(value, window.location.origin);
