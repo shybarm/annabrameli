@@ -25,3 +25,5 @@ Sources: https://support.google.com/google-ads/answer/6095883 ; https://support.
 
 ## Delivery
 Commit 448aee26f7bea66cbda1741ddd72b83bed8e833c pushed to origin/main. Lovable accepted the commit. Publish changes triggered explicitly; verify live asset before claiming deployed. Previous live bundle index-BIvPsPOe.js did not contain the new call tag.
+
+Live deployment verified after Publish changes: https://ihaveallergy.com serves /assets/index-C8_XElPB.js containing exact WEBSITE_CALL_TAG AW-18186381713/CyUZCMS40ZYdEJHT-N9D. This proves code deployment, not a completed forwarding-number call. Campaign goal reopened: Website and Call from Ads both checked. No budget modification.
