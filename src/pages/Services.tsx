@@ -263,6 +263,10 @@ const Services = () => {
               {introSection?.content || 'ייעוץ אלרגולוגי פרטי לילדים ולמבוגרים, עם בירור המבוסס על התסמינים וההיסטוריה הרפואית והתאמת בדיקות רק כאשר הן נדרשות.'}
             </p>
 
+            <p className="mt-4 text-muted-foreground">
+              למידע על ייעוץ אצל <Link to="/allergist-private" className="font-medium text-primary hover:underline">אלרגולוג פרטי – ד״ר אנה ברמלי</Link> ולפנייה למרפאה.
+            </p>
+
             {/* AI-extractable definition block */}
             <div className="mt-8 p-5 rounded-2xl bg-card/80 border border-border/60">
               <p className="text-sm text-muted-foreground leading-relaxed">

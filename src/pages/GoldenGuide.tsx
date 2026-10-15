@@ -149,22 +149,22 @@ const GoldenGuide = () => {
   return (
     <>
       <Helmet>
-        <title>טחינה לתינוק: טעימות וחשיפה לאלרגנים | ד״ר אנה ברמלי</title>
+        <title>טחינה לתינוק וטעימות ראשונות: מדריך אלרגנים | ד״ר ברמלי</title>
         <meta
           name="description"
-          content="מתי ואיך לתת טחינה לתינוק, איך להציג במבה ואלרגנים נוספים, ואילו סימנים מחייבים עצירה ופנייה לטיפול. מדריך רפואי מעשי להורים."
+          content="איך נותנים טחינה לתינוק בפעם הראשונה? מדריך טעימות עם טבלת טחינה, במבה, ביצה וחלב, שאלות נפוצות וסימנים שמצריכים פנייה לרופא."
         />
         <link rel="canonical" href="https://ihaveallergy.com/guides/טעימות-ראשונות-אלרגנים" />
         <meta property="og:type" content="article" />
         <meta property="og:url" content="https://ihaveallergy.com/guides/טעימות-ראשונות-אלרגנים" />
-        <meta property="og:title" content="טחינה לתינוק: טעימות וחשיפה לאלרגנים | ד״ר אנה ברמלי" />
-        <meta property="og:description" content="מדריך מעשי להורים: מתי מתחילים ואיך מציעים טחינה, במבה ואלרגנים נפוצים לתינוק." />
+        <meta property="og:title" content="טחינה לתינוק וטעימות ראשונות: מדריך אלרגנים | ד״ר ברמלי" />
+        <meta property="og:description" content="איך נותנים טחינה לתינוק בפעם הראשונה? מדריך טעימות עם טבלת טחינה, במבה, ביצה וחלב, שאלות נפוצות וסימנים שמצריכים פנייה לרופא." />
         <meta property="og:image" content="https://ihaveallergy.com/og-logo.png?v=6" />
         <meta property="article:published_time" content="2026-02-08" />
         <meta property="article:modified_time" content="2026-09-09" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="טחינה לתינוק: טעימות וחשיפה לאלרגנים | ד״ר אנה ברמלי" />
-        <meta name="twitter:description" content="מדריך מעשי להורים: מתי מתחילים ואיך מציעים טחינה, במבה ואלרגנים נפוצים לתינוק." />
+        <meta name="twitter:title" content="טחינה לתינוק וטעימות ראשונות: מדריך אלרגנים | ד״ר ברמלי" />
+        <meta name="twitter:description" content="איך נותנים טחינה לתינוק בפעם הראשונה? מדריך טעימות עם טבלת טחינה, במבה, ביצה וחלב, שאלות נפוצות וסימנים שמצריכים פנייה לרופא." />
         <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png?v=6" />
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(articleSchema)}</script>
