@@ -13,8 +13,8 @@ const relatedArticles = [
 const PrivateVsPublic = () => (
   <KnowledgeArticleLayout
     slug="בדיקות-אלרגיה-פרטי-או-קופה"
-    title="בדיקת אלרגיה פרטית או בקופה – מחיר ומה חשוב לבדוק"
-    metaDescription="בדיקת אלרגיה פרטית או דרך קופת חולים: מה עשוי להשפיע על המחיר, מה כולל הבירור ואילו שאלות כדאי לשאול לפני שקובעים תור."
+    title="בדיקת אלרגיה פרטית: מחיר ומה לברר לפני התור"
+    metaDescription="מחיר בדיקת אלרגיה פרטית משתנה לפי הייעוץ והבדיקות. כך תבררו מה כלול במחיר, מה מחויב בנפרד ואילו תנאי החזר לבדוק מול הקופה או הביטוח."
     relatedArticles={relatedArticles}
   >
     <div className="text-muted-foreground leading-relaxed space-y-8">
@@ -47,6 +47,9 @@ const PrivateVsPublic = () => (
           בעמוד המקצועי של ד״ר אנה ברמלי אפשר לקרוא על ההכשרה, תחומי הטיפול,
           סוגי הבירור ומה כדאי להכין לפני פנייה למרפאה.
         </p>
+        <Link to="/contact" className="block font-medium text-primary hover:underline">
+          לבירור מחיר ייעוץ ובדיקות במרפאה
+        </Link>
         <Link to="/dr-anna-brameli" className="inline-flex font-medium text-primary hover:underline">
           לפרופיל ד״ר אנה ברמלי ולמידע על ייעוץ פרטי
         </Link>
