@@ -655,7 +655,7 @@ const FoodDesensitization = () => {
 
         <div className="container-medical">
           <h2 className="text-2xl font-bold">אימונותרפיה פומית במרפאה הפרטית</h2>
-          <p className="text-muted-foreground leading-relaxed mt-3">במרפאה בהטווס 5 בהוד השרון מבוצעים תגרי מזון והפחתת רגישות למזון באמצעות אימונותרפיה פומית (OIT), לצד ייעוץ בנושא אלרגיה למזון. התאמה לטיפול, אופן הביצוע וההכנה נקבעים לאחר הערכה רפואית ובתיאום מראש.</p>
+          <p className="text-muted-foreground leading-relaxed mt-3">במרפאה בהטווס 3 בהוד השרון מבוצעים תגרי מזון והפחתת רגישות למזון באמצעות אימונותרפיה פומית (OIT), לצד ייעוץ בנושא אלרגיה למזון. התאמה לטיפול, אופן הביצוע וההכנה נקבעים לאחר הערכה רפואית ובתיאום מראש.</p>
           <ClinicDetails />
         </div>
 

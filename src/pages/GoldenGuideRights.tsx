@@ -72,6 +72,15 @@ export default function GoldenGuideRights() {
         <p><strong className="text-foreground">מה לבדוק עכשיו?</strong> את ההנחיות התקפות למסגרת של הילד, את החלטת הגורם המוסמך ואת ההיערכות בפועל. אין לשנות הנחיות רפואיות אישיות בעקבות כתבה.</p>
         <a href={sources[0].url} className="text-primary underline">לנייר העמדה המקורי באתר ההסתדרות הרפואית</a>
       </section>
+      <section className="space-y-4" id="practical-reading">
+        <h2 className="text-xl font-bold text-foreground">עדכון אוקטובר: הסבר ניטרלי וכללי אצבע</h2>
+        <p>המאמרים הבאים מציגים מידע ממקורות ולא עמדה בעד או נגד שינוי מודל הסייעות.</p>
+        <ul className="list-disc ps-6 space-y-2">
+          <li><Link className="text-primary underline" to="/blog/סייעות-אלרגיה-נייר-עמדה-ומה-משתנה">נייר העמדה, הנהלים והזכאות: מה ההבדל?</Link></li>
+          <li><Link className="text-primary underline" to="/blog/אלרגיה-בגן-רשימת-תיאום-להורים">רשימת תיאום עם צוות הגן</Link></li>
+          <li><Link className="text-primary underline" to="/blog/הכנה-לביקור-אצל-אלרגולוג">מסמכים ושאלות לקראת הביקור אצל אלרגולוג</Link></li>
+        </ul>
+      </section>
       <section className="space-y-4" id="education-rights">
         <h2 className="text-xl md:text-2xl font-bold text-foreground">שלושה מסלולים שכדאי להפריד</h2>
         <h3 className="font-semibold text-foreground">מעון, גן, בית ספר וצהרון</h3>

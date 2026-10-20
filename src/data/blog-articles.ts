@@ -1,4 +1,9 @@
+import { editorialArticles } from "./editorial-articles";
+
+export interface ArticleSource { id: string; title: string; url: string; note?: string; }
+
 export interface BlogArticleSection {
+  sourceIds?: string[];
   id: string;
   title: string;
   content: string;
@@ -10,6 +15,10 @@ export interface BlogFAQ {
 }
 
 export interface BlogArticle {
+  editorial?: boolean;
+  sourcesCheckedAt?: string;
+  sources?: ArticleSource[];
+  rulesOfThumb?: string[];
   slug: string;
   title: string;
   metaTitle: string;
@@ -32,6 +41,7 @@ export const blogCategories = {
 };
 
 export const blogArticles: BlogArticle[] = [
+  ...editorialArticles,
   {
     slug: "חשיפה-למזונות-אלרגניים-תינוקות-וילדים",
     title: "חשיפה למזונות אלרגניים לתינוקות: איך מתחילים נכון ובלי לפחד?",

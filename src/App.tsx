@@ -9,6 +9,7 @@ import { ClinicProvider } from "@/contexts/ClinicContext";
 import { PageContentProvider } from "@/contexts/PageContentContext";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { MedicalDisclaimer } from "@/components/MedicalDisclaimer";
 const ChatWidget = React.lazy(() => import("@/components/chat/ChatWidget").then((module) => ({ default: module.ChatWidget })));
 const ChatAutoOpen = React.lazy(() => import("@/components/chat/ChatAutoOpen"));
 import { AccessibilityMenu } from "@/components/AccessibilityMenu";
@@ -255,6 +256,7 @@ const App = () => {
               <Route path="*" element={<NotFound />} />
             </Routes>
             </React.Suspense>
+            <MedicalDisclaimer />
           </>
         </TooltipProvider>
         </PageContentProvider>

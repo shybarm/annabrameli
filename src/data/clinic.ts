@@ -1,17 +1,17 @@
-/** Clinic details confirmed by the owner on 2026-09-30 and 2026-10-06.
+/** Clinic details confirmed by the owner on 2026-09-30 and 2026-10-06; address corrected by the owner on 2026-10-20.
  * Reception hours are not appointment availability.
  */
 export const CLINIC = {
   name: "מרפאת ד״ר אנה ברמלי",
-  street: "הטווס 5",
+  street: "הטווס 3",
   city: "הוד השרון",
-  address: "הטווס 5, הוד השרון",
+  address: "הטווס 3, הוד השרון",
   phone: "052-591-6393",
   phoneE164: "+972525916393",
   hoursLabel: "ראשון, שני וחמישי, 16:30–21:00",
   accessLabel: "כניסה ושירותים נגישים; חניה זמינה",
-  mapsUrl: "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent("הטווס 5 הוד השרון"),
-  mapsEmbedUrl: "https://www.google.com/maps?q=" + encodeURIComponent("הטווס 5 הוד השרון") + "&output=embed",
+  mapsUrl: "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent("הטווס 3 הוד השרון"),
+  mapsEmbedUrl: "https://www.google.com/maps?q=" + encodeURIComponent("הטווס 3 הוד השרון") + "&output=embed",
 } as const;
 
 export const CLINIC_SERVICES = [

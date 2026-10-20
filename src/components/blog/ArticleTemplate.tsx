@@ -10,6 +10,7 @@ import type { BlogArticle } from "@/data/blog-articles";
 import { blogArticles, blogCategories } from "@/data/blog-articles";
 import { buildMedicalPageSchema, buildBreadcrumbSchema, buildFaqSchema } from "@/utils/medicalSchema";
 import React from "react";
+import { MedicalDisclaimer } from "@/components/MedicalDisclaimer";
 
 /**
  * Parses plain-text content and converts inline links like
@@ -68,7 +69,14 @@ export const ArticleTemplate = ({ article }: ArticleTemplateProps) => {
 
   const canonicalUrl = `https://ihaveallergy.com/blog/${article.slug}`;
   const faqSchema = buildFaqSchema(article.faqs);
-  const articleSchema = buildMedicalPageSchema({
+  const articleSchema = article.editorial ? {
+    "@context": "https://schema.org", "@type": "WebPage",
+    "@id": canonicalUrl, url: canonicalUrl, name: article.title,
+    description: article.metaDescription, inLanguage: "he-IL",
+    datePublished: article.publishedAt, dateModified: article.updatedAt,
+    publisher: { "@type": "Organization", name: "ihaveallergy.com", "@id": "https://ihaveallergy.com/#organization" },
+    citation: article.sources?.map(source => source.url),
+  } : buildMedicalPageSchema({
     headline: article.title,
     description: article.metaDescription,
     datePublished: article.publishedAt,
@@ -136,13 +144,19 @@ export const ArticleTemplate = ({ article }: ArticleTemplateProps) => {
               </span>
             </div>
 
-            <AuthorBadge compact />
+            {article.editorial ? <p className="text-sm text-muted-foreground">מידע מערכתי המבוסס על המקורות המפורטים במאמר. אינו חוות דעת אישית של ד״ר אנה ברמלי ואינו מוצג כסקירה רפואית שלה.</p> : <AuthorBadge compact />}
+            <div className="mt-6"><MedicalDisclaimer /></div>
           </motion.div>
         </div>
       </article>
 
       {/* Article body */}
       <div className="container-medical max-w-3xl py-12 md:py-16 space-y-10">
+        {article.rulesOfThumb && <section className="bg-accent rounded-2xl p-6" aria-labelledby="rules-title">
+          <h2 id="rules-title" className="text-xl font-bold mb-3">כללי אצבע לזכירה</h2>
+          <ul className="list-disc ps-6 space-y-2">{article.rulesOfThumb.map(rule => <li key={rule}>{rule}</li>)}</ul>
+          <p className="text-sm mt-4">כללי האצבע מסכמים את המידע; הם אינם קובעים זכאות ואינם הוראות טיפול.</p>
+        </section>}
         {article.sections.map((section, index) => (
           <motion.section
             key={section.id}
@@ -156,6 +170,11 @@ export const ArticleTemplate = ({ article }: ArticleTemplateProps) => {
             <div className="text-muted-foreground leading-relaxed whitespace-pre-line prose-content">
               {renderContentWithLinks(section.content)}
             </div>
+
+            {section.sourceIds && <p className="text-sm mt-3">מקורות: {section.sourceIds.map(id => {
+              const source = article.sources?.find(item => item.id === id);
+              return source ? <a key={id} href={source.url} className="text-primary underline ms-2">{source.title}</a> : null;
+            })}</p>}
 
             {/* CTA after "when-see-doctor" section */}
             {section.id === "when-see-doctor" && (
@@ -174,6 +193,15 @@ export const ArticleTemplate = ({ article }: ArticleTemplateProps) => {
           </section>
         )}
 
+        {article.sources && <section id="sources" className="border-t border-border pt-6">
+          <h2 className="text-xl font-bold mb-4">מקורות ועדכניות</h2>
+          <ul className="space-y-3">{article.sources.map(source => <li key={source.id}>
+            <a href={source.url} className="text-primary underline">{source.title}</a>
+            {source.note && <p className="text-sm text-muted-foreground">{source.note}</p>}
+          </li>)}</ul>
+          {article.sourcesCheckedAt && <p className="text-sm mt-4">בדיקת מקורות: {formatHebrewDate(article.sourcesCheckedAt)}. נהלים ומסמכים עשויים להשתנות; יש לברר את ההנחיות התקפות למקרה ולמסגרת.</p>}
+        </section>}
+
         {/* Same-category related articles component */}
         <RelatedMedicalArticles currentSlug={article.slug} category={article.category} />
 
@@ -181,7 +209,7 @@ export const ArticleTemplate = ({ article }: ArticleTemplateProps) => {
         <ArticleCTA variant="section" />
 
         {/* Author full badge */}
-        <AuthorBadge />
+        {!article.editorial && <AuthorBadge />}
 
         {/* Related articles */}
         {relatedArticles.length > 0 && (

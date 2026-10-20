@@ -4,6 +4,8 @@ import { KnowledgeArticleLayout } from "@/components/knowledge/KnowledgeArticleL
 const GOLDEN_GUIDE = "/guides/זכויות-ילד-אלרגי-ישראל";
 
 const relatedArticles = [
+  { to: "/blog/סייעות-אלרגיה-נייר-עמדה-ומה-משתנה", label: "נייר העמדה על סייעות: הסבר ניטרלי" },
+  { to: "/blog/אלרגיה-בגן-רשימת-תיאום-להורים", label: "רשימת תיאום עם הגן" },
   { to: "/knowledge/גן-יכול-לסרב-לילד-אלרגי", label: "האם גן יכול לסרב לילד אלרגי?" },
   { to: "/knowledge/אפיפן-בגן-מי-אחראי", label: "אפיפן בגן – מי אחראי?" },
   { to: "/knowledge/טיול-שנתי-ילד-אלרגי", label: "טיול שנתי עם ילד אלרגי" },

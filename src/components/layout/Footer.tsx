@@ -114,8 +114,8 @@ export const Footer = () => {
               <Link to="/whois" className="text-muted-foreground hover:text-primary transition-colors">מי אנחנו</Link>
             </nav>
           </div>
-          <p className="text-[11px] text-muted-foreground/70 text-center mt-4">
-            המידע באתר זה אינו מהווה תחליף לייעוץ רפואי מקצועי.
+          <p className="text-sm text-muted-foreground text-center mt-4">
+            המידע באתר אינו ייעוץ רפואי ואינו תחליף לאבחון, טיפול או הנחיות אישיות מרופא.
           </p>
         </div>
 
