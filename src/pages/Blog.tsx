@@ -27,7 +27,7 @@ const Blog = () => {
         <title>בלוג אלרגיה לילדים | ד״ר אנה ברמלי – מומחית לאלרגיה ואימונולוגיה</title>
         <meta
           name="description"
-          content="מאמרים רפואיים מבוססי ראיות על אלרגיה בילדים: תסמינים, אבחון, טיפול, וזכויות. נכתבו ונסקרו על ידי ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה."
+          content="מידע על אלרגיה בילדים לצד מדריכים מעשיים להורים, הכנה לביקור וזכויות במסגרות חינוך. מקורות ופרטי מחבר או סקירה מצוינים בכל מאמר לפי העניין."
         />
         <link rel="canonical" href="https://ihaveallergy.com/blog" />
         {activeCategory && <meta name="robots" content="noindex, follow" />}
@@ -35,13 +35,13 @@ const Blog = () => {
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://ihaveallergy.com/blog" />
         <meta property="og:title" content="בלוג אלרגיה לילדים | ד״ר אנה ברמלי – מומחית לאלרגיה ואימונולוגיה" />
-        <meta property="og:description" content="מאמרים רפואיים מבוססי ראיות על אלרגיה בילדים: תסמינים, אבחון, טיפול, וזכויות. נכתבו ונסקרו על ידי ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה." />
+        <meta property="og:description" content="מידע על אלרגיה בילדים לצד מדריכים מעשיים להורים, הכנה לביקור וזכויות במסגרות חינוך. מקורות ופרטי מחבר או סקירה מצוינים בכל מאמר לפי העניין." />
         <meta property="og:image" content="https://ihaveallergy.com/og-logo.png?v=6" />
         <meta property="og:locale" content="he_IL" />
 
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="בלוג אלרגיה לילדים | ד״ר אנה ברמלי – מומחית לאלרגיה ואימונולוגיה" />
-        <meta name="twitter:description" content="מאמרים רפואיים מבוססי ראיות על אלרגיה בילדים: תסמינים, אבחון, טיפול, וזכויות. נכתבו ונסקרו על ידי ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה." />
+        <meta name="twitter:description" content="מידע על אלרגיה בילדים לצד מדריכים מעשיים להורים, הכנה לביקור וזכויות במסגרות חינוך. מקורות ופרטי מחבר או סקירה מצוינים בכל מאמר לפי העניין." />
         <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png?v=6" />
       </Helmet>
 
@@ -54,7 +54,7 @@ const Blog = () => {
           >
             <h1 className="font-bold text-foreground mb-4">בלוג אלרגיה לילדים</h1>
             <p className="text-lg text-muted-foreground leading-relaxed">
-              מידע רפואי מהימן ומבוסס ראיות על אלרגיה בילדים. נכתב ונסקר על ידי ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה.
+              מידע על אלרגיה בילדים ומדריכים מעשיים להורים. מקורות ופרטי מחבר או סקירה מצוינים בכל מאמר לפי העניין. המידע אינו ייעוץ רפואי ואינו תחליף להנחיות אישיות מרופא.
             </p>
           </motion.div>
 
