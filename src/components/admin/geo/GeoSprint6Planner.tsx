@@ -36,7 +36,7 @@ export function GeoSprint6Planner() {
   const [phaseFilter, setPhaseFilter] = useState<'all' | Phase>('all');
   const [ownerFilter, setOwnerFilter] = useState<string>('all');
 
-  // Sync with live data — no event listeners needed, shared provider state
+  // Sync with live data - no event listeners needed, shared provider state
   useEffect(() => {
     setTasks(baseTasks);
   }, [baseTasks]);

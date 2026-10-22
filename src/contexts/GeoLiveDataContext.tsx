@@ -1,5 +1,5 @@
 /**
- * GeoLiveDataProvider — single source of truth for all GEO live state.
+ * GeoLiveDataProvider - single source of truth for all GEO live state.
  * Wraps the GEO admin page so every module shares one in-memory store
  * backed by Supabase persistence.
  */

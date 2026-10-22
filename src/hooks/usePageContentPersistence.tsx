@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { CurrentPageSection } from '@/data/geo-current-page-content';
 import { WORKSPACE_BRIEFS } from '@/data/geo-workspace-briefs';
+import { normalizeContentSections } from '@/lib/content-style';
 
 function getPageLabel(pageId: string) {
   if (pageId === 'homepage') return 'דף הבית';
@@ -26,7 +27,7 @@ export function usePageContentPersistence() {
         .from('page_content_overrides' as any)
         .upsert({
           page_id: pageId,
-          sections: JSON.parse(JSON.stringify(sections)),
+          sections: JSON.parse(JSON.stringify(normalizeContentSections(sections))),
           version_label: 'applied',
           applied_by: user?.user?.id || null,
           updated_at: new Date().toISOString(),
@@ -56,7 +57,7 @@ export function usePageContentPersistence() {
       const overrides: Record<string, CurrentPageSection[]> = {};
       if (data) {
         for (const row of data as any[]) {
-          overrides[row.page_id] = row.sections as CurrentPageSection[];
+          overrides[row.page_id] = normalizeContentSections(row.sections as CurrentPageSection[]);
         }
       }
       return overrides;

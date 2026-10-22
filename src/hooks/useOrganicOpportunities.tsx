@@ -1,5 +1,5 @@
 /**
- * useOrganicOpportunities — loads the Stage 1A windows and runs the engine.
+ * useOrganicOpportunities - loads the Stage 1A windows and runs the engine.
  *
  * All calculation lives in src/lib/geo/opportunity-engine.ts. This hook only
  * fetches and hands data over, so scoring can never drift between the UI and
@@ -77,7 +77,7 @@ export function useOrganicOpportunities(
   return useQuery<OrganicOpportunitiesData>({
     queryKey: ['organic-opportunities', windowDays, host],
     queryFn: async () => {
-      // Page grain — the page-performance source of truth.
+      // Page grain - the page-performance source of truth.
       const pagesRes = await supabase.rpc('geo_page_window', {
         p_host: host,
         p_window_days: windowDays,

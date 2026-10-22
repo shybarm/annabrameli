@@ -27,7 +27,7 @@ function VersionBanner({ version, lastAppliedAt }: { version: VersionType; lastA
       <div className="flex items-center gap-2">
         <Clock className="h-3.5 w-3.5" />
         <span className="font-bold">{cfg.label}</span>
-        <span className="opacity-70">— {cfg.description}</span>
+        <span className="opacity-70">- {cfg.description}</span>
       </div>
       {lastAppliedAt && version === 'applied' && (
         <span className="text-[10px] opacity-60">
@@ -118,7 +118,7 @@ function RecommendationCard({
               {liveValue ? (
                 <p className="text-foreground whitespace-pre-wrap">{liveValue}</p>
               ) : (
-                <p className="text-muted-foreground italic">תוכן זה לא קיים כרגע בדף — מדובר בהמלצה להוספת תוכן חדש</p>
+                <p className="text-muted-foreground italic">תוכן זה לא קיים כרגע בדף - מדובר בהמלצה להוספת תוכן חדש</p>
               )}
             </div>
 
@@ -132,7 +132,7 @@ function RecommendationCard({
                 isApplied ? 'text-emerald-600 dark:text-emerald-400' : 'text-primary'
               }`}>
                 {isApplied ? <Check className="h-3 w-3" /> : <Edit3 className="h-3 w-3" />}
-                {isApplied ? 'הוחל בהצלחה — הדף עודכן' : rec.targetField === 'heading' ? 'כותרת מומלצת (ניתנת לעריכה)' : 'גרסה מומלצת (ניתנת לעריכה)'}
+                {isApplied ? 'הוחל בהצלחה - הדף עודכן' : rec.targetField === 'heading' ? 'כותרת מומלצת (ניתנת לעריכה)' : 'גרסה מומלצת (ניתנת לעריכה)'}
               </p>
               {isEditing ? (
                 <div className="space-y-2">
@@ -489,7 +489,7 @@ export function GeoLiveEditor({
         <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg border border-destructive/30 bg-destructive/5 text-xs text-destructive">
           <AlertTriangle className="h-4 w-4 flex-shrink-0" />
           <div>
-            <span className="font-bold">דף לא קיים באתר — </span>
+            <span className="font-bold">דף לא קיים באתר - </span>
             <span>הנתיב <code className="bg-destructive/10 px-1 py-0.5 rounded text-[10px] font-mono">{pagePath}</code> מחזיר 404. התוכן המוצג כאן הוא טיוטת תוכן בלבד ואינו פורסם באתר החי.</span>
           </div>
         </div>
@@ -583,7 +583,7 @@ export function GeoLiveEditor({
           <p className="text-xs text-muted-foreground">
             {routeExists
               ? 'זהו התוכן הנוכחי של הדף. סקציות שעודכנו מסומנות בירוק. ניתן לערוך ישירות.'
-              : 'זוהי טיוטת תוכן בלבד — הדף אינו קיים באתר החי. התוכן נשמר ב-DB אך לא נגיש בכתובת URL.'}
+              : 'זוהי טיוטת תוכן בלבד - הדף אינו קיים באתר החי. התוכן נשמר ב-DB אך לא נגיש בכתובת URL.'}
           </p>
           {liveContent.sections.map((section, i) => (
             <LiveSectionCard

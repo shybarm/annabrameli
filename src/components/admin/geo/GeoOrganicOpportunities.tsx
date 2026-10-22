@@ -1,5 +1,5 @@
 /**
- * GeoOrganicOpportunities — "מה כדאי לעשות עכשיו כדי להגדיל תנועה אורגנית?"
+ * GeoOrganicOpportunities - "מה כדאי לעשות עכשיו כדי להגדיל תנועה אורגנית?"
  *
  * Renders what src/lib/geo/opportunity-engine.ts returns. It performs no
  * scoring of its own: every number, reason and recommendation shown here comes
@@ -70,7 +70,7 @@ const CTR_SOURCE_META: Record<CtrEvidenceBasis, { label: string; cls: string }> 
 
 const pct = (n: number, dp = 1) => `${(n * 100).toFixed(dp)}%`;
 const signed = (n: number | null, dp = 0) =>
-  n === null ? '—' : `${n > 0 ? '+' : ''}${n.toFixed(dp)}%`;
+  n === null ? '-' : `${n > 0 ? '+' : ''}${n.toFixed(dp)}%`;
 
 function ScoreDial({ score }: { score: number }) {
   const tone =
@@ -132,7 +132,7 @@ function OpportunityCard({ opp }: { opp: Opportunity }) {
                   : `${opp.trend.positionChange > 0 ? '↑' : '↓'} ${Math.abs(opp.trend.positionChange).toFixed(1)}`} />
               <Metric
                 label="אפסייד משוער"
-                value={opp.upside.incrementalClicks === null ? '—' : `+${opp.upside.incrementalClicks}`}
+                value={opp.upside.incrementalClicks === null ? '-' : `+${opp.upside.incrementalClicks}`}
                 sub={opp.upside.targetPosition ? `יעד ${opp.upside.targetPosition}` : undefined}
               />
             </div>
@@ -182,7 +182,7 @@ function OpportunityCard({ opp }: { opp: Opportunity }) {
                 <p className="text-muted-foreground">{opp.upside.assumptions}</p>
                 {opp.upside.basedOnAssumedCtr && opp.upside.incrementalClicks !== null && (
                   <p className="text-amber-700 mt-1">
-                    ההערכה נשענת על עקומת CTR מונחת ולא על נתוני האתר — יש להתייחס אליה כהשערה.
+                    ההערכה נשענת על עקומת CTR מונחת ולא על נתוני האתר - יש להתייחס אליה כהשערה.
                   </p>
                 )}
               </Section>
@@ -215,7 +215,7 @@ function OpportunityCard({ opp }: { opp: Opportunity }) {
                       <li key={t.theme} className="rounded-md bg-muted/40 p-2">
                         <span className="font-medium text-foreground">{t.label}</span>
                         <span className="text-muted-foreground">
-                          {' '}— {t.impressions} חשיפות ידועות, מיקום מיטבי {t.bestPosition.toFixed(1)}
+                          {' '}- {t.impressions} חשיפות ידועות, מיקום מיטבי {t.bestPosition.toFixed(1)}
                         </span>
                         <div className="text-muted-foreground mt-0.5">
                           {t.queries.slice(0, 5).join(' · ')}
@@ -275,7 +275,7 @@ export function GeoOrganicOpportunities() {
         <CardHeader className="pb-3">
           <CardTitle className="text-base">מה כדאי לעשות עכשיו כדי להגדיל תנועה אורגנית?</CardTitle>
           <p className="text-xs text-muted-foreground">
-            הזדמנויות מדורגות מנתוני Search Console ו-GA4 אמיתיים. אלו המלצות בלבד — שום פעולה כאן אינה משנה את האתר.
+            הזדמנויות מדורגות מנתוני Search Console ו-GA4 אמיתיים. אלו המלצות בלבד - שום פעולה כאן אינה משנה את האתר.
           </p>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -316,7 +316,7 @@ export function GeoOrganicOpportunities() {
           {data?.totals && (
             <div className="rounded-lg border bg-muted/30 p-3">
               <div className="text-xs font-semibold text-foreground mb-1.5">
-                סך תנועה לאתר ({data.totals.property}) — {data.totals.window_start} עד {data.totals.window_end}
+                סך תנועה לאתר ({data.totals.property}) - {data.totals.window_start} עד {data.totals.window_end}
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
                 <Metric label="קליקים" value={String(data.totals.clicks)}

@@ -1,5 +1,5 @@
 /**
- * useGeoRescan — mutation-only hook.
+ * useGeoRescan - mutation-only hook.
  * Performs rescans via the edge function and writes results
  * directly into the shared GeoLiveDataProvider state.
  * Does NOT own its own scanResults copy.
@@ -60,11 +60,11 @@ export function useGeoRescan() {
 
       const result = data as GeoScanResult;
       
-      // Write directly into shared provider state — no local copy
+      // Write directly into shared provider state - no local copy
       upsertScanResult(pageId, result);
 
       if (result.persisted) {
-        toast.success(`סריקת GEO הושלמה ונשמרה — ציון: ${result.overallScore}`);
+        toast.success(`סריקת GEO הושלמה ונשמרה - ציון: ${result.overallScore}`);
       } else {
         toast.warning(`סריקת GEO הושלמה (ציון: ${result.overallScore}) אך השמירה ל-DB נכשלה`);
       }

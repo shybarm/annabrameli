@@ -1,3 +1,4 @@
+import { normalizeContentSections } from '@/lib/content-style';
 import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useGeoLiveActions } from '@/contexts/GeoLiveDataContext';
@@ -167,13 +168,13 @@ export function useClusterActions() {
     const { error } = existing
       ? await supabase
           .from('page_content_overrides' as any)
-          .update({ sections: updatedSections, updated_at: new Date().toISOString() })
+          .update({ sections: normalizeContentSections(updatedSections), updated_at: new Date().toISOString() })
           .eq('id', (existing as any).id)
       : await supabase
           .from('page_content_overrides' as any)
           .insert({
             page_id: pageId,
-            sections: updatedSections,
+            sections: normalizeContentSections(updatedSections),
             version_label: 'applied',
           });
 
@@ -255,7 +256,7 @@ export function useClusterActions() {
     // Generate structured draft sections based on metadata
     const draftSections = [
       { heading: action.pageTitle, tag: 'h1', content: '' },
-      { heading: 'מהי הבעיה?', tag: 'h2', content: `[תוכן לכתיבה — כוונה: ${action.metadata.intent || 'general'}]` },
+      { heading: 'מהי הבעיה?', tag: 'h2', content: `[תוכן לכתיבה - כוונה: ${action.metadata.intent || 'general'}]` },
       { heading: 'מה ההמלצה?', tag: 'h2', content: '[תוכן לכתיבה]' },
       { heading: 'מתי לפנות לרופא?', tag: 'h2', content: '[תוכן לכתיבה]' },
       { heading: 'שאלות נפוצות', tag: 'h2', content: '[FAQ לכתיבה]' },
@@ -266,7 +267,7 @@ export function useClusterActions() {
       .from('page_content_overrides' as any)
       .insert({
         page_id: pageId,
-        sections: draftSections,
+        sections: normalizeContentSections(draftSections),
         version_label: 'draft',
       });
 
@@ -288,7 +289,7 @@ export function useClusterActions() {
           routeExists: false,
           sectionCount: draftSections.length,
           generatedAt: new Date().toISOString(),
-          note: 'טיוטת תוכן בלבד — לא נוצר נתיב באתר. דרוש פיתוח route ו-component.',
+          note: 'טיוטת תוכן בלבד - לא נוצר נתיב באתר. דרוש פיתוח route ו-component.',
         },
       });
 
@@ -386,7 +387,7 @@ export function useClusterActions() {
         if (isMissingPage && isDraftAction) {
           toast.success(
             `${ACTION_LABELS[action.type]} נשמר: ${action.pageTitle}`,
-            { description: 'טיוטה/בריף בלבד — הדף עדיין לא קיים כנתיב באתר' }
+            { description: 'טיוטה/בריף בלבד - הדף עדיין לא קיים כנתיב באתר' }
           );
         } else {
           toast.success(`${ACTION_LABELS[action.type]} הושלם: ${action.pageTitle}`);

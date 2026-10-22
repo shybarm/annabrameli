@@ -1,5 +1,5 @@
 /**
- * GEO Page Registry — canonical mapping between GEO page IDs
+ * GEO Page Registry - canonical mapping between GEO page IDs
  * and the live site's rendering source-of-truth.
  *
  * This is the SINGLE source of truth for how the GEO system
@@ -10,7 +10,7 @@
 export type ContentSourceType =
   | 'page_content_context'     // Page reads sections from usePageContent(overrideKey)
   | 'knowledge_article_layout' // KnowledgeArticleLayout with pageId = 'knowledge:<slug>'
-  | 'hardcoded'                // Page ignores overrides — content is baked in JSX
+  | 'hardcoded'                // Page ignores overrides - content is baked in JSX
   | 'no_route';                // Page path does not exist in App.tsx → 404
 
 export interface GeoPageRegistryEntry {

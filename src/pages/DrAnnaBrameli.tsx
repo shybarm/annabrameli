@@ -432,9 +432,9 @@ const DrAnnaBrameli = () => {
 
                 <article className="bg-card rounded-xl p-6 border border-border">
                   <Users className="w-7 h-7 text-primary mb-4" />
-                  <h3 className="text-lg font-bold text-foreground mb-3">כללית — מרפאת שמאי באלעד</h3>
+                  <h3 className="text-lg font-bold text-foreground mb-3">כללית - מרפאת שמאי באלעד</h3>
                   <p className="text-muted-foreground leading-relaxed">
-                    במסגרת שירותי בריאות כללית, ד״ר ברמלי רשומה כרופאת ילדים במרפאת שמאי — רופאים עצמאיים באלעד.
+                    במסגרת שירותי בריאות כללית, ד״ר ברמלי רשומה כרופאת ילדים במרפאת שמאי - רופאים עצמאיים באלעד.
                   </p>
                   <a href="https://www.clalit.co.il/he/sefersherut/pages/doctordetails.aspx?edeptcode=45110&eservicecode=40&employeeid=F5893D4582BB72AB8A01880F37BD79D6" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-flex items-center gap-1.5 mt-4 font-medium">
                     אימות באתר כללית <ExternalLink className="w-3.5 h-3.5" />

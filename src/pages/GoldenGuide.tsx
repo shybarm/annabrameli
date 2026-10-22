@@ -407,7 +407,7 @@ const GoldenGuide = () => {
           </div>
         </motion.section>
 
-        {/* Section: When NOT to start alone — removed by request */}
+        {/* Section: When NOT to start alone - removed by request */}
 
         {/* Internal links hub */}
         <motion.section

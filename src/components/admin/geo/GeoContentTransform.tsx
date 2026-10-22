@@ -390,7 +390,7 @@ function TransformDetail({
               <span className="text-amber-600 dark:text-amber-400">⚠ מפתח חי: {registryEntry.overrideKey}</span>
             )}
             {hasCriticalMismatch && (
-              <span className="text-destructive font-bold">⛔ הסריקה לא מהימנה — מקור שונה מהדף החי</span>
+              <span className="text-destructive font-bold">⛔ הסריקה לא מהימנה - מקור שונה מהדף החי</span>
             )}
           </div>
         )}
@@ -423,7 +423,7 @@ function TransformDetail({
             )}
             {activeVersion === 'draft' && (
               <span className="text-[10px] text-amber-600 dark:text-amber-400 mr-auto">
-                ⚠ אתה צופה בטיוטה — לא פורסם לאתר
+                ⚠ אתה צופה בטיוטה - לא פורסם לאתר
               </span>
             )}
           </div>

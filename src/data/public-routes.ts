@@ -2,9 +2,9 @@
  * The canonical list of public routes.
  *
  * Single source of truth for three build-time consumers:
- *   1. scripts/prerender.mjs   — which routes get static HTML
- *   2. scripts/generate-sitemap.mjs — what goes in sitemap.xml
- *   3. scripts/verify-crawlability.mjs — what the acceptance test checks
+ *   1. scripts/prerender.mjs   - which routes get static HTML
+ *   2. scripts/generate-sitemap.mjs - what goes in sitemap.xml
+ *   3. scripts/verify-crawlability.mjs - what the acceptance test checks
  *
  * Keep in sync with the <Route> table in src/App.tsx. Blog routes derive
  * from the article data itself, so publishing an article adds its route,
@@ -108,7 +108,7 @@ export const CRITICAL_ROUTES = [
 export const MIN_SUCCESSFUL_ROUTES = 45;
 
 /**
- * Private surfaces. These are NOT prerendered with app content — the build
+ * Private surfaces. These are NOT prerendered with app content - the build
  * writes a minimal shell carrying `noindex, nofollow` in the initial HTML,
  * so the directive reaches crawlers that never run JavaScript.
  *

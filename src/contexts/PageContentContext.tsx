@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
 import { CURRENT_PAGE_CONTENT, type CurrentPageSection } from '@/data/geo-current-page-content';
 import { supabase } from '@/integrations/supabase/client';
+import { normalizeContentSections } from '@/lib/content-style';
 
 const PAGE_ID_ALIASES: Record<string, string[]> = {
   'knowledge:פריחה-אחרי-במבה': ['bamba-reaction'],
@@ -82,7 +83,7 @@ export function PageContentProvider({ children }: { children: ReactNode }) {
 
         const nextOverrides = rows.reduce<PageContentOverrides>((acc, row) => {
           if (row?.page_id && Array.isArray(row.sections)) {
-            acc[row.page_id] = row.sections;
+            acc[row.page_id] = normalizeContentSections(row.sections);
           }
           return acc;
         }, {});
@@ -115,7 +116,7 @@ export function PageContentProvider({ children }: { children: ReactNode }) {
   }, [getSections]);
 
   const setSections = useCallback((pageId: string, sections: CurrentPageSection[]) => {
-    setOverrides(prev => ({ ...prev, [pageId]: sections }));
+    setOverrides(prev => ({ ...prev, [pageId]: normalizeContentSections(sections) }));
   }, []);
 
   const hasOverride = useCallback((pageId: string) => {
@@ -149,7 +150,7 @@ export function PageContentProvider({ children }: { children: ReactNode }) {
 
       if (data && (data as any[]).length > 0) {
         const row = (data as any[])[0];
-        setOverrides(prev => ({ ...prev, [row.page_id]: row.sections as CurrentPageSection[] }));
+        setOverrides(prev => ({ ...prev, [row.page_id]: normalizeContentSections(row.sections as CurrentPageSection[]) }));
       }
     } catch (err) {
       console.error('Failed to refresh page content from DB:', err);

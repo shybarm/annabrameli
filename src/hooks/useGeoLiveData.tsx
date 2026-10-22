@@ -1,5 +1,5 @@
 /**
- * useGeoLiveData — thin re-export layer on top of GeoLiveDataProvider context.
+ * useGeoLiveData - thin re-export layer on top of GeoLiveDataProvider context.
  * Kept for backward-compat; all state now lives in the shared provider.
  */
 
@@ -13,7 +13,7 @@ import type { GeoScanResult } from '@/hooks/useGeoRescan';
 export type { GeoLiveState };
 
 /**
- * Primary hook — returns shared provider state + refresh.
+ * Primary hook - returns shared provider state + refresh.
  * No local copies; reads directly from GeoLiveDataProvider.
  */
 export function useGeoLiveData() {
@@ -98,7 +98,7 @@ export function useLiveExecutionTasks(
         tasks.push({
           id: st.id,
           phase: 1,
-          title: `${st.pageTitle} — ${content.actionType || st.actionType}`,
+          title: `${st.pageTitle} - ${content.actionType || st.actionType}`,
           description: `פעולה מאשכולות: ${content.actionType || st.actionType}`,
           owner: 'content',
           difficulty: 'easy',

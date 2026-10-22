@@ -1,30 +1,30 @@
 import type { BlogArticle, ArticleSource } from "./blog-articles";
 
 const policy: ArticleSource = {
-  id: "policy", title: "האיגוד הישראלי לאלרגיה ואימונולוגיה קלינית — נייר עמדה, ספטמבר 2026",
+  id: "policy", title: "האיגוד הישראלי לאלרגיה ואימונולוגיה קלינית - נייר עמדה, ספטמבר 2026",
   url: "https://www.ima.org.il/File.aspx?usf=e89c22ac-e718-474f-96e0-782fc2f4847c",
   note: "קביעת מדיניות ציבורית בישראל בתחום אלרגיה מתווכת IgE למזון, עמ׳ 2 ו־8. המלצה מקצועית אינה החלטת זכאות אישית.",
 };
 const assistants: ArticleSource = {
-  id: "assistants", title: "משרד החינוך — תומכות חינוך לצורך רפואי בחינוך הרגיל",
+  id: "assistants", title: "משרד החינוך - תומכות חינוך לצורך רפואי בחינוך הרגיל",
   url: "https://parents.education.gov.il/gov-education/support/medical-assistants/",
   note: "המידע זמין גם דרך חיפוש בפורטל הורים. אם הדף אינו נפתח, בררו מול הרשות המקומית; אין להסיק מכך שהשירות בוטל.",
 };
 const kindergarten: ArticleSource = {
-  id: "kindergarten", title: "משרד החינוך — אלרגיות למזון במסגרות חינוך",
+  id: "kindergarten", title: "משרד החינוך - אלרגיות למזון במסגרות חינוך",
   url: "https://parents.education.gov.il/gov-education/support/allergies/",
 };
 const health: ArticleSource = {
-  id: "health", title: "משרד הבריאות — אלרגיות ילדים: בדיקות וטיפול",
+  id: "health", title: "משרד הבריאות - אלרגיות ילדים: בדיקות וטיפול",
   url: "https://me.health.gov.il/parenting/raising-children/common-childhood-diseases-and-symptoms/medical-conditions/common-allergies/",
 };
 const actionPlan: ArticleSource = {
-  id: "plan", title: "FARE — תוכנית אישית להיערכות לתגובה אלרגית",
+  id: "plan", title: "FARE - תוכנית אישית להיערכות לתגובה אלרגית",
   url: "https://www.foodallergy.org/living-food-allergy/food-allergy-essentials/food-allergy-anaphylaxis-emergency-care-plan",
   note: "מקור מקצועי להסבר על תוכנית אישית. אינו נוהל ישראלי ואינו מחליף את התוכנית של הרופא המטפל.",
 };
 const visit: ArticleSource = {
-  id: "visit", title: "AAAAI — אלרגיה למזון בינקות: הכנה לביקורים רפואיים",
+  id: "visit", title: "AAAAI - אלרגיה למזון בינקות: הכנה לביקורים רפואיים",
   url: "https://www.aaaai.org/Aaaai/media/Media-Library-PDFs/Tools%20for%20the%20Public/Conditions%20Library/AAAAI-0622-205-FA-02.pdf",
 };
 
@@ -38,12 +38,12 @@ export const editorialArticles: BlogArticle[] = [
     category: "rights", categoryLabel: "זכויות ובירוקרטיה",
     publishedAt: "2026-10-20", updatedAt: "2026-10-20", readingTime: 4,
     editorial: true, sourcesCheckedAt: "2026-10-20", sources: [policy, assistants, kindergarten, {
-      id: "daycare", title: "משרד הרווחה — סיוע לפעוטות עם אלרגיה במעון בעל סמל, חוזר 008-2025",
+      id: "daycare", title: "משרד הרווחה - סיוע לפעוטות עם אלרגיה במעון בעל סמל, חוזר 008-2025",
       url: "https://www.gov.il/he/pages/molsa-executive-circulars-008-2025",
     }],
     rulesOfThumb: [
       "נייר עמדה, נוהל רשמי והחלטה אישית הם שלושה מסמכים שונים.",
-      "מבררים לפי גיל הילד וסוג המסגרת — מעון, גן, בית ספר וצהרון אינם בהכרח אותו מסלול.",
+      "מבררים לפי גיל הילד וסוג המסגרת - מעון, גן, בית ספר וצהרון אינם בהכרח אותו מסלול.",
       "לא משנים הסדר קיים על סמך כותרת או פוסט; מבקשים הבהרה מהגורם המוסמך.",
     ],
     sections: [
@@ -114,13 +114,13 @@ export const editorialArticles: BlogArticle[] = [
     category: "diagnosis", categoryLabel: "אבחון וטיפול",
     publishedAt: "2026-10-20", updatedAt: "2026-10-20", readingTime: 3,
     editorial: true, sourcesCheckedAt: "2026-10-20", sources: [visit, health, {
-      id: "history", title: "ACAAI — ארגון מידע רפואי לקראת ביקור במרפאה",
+      id: "history", title: "ACAAI - ארגון מידע רפואי לקראת ביקור במרפאה",
       url: "https://college.acaai.org/top-10-tips-to-make-your-practice-more-efficient/",
       note: "מקור מקצועי העוסק בין היתר באיסוף היסטוריה רפואית ורשימת תרופות לפני ביקור.",
     }],
     rulesOfThumb: [
       "מביאים את התיעוד הקיים; לא צריך לייצר תגובה חדשה כדי להראות לרופא.",
-      "שואלים את המרפאה על הכנה מראש — לא מפסיקים תרופות לבד.",
+      "שואלים את המרפאה על הכנה מראש - לא מפסיקים תרופות לבד.",
       "מגיעים עם שאלות, בלי להניח מראש איזו בדיקה תתאים.",
     ],
     sections: [
@@ -132,7 +132,7 @@ export const editorialArticles: BlogArticle[] = [
 אין להפסיק טיפול או לשנות תזונה לפי הנחיה כללית באינטרנט. אם נדרשת הכנה לבדיקה, בקשו הנחיה אישית מהמרפאה. עצם קביעת התור אינה אומרת שכל סוגי הבדיקות יבוצעו באותו ביקור.` },
       { id: "questions", title: "שלוש שאלות שיעזרו לצאת עם סדר", sourceIds: ["visit", "health"], content: `אפשר להכין מראש שלוש שאלות:
 1. מה כבר ידוע ומה עדיין צריך לברר?
-2. האם נדרש בירור נוסף, ואם כן — למה?
+2. האם נדרש בירור נוסף, ואם כן - למה?
 3. אילו הנחיות אישיות צריך לקחת הביתה או להעביר למסגרת?
 
 אם הביקור קשור לגן או לבית הספר, הביאו גם את הטופס שהמסגרת ביקשה. הרופא מתאר את המצב והצרכים הרפואיים; אישור סייעת או זכאות אחרת מתקבל במסלול המתאים, ולא על סמך המאמר הזה.` },
