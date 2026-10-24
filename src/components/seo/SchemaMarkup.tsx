@@ -8,7 +8,7 @@ interface SchemaMarkupProps {
 export const SchemaMarkup = ({ type = "physician" }: SchemaMarkupProps) => {
   const physicianSchema = {
     "@context": "https://schema.org",
-    "@type": "Physician",
+    "@type": ["Physician", "Person"],
     "name": "ד״ר אנה ברמלי - מומחית לאלרגיה ואימונולוגיה",
     "image": "https://ihaveallergy.com/og-logo.png?v=6",
     "@id": "https://ihaveallergy.com/dr-anna-brameli#physician",
@@ -17,7 +17,7 @@ export const SchemaMarkup = ({ type = "physician" }: SchemaMarkupProps) => {
     "address": CLINIC_POSTAL_ADDRESS,
     "openingHoursSpecification": CLINIC_OPENING_HOURS,
     "availableService": CLINIC_SERVICES.map(name => ({ "@type": "MedicalProcedure", name })),
-    "medicalSpecialty": "AllergyAndImmunology",
+    "medicalSpecialty": { "@type": "MedicalSpecialty", name: "Allergy and Immunology" },
     "knowsLanguage": ["he", "en"],
     "sameAs": [
       "https://medicine.vumc.org/department-directory/Anna-Brameli",
@@ -44,7 +44,7 @@ export const SchemaMarkup = ({ type = "physician" }: SchemaMarkupProps) => {
     name: "ד״ר אנה ברמלי | מומחית לאלרגיה ואימונולוגיה",
     description: "אתר רשמי של ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה",
     mainEntity: {
-      "@type": "Physician",
+      "@type": ["Physician", "Person"],
       name: "ד״ר אנה ברמלי",
     },
     specialty: "Allergy and Immunology",
@@ -61,7 +61,7 @@ export const SchemaMarkup = ({ type = "physician" }: SchemaMarkupProps) => {
     description: "קביעת תור במרפאת אלרגיה של ד״ר אנה ברמלי בהוד השרון.",
     url: "https://ihaveallergy.com/contact",
     mainEntity: {
-      "@type": "Physician",
+      "@type": ["Physician", "Person"],
       name: "ד״ר אנה ברמלי",
       address: CLINIC_POSTAL_ADDRESS,
       openingHoursSpecification: CLINIC_OPENING_HOURS,

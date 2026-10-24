@@ -35,12 +35,12 @@ import drAnnaImage from "@/assets/dr-anna-brameli.jpeg";
 
 const physicianSchema = {
   "@context": "https://schema.org",
-  "@type": "Physician",
+  "@type": ["Physician", "Person"],
   "@id": "https://ihaveallergy.com/dr-anna-brameli#physician",
   name: "ד״ר אנה ברמלי",
   alternateName: "Dr. Anna Brameli",
   description: "ד״ר אנה ברמלי היא רופאת אלרגיה ואלרגולוגית בקליניקה פרטית בישראל. מומחית באבחון וטיפול באלרגיות מזון ועונתיות, בדיקות IgE ואימונותרפיה.",
-  medicalSpecialty: ["Allergy and Immunology", "Pediatrics"],
+  medicalSpecialty: [{ "@type": "MedicalSpecialty", name: "Allergy and Immunology" }, "https://schema.org/Pediatric"],
   url: "https://ihaveallergy.com/dr-anna-brameli",
   telephone: "+972-52-591-6393",
   address: CLINIC_POSTAL_ADDRESS,

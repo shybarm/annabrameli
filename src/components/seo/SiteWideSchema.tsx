@@ -8,7 +8,7 @@ import { Helmet } from "react-helmet-async";
 export const SiteWideSchema = () => {
   const organizationSchema = {
     "@context": "https://schema.org",
-    "@type": "MedicalOrganization",
+    "@type": "MedicalClinic",
     "@id": "https://ihaveallergy.com/#organization",
     name: "ד״ר אנה ברמלי – מומחית לאלרגיה ואימונולוגיה",
     url: "https://ihaveallergy.com",
@@ -20,11 +20,11 @@ export const SiteWideSchema = () => {
     openingHoursSpecification: CLINIC_OPENING_HOURS,
     // External institute and author profiles describe the physician, not this clinic.
     employee: {
-      "@type": "Physician",
+      "@type": ["Physician", "Person"],
       "@id": "https://ihaveallergy.com/dr-anna-brameli#physician",
       name: "ד״ר אנה ברמלי",
     },
-    medicalSpecialty: "AllergyAndImmunology",
+    medicalSpecialty: { "@type": "MedicalSpecialty", name: "Allergy and Immunology" },
   };
 
   const webSiteSchema = {
