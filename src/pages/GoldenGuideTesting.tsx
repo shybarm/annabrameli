@@ -21,6 +21,7 @@ import { FAQAccordion } from "@/components/ui/faq-accordion";
 
 const testTypes = [
   {
+    id: "skin-prick",
     name: "תבחיני עור (Skin Prick Test)",
     age: "אפשר גם בילדים צעירים, לפי החלטת אלרגולוג",
     duration: "התגובה נקראת לרוב אחרי 15-20 דקות",
@@ -30,6 +31,7 @@ const testTypes = [
     when: "כאשר הסיפור הרפואי מעלה חשד לאלרגיה מתווכת IgE והבדיקה מתאימה לילד.",
   },
   {
+    id: "specific-ige",
     name: "בדיקת דם (IgE ספציפי)",
     age: "כל גיל",
     duration: "דקירת מחט אחת (תוצאות תוך ימים)",
@@ -39,6 +41,7 @@ const testTypes = [
     when: "כשלא ניתן לבצע תבחיני עור, או כהשלמה לתמונה הקלינית.",
   },
   {
+    id: "food-challenge",
     name: "מבחן מאכל (Oral Food Challenge)",
     age: "כל גיל, בליווי רפואי",
     duration: "כמה שעות, בהתאם לפרוטוקול ולתגובה",
@@ -48,6 +51,7 @@ const testTypes = [
     when: "לאישוש או שלילה של אלרגיה, לפני החלטה להחזיר מזון.",
   },
   {
+    id: "patch-test",
     name: "תבחיני מדבקה (Patch Test)",
     age: "כל גיל",
     duration: "48-72 שעות (מדבקות על הגב)",
@@ -126,7 +130,7 @@ const GoldenGuideTesting = () => {
     headline: "בדיקות אלרגיה: תבחיני עור, בדיקת דם ותגר בילדים ובמבוגרים",
     description: "מדריך רפואי לבדיקות אלרגיה: כיצד בוחרים בין תבחיני עור, IgE בדם ותגר, איך מתכוננים, כיצד מפרשים תוצאה ומה ההבדל בין בירור פרטי לציבורי.",
     datePublished: "2026-02-08",
-    dateModified: "2026-09-08",
+    dateModified: "2026-10-24",
     canonicalUrl: "https://ihaveallergy.com/guides/בדיקות-אלרגיה-ילדים-ישראל",
     about: {
       "@type": "MedicalProcedure",
@@ -157,7 +161,7 @@ const GoldenGuideTesting = () => {
         <meta property="og:description" content="מתי עושים תבחיני עור, בדיקת IgE בדם או תגר מזון, איך מתכוננים ומה משמעות התוצאות." />
         <meta property="og:image" content="https://ihaveallergy.com/og-logo.png?v=6" />
         <meta property="article:published_time" content="2026-02-08" />
-        <meta property="article:modified_time" content="2026-09-08" />
+        <meta property="article:modified_time" content="2026-10-24" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="בדיקות אלרגיה: תבחיני עור, דם ותגר | ד״ר אנה ברמלי" />
         <meta name="twitter:description" content="מתי עושים תבחיני עור, בדיקת IgE בדם או תגר מזון, איך מתכוננים ומה משמעות התוצאות." />
@@ -217,6 +221,25 @@ const GoldenGuideTesting = () => {
           </p>
         </motion.section>
 
+        <nav aria-label="ניווט במדריך בדיקות אלרגיה" className="mb-12 rounded-2xl border border-border/60 bg-card p-5">
+          <h2 className="text-lg font-semibold mb-4">מה תרצו לקרוא?</h2>
+          <ul className="grid sm:grid-cols-2 gap-2">
+            {[
+              ...testTypes.map((test) => ({ href: `#${test.id}`, label: test.name })),
+              { href: "#private-vs-public", label: "בדיקות פרטיות או בקופה" },
+              { href: "#what-to-expect", label: "מה קורה בביקור אצל אלרגולוג?" },
+              { href: "#faq", label: "שאלות נפוצות על הבדיקות" },
+              { href: "#professional-sources", label: "מקורות מקצועיים" },
+            ].map((item) => (
+              <li key={item.href}>
+                <a href={item.href} className="block rounded-lg p-3 text-primary underline underline-offset-4 hover:bg-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
+                  {item.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
         {/* Test types */}
         <motion.section initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-12" id="test-types">
           <div className="flex items-center gap-3 mb-5">
@@ -230,11 +253,12 @@ const GoldenGuideTesting = () => {
             {testTypes.map((test, index) => (
               <motion.div
                 key={test.name}
+                id={test.id}
                 initial={{ opacity: 0, y: 12 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.06 }}
-                className="bg-card rounded-2xl border border-border/60 p-5 md:p-6"
+                className="bg-card rounded-2xl border border-border/60 p-5 md:p-6 scroll-mt-24"
               >
                 <h3 className="text-lg font-semibold text-foreground mb-3">{test.name}</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm mb-4">
@@ -288,7 +312,7 @@ const GoldenGuideTesting = () => {
         <ArticleCTA variant="inline" />
 
         {/* Private vs Public */}
-        <motion.section initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="my-12" id="private-vs-public">
+        <motion.section initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="my-12 scroll-mt-24" id="private-vs-public">
           <div className="flex items-center gap-3 mb-5">
             <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
               <Stethoscope className="w-5 h-5 text-primary" />
@@ -322,7 +346,7 @@ const GoldenGuideTesting = () => {
         </motion.section>
 
         {/* What to expect */}
-        <motion.section initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-12" id="what-to-expect">
+        <motion.section initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-12 scroll-mt-24" id="what-to-expect">
           <div className="flex items-center gap-3 mb-5">
             <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
               <HelpCircle className="w-5 h-5 text-primary" />
@@ -425,7 +449,7 @@ const GoldenGuideTesting = () => {
         </motion.section>
 
         {/* FAQ */}
-        <motion.section initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-12" id="faq">
+        <motion.section initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-12 scroll-mt-24" id="faq">
           <h2 className="text-xl md:text-2xl font-bold text-foreground mb-6">שאלות נפוצות</h2>
           <FAQAccordion items={faqs} />
         </motion.section>
