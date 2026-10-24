@@ -44,11 +44,11 @@ const PrivateVsPublic = () => (
       <section className="rounded-2xl border border-border/60 bg-accent/30 p-5 space-y-3">
         <h2 className="text-xl font-bold text-foreground">מחפשים אלרגולוגית פרטית בהוד השרון?</h2>
         <p>
-          בעמוד המקצועי של ד״ר אנה ברמלי אפשר לקרוא על ההכשרה, תחומי הטיפול,
-          סוגי הבירור ומה כדאי להכין לפני פנייה למרפאה.
+          בעמוד הייעוץ הפרטי של ד״ר אנה ברמלי אפשר לקרוא על המרפאה,
+          מסלול הבירור ואפשרויות הפנייה.
         </p>
-        <Link to="/dr-anna-brameli" className="inline-flex font-medium text-primary hover:underline">
-          לפרופיל ד״ר אנה ברמלי ולמידע על ייעוץ פרטי
+        <Link to="/allergist-private" className="inline-flex font-medium text-primary hover:underline">
+          למידע על ייעוץ פרטי ולפנייה למרפאה
         </Link>
       </section>
 
@@ -65,7 +65,7 @@ const PrivateVsPublic = () => (
       <p>
         להסבר על תבחיני עור, בדיקות דם ותגרי מזון, עברו אל{" "}
         <Link to={GOLDEN_GUIDE} className="text-primary font-medium hover:underline">
-          המדריך המלא לבדיקות אלרגיה לילדים בישראל
+          המדריך לבדיקות אלרגיה לילדים ולמבוגרים
         </Link>. מידע על סוגי הייעוץ והמצבים המטופלים נמצא גם ב<Link to="/services" className="text-primary font-medium hover:underline">עמוד שירותי מרפאת האלרגיה</Link>.
       </p>
     </div>

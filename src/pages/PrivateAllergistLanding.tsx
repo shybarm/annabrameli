@@ -143,7 +143,7 @@ export default function PrivateAllergistLanding() {
   return (
     <>
       <Helmet>
-        <title>אלרגולוג פרטי ובדיקת אלרגיה פרטית | ד״ר אנה ברמלי</title>
+        <title>ייעוץ אלרגולוגי פרטי בהוד השרון | ד״ר אנה ברמלי</title>
         <meta
           name="description"
           content="ייעוץ אלרגולוגי פרטי לילדים ולמבוגרים אצל ד״ר אנה ברמלי בהוד השרון. בירור אלרגיה והתאמת בדיקות לפי הסיפור הרפואי והתסמינים."
