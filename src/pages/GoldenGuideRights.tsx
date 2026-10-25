@@ -49,6 +49,10 @@ export default function GoldenGuideRights() {
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
       <meta property="og:image" content="https://ihaveallergy.com/og-logo.png?v=6" />
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:title" content={title} />
+      <meta name="twitter:description" content={description} />
+      <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png?v=6" />
       <meta property="article:published_time" content="2026-02-08" />
       <meta property="article:modified_time" content="2026-10-06" />
       <script type="application/ld+json">{JSON.stringify(schema)}</script>
