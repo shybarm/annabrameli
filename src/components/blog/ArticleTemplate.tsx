@@ -17,8 +17,10 @@ import { MedicalDisclaimer } from "@/components/MedicalDisclaimer";
  * "link text (/some/path)" into clickable <Link> elements.
  */
 function renderContentWithLinks(content: string): React.ReactNode[] {
-  // Match patterns like "link text (/path)" or "link text (/path)."
-  const linkRegex = /([^\n(]+?)\s*\((\/(blog|guides|knowledge|about|services|contact|faq)[^\s)]*)\)/g;
+  // Support both explicit Markdown labels and legacy "label (/path)" content.
+  // Keep destinations restricted to known local route families.
+  const route = String.raw`\/(?:blog|guides|knowledge|about|services|contact|faq|dr-anna-brameli|אלרגיה-בילדים-מדריך-מלא)[^\s)]*`;
+  const linkRegex = new RegExp(String.raw`\[([^\]\n]+)\]\((${route})\)|([^\n(\[]+?)\s*\((${route})\)`, "g");
   const parts: React.ReactNode[] = [];
   let lastIndex = 0;
   let match: RegExpExecArray | null;
@@ -28,8 +30,8 @@ function renderContentWithLinks(content: string): React.ReactNode[] {
     if (match.index > lastIndex) {
       parts.push(content.slice(lastIndex, match.index));
     }
-    const linkText = match[1].trim();
-    const linkPath = match[2];
+    const linkText = (match[1] ?? match[3]).trim();
+    const linkPath = match[2] ?? match[4];
     parts.push(
       <Link key={match.index} to={linkPath} className="text-primary hover:underline font-medium">
         {linkText}
