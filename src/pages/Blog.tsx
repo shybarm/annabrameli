@@ -24,7 +24,7 @@ const Blog = () => {
   return (
     <>
       <Helmet>
-        <title>בלוג אלרגיה לילדים | ד״ר אנה ברמלי – מומחית לאלרגיה ואימונולוגיה</title>
+        <title>בלוג אלרגיה לילדים | ד״ר אנה ברמלי - מומחית לאלרגיה ואימונולוגיה</title>
         <meta
           name="description"
           content="מידע על אלרגיה בילדים לצד מדריכים מעשיים להורים, הכנה לביקור וזכויות במסגרות חינוך. מקורות ופרטי מחבר או סקירה מצוינים בכל מאמר לפי העניין."
@@ -34,13 +34,13 @@ const Blog = () => {
 
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://ihaveallergy.com/blog" />
-        <meta property="og:title" content="בלוג אלרגיה לילדים | ד״ר אנה ברמלי – מומחית לאלרגיה ואימונולוגיה" />
+        <meta property="og:title" content="בלוג אלרגיה לילדים | ד״ר אנה ברמלי - מומחית לאלרגיה ואימונולוגיה" />
         <meta property="og:description" content="מידע על אלרגיה בילדים לצד מדריכים מעשיים להורים, הכנה לביקור וזכויות במסגרות חינוך. מקורות ופרטי מחבר או סקירה מצוינים בכל מאמר לפי העניין." />
         <meta property="og:image" content="https://ihaveallergy.com/og-logo.png?v=6" />
         <meta property="og:locale" content="he_IL" />
 
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="בלוג אלרגיה לילדים | ד״ר אנה ברמלי – מומחית לאלרגיה ואימונולוגיה" />
+        <meta name="twitter:title" content="בלוג אלרגיה לילדים | ד״ר אנה ברמלי - מומחית לאלרגיה ואימונולוגיה" />
         <meta name="twitter:description" content="מידע על אלרגיה בילדים לצד מדריכים מעשיים להורים, הכנה לביקור וזכויות במסגרות חינוך. מקורות ופרטי מחבר או סקירה מצוינים בכל מאמר לפי העניין." />
         <meta name="twitter:image" content="https://ihaveallergy.com/og-logo.png?v=6" />
       </Helmet>

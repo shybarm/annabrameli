@@ -10,7 +10,7 @@ export const SiteWideSchema = () => {
     "@context": "https://schema.org",
     "@type": "MedicalClinic",
     "@id": "https://ihaveallergy.com/#organization",
-    name: "ד״ר אנה ברמלי – מומחית לאלרגיה ואימונולוגיה",
+    name: "ד״ר אנה ברמלי - מומחית לאלרגיה ואימונולוגיה",
     url: "https://ihaveallergy.com",
     logo: "https://ihaveallergy.com/og-logo.png?v=6",
     image: "https://ihaveallergy.com/og-logo.png?v=6",
@@ -32,7 +32,7 @@ export const SiteWideSchema = () => {
     "@type": "WebSite",
     "@id": "https://ihaveallergy.com/#website",
     url: "https://ihaveallergy.com",
-    name: "iHaveAllergy – ד״ר אנה ברמלי",
+    name: "iHaveAllergy - ד״ר אנה ברמלי",
     publisher: { "@id": "https://ihaveallergy.com/#organization" },
     inLanguage: "he-IL",
   };

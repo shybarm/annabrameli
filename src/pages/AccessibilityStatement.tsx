@@ -18,7 +18,7 @@ const AccessibilityStatement = () => {
 
           <div className="prose prose-lg max-w-none text-foreground space-y-8">
             <p className="text-lg leading-relaxed">
-              אתר iHaveAllergy רואה חשיבות רבה בהנגשת שירותיו לכלל הציבור, ופועל בהתאם לחוק שוויון זכויות לאנשים עם מוגבלות, התשנ״ח–1998, ולתקנות הנגישות.
+              אתר iHaveAllergy רואה חשיבות רבה בהנגשת שירותיו לכלל הציבור, ופועל בהתאם לחוק שוויון זכויות לאנשים עם מוגבלות, התשנ״ח-1998, ולתקנות הנגישות.
             </p>
 
             <section>

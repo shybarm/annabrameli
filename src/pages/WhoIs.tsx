@@ -378,7 +378,7 @@ const WhoIs = () => {
               <p className="text-muted-foreground">
                 לפרופיל המקצועי המלא, פרסומים ומידע על שירותי המרפאה - בקרו בעמוד{" "}
                 <Link to="/dr-anna-brameli" className="text-primary hover:underline font-medium">
-                  ד״ר אנה ברמלי – רופאת אלרגיה
+                  ד״ר אנה ברמלי - רופאת אלרגיה
                 </Link>
                 .
               </p>

@@ -20,9 +20,9 @@ export interface ExecutionTask {
 }
 
 export const PHASE_META: Record<Phase, { title: string; titleHe: string; weeks: string; color: string; goal: string }> = {
-  1: { title: 'Foundation', titleHe: 'יסודות', weeks: '1–4', color: 'primary', goal: 'חיזוק מבנה בסיסי, אמינות מומחה, ובהירות מסרים - מ-6.0 ל-6.8' },
-  2: { title: 'Content Structure', titleHe: 'מבנה תוכן', weeks: '5–8', color: 'amber', goal: 'שכתוב תבניות, מאמרים, ודפי שירות - מ-6.8 ל-7.4' },
-  3: { title: 'Authority & Expansion', titleHe: 'סמכות והרחבה', weeks: '9–12', color: 'emerald', goal: 'אשכולות חסרים, דפי השוואה, ומעגל GEO חודשי - מ-7.4 ל-8.0' },
+  1: { title: 'Foundation', titleHe: 'יסודות', weeks: '1-4', color: 'primary', goal: 'חיזוק מבנה בסיסי, אמינות מומחה, ובהירות מסרים - מ-6.0 ל-6.8' },
+  2: { title: 'Content Structure', titleHe: 'מבנה תוכן', weeks: '5-8', color: 'amber', goal: 'שכתוב תבניות, מאמרים, ודפי שירות - מ-6.8 ל-7.4' },
+  3: { title: 'Authority & Expansion', titleHe: 'סמכות והרחבה', weeks: '9-12', color: 'emerald', goal: 'אשכולות חסרים, דפי השוואה, ומעגל GEO חודשי - מ-7.4 ל-8.0' },
 };
 
 export const OWNER_LABELS: Record<TaskOwner, { label: string; color: string }> = {

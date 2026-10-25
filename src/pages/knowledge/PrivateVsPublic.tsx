@@ -4,16 +4,16 @@ import { KnowledgeArticleLayout } from "@/components/knowledge/KnowledgeArticleL
 const GOLDEN_GUIDE = "/guides/בדיקות-אלרגיה-ילדים-ישראל";
 
 const relatedArticles = [
-  { to: "/knowledge/תבחיני-עור-כואב-לילדים", label: "תבחיני עור – האם זה כואב?" },
-  { to: "/knowledge/בדיקת-דם-לאלרגיה-ילדים", label: "בדיקת דם לאלרגיה – מתי מספיקה?" },
-  { to: "/knowledge/תגר-מזון-איך-זה-נראה", label: "תגר מזון – איך זה נראה בפועל?" },
+  { to: "/knowledge/תבחיני-עור-כואב-לילדים", label: "תבחיני עור - האם זה כואב?" },
+  { to: "/knowledge/בדיקת-דם-לאלרגיה-ילדים", label: "בדיקת דם לאלרגיה - מתי מספיקה?" },
+  { to: "/knowledge/תגר-מזון-איך-זה-נראה", label: "תגר מזון - איך זה נראה בפועל?" },
   { to: "/knowledge/בדיקה-חיובית-בלי-תסמינים", label: "בדיקה חיובית בלי תסמינים" },
 ];
 
 const PrivateVsPublic = () => (
   <KnowledgeArticleLayout
     slug="בדיקות-אלרגיה-פרטי-או-קופה"
-    title="בדיקת אלרגיה פרטית או בקופה – מחיר ומה חשוב לבדוק"
+    title="בדיקת אלרגיה פרטית או בקופה - מחיר ומה חשוב לבדוק"
     metaDescription="בדיקת אלרגיה פרטית או דרך קופת חולים: מה עשוי להשפיע על המחיר, מה כולל הבירור ואילו שאלות כדאי לשאול לפני שקובעים תור."
     relatedArticles={relatedArticles}
   >

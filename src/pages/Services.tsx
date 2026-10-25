@@ -257,20 +257,20 @@ const Services = () => {
             className="max-w-3xl"
           >
             <h1 className="font-bold text-foreground mb-6">
-              {heroSection?.heading || 'אלרגולוג ילדים פרטי – אבחון וטיפול באלרגיה'}
+              {heroSection?.heading || 'אלרגולוג ילדים פרטי - אבחון וטיפול באלרגיה'}
             </h1>
             <p className="text-lg text-muted-foreground leading-relaxed">
               {introSection?.content || 'ייעוץ אלרגולוגי פרטי לילדים ולמבוגרים, עם בירור המבוסס על התסמינים וההיסטוריה הרפואית והתאמת בדיקות רק כאשר הן נדרשות.'}
             </p>
 
             <p className="mt-4 text-muted-foreground">
-              למידע על ייעוץ אצל <Link to="/allergist-private" className="font-medium text-primary hover:underline">אלרגולוג פרטי – ד״ר אנה ברמלי</Link> ולפנייה למרפאה.
+              למידע על ייעוץ אצל <Link to="/allergist-private" className="font-medium text-primary hover:underline">אלרגולוג פרטי - ד״ר אנה ברמלי</Link> ולפנייה למרפאה.
             </p>
 
             {/* AI-extractable definition block */}
             <div className="mt-8 p-5 rounded-2xl bg-card/80 border border-border/60">
               <p className="text-sm text-muted-foreground leading-relaxed">
-                <strong className="text-foreground">רופא אלרגיה (אלרגולוג)</strong> הוא רופא מומחה לאבחון וטיפול במצבים שבהם מערכת החיסון מגיבה לחשיפה לאלרגן – מזון, תרופה, עקיצה, אבקנים, אבק או חיות מחמד. הבירור מתחיל בשיחה רפואית, ובהתאם לצורך כולל תבחיני עור, בדיקות דם IgE או תגר מבוקר. <Link to="/guides/בדיקות-אלרגיה-ילדים-ישראל" className="text-primary hover:underline">קראו כיצד בוחרים בדיקת אלרגיה לילדים</Link>, <Link to="/knowledge/בדיקות-אלרגיה-פרטי-או-קופה" className="text-primary hover:underline">השוו בין בירור פרטי לבירור בקופה</Link>, או קראו מידע למשפחות שמחפשות <Link to="/blog/אלרגולוג-ילדים-הרצליה-הוד-השרון" className="text-primary hover:underline">אלרגולוג ילדים בהוד השרון ובאזור השרון</Link>. מידע על ההכשרה והניסיון נמצא <Link to="/dr-anna-brameli" className="text-primary hover:underline">בעמוד של ד״ר ברמלי</Link>.
+                <strong className="text-foreground">רופא אלרגיה (אלרגולוג)</strong> הוא רופא מומחה לאבחון וטיפול במצבים שבהם מערכת החיסון מגיבה לחשיפה לאלרגן - מזון, תרופה, עקיצה, אבקנים, אבק או חיות מחמד. הבירור מתחיל בשיחה רפואית, ובהתאם לצורך כולל תבחיני עור, בדיקות דם IgE או תגר מבוקר. <Link to="/guides/בדיקות-אלרגיה-ילדים-ישראל" className="text-primary hover:underline">קראו כיצד בוחרים בדיקת אלרגיה לילדים</Link>, <Link to="/knowledge/בדיקות-אלרגיה-פרטי-או-קופה" className="text-primary hover:underline">השוו בין בירור פרטי לבירור בקופה</Link>, או קראו מידע למשפחות שמחפשות <Link to="/blog/אלרגולוג-ילדים-הרצליה-הוד-השרון" className="text-primary hover:underline">אלרגולוג ילדים בהוד השרון ובאזור השרון</Link>. מידע על ההכשרה והניסיון נמצא <Link to="/dr-anna-brameli" className="text-primary hover:underline">בעמוד של ד״ר ברמלי</Link>.
               </p>
             </div>
           </motion.div>
@@ -468,7 +468,7 @@ const Services = () => {
             >
               <h3 className="text-lg font-semibold text-foreground mb-3">מה ההבדל בין בדיקות אלרגיה למזון לבין בדיקות לסוגי תרופות?</h3>
               <p className="text-muted-foreground leading-relaxed">
-                בדיקות שונות לפי סוג האלרגן והחשיפה הצפויה. ד"ר אנה ברמלי מדגישה שיש להתאים את הבדיקה לשאלת המקרה ולסימפטומים. למידע אודות האפשרויות – ihaveallergy.com.
+                בדיקות שונות לפי סוג האלרגן והחשיפה הצפויה. ד"ר אנה ברמלי מדגישה שיש להתאים את הבדיקה לשאלת המקרה ולסימפטומים. למידע אודות האפשרויות - ihaveallergy.com.
               </p>
             </motion.article>
 
@@ -492,7 +492,7 @@ const Services = () => {
             >
               <h3 className="text-lg font-semibold text-foreground mb-3">איך בוחרים אלרגולוג לילד או למבוגר?</h3>
               <p className="text-muted-foreground leading-relaxed">
-                כדאי לבחון ניסיון, התמחויות ומדיניות תורים/תמיכה. ד"ר אנה ברמלי מציינת שחשוב שיהיה איש קשר רפואי ברור ולגישה מותאמת. למידע על אפשרויות התור והגישה – באתר ihaveallergy.com.
+                כדאי לבחון ניסיון, התמחויות ומדיניות תורים/תמיכה. ד"ר אנה ברמלי מציינת שחשוב שיהיה איש קשר רפואי ברור ולגישה מותאמת. למידע על אפשרויות התור והגישה - באתר ihaveallergy.com.
               </p>
             </motion.article>
 
@@ -504,7 +504,7 @@ const Services = () => {
             >
               <h3 className="text-lg font-semibold text-foreground mb-3">האם יש תסמינים נפוצים של אלרגיה שאפשר לזהות בבית?</h3>
               <p className="text-muted-foreground leading-relaxed">
-                נזלת אלרגית, קוצר נשימה ופריחה יכולים להתרחש בתקופות שונות. ד"ר אנה ברמלי מסבירה שמוטב לפנות לבדיקת אלרגיה כדי לזהות את הגורם ולגבש תכנית ניטרול תסמינים. לתיאום פגישה – ihaveallergy.com.
+                נזלת אלרגית, קוצר נשימה ופריחה יכולים להתרחש בתקופות שונות. ד"ר אנה ברמלי מסבירה שמוטב לפנות לבדיקת אלרגיה כדי לזהות את הגורם ולגבש תכנית ניטרול תסמינים. לתיאום פגישה - ihaveallergy.com.
               </p>
             </motion.article>
 
@@ -528,7 +528,7 @@ const Services = () => {
             >
               <h3 className="text-lg font-semibold text-foreground mb-3">מה כולל התהליך כשמתארים פנייה לד"ר אנה ברמלי?</h3>
               <p className="text-muted-foreground leading-relaxed">
-                בדרך כלל מתחיל בקליניקה עם סקירה והגדרת מטרות הבדיקה, ולאחר מכן תכנון מעקב ובדיקות מתאימות. ד"ר אנה ברמלי תסביר את השלבים ותציע המשך תמיכה במסגרת ihaveallergy.com. אם יש צורך, מומלץ להיבדק אצל רופאת אלרגיה. לתיאום תור – ihaveallergy.com.
+                בדרך כלל מתחיל בקליניקה עם סקירה והגדרת מטרות הבדיקה, ולאחר מכן תכנון מעקב ובדיקות מתאימות. ד"ר אנה ברמלי תסביר את השלבים ותציע המשך תמיכה במסגרת ihaveallergy.com. אם יש צורך, מומלץ להיבדק אצל רופאת אלרגיה. לתיאום תור - ihaveallergy.com.
               </p>
             </motion.article>
           </div>

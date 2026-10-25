@@ -25,7 +25,7 @@ const PrivacyPolicy = () => {
 
           <div className="prose prose-lg max-w-none text-foreground space-y-8">
             <p className="text-lg leading-relaxed">
-              אתר iHaveAllergy (להלן: &quot;האתר&quot;) מכבד את פרטיות המשתמשים ופועל בהתאם לחוק הגנת הפרטיות, התשמ״א–1981, ולתקנות מכוחו.
+              אתר iHaveAllergy (להלן: &quot;האתר&quot;) מכבד את פרטיות המשתמשים ופועל בהתאם לחוק הגנת הפרטיות, התשמ״א-1981, ולתקנות מכוחו.
             </p>
 
             <section>
@@ -81,7 +81,7 @@ const PrivacyPolicy = () => {
               <ul className="list-disc list-inside space-y-2 text-muted-foreground">
                 <li>עיון במידע אודותיו</li>
                 <li>תיקון מידע שגוי</li>
-                <li>מחיקת מידע – בכפוף להוראות הדין</li>
+                <li>מחיקת מידע - בכפוף להוראות הדין</li>
               </ul>
             </section>
 

@@ -46,7 +46,7 @@ const testTypes = [
     age: "כל גיל, בליווי רפואי",
     duration: "כמה שעות, בהתאם לפרוטוקול ולתגובה",
     what: "הילד מקבל כמויות הולכות וגדלות של המזון החשוד, תחת השגחה רפואית צמודה בבית חולים או מרפאה.",
-    pros: ["הבדיקה המדויקת ביותר – ״תקן הזהב״", "מאפשרת לשלול אלרגיה ולהחזיר מזונות"],
+    pros: ["הבדיקה המדויקת ביותר - ״תקן הזהב״", "מאפשרת לשלול אלרגיה ולהחזיר מזונות"],
     cons: ["דורשת זמן ומקום מאובזר", "סיכון מבוקר לתגובה"],
     when: "לאישוש או שלילה של אלרגיה, לפני החלטה להחזיר מזון.",
   },
@@ -58,7 +58,7 @@ const testTypes = [
     what: "מדבקות עם אלרגנים מודבקות על הגב ונקראות אחרי 48 ו-72 שעות. בודקות תגובה מושהית (Type IV).",
     pros: ["מזהה דרמטיטיס ממגע", "לא כואב"],
     cons: ["לא בודק אלרגיה מיידית (Type I)", "דורש שתי ביקורות"],
-    when: "חשד לדרמטיטיס ממגע – תגובות עור לחומרים, תכשירים או מתכות.",
+    when: "חשד לדרמטיטיס ממגע - תגובות עור לחומרים, תכשירים או מתכות.",
   },
 ];
 
@@ -114,7 +114,7 @@ const faqs = [
   {
     question: "האם בדיקה שלילית אומרת שאין אלרגיה?",
     answer:
-      "בדיקה שלילית מפחיתה מאוד את הסיכוי לאלרגיה, אבל לא שוללת לגמרי. לפעמים נדרש מבחן מאכל (Oral Food Challenge) לאישור סופי. ההחלטה תמיד נעשית על סמך התמונה הקלינית המלאה – לא רק על סמך בדיקה אחת.",
+      "בדיקה שלילית מפחיתה מאוד את הסיכוי לאלרגיה, אבל לא שוללת לגמרי. לפעמים נדרש מבחן מאכל (Oral Food Challenge) לאישור סופי. ההחלטה תמיד נעשית על סמך התמונה הקלינית המלאה - לא רק על סמך בדיקה אחת.",
   },
   {
     question: "איפה עושים בדיקות אלרגיה בישראל?",
@@ -207,7 +207,7 @@ const GoldenGuideTesting = () => {
         <motion.section initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-12">
           <div className="bg-surface-warm rounded-2xl p-7 border border-border/40 mb-8">
             <p className="text-lg text-foreground leading-relaxed mb-4">
-              הבן שלכם בן שנתיים. אחרי שנה שלמה של פריחות, גירודים, ולילות בלי שינה – רופא הילדים אמר לכם: ״כדאי לבדוק אלרגיה.״
+              הבן שלכם בן שנתיים. אחרי שנה שלמה של פריחות, גירודים, ולילות בלי שינה - רופא הילדים אמר לכם: ״כדאי לבדוק אלרגיה.״
             </p>
             <p className="text-muted-foreground leading-relaxed mb-4">
               עכשיו אתם מול ים של אפשרויות: <strong className="text-foreground">בדיקת דם? תבחין עור? פרטי או ציבורי? ומה בכלל בודקים?</strong>
@@ -246,7 +246,7 @@ const GoldenGuideTesting = () => {
             <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
               <TestTube2 className="w-5 h-5 text-primary" />
             </div>
-            <h2 className="text-xl md:text-2xl font-bold text-foreground">סוגי בדיקות אלרגיה – מדריך השוואתי</h2>
+            <h2 className="text-xl md:text-2xl font-bold text-foreground">סוגי בדיקות אלרגיה - מדריך השוואתי</h2>
           </div>
 
           <div className="space-y-5">
@@ -317,7 +317,7 @@ const GoldenGuideTesting = () => {
             <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
               <Stethoscope className="w-5 h-5 text-primary" />
             </div>
-            <h2 className="text-xl md:text-2xl font-bold text-foreground">פרטי מול ציבורי – מה מתאים לכם?</h2>
+            <h2 className="text-xl md:text-2xl font-bold text-foreground">פרטי מול ציבורי - מה מתאים לכם?</h2>
           </div>
 
           <p className="text-muted-foreground leading-relaxed mb-5">
@@ -341,7 +341,7 @@ const GoldenGuideTesting = () => {
           </div>
 
           <p className="text-muted-foreground leading-relaxed mt-5">
-            <strong className="text-foreground">אין ״נכון״ ו״לא נכון״.</strong> אם הילד מגרד לילות שלמים – שבועות של המתנה זה עינוי. אם הבדיקה לא דחופה – המסלול הציבורי עובד מצוין.
+            <strong className="text-foreground">אין ״נכון״ ו״לא נכון״.</strong> אם הילד מגרד לילות שלמים - שבועות של המתנה זה עינוי. אם הבדיקה לא דחופה - המסלול הציבורי עובד מצוין.
           </p>
         </motion.section>
 
@@ -357,10 +357,10 @@ const GoldenGuideTesting = () => {
           <div className="space-y-4">
             {[
               { step: "1", title: "סיפור רפואי מפורט (אנמנזה)", desc: "האלרגולוג שואל על תסמינים, תזמון, תזונה, היסטוריה משפחתית. הכינו מראש: מתי זה התחיל, מה הילד אכל, ותמונות של הפריחה." },
-              { step: "2", title: "בדיקה גופנית", desc: "בדיקת עור, נשימה, וסימנים כלליים. באגזמה – הערכת חומרה." },
+              { step: "2", title: "בדיקה גופנית", desc: "בדיקת עור, נשימה, וסימנים כלליים. באגזמה - הערכת חומרה." },
               { step: "3", title: "בדיקות אלרגיה (לפי צורך)", desc: "תבחיני עור ו/או הפניה לבדיקות דם. לא תמיד הכל נעשה באותו ביקור." },
-              { step: "4", title: "הסבר ותוכנית טיפול", desc: "האלרגולוג מסביר את הממצאים, מה האבחנה, ומה התוכנית הבאה – כולל תזונה, תרופות, ומעקב." },
-              { step: "5", title: "מסמכים", desc: "אישור אלרגיה לגן/בית ספר, מרשמים, ובמידת הצורך – תוכנית פעולה (Action Plan) לשימוש באפיפן." },
+              { step: "4", title: "הסבר ותוכנית טיפול", desc: "האלרגולוג מסביר את הממצאים, מה האבחנה, ומה התוכנית הבאה - כולל תזונה, תרופות, ומעקב." },
+              { step: "5", title: "מסמכים", desc: "אישור אלרגיה לגן/בית ספר, מרשמים, ובמידת הצורך - תוכנית פעולה (Action Plan) לשימוש באפיפן." },
             ].map((item, index) => (
               <motion.div
                 key={item.step}
@@ -392,13 +392,13 @@ const GoldenGuideTesting = () => {
           </div>
           <div className="text-muted-foreground leading-relaxed space-y-4">
             <p>
-              אם הילד מאובחן עם אלרגיה למזון, אחת האפשרויות המתקדמות היא <strong className="text-foreground">טיפול בדסנסיטיזציה (Oral Immunotherapy – OIT)</strong>. בטיפול זה, הילד מקבל כמויות קטנות והולכות וגדלות של האלרגן, תחת פיקוח רפואי, במטרה ללמד את מערכת החיסון לסבול את המזון.
+              אם הילד מאובחן עם אלרגיה למזון, אחת האפשרויות המתקדמות היא <strong className="text-foreground">טיפול בדסנסיטיזציה (Oral Immunotherapy - OIT)</strong>. בטיפול זה, הילד מקבל כמויות קטנות והולכות וגדלות של האלרגן, תחת פיקוח רפואי, במטרה ללמד את מערכת החיסון לסבול את המזון.
             </p>
             <p>
               ההתאמה ל-OIT תלויה בין היתר בסוג האלרגן, בגיל, במחלות הרקע וביכולת המשפחה להתמיד בפרוטוקול. זהו טיפול שדורש מעקב והנחיות בטיחות של צוות מומחה.
             </p>
             <p>
-              <strong className="text-foreground">לא כל ילד מתאים ל-OIT</strong> – האלרגולוג יעריך את הסיכון מול התועלת ויכווין אתכם.
+              <strong className="text-foreground">לא כל ילד מתאים ל-OIT</strong> - האלרגולוג יעריך את הסיכון מול התועלת ויכווין אתכם.
             </p>
           </div>
         </motion.section>
@@ -408,7 +408,7 @@ const GoldenGuideTesting = () => {
           <h2 className="text-xl md:text-2xl font-bold text-foreground mb-5">מדריכים נוספים</h2>
           <div className="grid sm:grid-cols-2 gap-4">
             {[
-              { to: "/guides/טעימות-ראשונות-אלרגנים", label: "טעימות ראשונות – מדריך חשיפה לאלרגנים" },
+              { to: "/guides/טעימות-ראשונות-אלרגנים", label: "טעימות ראשונות - מדריך חשיפה לאלרגנים" },
               { to: "/guides/זכויות-ילד-אלרגי-ישראל", label: "זכויות של ילד אלרגי בישראל" },
               { to: "/allergist-private", label: "ייעוץ אצל אלרגולוגית פרטית" },
               { to: "/services", label: "שירותי אבחון וייעוץ" },
@@ -430,9 +430,9 @@ const GoldenGuideTesting = () => {
           <h2 className="text-xl md:text-2xl font-bold text-foreground mb-5">הרחבות חשובות להורים</h2>
           <div className="grid sm:grid-cols-2 gap-3">
             {[
-              { to: "/knowledge/תבחיני-עור-כואב-לילדים", label: "תבחיני עור – האם זה כואב?" },
-              { to: "/knowledge/בדיקת-דם-לאלרגיה-ילדים", label: "בדיקת דם לאלרגיה – מתי מספיקה?" },
-              { to: "/knowledge/תגר-מזון-איך-זה-נראה", label: "תגר מזון – איך זה נראה בפועל?" },
+              { to: "/knowledge/תבחיני-עור-כואב-לילדים", label: "תבחיני עור - האם זה כואב?" },
+              { to: "/knowledge/בדיקת-דם-לאלרגיה-ילדים", label: "בדיקת דם לאלרגיה - מתי מספיקה?" },
+              { to: "/knowledge/תגר-מזון-איך-זה-נראה", label: "תגר מזון - איך זה נראה בפועל?" },
               { to: "/knowledge/בדיקה-חיובית-בלי-תסמינים", label: "בדיקה חיובית בלי תסמינים" },
               { to: "/knowledge/בדיקות-אלרגיה-פרטי-או-קופה#cost", label: "בדיקת אלרגיה פרטית: מחיר ומה כלול בבירור" },
             ].map((link) => (
@@ -462,7 +462,7 @@ const GoldenGuideTesting = () => {
           <ul className="space-y-3 text-sm text-muted-foreground">
             <li>
               <a className="text-primary hover:underline" href="https://me.health.gov.il/parenting/raising-children/common-childhood-diseases-and-symptoms/medical-conditions/common-allergies/" target="_blank" rel="noreferrer">
-                משרד הבריאות: אלרגיות ילדים – בדיקות וטיפול
+                משרד הבריאות: אלרגיות ילדים - בדיקות וטיפול
               </a>
             </li>
             <li>

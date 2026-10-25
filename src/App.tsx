@@ -1,3 +1,4 @@
+import { RouteScrollReset } from "@/components/RouteScrollReset";
 import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -155,6 +156,7 @@ const App = () => {
 
             <SiteWideSchema />
             <AnalyticsRouteTracker />
+            <RouteScrollReset />
             <React.Suspense fallback={<div className="min-h-[40vh]" aria-busy="true" />}>
             <Routes>
               {/* Public routes */}

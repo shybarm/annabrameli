@@ -4,7 +4,7 @@ import { KnowledgeArticleLayout } from "@/components/knowledge/KnowledgeArticleL
 const GOLDEN_GUIDE = "/guides/זכויות-ילד-אלרגי-ישראל";
 
 const relatedArticles = [
-  { to: "/knowledge/אפיפן-בגן-מי-אחראי", label: "אפיפן בגן – מי אחראי?" },
+  { to: "/knowledge/אפיפן-בגן-מי-אחראי", label: "אפיפן בגן - מי אחראי?" },
   { to: "/knowledge/סייעת-רפואית-לילד-אלרגי", label: "סייעת רפואית לילד אלרגי" },
   { to: "/knowledge/טיול-שנתי-ילד-אלרגי", label: "טיול שנתי עם ילד אלרגי" },
   { to: "/knowledge/אישור-אלרגיה-למשרד-החינוך", label: "אישור אלרגיה למשרד החינוך" },

@@ -44,7 +44,7 @@ export const EXPERT_PROFILE = {
   affiliations: [
     {
       type: 'affiliation' as const,
-      label: 'Clinical Fellow (2022–2024)',
+      label: 'Clinical Fellow (2022-2024)',
       institution: 'Vanderbilt University Medical Center',
       detail: 'Division of Allergy, Pulmonary and Critical Care Medicine',
     },

@@ -14,7 +14,7 @@ const DaysBetweenAllergens = () => (
   <KnowledgeArticleLayout
     slug="כמה-ימים-בין-אלרגנים"
     title="כמה ימים מחכים בין חשיפה לאלרגן אחד לשני?"
-    metaDescription="כמה ימים להמתין בין אלרגנים בטעימות ראשונות – עקרונות ברורים להורים לפי ההנחיות העדכניות."
+    metaDescription="כמה ימים להמתין בין אלרגנים בטעימות ראשונות - עקרונות ברורים להורים לפי ההנחיות העדכניות."
     relatedArticles={relatedArticles}
   >
     <div className="text-muted-foreground leading-relaxed space-y-4">

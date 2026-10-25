@@ -8,7 +8,7 @@ export const CLINIC = {
   address: "הטווס 3, הוד השרון",
   phone: "052-591-6393",
   phoneE164: "+972525916393",
-  hoursLabel: "ראשון, שני וחמישי, 16:30–21:00",
+  hoursLabel: "ראשון, שני וחמישי, 16:30-21:00",
   accessLabel: "כניסה ושירותים נגישים; חניה זמינה",
   mapsUrl: "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent("הטווס 3 הוד השרון"),
   mapsEmbedUrl: "https://www.google.com/maps?q=" + encodeURIComponent("הטווס 3 הוד השרון") + "&output=embed",

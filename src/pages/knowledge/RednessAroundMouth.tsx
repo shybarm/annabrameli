@@ -13,8 +13,8 @@ const relatedArticles = [
 const RednessAroundMouth = () => (
   <KnowledgeArticleLayout
     slug="אודם-סביב-הפה-אחרי-אלרגן"
-    title="אודם סביב הפה אחרי טעימת אלרגן – מתי זה תקין?"
-    metaDescription="אודם סביב הפה אחרי טעימת אלרגן – מתי זו תגובה תקינה ומתי סימן אזהרה. הסבר רפואי ברור להורים."
+    title="אודם סביב הפה אחרי טעימת אלרגן - מתי זה תקין?"
+    metaDescription="אודם סביב הפה אחרי טעימת אלרגן - מתי זו תגובה תקינה ומתי סימן אזהרה. הסבר רפואי ברור להורים."
     relatedArticles={relatedArticles}
   >
     <div className="text-muted-foreground leading-relaxed space-y-4">

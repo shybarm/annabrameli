@@ -12,7 +12,7 @@ const NotFound = () => {
   return (
     <>
       <Helmet>
-        <title>404 – הדף לא נמצא | IhaveAllergy</title>
+        <title>404 - הדף לא נמצא | IhaveAllergy</title>
         <meta name="robots" content="noindex, nofollow" />
         <meta name="googlebot" content="noindex, nofollow" />
       </Helmet>

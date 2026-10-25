@@ -5,7 +5,7 @@ const GOLDEN_GUIDE = "/guides/טעימות-ראשונות-אלרגנים";
 
 const relatedArticles = [
   { to: "/knowledge/אודם-סביב-הפה-אחרי-אלרגן", label: "אודם סביב הפה אחרי טעימת אלרגן" },
-  { to: "/knowledge/במבה-גיל-4-חודשים", label: "במבה בגיל 4 חודשים – מותר או מוקדם מדי?" },
+  { to: "/knowledge/במבה-גיל-4-חודשים", label: "במבה בגיל 4 חודשים - מותר או מוקדם מדי?" },
   { to: "/knowledge/הקאה-אחרי-טחינה", label: "הקאה אחרי טעימה של טחינה" },
   { to: "/knowledge/כמה-ימים-בין-אלרגנים", label: "כמה ימים מחכים בין אלרגנים?" },
 ];
@@ -13,8 +13,8 @@ const relatedArticles = [
 const RashAfterBamba = () => (
   <KnowledgeArticleLayout
     slug="פריחה-אחרי-במבה"
-    title="פריחה אחרי במבה לתינוק – אלרגיה או גירוי זמני?"
-    metaDescription="פריחה אחרי במבה לתינוק – איך להבדיל בין גירוי עורי זמני לבין סימני אלרגיה אמיתית. מדריך רפואי מקצועי להורים."
+    title="פריחה אחרי במבה לתינוק - אלרגיה או גירוי זמני?"
+    metaDescription="פריחה אחרי במבה לתינוק - איך להבדיל בין גירוי עורי זמני לבין סימני אלרגיה אמיתית. מדריך רפואי מקצועי להורים."
     relatedArticles={relatedArticles}
   >
     <div className="text-muted-foreground leading-relaxed space-y-4">
@@ -43,7 +43,7 @@ const RashAfterBamba = () => (
         <li>הקאות, שיעול או נפיחות</li>
       </ul>
 
-      <p className="font-medium text-foreground pt-2">בספק – לא מנסים שוב לבד.</p>
+      <p className="font-medium text-foreground pt-2">בספק - לא מנסים שוב לבד.</p>
     </div>
   </KnowledgeArticleLayout>
 );

@@ -13,8 +13,8 @@ const relatedArticles = [
 const VomitingAfterTahini = () => (
   <KnowledgeArticleLayout
     slug="הקאה-אחרי-טחינה"
-    title="הקאה אחרי טעימה של טחינה – האם זו אלרגיה?"
-    metaDescription="הקאה אחרי טחינה לתינוק – מתי זו אלרגיה לשומשום ומתי תגובה רגילה. מדריך רפואי להורים ישראליים."
+    title="הקאה אחרי טעימה של טחינה - האם זו אלרגיה?"
+    metaDescription="הקאה אחרי טחינה לתינוק - מתי זו אלרגיה לשומשום ומתי תגובה רגילה. מדריך רפואי להורים ישראליים."
     relatedArticles={relatedArticles}
   >
     <div className="text-muted-foreground leading-relaxed space-y-4">

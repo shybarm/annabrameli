@@ -13,8 +13,8 @@ const relatedArticles = [
 const BambaAt4Months = () => (
   <KnowledgeArticleLayout
     slug="במבה-גיל-4-חודשים"
-    title="במבה בגיל 4 חודשים – מותר או מוקדם מדי?"
-    metaDescription="במבה בגיל 4 חודשים – האם מותר? מתי ואיך לתת במבה לתינוק לפי ההמלצות הישראליות העדכניות."
+    title="במבה בגיל 4 חודשים - מותר או מוקדם מדי?"
+    metaDescription="במבה בגיל 4 חודשים - האם מותר? מתי ואיך לתת במבה לתינוק לפי ההמלצות הישראליות העדכניות."
     relatedArticles={relatedArticles}
   >
     <div className="text-muted-foreground leading-relaxed space-y-4">

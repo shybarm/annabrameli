@@ -66,7 +66,7 @@ const normalReactions = [
 ];
 
 const alarmSigns = [
-  "אורטיקריה (חרלות) – פריחה בולטת שמתפשטת מעבר לאזור המגע",
+  "אורטיקריה (חרלות) - פריחה בולטת שמתפשטת מעבר לאזור המגע",
   "נפיחות בשפתיים, בלשון, בעיניים או בפנים",
   "הקאות חוזרות (לא יריקה בודדת)",
   "שיעול פתאומי, צפצופים, קשיי נשימה",
@@ -77,8 +77,8 @@ const alarmSigns = [
 const emergencySteps = [
   { step: "1", title: "הפסיקו מיד את החשיפה למזון", desc: "הרחיקו את המזון מהתינוק" },
   { step: "2", title: "בדקו נשימה ומצב כללי", desc: "שימו לב לצפצופים, חיוורון, נפיחות" },
-  { step: "3", title: "אם יש סימני מצוקה – התקשרו ל-101", desc: "אנפילקסיס דורש טיפול מיידי" },
-  { step: "4", title: "אם התגובה קלה – צרו קשר עם רופא הילדים", desc: "תעדו מה אכל, כמה, ומה קרה" },
+  { step: "3", title: "אם יש סימני מצוקה - התקשרו ל-101", desc: "אנפילקסיס דורש טיפול מיידי" },
+  { step: "4", title: "אם התגובה קלה - צרו קשר עם רופא הילדים", desc: "תעדו מה אכל, כמה, ומה קרה" },
   { step: "5", title: "אל תנסו שוב ללא ייעוץ רפואי", desc: "אלרגולוג ילדים יקבע את הצעד הבא" },
 ];
 
@@ -86,12 +86,12 @@ const faqs = [
   {
     question: "האם מותר לתת במבה בגיל 4 חודשים?",
     answer:
-      "משרד הבריאות ממליץ להתחיל מזונות משלימים סביב גיל חצי שנה ובהתאם לסימני המוכנות, ולא לפני גיל 4 חודשים. בתינוקות עם אקזמה קשה או אלרגיה לביצה קיימות הנחיות ייעודיות לחשיפה לבוטנים בגיל 4–6 חודשים, ולכן חשוב להתייעץ עם רופא הילדים או אלרגולוג לפני החשיפה.",
+      "משרד הבריאות ממליץ להתחיל מזונות משלימים סביב גיל חצי שנה ובהתאם לסימני המוכנות, ולא לפני גיל 4 חודשים. בתינוקות עם אקזמה קשה או אלרגיה לביצה קיימות הנחיות ייעודיות לחשיפה לבוטנים בגיל 4-6 חודשים, ולכן חשוב להתייעץ עם רופא הילדים או אלרגולוג לפני החשיפה.",
   },
   {
     question: "מה ההבדל בין תגובה רגילה לאלרגיה?",
     answer:
-      "תגובה רגילה: סומק קל סביב הפה שחולף תוך שעה, סלידה מהטעם, או שלשול קל. אלרגיה: פריחה מפושטת (חרלות), נפיחות בשפתיים/עיניים, הקאות חוזרות, שיעול, צפצופים, או חיוורון. ההבדל העיקרי – תגובה רגילה מוגבלת לאזור המגע וחולפת מהר; אלרגיה מערבת אזורים נוספים בגוף.",
+      "תגובה רגילה: סומק קל סביב הפה שחולף תוך שעה, סלידה מהטעם, או שלשול קל. אלרגיה: פריחה מפושטת (חרלות), נפיחות בשפתיים/עיניים, הקאות חוזרות, שיעול, צפצופים, או חיוורון. ההבדל העיקרי - תגובה רגילה מוגבלת לאזור המגע וחולפת מהר; אלרגיה מערבת אזורים נוספים בגוף.",
   },
   {
     question: "איך נותנים טחינה לתינוק בפעם הראשונה?",
@@ -143,7 +143,7 @@ const GoldenGuide = () => {
   const breadcrumbSchema = buildBreadcrumbSchema([
     { name: "ראשי", item: "https://ihaveallergy.com/" },
     { name: "בלוג", item: "https://ihaveallergy.com/blog" },
-    { name: "טעימות ראשונות – מדריך אלרגנים לתינוקות" },
+    { name: "טעימות ראשונות - מדריך אלרגנים לתינוקות" },
   ]);
 
   return (
@@ -233,7 +233,7 @@ const GoldenGuide = () => {
               קראתם בפורומים. שמעתם סיפורים. אולי אפילו ראיתם סרטון מפחיד ברשת. עכשיו אתם עומדים שם ושואלים את עצמכם: <strong className="text-foreground">״מה אם יהיה לו משהו?״</strong>
             </p>
             <p className="text-muted-foreground leading-relaxed">
-              נשימה. המדריך הזה נכתב בדיוק בשבילכם – הורים שרוצים לעשות את הדבר הנכון, בצורה בטוחה, עם ידע ברור. בואו נעשה את זה ביחד.
+              נשימה. המדריך הזה נכתב בדיוק בשבילכם - הורים שרוצים לעשות את הדבר הנכון, בצורה בטוחה, עם ידע ברור. בואו נעשה את זה ביחד.
             </p>
           </div>
         </motion.section>
@@ -281,7 +281,7 @@ const GoldenGuide = () => {
               <Baby className="w-5 h-5 text-primary" />
             </div>
             <h2 className="text-xl md:text-2xl font-bold text-foreground">
-              טבלת אלרגנים: מה, מתי, ואיך – המדריך הישראלי
+              טבלת אלרגנים: מה, מתי, ואיך - המדריך הישראלי
             </h2>
           </div>
 
@@ -332,7 +332,7 @@ const GoldenGuide = () => {
           id="reactions"
         >
           <h2 className="text-xl md:text-2xl font-bold text-foreground mb-6">
-            תגובה רגילה מול אלרגיה – איך מבדילים?
+            תגובה רגילה מול אלרגיה - איך מבדילים?
           </h2>
 
           <div className="grid md:grid-cols-2 gap-5">
@@ -340,7 +340,7 @@ const GoldenGuide = () => {
             <div className="bg-card rounded-2xl border border-border/60 p-6">
               <div className="flex items-center gap-2 mb-4">
                 <CheckCircle2 className="w-5 h-5 text-accent-foreground" />
-                <h3 className="font-semibold text-foreground">תגובה רגילה – אפשר להמשיך</h3>
+                <h3 className="font-semibold text-foreground">תגובה רגילה - אפשר להמשיך</h3>
               </div>
               <ul className="space-y-2.5">
                 {normalReactions.map((item, i) => (
@@ -356,7 +356,7 @@ const GoldenGuide = () => {
             <div className="bg-destructive/5 rounded-2xl border border-destructive/20 p-6">
               <div className="flex items-center gap-2 mb-4">
                 <AlertTriangle className="w-5 h-5 text-destructive" />
-                <h3 className="font-semibold text-foreground">סימני אלרגיה – דורש תשומת לב</h3>
+                <h3 className="font-semibold text-foreground">סימני אלרגיה - דורש תשומת לב</h3>
               </div>
               <ul className="space-y-2.5">
                 {alarmSigns.map((item, i) => (
@@ -382,7 +382,7 @@ const GoldenGuide = () => {
           id="what-to-do"
         >
           <h2 className="text-xl md:text-2xl font-bold text-foreground mb-6">
-            מה לעשות אם יש תגובה – צעד אחר צעד
+            מה לעשות אם יש תגובה - צעד אחר צעד
           </h2>
 
           <div className="space-y-4">
@@ -420,7 +420,7 @@ const GoldenGuide = () => {
           <div className="grid sm:grid-cols-2 gap-4">
             {[
               { to: "/guides/זכויות-ילד-אלרגי-ישראל", label: "זכויות של ילד אלרגי בישראל" },
-              { to: "/guides/בדיקות-אלרגיה-ילדים-ישראל", label: "בדיקות אלרגיה לילדים – מדריך מלא" },
+              { to: "/guides/בדיקות-אלרגיה-ילדים-ישראל", label: "בדיקות אלרגיה לילדים - מדריך מלא" },
               { to: "/services", label: "בדיקות אלרגיה ושירותים נוספים" },
               { to: "/about", label: "אודות ד״ר אנה ברמלי" },
             ].map((link) => (
@@ -448,10 +448,10 @@ const GoldenGuide = () => {
           <h2 className="text-xl md:text-2xl font-bold text-foreground mb-5">הרחבות חשובות להורים</h2>
           <div className="grid sm:grid-cols-2 gap-3">
             {[
-              { to: "/knowledge/פריחה-אחרי-במבה", label: "פריחה אחרי במבה – אלרגיה או גירוי?" },
-              { to: "/knowledge/אודם-סביב-הפה-אחרי-אלרגן", label: "אודם סביב הפה – מתי זה תקין?" },
-              { to: "/knowledge/במבה-גיל-4-חודשים", label: "במבה בגיל 4 חודשים – מותר?" },
-              { to: "/knowledge/הקאה-אחרי-טחינה", label: "הקאה אחרי טחינה – האם זו אלרגיה?" },
+              { to: "/knowledge/פריחה-אחרי-במבה", label: "פריחה אחרי במבה - אלרגיה או גירוי?" },
+              { to: "/knowledge/אודם-סביב-הפה-אחרי-אלרגן", label: "אודם סביב הפה - מתי זה תקין?" },
+              { to: "/knowledge/במבה-גיל-4-חודשים", label: "במבה בגיל 4 חודשים - מותר?" },
+              { to: "/knowledge/הקאה-אחרי-טחינה", label: "הקאה אחרי טחינה - האם זו אלרגיה?" },
               { to: "/knowledge/כמה-ימים-בין-אלרגנים", label: "כמה ימים בין אלרגנים?" },
             ].map((link) => (
               <Link
@@ -504,7 +504,7 @@ const GoldenGuide = () => {
                 rel="noopener noreferrer"
                 className="text-primary hover:underline"
               >
-                משרד הבריאות – מעבר למזונות משלימים
+                משרד הבריאות - מעבר למזונות משלימים
               </a>
             </li>
             <li>
@@ -514,7 +514,7 @@ const GoldenGuide = () => {
                 rel="noopener noreferrer"
                 className="text-primary hover:underline"
               >
-                NIAID – הנחיות להורים למניעת אלרגיה לבוטנים
+                NIAID - הנחיות להורים למניעת אלרגיה לבוטנים
               </a>
             </li>
             <li>
@@ -524,7 +524,7 @@ const GoldenGuide = () => {
                 rel="noopener noreferrer"
                 className="text-primary hover:underline"
               >
-                NIH – תוצאות מחקרי LEAP והמעקב ארוך הטווח
+                NIH - תוצאות מחקרי LEAP והמעקב ארוך הטווח
               </a>
             </li>
           </ul>

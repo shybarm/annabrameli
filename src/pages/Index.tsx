@@ -95,7 +95,7 @@ const goldenGuides = [
     icon: Baby,
     title: "טעימות ראשונות",
     subtitle: "מדריך חשיפה לאלרגנים לתינוקות",
-    description: "במבה, טחינה, ביצים וחלב – מתי להתחיל, איך לזהות תגובה, ומתי לנשום.",
+    description: "במבה, טחינה, ביצים וחלב - מתי להתחיל, איך לזהות תגובה, ומתי לנשום.",
     href: "/guides/טעימות-ראשונות-אלרגנים",
     badge: "מדריך מקיף",
   },
@@ -103,7 +103,7 @@ const goldenGuides = [
     icon: TestTube2,
     title: "בדיקות אלרגיה",
     subtitle: "איזה בדיקה מתאימה, מתי ואיפה",
-    description: "תבחיני עור, דם, מבחן מאכל – עלויות, השוואת פרטי/ציבורי, ומה לצפות.",
+    description: "תבחיני עור, דם, מבחן מאכל - עלויות, השוואת פרטי/ציבורי, ומה לצפות.",
     href: "/guides/בדיקות-אלרגיה-ילדים-ישראל",
     badge: "מדריך בדיקות",
   },
@@ -424,7 +424,7 @@ const Index = () => {
               {guidesSection?.heading || 'מדריכים להורים'}
             </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              {guidesSection?.content || 'כל מה שצריך לדעת על אלרגיות אצל ילדים – בשפה פשוטה, מבוססת מחקר, ומותאמת להורים ישראליים.'}
+              {guidesSection?.content || 'כל מה שצריך לדעת על אלרגיות אצל ילדים - בשפה פשוטה, מבוססת מחקר, ומותאמת להורים ישראליים.'}
             </p>
           </motion.div>
 
@@ -562,7 +562,7 @@ const Index = () => {
               שאלות נפוצות
             </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              תשובות לשאלות שהורים שואלים הכי הרבה – בשפה פשוטה ומבוססת מחקר.
+              תשובות לשאלות שהורים שואלים הכי הרבה - בשפה פשוטה ומבוססת מחקר.
             </p>
           </motion.div>
 
@@ -692,7 +692,7 @@ const Index = () => {
                 {ctaSection?.heading || 'מרגישים שהילד מגיב למזון, עקיצה או תרופה?'}
               </h2>
               <p className="text-primary-foreground text-lg max-w-2xl mx-auto mb-10 leading-relaxed">
-                {ctaSection?.content || 'אל תחכו – קבעו תור לאבחון מקצועי. אבחון מוקדם ומדויק יכול לשנות את ההתנהלות היומיומית ולהעניק שקט נפשי.'}
+                {ctaSection?.content || 'אל תחכו - קבעו תור לאבחון מקצועי. אבחון מוקדם ומדויק יכול לשנות את ההתנהלות היומיומית ולהעניק שקט נפשי.'}
               </p>
               <Button size="lg" variant="secondary" className="shadow-lg" asChild>
                 <Link to="/book" onClick={() => trackBookAppointmentClick("footer_cta")}>

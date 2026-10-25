@@ -1,9 +1,9 @@
-const forbiddenDash = String.fromCodePoint(0x2014);
+const forbiddenDashes = new RegExp(`[${String.fromCodePoint(0x2013)}${String.fromCodePoint(0x2014)}]`, 'g');
 
 /** Keep editor input and CMS output consistent with the owner's punctuation rule. */
 export function normalizeSiteText(value: string): string {
-  return value.split(forbiddenDash).join('-')
-    .replace(/&mdash;|&#0*8212;|&#x0*2014;/gi, '-');
+  return value.replace(forbiddenDashes, '-')
+    .replace(/&[mn]dash;|&#0*821[12];|&#x0*201[34];/gi, '-');
 }
 
 export function normalizeContentSections<T extends { heading: string; content: string }>(sections: T[]): T[] {

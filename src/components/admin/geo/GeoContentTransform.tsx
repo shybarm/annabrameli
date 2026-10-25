@@ -861,7 +861,7 @@ export function GeoContentTransform() {
       <div className="flex justify-center pt-4">
         <Button variant="outline" className="gap-2" onClick={handleGeneralAudit} disabled={isScanning}>
           {isScanning ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-          {isScanning ? 'סורק את כל הדפים...' : 'סריקת GEO כללית (AI) – כל הדפים'}
+          {isScanning ? 'סורק את כל הדפים...' : 'סריקת GEO כללית (AI) - כל הדפים'}
         </Button>
       </div>
     </div>
