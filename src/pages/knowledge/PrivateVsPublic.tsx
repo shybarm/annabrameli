@@ -22,7 +22,7 @@ const PrivateVsPublic = () => (
         כשמחפשים בדיקת אלרגיה פרטית, חשוב להבחין בין הייעוץ אצל אלרגולוג לבין הבדיקה עצמה. הבירור מתחיל בסיפור הרפואי: מה קרה, כמה זמן לאחר החשיפה, האם התגובה חזרה ואילו טיפולים ניתנו. רק לאחר מכן מחליטים אם יש צורך בתבחיני עור, בבדיקת דם או בבדיקה אחרת.
       </p>
 
-      <section className="space-y-3">
+      <section id="private-or-public" className="space-y-3 scroll-mt-24">
         <h2 className="text-xl font-bold text-foreground">מה ההבדל בין בירור בקופה לבירור פרטי?</h2>
         <p>
           השיקולים העיקריים הם זמינות התור, ההסדר עם הביטוח או הקופה, מקום ביצוע הבדיקות והאפשרות להמשך מעקב. איכות הבירור תלויה בהתאמה בין הסיפור הרפואי לבדיקה, ולא במספר האלרגנים שנבדקים.
@@ -34,7 +34,7 @@ const PrivateVsPublic = () => (
         </ul>
       </section>
 
-      <section className="space-y-3">
+      <section id="cost" className="space-y-3 scroll-mt-24">
         <h2 className="text-xl font-bold text-foreground">מה משפיע על מחיר בדיקת אלרגיה פרטית?</h2>
         <p>
           אין מחיר אחיד לכל בירור. העלות עשויה להשתנות לפי סוג הייעוץ, הבדיקות שנמצאו מתאימות, מקום ביצוען והכיסוי הביטוחי. תגר מזון או תרופה הוא הליך רפואי שונה מתבחין עור או בדיקת דם, ולכן חשוב לקבל פירוט שמתייחס לבדיקה הספציפית שהומלצה.
@@ -52,7 +52,7 @@ const PrivateVsPublic = () => (
         </Link>
       </section>
 
-      <section className="space-y-3">
+      <section id="before-visit" className="space-y-3 scroll-mt-24">
         <h2 className="text-xl font-bold text-foreground">ארבע שאלות שכדאי לשאול לפני שקובעים</h2>
         <ol className="list-decimal list-inside space-y-2">
           <li>האם צריך הפניה או מסמכים רפואיים קודמים?</li>

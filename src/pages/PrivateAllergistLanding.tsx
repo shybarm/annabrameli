@@ -278,6 +278,21 @@ export default function PrivateAllergistLanding() {
         </div>
       </section>
 
+      <section className="section-spacing bg-background" aria-labelledby="visit-planning">
+        <div className="container-medical max-w-3xl">
+          <h2 id="visit-planning" className="mb-5">מה כדאי לברר לפני שקובעים ייעוץ פרטי?</h2>
+          <p className="mb-5 leading-relaxed text-muted-foreground">
+            לפני קביעת הביקור אפשר לפנות למרפאה ולברר את העלות ומה כלול בה.
+            זכאות להחזר והמסמכים הנדרשים יש לבדוק ישירות מול הקופה או חברת הביטוח.
+          </p>
+          <ul className="space-y-3">
+            <li><Link to="/knowledge/בדיקות-אלרגיה-פרטי-או-קופה#cost" className="font-medium text-primary hover:underline">מחיר בדיקת אלרגיה פרטית: מה חשוב לברר?</Link></li>
+            <li><Link to="/knowledge/בדיקות-אלרגיה-פרטי-או-קופה#private-or-public" className="font-medium text-primary hover:underline">בירור פרטי או בקופה: השאלות שכדאי להשוות</Link></li>
+            <li><Link to="/knowledge/בדיקות-אלרגיה-פרטי-או-קופה#before-visit" className="font-medium text-primary hover:underline">ארבע שאלות לפני הביקור</Link></li>
+          </ul>
+        </div>
+      </section>
+
       <section id="contact-form" className="section-spacing scroll-mt-24">
         <div className="container-medical grid items-start gap-10 lg:grid-cols-[0.9fr_1.1fr]">
           <div>
