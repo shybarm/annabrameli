@@ -154,6 +154,20 @@ export const ArticleTemplate = ({ article }: ArticleTemplateProps) => {
 
       {/* Article body */}
       <div className="container-medical max-w-3xl py-12 md:py-16 space-y-10">
+        {article.sections.length >= 4 && (
+          <nav aria-label="ניווט בפרקי המאמר" className="rounded-2xl border border-border bg-card p-5 md:p-6">
+            <h2 className="text-lg font-bold mb-3">מה תרצו לקרוא?</h2>
+            <ul className="grid gap-2 sm:grid-cols-2">
+              {article.sections.map((section) => (
+                <li key={section.id}>
+                  <a href={`#${section.id}`} className="block rounded-md px-2 py-2 text-primary underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
+                    {section.title}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )}
         {article.rulesOfThumb && <section className="bg-accent rounded-2xl p-6" aria-labelledby="rules-title">
           <h2 id="rules-title" className="text-xl font-bold mb-3">כללי אצבע לזכירה</h2>
           <ul className="list-disc ps-6 space-y-2">{article.rulesOfThumb.map(rule => <li key={rule}>{rule}</li>)}</ul>
@@ -167,6 +181,7 @@ export const ArticleTemplate = ({ article }: ArticleTemplateProps) => {
             viewport={{ once: true }}
             transition={{ delay: index * 0.05 }}
             id={section.id}
+            className="scroll-mt-28"
           >
             <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4">{section.title}</h2>
             <div className="text-muted-foreground leading-relaxed whitespace-pre-line prose-content">
