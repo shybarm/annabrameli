@@ -9,6 +9,7 @@ const CANONICAL = "https://ihaveallergy.com/allergist-central-sharon";
 const PHONE_E164 = "+972525916393";
 const areas = ["הוד השרון", "כפר סבא", "רעננה", "הרצליה", "נתניה", "פתח תקווה", "תל אביב", "רמת גן", "ראשון לציון", "חולון"];
 const faqs = [
+  { question: "האם המרפאה מטפלת גם בילדים וגם במבוגרים?", answer: "כן. ד״ר אנה ברמלי מעניקה ייעוץ בתחום האלרגיה והאימונולוגיה לילדים ולמבוגרים, עם ניסיון מרכזי ברפואת ילדים ובאלרגיה בילדים." },
   { question: "היכן מתקיים הייעוץ?", answer: "הייעוץ מתקיים במרפאה הפרטית בהוד השרון, בתיאום מראש. העמוד מיועד גם למשפחות שמחפשות אלרגולוג באזור המרכז והשרון ומעוניינות להגיע למרפאה בהוד השרון." },
   { question: "האם אפשר לבצע בדיקת אלרגיה בכל ביקור?", answer: "לא כל פנייה מחייבת בדיקה. תחילה עוברים על הסיפור הרפואי והתסמינים, ורק לאחר מכן מותאמת הבדיקה הנכונה לפי הצורך הרפואי." },
   { question: "האם הייעוץ מתאים גם לאלרגיה למזון?", answer: "כן. ניתן לפנות לבירור חשד לאלרגיה למזון, מעבר על תגובות ובדיקות קודמות, והכוונה לגבי המשך בירור או טיפול במסגרת המתאימה." },
@@ -44,6 +45,15 @@ export default function RegionalAllergist() {
     </div></section>
     <section className="section-spacing bg-background"><div className="container-medical"><div className="mx-auto max-w-3xl text-center"><h2 className="mb-4">ייעוץ ממוקד לפני שבוחרים בדיקה</h2><p className="text-muted-foreground">בדיקת אלרגיה לבדה אינה אבחנה. הבחירה בין תבחין עור, בדיקת דם או תגר מבוקר מתחילה בהיסטוריה רפואית ובהערכת אלרגולוג.</p></div>
       <div className="mt-10 grid gap-5 md:grid-cols-3"><div className="rounded-3xl border bg-card p-7"><Stethoscope className="mb-4 h-8 w-8 text-primary" /><h3 className="mb-2 font-semibold">ייעוץ אלרגולוגי פרטי</h3><p className="text-sm text-muted-foreground">סקירת התסמינים, החשיפות, התגובות ובדיקות קודמות.</p></div><div className="rounded-3xl border bg-card p-7"><TestTube2 className="mb-4 h-8 w-8 text-primary" /><h3 className="mb-2 font-semibold">התאמת בדיקות</h3><p className="text-sm text-muted-foreground">בחירת בדיקה לפי השאלה הרפואית, בלי בדיקות סקר מיותרות.</p></div><div className="rounded-3xl border bg-card p-7"><MapPin className="mb-4 h-8 w-8 text-primary" /><h3 className="mb-2 font-semibold">מרפאה בהוד השרון</h3><p className="text-sm text-muted-foreground">גישה פרטית בתיאום מראש למטופלים מאזור המרכז והשרון.</p></div></div>
+    </div></section>
+    <section className="section-spacing bg-background" aria-labelledby="plan-consultation"><div className="container-medical max-w-3xl">
+      <h2 id="plan-consultation" className="mb-4">ייעוץ אלרגיה לילדים ולמבוגרים בשרון</h2>
+      <p className="mb-6 leading-relaxed text-muted-foreground">לפני הפנייה למרפאה אפשר להכיר את מבנה הייעוץ, לקרוא על הבדיקות ולהשוות בין בירור פרטי לבירור בקופה.</p>
+      <ul className="space-y-4">
+        <li><Link className="font-medium text-primary hover:underline" to="/allergist-private">ייעוץ אלרגולוגי פרטי: מה כולל הביקור ואיך מתכוננים</Link></li>
+        <li><Link className="font-medium text-primary hover:underline" to="/knowledge/בדיקות-אלרגיה-פרטי-או-קופה#private-or-public">בדיקות אלרגיה באופן פרטי או בקופה: מה כדאי להשוות</Link></li>
+        <li><Link className="font-medium text-primary hover:underline" to="/guides/בדיקות-אלרגיה-ילדים-ישראל">בדיקות אלרגיה לילדים: מדריך להורים</Link></li>
+      </ul>
     </div></section>
     <section className="section-spacing bg-muted/40"><div className="container-medical grid gap-10 lg:grid-cols-2"><div><h2 className="mb-5">אזורי השירות</h2><p className="mb-6 text-muted-foreground">המרפאה נמצאת בהוד השרון. העמוד מסייע למי שמחפש רופא אלרגיה פרטי במרכז ובשרון להבין היכן מתקיים הייעוץ לפני הפנייה.</p><ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">{areas.map((area) => <li key={area} className="rounded-xl border bg-background px-4 py-3 text-sm font-medium">{area}</li>)}</ul></div>
       <div><h2 className="mb-5">בירור אלרגיה למזון</h2><p className="mb-5 text-muted-foreground">בפגישה ניתן לעבור על תגובות לאחר אכילה, תבחיני עור ובדיקות IgE קודמות, ולבדוק האם נדרש תגר מזון, מעקב או הערכת התאמה לטיפול במסגרת רפואית מתאימה.</p><div className="flex flex-wrap gap-3"><Button variant="outline" asChild><Link to="/food-desensitization">ייעוץ בנושא אלרגיה למזון</Link></Button><Button variant="outline" asChild><Link to="/guides/בדיקות-אלרגיה-ילדים-ישראל">מדריך לבדיקות אלרגיה</Link></Button></div></div></div></section>
