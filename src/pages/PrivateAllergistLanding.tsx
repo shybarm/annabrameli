@@ -202,6 +202,14 @@ export default function PrivateAllergistLanding() {
               </div>
               <p className="mt-4 text-sm text-muted-foreground">הייעוץ מתקיים בתיאום מראש.</p>
               <p className="mt-2 text-sm text-muted-foreground">המרפאה בהוד השרון משרתת גם משפחות מאזור המרכז והשרון. <Link to="/allergist-central-sharon" className="font-medium text-primary hover:underline">מידע על אזורי השירות</Link></p>
+              <nav aria-label="מידע לפני ייעוץ אלרגיה פרטי" className="mt-5 rounded-xl border border-primary/15 bg-card/70 p-4 text-sm">
+                <p className="mb-2 font-medium text-foreground">לפני שקובעים: מידע על הבירור והעלות</p>
+                <ul className="flex flex-col gap-2">
+                  <li><Link to="/knowledge/בדיקות-אלרגיה-פרטי-או-קופה#cost" className="text-primary underline underline-offset-4">מחיר בדיקת אלרגיה פרטית: מה לברר?</Link></li>
+                  <li><Link to="/knowledge/בדיקות-אלרגיה-פרטי-או-קופה#private-or-public" className="text-primary underline underline-offset-4">בדיקה פרטית או בקופה: מה כדאי להשוות?</Link></li>
+                  <li><Link to="/guides/בדיקות-אלרגיה-ילדים-ישראל" className="text-primary underline underline-offset-4">מדריך הבדיקות לילדים ולמבוגרים</Link></li>
+                </ul>
+              </nav>
               <ClinicDetails showServices />
             </motion.div>
 
