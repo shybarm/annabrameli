@@ -92,11 +92,11 @@ export default function PrivateAllergistLanding() {
   });
 
   const medicalSchema = buildMedicalPageSchema({
-    headline: "אלרגולוגית פרטית לילדים ולמבוגרים בהוד השרון",
+    headline: "רופאת אלרגיה פרטית לילדים ולמבוגרים בהוד השרון",
     description:
       "ייעוץ אלרגולוגי פרטי אצל ד״ר אנה ברמלי, מומחית ברפואת ילדים, אלרגיה ואימונולוגיה קלינית.",
     datePublished: "2026-09-13",
-    dateModified: "2026-09-13",
+    dateModified: "2026-10-28",
     canonicalUrl: CANONICAL_URL,
     about: {
       "@type": "MedicalSpecialty",
@@ -143,23 +143,23 @@ export default function PrivateAllergistLanding() {
   return (
     <>
       <Helmet>
-        <title>ייעוץ אלרגולוגי פרטי בהוד השרון | ד״ר אנה ברמלי</title>
+        <title>רופאת אלרגיה פרטית בהוד השרון | ד״ר אנה ברמלי</title>
         <meta
           name="description"
-          content="ייעוץ אלרגולוגי פרטי לילדים ולמבוגרים אצל ד״ר אנה ברמלי בהוד השרון. בירור אלרגיה והתאמת בדיקות לפי הסיפור הרפואי והתסמינים."
+          content="מחפשים רופא אלרגיה פרטי? ד״ר אנה ברמלי מקבלת ילדים ומבוגרים בהטווס 3, הוד השרון. מידע על הייעוץ, הבדיקות ומה לברר על העלות לפני קביעת תור."
         />
         <link rel="canonical" href={CANONICAL_URL} />
         <meta name="robots" content="index, follow, max-image-preview:large" />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={CANONICAL_URL} />
-        <meta property="og:title" content="אלרגולוגית פרטית לילדים ולמבוגרים | ד״ר אנה ברמלי" />
+        <meta property="og:title" content="רופאת אלרגיה פרטית בהוד השרון | ד״ר אנה ברמלי" />
         <meta
           property="og:description"
           content="ייעוץ ובירור אלרגיה במסגרת פרטית בהוד השרון, בתיאום מראש."
         />
         <meta property="og:image" content="https://ihaveallergy.com/images/optimized/portrait-768.webp" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="אלרגולוגית פרטית לילדים ולמבוגרים | ד״ר אנה ברמלי" />
+        <meta name="twitter:title" content="רופאת אלרגיה פרטית בהוד השרון | ד״ר אנה ברמלי" />
         <meta name="twitter:description" content="ייעוץ ובירור אלרגיה במסגרת פרטית בהוד השרון, בתיאום מראש." />
         <meta name="twitter:image" content="https://ihaveallergy.com/images/optimized/portrait-768.webp" />
         <script type="application/ld+json">{JSON.stringify(medicalSchema)}</script>
@@ -182,7 +182,7 @@ export default function PrivateAllergistLanding() {
                 <MapPin className="h-4 w-4" /> מרפאה פרטית בהוד השרון
               </p>
               <h1 className="mb-6 font-bold text-foreground">
-                אלרגולוגית פרטית לילדים ולמבוגרים
+                רופאת אלרגיה פרטית לילדים ולמבוגרים
               </h1>
               <p className="max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
                 ייעוץ אצל ד״ר אנה ברמלי, מומחית ברפואת ילדים, אלרגיה ואימונולוגיה קלינית. הבירור מתחיל בסיפור הרפואי ובתסמינים, ורק לאחר מכן מותאמות הבדיקות והמלצות ההמשך.
