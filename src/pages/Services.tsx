@@ -215,7 +215,7 @@ const Services = () => {
         name: s.title,
         description: s.description,
         procedureType: "Diagnostic",
-        provider: { "@type": "Physician", name: "ד״ר אנה ברמלי", url: "https://ihaveallergy.com/dr-anna-brameli" },
+        provider: { "@id": "https://ihaveallergy.com/dr-anna-brameli#physician" },
       },
     })),
   };
@@ -247,6 +247,7 @@ const Services = () => {
         <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
       </Helmet>
       <SchemaMarkup type="medicalWebPage" />
+      <SchemaMarkup type="physician" />
 
       {/* Hero */}
       <section className="gradient-hero py-20 md:py-28">

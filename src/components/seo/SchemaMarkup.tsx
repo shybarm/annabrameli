@@ -44,8 +44,7 @@ export const SchemaMarkup = ({ type = "physician" }: SchemaMarkupProps) => {
     name: "ד״ר אנה ברמלי | מומחית לאלרגיה ואימונולוגיה",
     description: "אתר רשמי של ד״ר אנה ברמלי, מומחית לאלרגיה ואימונולוגיה",
     mainEntity: {
-      "@type": ["Physician", "Person"],
-      name: "ד״ר אנה ברמלי",
+      "@id": "https://ihaveallergy.com/dr-anna-brameli#physician",
     },
     specialty: "Allergy and Immunology",
     audience: {
