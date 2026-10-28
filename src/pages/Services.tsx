@@ -93,7 +93,7 @@ const conditions = [
     id: "urticaria",
     icon: Sparkles,
     title: "אורטיקריה (חרלת)",
-    description: "פריחה אלרגית המתבטאת בגירוד חזק ונפיחות מקומית. יכולה להיות חריפה או כרונית.",
+    description: "אורטיקריה, הנקראת גם חרלת, מתבטאת בנגעים בולטים ומגרדים. קיימים גורמים אלרגיים וגם גורמים שאינם אלרגיים.",
     symptoms: ["פריחה אדומה מוגבהת", "גרד עז", "נפיחות", "תסמינים משתנים"],
     treatment: "אבחון הגורם, טיפול תרופתי, ומעקב במקרים כרוניים."
   },
@@ -380,6 +380,18 @@ const Services = () => {
                     </p>
                   </div>
                 </div>
+                {condition.id === "urticaria" && (
+                  <section aria-labelledby="urticaria-guide-title" className="mt-6 space-y-4 text-muted-foreground leading-relaxed">
+                    <h4 id="urticaria-guide-title" className="text-xl font-semibold text-foreground">אורטיקריה חוזרת, האם זו בהכרח אלרגיה למזון?</h4>
+                    <p>המידע אינו ייעוץ רפואי ואינו מחליף אבחון או טיפול אישי.</p>
+                    <p>אורטיקריה, הנקראת גם חרלת, מתבטאת בנגעים בולטים ומגרדים. היא יכולה להופיע אצל ילדים ומבוגרים. קיימים גורמים אלרגיים וגם גורמים שאינם אלרגיים; אצל ילדים זיהום נגיפי הוא גורם אפשרי נפוץ. לכן פריחה כזו אינה מוכיחה שמזון מסוים הוא הסיבה. <a href="https://www.aaaai.org/tools-for-the-public/conditions-library/allergies/acute-hives-versus-chronic-hives" className="text-primary underline">מקור: AAAAI</a></p>
+                    <p>כלל אצבע: בודקים את הסיפור, לא רק תמונה. לקראת הביקור אפשר להכין צילום של הפריחה ולרשום מתי התחילה, כמה זמן היא חוזרת, אילו תרופות נלקחו והאם הופיעו תסמינים נוספים. זו הצעת הכנה לביקור, לא דרך לאבחן לבד.</p>
+                    <p>פריחה חוזרת אינה הוראה להוציא מזונות מהתפריט. בחירת הבירור והטיפול תלויה בהערכה אישית. באורטיקריה ממושכת רק חלק קטן מהמקרים נובע מאלרגיה. <a href="https://www.aaaai.org/tools-for-the-public/conditions-library/allergies/acute-hives-versus-chronic-hives" className="text-primary underline">מקור: AAAAI</a></p>
+                    <p>מתי לא מחכים לתור? אם הפריחה מלווה בקוצר נשימה, תחושת סגירה בגרון או עילפון, יש לפנות לעזרה רפואית דחופה. <a href="https://www.aaaai.org/tools-for-the-public/conditions-library/allergies/acute-hives-versus-chronic-hives" className="text-primary underline">מקור: AAAAI</a></p>
+                    <p><Link to="/blog/הכנה-לביקור-אצל-אלרגולוג" className="text-primary underline">איך מתכוננים לביקור אצל אלרגולוג?</Link></p>
+                    <p className="text-sm">עודכן: 28.10.2026. הנוסח נבדק ואושר על ידי ד״ר אנה ברמלי.</p>
+                  </section>
+                )}
                 {condition.id === "immunotherapy" && (
                   <p className="mt-6 text-sm text-muted-foreground">
                     רוצים להבין אם הטיפול עשוי להתאים לילדכם? קראו על{` `}
