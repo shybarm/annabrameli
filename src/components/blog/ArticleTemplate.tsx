@@ -1,13 +1,13 @@
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Clock, Calendar, ChevronLeft, ArrowRight } from "lucide-react";
+import { Clock, Calendar, ChevronLeft } from "lucide-react";
 import { AuthorBadge } from "./AuthorBadge";
 import { ArticleCTA } from "./ArticleCTA";
 import { FAQAccordion } from "@/components/ui/faq-accordion";
 import { RelatedMedicalArticles } from "@/components/blog/RelatedMedicalArticles";
 import type { BlogArticle } from "@/data/blog-articles";
-import { blogArticles, blogCategories } from "@/data/blog-articles";
+import { blogCategories } from "@/data/blog-articles";
 import { buildMedicalPageSchema, buildBreadcrumbSchema, buildFaqSchema } from "@/utils/medicalSchema";
 import React from "react";
 import { MedicalDisclaimer } from "@/components/MedicalDisclaimer";
@@ -59,14 +59,6 @@ function formatHebrewDate(dateStr: string): string {
 }
 
 export const ArticleTemplate = ({ article }: ArticleTemplateProps) => {
-  // Find related articles; fall back to same-category articles if slugs don't match
-  let relatedArticles = blogArticles.filter((a) => article.relatedSlugs.includes(a.slug));
-  if (relatedArticles.length < 3) {
-    const sameCat = blogArticles.filter(
-      (a) => a.category === article.category && a.slug !== article.slug && !relatedArticles.some((r) => r.slug === a.slug)
-    );
-    relatedArticles = [...relatedArticles, ...sameCat].slice(0, 6);
-  }
   const category = blogCategories[article.category];
 
   const canonicalUrl = `https://ihaveallergy.com/blog/${article.slug}`;
@@ -220,7 +212,15 @@ export const ArticleTemplate = ({ article }: ArticleTemplateProps) => {
         </section>}
 
         {/* Same-category related articles component */}
-        <RelatedMedicalArticles currentSlug={article.slug} category={article.category} />
+        <RelatedMedicalArticles currentSlug={article.slug} category={article.category} overrideSlugs={article.relatedSlugs} />
+
+        {!article.editorial && (
+          <section aria-labelledby="consultation-information" className="rounded-2xl border border-border bg-card p-6">
+            <h2 id="consultation-information" className="text-xl font-bold mb-3">מידע על ייעוץ אלרגיה פרטי</h2>
+            <p className="text-muted-foreground mb-4">ד״ר אנה ברמלי מקבלת ילדים ומבוגרים במרפאה בהטווס 3, הוד השרון. בעמוד הייעוץ תוכלו לקרוא על הביקור ומה כדאי להכין לקראתו.</p>
+            <Link to="/allergist-private" className="text-primary font-medium underline underline-offset-4">ייעוץ אצל רופאת אלרגיה פרטית בהוד השרון</Link>
+          </section>
+        )}
 
         {/* Bottom CTA */}
         <ArticleCTA variant="section" />
@@ -228,30 +228,7 @@ export const ArticleTemplate = ({ article }: ArticleTemplateProps) => {
         {/* Author full badge */}
         {!article.editorial && <AuthorBadge />}
 
-        {/* Related articles */}
-        {relatedArticles.length > 0 && (
-          <section>
-            <h2 className="text-xl font-bold text-foreground mb-5">מאמרים קשורים</h2>
-            <div className="grid sm:grid-cols-2 gap-4">
-              {relatedArticles.map((related) => (
-                <Link
-                  key={related.slug}
-                  to={`/blog/${related.slug}`}
-                  className="bg-card rounded-2xl p-5 border border-border/60 card-hover group"
-                >
-                  <span className="text-xs text-primary font-medium">{related.categoryLabel}</span>
-                  <h3 className="text-base font-semibold text-foreground mt-2 group-hover:text-primary transition-colors">
-                    {related.title}
-                  </h3>
-                  <span className="flex items-center gap-1 text-sm text-primary mt-3">
-                    <ArrowRight className="w-3.5 h-3.5" />
-                    קרא עוד
-                  </span>
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
+
       </div>
     </>
   );
