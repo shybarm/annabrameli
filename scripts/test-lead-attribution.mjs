@@ -42,3 +42,12 @@ assert.equal(lead.source, "allergist_private_landing"); assert.equal(lead.labels
 assert(!JSON.stringify(lead).includes("secret")); assert(!JSON.stringify(lead).includes("PATIENT")); assert(!JSON.stringify(lead).includes("medical term"));
 assert.equal(backend.readLeadAttribution({ source: "<script>" }).source, "contact_form");
 console.log("Lead attribution privacy and acquisition checks passed; no external requests or emails sent.");
+
+const safeHit = analytics.acquisitionPageLocation('/contact?utm_source=google&utm_medium=cpc&gclid=Test_Click_123&name=PATIENT&token=secret&utm_term=medical');
+assert.equal(safeHit, 'https://ihaveallergy.com/contact?utm_source=google&utm_medium=cpc&gclid=Test_Click_123');
+assert.equal(analytics.acquisitionPageLocation('/admin?gclid=test'), undefined);
+assert.equal(analytics.acquisitionPageLocation('https://other.example/?gclid=test'), undefined);
+assert.equal(analytics.acquisitionPageLocation('/contact?utm_source=patient%40example.com&gclid=bad%40id'), 'https://ihaveallergy.com/contact');
+analytics.trackPageView('/contact?utm_source=verification&utm_medium=qa&token=secret');
+assert.equal(sent.at(-1)[2].page_location, 'https://ihaveallergy.com/contact?utm_source=verification&utm_medium=qa');
+console.log('Acquisition URL allowlist checks passed.');

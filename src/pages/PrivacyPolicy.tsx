@@ -85,7 +85,8 @@ const PrivacyPolicy = () => {
               </ul>
             </section>
 
-            <section className="bg-muted/50 p-6 rounded-lg">
+            <section><h2 className="text-2xl font-bold text-foreground mb-4">מדידת שימוש לבחירתכם</h2><p className="text-muted-foreground">בדפי הבית, אודות, השירותים והייעוץ הפרטי ניתן לבחור במפורש במדידת שימוש באמצעות Microsoft Clarity, למבוגרים בלבד. המדידה כוללת גלילה ולחיצות לצורך שיפור חוויית השימוש. הטקסט מוסתר, לא נשלח מזהה אישי יזום, והמדידה נעצרת במעבר דף או בכניסה לשדה הזנה. היא אינה מופעלת בכתובת הכוללת פרמטרים או באזורי הזמנות, מטופלים וניהול. ניתן להפסיק אותה דרך האפשרות בתחתית הדף. ההסכמה אינה תנאי לשימוש באתר.</p><a className="underline" href="https://www.microsoft.com/privacy/privacystatement" target="_blank" rel="noopener noreferrer">מדיניות הפרטיות של Microsoft</a></section>
+<section className="bg-muted/50 p-6 rounded-lg">
               <h3 className="text-lg font-semibold text-foreground mb-2">פניות בנושא פרטיות:</h3>
               <a 
                 href="mailto:support@ihaveallergy.com" 

@@ -1,3 +1,4 @@
+import { ClarityChoice } from "@/components/analytics/ClarityChoice";
 import { CLINIC } from "@/data/clinic";
 import { Link } from "react-router-dom";
 import { Mail, MapPin, Clock } from "lucide-react";
@@ -120,6 +121,7 @@ export const Footer = () => {
         </div>
 
       </div>
+    <ClarityChoice />
     </footer>
   );
 };

@@ -137,6 +137,24 @@ export function trackEvent(
   }
 }
 
+/** Preserve only validated acquisition fields; never forward arbitrary URL data. */
+export function acquisitionPageLocation(path: string): string | undefined {
+  try {
+    const url = new URL(path, window.location.origin);
+    if (!publicPath(url.href)) return undefined;
+    const clean = new URL(url.origin + url.pathname);
+    const labels = sanitizeAttribution(Object.fromEntries(url.searchParams));
+    for (const key of UTM_KEYS) {
+      if (labels[key]) clean.searchParams.set(key, labels[key]!);
+    }
+    for (const key of ["gclid", "gbraid", "wbraid"]) {
+      const value = url.searchParams.get(key);
+      if (value && /^[a-z0-9_-]{1,256}$/i.test(value)) clean.searchParams.set(key, value);
+    }
+    return clean.href;
+  } catch { return undefined; }
+}
+
 export function trackPageView(path: string): void {
   if (typeof window === "undefined") return;
   try {
@@ -145,11 +163,11 @@ export function trackPageView(path: string): void {
     if (!publicPath(url.href) || url.origin !== window.location.origin ||
       /^\/(admin|auth|reset-password|intake|verify-booking|verify-email|magic|join|patient-invite|portal|\.lovable)(\/|$)/i.test(url.pathname)) return;
     // Initial config disables automatic views; route views must be explicit.
-    // Acquisition is handled by the Google tag, not arbitrary stored URLs.
+    // Keep validated acquisition parameters on the landing hit for Google attribution.
     window.gtag?.("event", "page_view", {
       send_to: GA_MEASUREMENT_ID,
       page_path: url.pathname,
-      page_location: url.origin + url.pathname,
+      page_location: acquisitionPageLocation(url.href),
       page_referrer: sanitizeAttribution({ referrer: document.referrer }).referrer ?? "",
     });
   } catch {

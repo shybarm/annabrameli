@@ -21,9 +21,9 @@ export const AnalyticsRouteTracker = () => {
   }, [location.pathname, location.search]);
 
   useEffect(() => {
-    trackPageView(location.pathname);
+    trackPageView(location.pathname + location.search);
     return startWebsiteCallTracking();
-  }, [location.pathname]);
+  }, [location.pathname, location.search]);
 
   return null;
 };
