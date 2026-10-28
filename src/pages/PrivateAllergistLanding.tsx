@@ -286,6 +286,17 @@ export default function PrivateAllergistLanding() {
         </div>
       </section>
 
+      <section className="section-spacing bg-background" aria-labelledby="related-guides">
+        <div className="container-medical max-w-3xl">
+          <h2 id="related-guides" className="mb-5">מידע לקריאה לפני בירור אלרגיה</h2>
+          <p className="mb-5 text-muted-foreground">מדריכים בנושאים שעליהם אפשר לשוחח בייעוץ. המידע אינו ייעוץ רפואי ואינו מחליף בירור אישי.</p>
+          <ul className="space-y-3">
+            <li><Link to="/blog/נזלת-אלרגית-ילדים-אבחון-וטיפול" className="font-medium text-primary underline underline-offset-4">נזלת אלרגית בילדים: תסמינים, אבחון וטיפול</Link></li>
+            <li><Link to="/blog/אלרגיה-לאבק-בית-אבחון-וטיפול" className="font-medium text-primary underline underline-offset-4">אלרגיה לאבק בית: מידע על הבירור ודרכי הטיפול</Link></li>
+          </ul>
+        </div>
+      </section>
+
       <section className="section-spacing bg-background" aria-labelledby="visit-planning">
         <div className="container-medical max-w-3xl">
           <h2 id="visit-planning" className="mb-5">מה כדאי לברר לפני שקובעים ייעוץ פרטי?</h2>
