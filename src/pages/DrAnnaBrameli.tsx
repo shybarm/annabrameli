@@ -717,6 +717,23 @@ const DrAnnaBrameli = () => {
           </div>
         </section>
 
+        <section className="py-8 md:py-12" aria-labelledby="schneider-articles-heading">
+          <div className="container-medical max-w-3xl">
+            <h2 id="schneider-articles-heading" className="text-2xl font-bold mb-4">מאמרים להורים מאת ד״ר אנה ברמלי באתר שניידר</h2>
+            <p className="text-muted-foreground mb-4">מאמרים שפורסמו באתר מרכז שניידר לרפואת ילדים, עם שם המחברת ותאריך הפרסום במקור.</p>
+            <ul className="space-y-4">
+              <li>
+                <a href="https://www.schneider.org.il/?ArticleID=6211&CategoryID=1003" target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-4">פריחה בזמן מוקסיפן? לא בטוח שזו אלרגיה</a>
+                <p className="text-sm text-muted-foreground">פורסם באתר שניידר ב-6 באוגוסט 2026.</p>
+              </li>
+              <li>
+                <a href="https://pedendo.schneider.org.il/?ArticleID=6164&CategoryID=857" target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-4">כשהעקיצה נראית מפחידה: מה באמת קורה לילדים אחרי עקיצת יתוש?</a>
+                <p className="text-sm text-muted-foreground">פורסם באתר שניידר ב-16 ביוני 2026.</p>
+              </li>
+            </ul>
+          </div>
+        </section>
+
         {/* H2 - מחקר ופרסומים */}
         <ResearchPublicationsSection />
 
