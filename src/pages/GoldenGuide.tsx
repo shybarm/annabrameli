@@ -58,12 +58,13 @@ const allergenTable = [
   },
 ];
 
-const normalReactions = [
-  "סומק קל סביב הפה שחולף תוך 30-60 דקות",
-  "יריקה או סלידה מהטעם החדש",
-  "שלשול קל ביום הראשון",
-  "פריחה עדינה באזור המגע שנעלמת מהר",
+const reactionsNotNecessarilyAllergic = [
+  "אודם קל ומקומי באזור מגע המזון עשוי לנבוע מגירוי בעור",
+  "סלידה מהטעם החדש או יריקה בודדת, ללא תסמינים נוספים",
 ];
+
+const reactionGuidance =
+  "גם תגובה קלה עשויה לעיתים להצריך בירור רפואי, במיוחד אם היא חוזרת, נמשכת או מלווה בתסמינים נוספים. במקרה של ספק או חשד לתגובה אלרגית, יש להפסיק את החשיפה למזון ולפנות לרופא ילדים או לאלרגולוג לקבלת הנחיה לפני ניסיון נוסף.";
 
 const alarmSigns = [
   "אורטיקריה (חרלות) - פריחה בולטת שמתפשטת מעבר לאזור המגע",
@@ -91,7 +92,7 @@ const faqs = [
   {
     question: "מה ההבדל בין תגובה רגילה לאלרגיה?",
     answer:
-      "תגובה רגילה: סומק קל סביב הפה שחולף תוך שעה, סלידה מהטעם, או שלשול קל. אלרגיה: פריחה מפושטת (חרלות), נפיחות בשפתיים/עיניים, הקאות חוזרות, שיעול, צפצופים, או חיוורון. ההבדל העיקרי - תגובה רגילה מוגבלת לאזור המגע וחולפת מהר; אלרגיה מערבת אזורים נוספים בגוף.",
+      `סלידה מהטעם החדש או יריקה בודדת, ללא תסמינים נוספים, אינן מעידות בהכרח על אלרגיה. אודם קל ומקומי באזור מגע המזון עשוי לנבוע מגירוי בעור, אך אי אפשר לשלול אלרגיה רק מפני שהתגובה מקומית או חולפת. סימנים אפשריים לאלרגיה כוללים פריחה (חרלות), נפיחות בשפתיים או בעיניים, הקאות חוזרות, שיעול, צפצופים או חיוורון. ${reactionGuidance} במקרה של קשיי נשימה או סימני מצוקה, יש להתקשר מיד ל-101.`,
   },
   {
     question: "איך נותנים טחינה לתינוק בפעם הראשונה?",
@@ -336,14 +337,14 @@ const GoldenGuide = () => {
           </h2>
 
           <div className="grid md:grid-cols-2 gap-5">
-            {/* Normal */}
+            {/* Reactions that do not necessarily indicate allergy */}
             <div className="bg-card rounded-2xl border border-border/60 p-6">
               <div className="flex items-center gap-2 mb-4">
                 <CheckCircle2 className="w-5 h-5 text-accent-foreground" />
-                <h3 className="font-semibold text-foreground">תגובה רגילה - אפשר להמשיך</h3>
+                <h3 className="font-semibold text-foreground">תגובות שאינן מעידות בהכרח על אלרגיה</h3>
               </div>
               <ul className="space-y-2.5">
-                {normalReactions.map((item, i) => (
+                {reactionsNotNecessarilyAllergic.map((item, i) => (
                   <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
                     <CheckCircle2 className="w-4 h-4 text-accent-foreground mt-0.5 flex-shrink-0" />
                     {item}
@@ -368,6 +369,9 @@ const GoldenGuide = () => {
               </ul>
             </div>
           </div>
+          <p className="mt-5 text-sm text-muted-foreground leading-relaxed">
+            {reactionGuidance}
+          </p>
         </motion.section>
 
         {/* Inline CTA */}
