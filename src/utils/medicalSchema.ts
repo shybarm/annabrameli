@@ -28,10 +28,11 @@ const PUBLISHER = {
 
 const AUTHOR = {
   "@type": "Physician" as const,
+  "@id": "https://ihaveallergy.com/dr-anna-brameli#physician",
   name: "ד״ר אנה ברמלי",
   alternateName: "Dr. Anna Brameli",
   medicalSpecialty: ["Allergy and Immunology", "Pediatrics"],
-  url: "https://ihaveallergy.com/about",
+  url: "https://ihaveallergy.com/dr-anna-brameli",
 };
 
 export function buildMedicalPageSchema(input: MedicalPageSchemaInput) {
