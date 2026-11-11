@@ -161,7 +161,7 @@ export const ArticleTemplate = ({ article }: ArticleTemplateProps) => {
           </nav>
         )}
         {article.rulesOfThumb && <section className="bg-accent rounded-2xl p-6" aria-labelledby="rules-title">
-          <h2 id="rules-title" className="text-xl font-bold mb-3">כללי אצבע לזכירה</h2>
+          <h2 id="rules-title" className="text-xl font-bold mb-3">כללי אצבע</h2>
           <ul className="list-disc ps-6 space-y-2">{article.rulesOfThumb.map(rule => <li key={rule}>{rule}</li>)}</ul>
           <p className="text-sm mt-4">כללי האצבע מסכמים את המידע; הם אינם קובעים זכאות ואינם הוראות טיפול.</p>
         </section>}
