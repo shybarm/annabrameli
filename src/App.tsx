@@ -4,7 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, setQueryClientRef } from "@/hooks/useAuth";
 import { ClinicProvider } from "@/contexts/ClinicContext";
 import { PageContentProvider } from "@/contexts/PageContentContext";
@@ -176,6 +176,7 @@ const App = () => {
 
               <Route path="/blog" element={<PublicLayout><Blog /></PublicLayout>} />
               <Route path="/blog/:slug" element={<PublicLayout><BlogArticlePage /></PublicLayout>} />
+              <Route path="/guides" element={<Navigate to="/guides/אלרגיה-מדריך-מקיף" replace />} />
               <Route path="/guides/טעימות-ראשונות-אלרגנים" element={<PublicLayout><GoldenGuide /></PublicLayout>} />
               <Route path="/guides/זכויות-ילד-אלרגי-ישראל" element={<PublicLayout><GoldenGuideRights /></PublicLayout>} />
               <Route path="/guides/בדיקות-אלרגיה-ילדים-ישראל" element={<PublicLayout><GoldenGuideTesting /></PublicLayout>} />
