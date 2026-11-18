@@ -103,7 +103,7 @@ const Desensitization = () => {
     description:
       "מדריך רפואי על דה-סנסיטיזציה למזון (OIT): מה מטרת הטיפול, למי הוא עשוי להתאים, כיצד מתבצע התהליך ומהם הסיכונים והמגבלות.",
     datePublished: "2026-06-15",
-    dateModified: "2026-09-11",
+    dateModified: "2026-11-18",
     canonicalUrl: CANONICAL,
     about: {
       "@type": "MedicalProcedure",
@@ -120,7 +120,7 @@ const Desensitization = () => {
   return (
     <>
       <Helmet>
-        <title>דה-סנסיטיזציה למזון (OIT): התאמה וסיכונים | ד״ר אנה ברמלי</title>
+        <title>דה-סנסיטיזציה ואימונותרפיה פומית (OIT): מדריך | ד״ר אנה ברמלי</title>
         <meta
           name="description"
           content="מהי דה-סנסיטיזציה למזון (OIT), למי התהליך עשוי להתאים, כיצד הוא מתבצע ומהם הסיכונים והמגבלות. מדריך רפואי מאת ד״ר אנה ברמלי."
@@ -131,7 +131,7 @@ const Desensitization = () => {
         <meta property="og:url" content={CANONICAL} />
         <meta
           property="og:title"
-          content="דה-סנסיטיזציה למזון (OIT): התאמה וסיכונים | ד״ר אנה ברמלי"
+          content="דה-סנסיטיזציה ואימונותרפיה פומית (OIT): מדריך | ד״ר אנה ברמלי"
         />
         <meta
           property="og:description"
@@ -141,7 +141,7 @@ const Desensitization = () => {
         <meta name="twitter:card" content="summary_large_image" />
         <meta
           name="twitter:title"
-          content="דה-סנסיטיזציה למזון (OIT): התאמה וסיכונים | ד״ר אנה ברמלי"
+          content="דה-סנסיטיזציה ואימונותרפיה פומית (OIT): מדריך | ד״ר אנה ברמלי"
         />
         <meta
           name="twitter:description"
@@ -177,7 +177,7 @@ const Desensitization = () => {
             </span>
 
             <h1 className="font-bold text-foreground mb-6 text-balance">
-              דה-סנסיטיזציה למזון
+              דה-סנסיטיזציה למזון ואימונותרפיה פומית (OIT)
               <span className="block text-primary mt-2 text-[22px] md:text-[28px] lg:text-[32px]">
                 למי מתאים, כיצד מתבצע ומהם הסיכונים
               </span>
@@ -199,7 +199,7 @@ const Desensitization = () => {
 
             <div className="flex flex-wrap items-center gap-4 mb-6">
               <Button asChild size="lg" className="rounded-full">
-                <Link to="/food-desensitization">מידע על ייעוץ פרטי והערכת התאמה</Link>
+                <Link to="/food-desensitization">טיפול באלרגיה למזון במרפאה והערכת התאמה</Link>
               </Button>
             </div>
 
@@ -210,6 +210,29 @@ const Desensitization = () => {
 
       {/* Body */}
       <div className="container-medical max-w-3xl py-12 md:py-16">
+        <section className="mb-12 space-y-4" aria-labelledby="oit-explained">
+          <h2 id="oit-explained" className="text-2xl font-bold text-foreground">מהי אימונותרפיה פומית (OIT)?</h2>
+          <p className="text-muted-foreground leading-relaxed">
+            דה-סנסיטיזציה למזון היא טיפול באמצעות כמויות הולכות וגדלות של המזון
+            האלרגני, תחת השגחה וליווי רפואי. המטרה היא להעלות את סף התגובה.
+            אין מדובר בהבטחה לריפוי מלא, וההתאמה נקבעת בהערכה רפואית אישית.
+          </p>
+          <p className="text-sm text-muted-foreground">
+            סימוכין להסבר: <a className="text-primary underline" href="https://he.hadassah.org.il/internal/food-allergy/">הדסה: אלרגיה למזון ואימונותרפיה פומית</a>.
+          </p>
+          <h2 className="text-2xl font-bold text-foreground">מה חשוב להבין לפני שמתחילים?</h2>
+          <p className="text-muted-foreground leading-relaxed">
+            הטיפול אינו מתאים לכל ילד ודורש מעקב רפואי. במהלך הטיפול עלולות
+            להתרחש תגובות אלרגיות, כולל תגובות חמורות. אין להתחיל חשיפה יזומה
+            בבית ללא הנחיה רפואית אישית.
+          </p>
+          <p className="text-sm text-muted-foreground">
+            סימוכין: <a className="text-primary underline" href="https://www.allergy.org.au/patients/allergy-treatments/oral-immunotherapy-for-food-allergy">ASCIA: מידע למטופלים על OIT, התאמה וסיכונים</a>.
+          </p>
+          <Link to="/food-desensitization" className="inline-block text-primary underline">לפרטים על טיפול באלרגיה למזון ו-OIT במרפאת ד״ר אנה ברמלי</Link>
+          <p className="text-sm text-muted-foreground">המידע כללי ואינו ייעוץ רפואי או תחליף לבדיקה מקצועית.</p>
+        </section>
+
         {/* Why Dr. Anna */}
         <motion.section
           initial={{ opacity: 0, y: 16 }}
@@ -387,3 +410,4 @@ const Desensitization = () => {
 };
 
 export default Desensitization;
+
