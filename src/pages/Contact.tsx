@@ -121,7 +121,7 @@ const Contact = () => {
       <section className="gradient-hero py-20 md:py-28">
         <div className="container-medical">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             className="max-w-3xl"
           >
@@ -141,7 +141,7 @@ const Contact = () => {
           <div className="grid lg:grid-cols-2 gap-10">
             {/* Contact Form */}
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
+              initial={false}
               animate={{ opacity: 1, x: 0 }}
             >
               <div className="bg-card rounded-2xl border border-border/60 p-7 md:p-9">
@@ -238,7 +238,7 @@ const Contact = () => {
 
             {/* Contact Info */}
             <motion.div
-              initial={{ opacity: 0, x: 20 }}
+              initial={false}
               animate={{ opacity: 1, x: 0 }}
               className="space-y-5"
             >

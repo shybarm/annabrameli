@@ -177,7 +177,7 @@ export default function PrivateAllergistLanding() {
       <section className="gradient-hero overflow-hidden py-12 md:py-20">
         <div className="container-medical">
           <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
-            <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}>
+            <motion.div initial={false} animate={{ opacity: 1, y: 0 }}>
               <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-card/80 px-4 py-2 text-sm font-medium text-primary">
                 <MapPin className="h-4 w-4" /> מרפאה פרטית בהוד השרון
               </p>

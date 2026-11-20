@@ -90,7 +90,7 @@ const About = () => {
         <div className="container-medical">
           <div className="grid lg:grid-cols-2 gap-14 items-center">
             <motion.div
-              initial={{ opacity: 0, y: 24 }}
+              initial={false}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             >
@@ -113,7 +113,7 @@ const About = () => {
             </motion.div>
 
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
+              initial={false}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
               className="flex justify-center"

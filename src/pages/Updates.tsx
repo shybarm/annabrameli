@@ -14,7 +14,7 @@ const Updates = () => {
       <section className="gradient-hero py-20 md:py-28">
         <div className="container-medical">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             className="max-w-3xl"
           >

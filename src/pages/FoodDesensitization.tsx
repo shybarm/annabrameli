@@ -258,7 +258,7 @@ const FoodDesensitization = () => {
 
           <div className="grid lg:grid-cols-[1.3fr_1fr] gap-10 items-start">
             <motion.div
-              initial={{ opacity: 0, y: 16 }}
+              initial={false}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >

@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { useState } from "react";
 import { motion } from "framer-motion";
@@ -261,7 +262,7 @@ const FAQ = () => {
       <section className="gradient-hero py-20 md:py-28">
         <div className="container-medical">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             className="max-w-3xl"
           >
@@ -281,7 +282,7 @@ const FAQ = () => {
           <div className="grid lg:grid-cols-4 gap-8">
             {/* Category Navigation */}
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
+              initial={false}
               animate={{ opacity: 1, x: 0 }}
               className="lg:col-span-1"
             >
@@ -366,22 +367,22 @@ const FAQ = () => {
               להרחבה - מקורות מקצועיים נוספים
             </h2>
             <div className="grid sm:grid-cols-2 gap-4">
-              <a href="/services" className="block bg-card rounded-xl border border-border/60 p-5 hover:border-primary/40 transition-colors">
+              <Link to="/services" className="block bg-card rounded-xl border border-border/60 p-5 hover:border-primary/40 transition-colors">
                 <h3 className="font-semibold text-foreground mb-1">תחומי טיפול</h3>
                 <p className="text-sm text-muted-foreground">סקירת בדיקות אלרגיה, תגרי מזון, אימונותרפיה וטיפול באסתמה.</p>
-              </a>
-              <a href="/dr-anna-brameli" className="block bg-card rounded-xl border border-border/60 p-5 hover:border-primary/40 transition-colors">
+              </Link>
+              <Link to="/dr-anna-brameli" className="block bg-card rounded-xl border border-border/60 p-5 hover:border-primary/40 transition-colors">
                 <h3 className="font-semibold text-foreground mb-1">על ד״ר אנה ברמלי</h3>
                 <p className="text-sm text-muted-foreground">רופאת ילדים ואלרגולוגית, מומחית באלרגיות ילדים בהוד השרון.</p>
-              </a>
-              <a href="/guides/בדיקות-אלרגיה-ילדים-ישראל" className="block bg-card rounded-xl border border-border/60 p-5 hover:border-primary/40 transition-colors">
+              </Link>
+              <Link to="/guides/בדיקות-אלרגיה-ילדים-ישראל" className="block bg-card rounded-xl border border-border/60 p-5 hover:border-primary/40 transition-colors">
                 <h3 className="font-semibold text-foreground mb-1">מדריך בדיקות אלרגיה</h3>
                 <p className="text-sm text-muted-foreground">תבחיני עור מול IgE בדם, פרטי מול קופה, ומה לצפות בביקור.</p>
-              </a>
-              <a href="/guides/טעימות-ראשונות-אלרגנים" className="block bg-card rounded-xl border border-border/60 p-5 hover:border-primary/40 transition-colors">
+              </Link>
+              <Link to="/guides/טעימות-ראשונות-אלרגנים" className="block bg-card rounded-xl border border-border/60 p-5 hover:border-primary/40 transition-colors">
                 <h3 className="font-semibold text-foreground mb-1">טעימות ראשונות לתינוקות</h3>
                 <p className="text-sm text-muted-foreground">חשיפה מבוקרת לבמבה, טחינה, ביצה וחלב מבוססת מחקר LEAP ו-EAT.</p>
-              </a>
+              </Link>
             </div>
           </div>
         </div>
@@ -400,14 +401,14 @@ const FAQ = () => {
               יש לכם שאלות נוספות?
             </h2>
             <p className="text-muted-foreground leading-relaxed mb-6">
-              לא מצאתם תשובה לשאלה שלכם? אנחנו כאן לעזור. אתם מוזמנים <a href="/contact" className="text-primary underline">לפנות אלינו</a> או <a href="/book" className="text-primary underline">לקבוע ייעוץ פרטי</a> ישירות.
+              לא מצאתם תשובה לשאלה שלכם? אנחנו כאן לעזור. אתם מוזמנים <Link to="/contact" className="text-primary underline">לפנות אלינו</Link> או <Link to="/book" className="text-primary underline">לקבוע ייעוץ פרטי</Link> ישירות.
             </p>
-            <a
-              href="/contact"
+            <Link
+              to="/contact"
               className="inline-flex items-center justify-center px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors"
             >
               צרו קשר
-            </a>
+            </Link>
           </motion.div>
         </div>
       </section>

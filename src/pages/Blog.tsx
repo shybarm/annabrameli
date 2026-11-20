@@ -48,7 +48,7 @@ const Blog = () => {
       <section className="gradient-hero py-16 md:py-20">
         <div className="container-medical">
           <motion.div
-            initial={{ opacity: 0, y: 16 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             className="max-w-2xl"
           >

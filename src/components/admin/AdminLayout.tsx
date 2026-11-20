@@ -1,3 +1,4 @@
+import { adminNavPages } from "@/lib/adminNavPages";
 import { ReactNode, useEffect, useRef, useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth, UserPermissions } from '@/hooks/useAuth';
@@ -42,7 +43,7 @@ interface AdminLayoutProps {
 }
 
 interface NavItem {
-  href: string;
+  href: keyof typeof adminNavPages;
   icon: any;
   label: string;
   exact?: boolean;
@@ -248,7 +249,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           {/* Navigation */}
           <ScrollArea className="flex-1 px-3 py-4">
             <nav className="space-y-1">
-              {filteredNavItems.map((item, index) => {
+              {filteredNavItems.map((item) => {
+                const preloadPage = () => { void adminNavPages[item.href]().catch(() => {}); };
                 const isActive = item.exact
                   ? location.pathname === item.href
                   : location.pathname.startsWith(item.href);
@@ -258,11 +260,12 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                   <Link
                     key={item.href}
                     to={item.href}
-                    style={{ animationDelay: `${index * 30}ms` }}
+                    onPointerEnter={preloadPage}
+                    onFocus={preloadPage}
+                    onTouchStart={preloadPage}
                     className={cn(
                       'flex items-center justify-between gap-3 px-3.5 py-3 rounded-xl text-sm font-medium',
                       'transition-all duration-200 ease-out tap-highlight spring-bounce',
-                      'animate-fade-up',
                       isActive
                         ? 'bg-primary/10 text-primary shadow-sm'
                         : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground active:bg-muted'
