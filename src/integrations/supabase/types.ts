@@ -14,6 +14,12 @@ export type Database = {
   }
   public: {
     Tables: {
+      telephone_whatsapp_deliveries: {
+        Row: { appointment_id: string; state: string; auto_enabled: boolean; updated_at: string; accepted_at: string | null; error_code: string | null }
+        Insert: never
+        Update: never
+        Relationships: []
+      }
       active_sessions: {
         Row: {
           created_at: string

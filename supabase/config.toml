@@ -62,3 +62,6 @@ project_id = "ftatmcyrmeyhghgckvbj"
 
 [functions.clinic-call-whatsapp]
 verify_jwt = false
+
+[functions.send-telephone-invitation]
+verify_jwt = false
