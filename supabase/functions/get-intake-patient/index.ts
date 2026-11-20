@@ -15,7 +15,7 @@ serve(async (req) => {
   try {
     const { token } = await req.json();
 
-    if (!token) {
+    if (typeof token !== "string" || token.length < 20 || token.length > 256) {
       return new Response(
         JSON.stringify({ error: "Token is required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -45,7 +45,7 @@ serve(async (req) => {
       );
     }
 
-    if (!tokenData) {
+    if (!tokenData?.patient_id) {
       return new Response(
         JSON.stringify({ error: "Invalid or expired token", valid: false }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -70,7 +70,7 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({
-        valid: true,
+        valid: !!patientData,
         tokenData: {
           id: tokenData.id,
           patient_id: tokenData.patient_id,

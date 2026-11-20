@@ -1,3 +1,4 @@
+import { z } from "npm:zod@3";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders, validateInput, createAuditLog } from "../_shared/security-utils.ts";
@@ -40,7 +41,17 @@ serve(async (req) => {
     }
 
     const body = await req.json();
-    const { token, formData } = body;
+    const parsed = z.object({
+      token: z.string().min(20).max(256),
+      consent: z.literal(true),
+      formData: z.record(z.string().max(5000)).and(z.object({
+        first_name: z.string().trim().min(1).max(100), last_name: z.string().trim().min(1).max(100),
+        date_of_birth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        phone: z.string().min(9).max(20), email: z.union([z.string().email().max(255), z.literal('')]),
+      })),
+    }).safeParse(body);
+    if (!parsed.success) return new Response(JSON.stringify({error:"Invalid registration details or consent"}),{status:400,headers:{...corsHeaders,"Content-Type":"application/json"}});
+    const { token, formData } = parsed.data;
 
     // Validate input
     const validation = validateInput(body, { required: ['token', 'formData'] });
@@ -62,7 +73,7 @@ serve(async (req) => {
       .maybeSingle();
 
     if (tokenError || !tokenData) {
-      createAuditLog('submit-intake', 'invalid_token', undefined, { tokenPrefix: token?.substring(0, 8) });
+      createAuditLog('submit-intake', 'invalid_token', undefined, {});
       return new Response(
         JSON.stringify({ error: "Invalid or expired token" }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -134,27 +145,9 @@ serve(async (req) => {
       intake_token_id: tokenData.id,
     };
 
-    // Update patient record
-    const { data: updatedPatient, error: updateError } = await supabaseAdmin
-      .from("patients")
-      .update(updateData)
-      .eq("id", tokenData.patient_id)
-      .select()
-      .single();
-
-    if (updateError) {
-      console.error("Patient update error:", updateError);
-      return new Response(
-        JSON.stringify({ error: "Failed to update patient record" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Mark token as completed
-    await supabaseAdmin
-      .from("intake_tokens")
-      .update({ completed_at: new Date().toISOString() })
-      .eq("id", tokenData.id);
+    // Token lock, patient update and completion share one transaction.
+    const { error: updateError } = await supabaseAdmin.rpc('finish_patient_intake', {p_token:token,p_data:updateData});
+    if (updateError) return new Response(JSON.stringify({error:"Registration failed or token expired"}),{status:409,headers:{...corsHeaders,"Content-Type":"application/json"}});
 
     createAuditLog('submit-intake', 'intake_completed', undefined, { 
       patientId: tokenData.patient_id,

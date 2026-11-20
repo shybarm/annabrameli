@@ -247,6 +247,8 @@ export type Database = {
           internal_notes: string | null
           is_deleted: boolean | null
           medications: string | null
+          meeting_url: string | null
+          modality: string
           notes: string | null
           patient_id: string
           reminder_24h_sent_at: string | null
@@ -283,6 +285,8 @@ export type Database = {
           internal_notes?: string | null
           is_deleted?: boolean | null
           medications?: string | null
+          meeting_url?: string | null
+          modality?: string
           notes?: string | null
           patient_id: string
           reminder_24h_sent_at?: string | null
@@ -319,6 +323,8 @@ export type Database = {
           internal_notes?: string | null
           is_deleted?: boolean | null
           medications?: string | null
+          meeting_url?: string | null
+          modality?: string
           notes?: string | null
           patient_id?: string
           reminder_24h_sent_at?: string | null
@@ -1476,6 +1482,7 @@ export type Database = {
           mime_type: string | null
           patient_id: string
           title: string
+          upload_key: string | null
           uploaded_by: string | null
         }
         Insert: {
@@ -1490,6 +1497,7 @@ export type Database = {
           mime_type?: string | null
           patient_id: string
           title: string
+          upload_key?: string | null
           uploaded_by?: string | null
         }
         Update: {
@@ -1504,6 +1512,7 @@ export type Database = {
           mime_type?: string | null
           patient_id?: string
           title?: string
+          upload_key?: string | null
           uploaded_by?: string | null
         }
         Relationships: [
@@ -2510,6 +2519,10 @@ export type Database = {
         }
         Returns: string
       }
+      finish_patient_intake: {
+        Args: { p_data: Json; p_token: string }
+        Returns: string
+      }
       geo_ctr_curve: {
         Args: { p_end_date?: string; p_host?: string; p_window_days?: number }
         Returns: {
@@ -2637,6 +2650,19 @@ export type Database = {
         Returns: boolean
       }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
+      record_token_document: {
+        Args: {
+          p_key: string
+          p_kind: string
+          p_mime: string
+          p_path: string
+          p_patient_id: string
+          p_size: number
+          p_title: string
+          p_token: string
+        }
+        Returns: string
+      }
       validate_session: {
         Args: { _session_token: string; _user_id: string }
         Returns: boolean

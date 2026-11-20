@@ -240,7 +240,7 @@ serve(async (req) => {
         };
         const escapeICS = (text: string) => text.replace(/[,;\\]/g, '\\$&').replace(/\n/g, '\\n');
         
-        const calendarTitle = `${clinicName} – תור`;
+        const calendarTitle = `${clinicName} - תור`;
         const calendarDescription = `תור ב${clinicName}${clinicPhone ? `. טלפון: ${clinicPhone}` : ''}`;
         const uid = `appointment-${createdAppointmentId}@ihaveallergy.com`;
         
@@ -568,9 +568,12 @@ serve(async (req) => {
       clinicId 
     });
 
+    const uploadToken = crypto.randomUUID() + crypto.randomUUID();
+    const { error: uploadTokenError } = await supabase.from('upload_tokens').insert({patient_id:patientId,token:uploadToken,expires_at:new Date(Date.now()+30*60*1000).toISOString()});
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success: true,
+        uploadToken: uploadTokenError ? null : uploadToken, 
         bookingId: booking?.id || createdAppointmentId,
         patientId,
         appointmentId: createdAppointmentId,
