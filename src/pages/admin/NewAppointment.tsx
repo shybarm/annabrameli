@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCreateAppointment, useAppointmentTypes } from '@/hooks/useAppointments';
-import { usePatients } from '@/hooks/usePatients';
+import { usePatient, usePatients } from '@/hooks/usePatients';
 import { useClinics } from '@/hooks/useClinics';
 import { useSendAppointmentConfirmation } from '@/hooks/useAppointmentConfirmation';
 import { ArrowRight, Save, Search, MapPin, Mail } from 'lucide-react';
@@ -52,7 +52,9 @@ export default function NewAppointment() {
            p.phone?.includes(query);
   }).slice(0, 10) || [];
 
-  const selectedPatient = patients?.find(p => p.id === selectedPatientId);
+  const listedPatient = patients?.find(p => p.id === selectedPatientId);
+  const { data: prefilledPatient } = usePatient(!listedPatient && selectedPatientId === prefilledPatientId ? selectedPatientId : undefined);
+  const selectedPatient = listedPatient || prefilledPatient;
   const selectedType = appointmentTypes?.find(t => t.id === formData.appointment_type_id);
   const defaultClinic = selectedClinicId || selectedPatient?.clinic_id || (clinics?.length === 1 ? clinics[0].id : undefined);
   const appointmentClinicId = clinicChoice === 'unassigned' ? undefined : clinicChoice || defaultClinic;
@@ -362,7 +364,7 @@ export default function NewAppointment() {
             <Button 
               type="submit" 
               className="bg-primary text-primary-foreground hover:bg-primary/90" 
-              disabled={!selectedPatientId || (telephone && !appointmentClinicId) || createAppointment.isPending || sendConfirmation.isPending}
+              disabled={!selectedPatient || (telephone && !appointmentClinicId) || createAppointment.isPending || sendConfirmation.isPending}
             >
               <Save className="h-4 w-4 ml-2" />
               {createAppointment.isPending ? 'שומר...' : 'קבע תור'}

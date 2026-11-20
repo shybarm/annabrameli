@@ -31,6 +31,7 @@ export function TelephoneInvitation({ appointment, phone, email }: Props) {
     <Textarea id="patient-invitation" readOnly value={message} rows={6} />
     <div className="flex flex-wrap gap-2">
       <Button asChild><a href={whatsapp.href} target="_blank" rel="noreferrer">פתיחת הודעה בוואטסאפ</a></Button>
+      {email && <Button asChild variant="outline"><a href={'mailto:' + encodeURIComponent(email) + '?subject=' + encodeURIComponent('הזמנה לתור טלפוני במרפאת ד״ר אנה ברמלי') + '&body=' + encodeURIComponent(message)}>פתיחת הודעת מייל</a></Button>}
       <Button type="button" variant="outline" onClick={() => copyToClipboard(message)}>העתקת ההזמנה</Button>
       <Button type="button" variant="outline" onClick={() => copyToClipboard(url)}>העתקת קישור לתור</Button>
       <Button asChild variant="outline"><a href={url} target="_blank" rel="noreferrer">פתיחת פרטי התור והווידאו</a></Button>
