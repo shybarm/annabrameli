@@ -236,7 +236,7 @@ export default function PatientIntake() {
             <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
             <h2 className="text-xl font-bold mb-2">תודה רבה!</h2>
             <p className="text-muted-foreground">
-              הטופס נשלח בהצלחה. נתראה בביקור הקרוב!
+              הטופס התקבל במרפאה.
             </p>
             <p className="text-sm text-muted-foreground mt-4">
               מרפאת ד"ר אנה ברמלי

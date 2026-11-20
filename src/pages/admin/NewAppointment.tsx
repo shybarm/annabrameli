@@ -81,13 +81,7 @@ export default function NewAppointment() {
           await sendConfirmation.mutateAsync({
             appointmentId: appointment.id,
             patientEmail: selectedPatient.email,
-            patientName: `${selectedPatient.first_name} ${selectedPatient.last_name}`,
-            appointmentDate: appointment.scheduled_at,
-            appointmentTypeName: selectedType?.name_he || 'ביקור',
-            clinicName: selectedClinic.name,
-            clinicAddress: selectedClinic.address || '',
-            clinicCity: selectedClinic.city || '',
-            clinicPhone: selectedClinic.phone || undefined
+
           });
         } catch (emailError) {
           // Email error already handled by hook toast, don't block navigation
