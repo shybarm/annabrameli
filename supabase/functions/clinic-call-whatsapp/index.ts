@@ -5,6 +5,41 @@ const welcome =
 const encode = (value: string) => new TextEncoder().encode(value);
 const hex = (value: ArrayBuffer) => Array.from(new Uint8Array(value), (b) => b.toString(16).padStart(2, "0")).join("");
 
+// Send only anonymous operational events, never caller data or the internal call hash.
+async function measureCall(status: string) {
+  const apiSecret = Deno.env.get("GA4_MEASUREMENT_API_SECRET");
+  if (!apiSecret) return;
+  const sessionId = Math.floor(Date.now() / 1000);
+  const names = ["clinic_ivr_press_1", status === "queued" ? "clinic_whatsapp_sent" : "clinic_whatsapp_failed"];
+  try {
+    const response = await fetch(
+      "https://www.google-analytics.com/mp/collect?measurement_id=G-671NNHCM9J&api_secret=" +
+        encodeURIComponent(apiSecret),
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          client_id: crypto.randomUUID(),
+          consent: { ad_user_data: "DENIED", ad_personalization: "DENIED" },
+          events: names.map((name) => ({
+            name,
+            params: {
+              session_id: sessionId,
+              engagement_time_msec: 1,
+              contact_channel: "phone_ivr",
+              ...(name === "clinic_whatsapp_sent" ? { delivery_stage: "provider_accepted" } : {}),
+            },
+          })),
+        }),
+        signal: AbortSignal.timeout(3000),
+      },
+    );
+    console.info("clinic_measurement", response.ok ? "submitted" : "rejected", response.status);
+  } catch {
+    console.warn("clinic_measurement", "unavailable");
+  }
+}
+
 Deno.serve(async (request) => {
   const url = new URL(request.url);
   if (request.method === "GET") {
@@ -40,7 +75,10 @@ Deno.serve(async (request) => {
       wait_dtmf: { timeout: 1, attempts: 1, maxdigits: 1, name: "clinic_done", default: "hangup" },
     });
   if (!clinicCall) return Response.json({});
-  if (event === "NOTIFY_START") return prompt();
+  if (event === "NOTIFY_START") {
+    console.info("clinic_ivr", "greeting");
+    return prompt();
+  }
   let choice: Record<string, string> = {};
   try {
     choice = JSON.parse(form.get("wait_dtmf") ?? "{}");
@@ -50,6 +88,13 @@ Deno.serve(async (request) => {
   const name = choice.name ?? form.get("wait_dtmf[name]");
   const digits = choice.digits ?? form.get("wait_dtmf[digits]");
   const defaultBehaviour = choice.default_behaviour ?? form.get("wait_dtmf[default_behaviour]");
+  if (event === "NOTIFY_IVR")
+    console.info(
+      "clinic_ivr",
+      name === "clinic_menu" ? "menu" : name === "clinic_done" ? "confirmation_finished" : "unknown_step",
+      digits === "1" ? "pressed_1" : "other",
+      defaultBehaviour === "1" ? "timeout" : "input",
+    );
   if (event === "NOTIFY_IVR" && defaultBehaviour === "1") return Response.json({});
   if (event === "NOTIFY_IVR" && name === "clinic_done") return Response.json({ hangup: 1 });
   if (event === "NOTIFY_IVR" && name === "clinic_menu" && digits !== "1") {
@@ -92,5 +137,11 @@ Deno.serve(async (request) => {
     // Delivery is uncertain. Keep the reservation to avoid sending a second welcome.
   }
   await table.update({ status }).eq("call_hash", hash);
+  console.info("clinic_whatsapp", status, selected ? "ivr" : "legacy_extension");
+  const measurement = measureCall(status);
+  const runtime = (globalThis as unknown as { EdgeRuntime?: { waitUntil: (promise: Promise<void>) => void } })
+    .EdgeRuntime;
+  if (runtime) runtime.waitUntil(measurement);
+  else await measurement;
   return selected && status === "queued" ? confirmed() : Response.json({ redirect: "100" });
 });
