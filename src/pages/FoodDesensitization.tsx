@@ -725,11 +725,6 @@ const FoodDesensitization = () => {
             המידע בעמוד אינו מחליף ייעוץ רפואי אישי. במקרה של תגובה אלרגית
             חריפה או חשד לאנפילקסיס, יש לפנות מיד לטיפול רפואי דחוף.
           </p>
-          <p className="mt-4 text-sm">
-            <Link to="/desensitization" className="text-primary font-medium hover:underline">
-              להסבר רפואי מפורט על תהליך דה־סנסיטיזציה, התאמה וסיכונים
-            </Link>
-          </p>
         </motion.section>
       </div>
 

@@ -27,7 +27,6 @@ export const STATIC_PUBLIC_ROUTES = [
   "/updates",
   "/whois",
   "/book",
-  "/desensitization",
   "/food-desensitization",
   "/privacy",
   "/accessibility",

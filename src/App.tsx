@@ -83,7 +83,6 @@ import PositiveWithoutSymptoms from "./pages/knowledge/PositiveWithoutSymptoms";
 import PrivateVsPublic from "./pages/knowledge/PrivateVsPublic";
 import AllergyPillar from "./pages/AllergyPillar";
 import AllergyChildrenGuide from "./pages/AllergyChildrenGuide";
-import Desensitization from "./pages/Desensitization";
 import FoodDesensitization from "./pages/FoodDesensitization";
 const GeoOptimizationPage = React.lazy(adminNavPages["/admin/geo"]);
 import PrivateAllergistLanding from "./pages/PrivateAllergistLanding";
@@ -185,7 +184,6 @@ const App = () => {
               <Route path="/guides/בדיקות-אלרגיה-ילדים-ישראל" element={<PublicLayout><GoldenGuideTesting /></PublicLayout>} />
               <Route path="/guides/אלרגיה-מדריך-מקיף" element={<PublicLayout><AllergyPillar /></PublicLayout>} />
               <Route path="/אלרגיה-בילדים-מדריך-מלא" element={<PublicLayout><AllergyChildrenGuide /></PublicLayout>} />
-              <Route path="/desensitization" element={<PublicLayout><Desensitization /></PublicLayout>} />
               <Route path="/food-desensitization" element={<PublicLayout><FoodDesensitization /></PublicLayout>} />
 
               {/* Knowledge satellite articles */}
