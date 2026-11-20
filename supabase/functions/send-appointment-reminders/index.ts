@@ -1,3 +1,4 @@
+import { visitLogistics } from "../_shared/visit-logistics.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 
@@ -174,7 +175,7 @@ async function processReminders(runId: string) {
         .from("appointments")
         .select(`
           id,
-          scheduled_at,
+          scheduled_at, modality, meeting_url, duration_minutes,
           status,
           clinic_id,
           reminder_email_sent_at,
@@ -185,7 +186,8 @@ async function processReminders(runId: string) {
         `)
         .gte("scheduled_at", windowStart.toISOString())
         .lte("scheduled_at", windowEnd.toISOString())
-        .eq("status", "מתוכנן")
+        .in("status", ["scheduled", "מתוכנן"])
+        .or("is_deleted.is.null,is_deleted.eq.false")
         .is(reminderColumn, null);
 
       if (appointmentsError) {
@@ -206,6 +208,7 @@ async function processReminders(runId: string) {
         const clinicRow = Array.isArray(appointment.clinics) ? appointment.clinics[0] : appointment.clinics;
         const clinicName = clinicRow?.name || "המרפאה";
         const clinicAddress = clinicRow?.address || "";
+        const remoteVisit = appointment.modality === "telephone" ? visitLogistics(appointment, clinicRow || {}) : null;
         const clinicPhone = clinicRow?.phone || "";
 
         const patientRow = Array.isArray(appointment.patients) ? appointment.patients[0] : appointment.patients;
@@ -220,7 +223,8 @@ async function processReminders(runId: string) {
           if (toE164) {
             // Message contains ONLY: date, time, clinic name, clinic address, clinic phone (no PHI)
             let message = `תזכורת לתור במרפאה\nתאריך: ${dateStr}\nשעה: ${timeStr}\nמקום: ${clinicName}`;
-            if (clinicAddress) message += `\nכתובת: ${clinicAddress}`;
+            if (remoteVisit) message = [dateStr, timeStr, remoteVisit.description].join("\n");
+            else if (clinicAddress) message += `\nכתובת: ${clinicAddress}`;
             if (clinicPhone) message += `\nטלפון: ${clinicPhone}`;
 
             const waRes = await sendWhatsAppViaTwilio({ toPhone: toE164, body: message });
@@ -253,7 +257,7 @@ async function processReminders(runId: string) {
               from: 'ד"ר אנה ברמלי <info@ihaveallergy.com>',
               to: [patient.email],
               subject: `תזכורת לתור - ${dateStr} ${timeStr}`,
-              html: `
+              html: remoteVisit?.html ?? `
                 <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                   <h2>תזכורת לתור</h2>
                   <p>זוהי תזכורת לתור הקרוב שלך.</p>
@@ -269,7 +273,7 @@ async function processReminders(runId: string) {
               `,
             });
 
-            const resendId = (emailResponse as any)?.id;
+            const resendId = emailResponse.data?.id;
             if (resendId) {
               // Mark sent ONLY after successful delivery
               await supabase.from("appointments")

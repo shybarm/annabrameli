@@ -13,6 +13,8 @@ project_id = "ftatmcyrmeyhghgckvbj"
     verify_jwt = true
   [functions.ga4-sync]
     verify_jwt = true
+  [functions.intake-upload-document]
+    verify_jwt = false
   [functions.get-intake-patient]
     verify_jwt = false
   [functions.guest-booking]

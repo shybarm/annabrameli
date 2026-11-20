@@ -21,6 +21,7 @@ export default function PatientIntake() {
   const [error, setError] = useState<string | null>(null);
   const [patientData, setPatientData] = useState<any>(null);
   const [tokenData, setTokenData] = useState<any>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [consentChecked, setConsentChecked] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -155,9 +156,19 @@ export default function PatientIntake() {
     setSubmitting(true);
 
     try {
+      for (const file of files) {
+        const body = new FormData();
+        body.append('intake_token', token!);
+        body.append('file', file);
+        const result = await supabase.functions.invoke('intake-upload-document', { body });
+        if (result.error || !result.data?.success) {
+          throw new Error('הקובץ ' + file.name + ' לא נקלט. אפשר לנסות לשלוח שוב.');
+        }
+        setFiles(previous => previous.filter(item => item !== file));
+      }
       // Use edge function to submit intake securely
       const { data, error } = await supabase.functions.invoke('submit-intake', {
-        body: { token, formData },
+        body: { token, formData, consent: consentChecked },
       });
 
       if (error) {
@@ -711,6 +722,27 @@ export default function PatientIntake() {
                   rows={3}
                 />
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>תמונות ומסמכים</CardTitle></CardHeader>
+            <CardContent className="space-y-2">
+              <Label htmlFor="intake-files">צירוף תמונות או מסמכים לתיק המטופל (רשות)</Label>
+              <p className="text-sm text-muted-foreground">JPG, PNG, WEBP או PDF, עד 10 MB לקובץ. אפשר לצרף כמה קבצים גם ללא תור.</p>
+              <Input type="file" id="intake-files" multiple disabled={submitting}
+                accept="image/jpeg,image/png,image/webp,application/pdf"
+                onChange={event => {
+                  const selected = Array.from(event.currentTarget.files || []);
+                  event.currentTarget.value = '';
+                  if (selected.some(file => !['image/jpeg','image/png','image/webp','application/pdf'].includes(file.type) || !file.size || file.size > 10 * 1024 * 1024)) {
+                    toast({title: 'יש לבחור תמונה או PDF בגודל עד 10 MB', variant: 'destructive'});
+                    return;
+                  }
+                  setFiles(previous => [...previous, ...selected]);
+                }} />
+              {files.map((file, index) => <p key={index}>{file.name} <Button type="button" variant="ghost" disabled={submitting}
+                onClick={() => setFiles(previous => previous.filter((_, i) => i !== index))}>הסרה</Button></p>)}
             </CardContent>
           </Card>
 

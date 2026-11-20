@@ -163,30 +163,20 @@ export default function GuestBooking() {
     setDocuments(prev => prev.filter((_, i) => i !== index));
   };
 
-  const uploadDocuments = async (bookingId: string) => {
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    
+  const uploadDocuments = async (uploadToken?: string) => {
+    const failed: string[] = [];
     for (const file of documents) {
-      const formData = new FormData();
-      formData.append('booking_id', bookingId);
-      formData.append('file', file);
-      formData.append('title', file.name);
-      formData.append('document_type', 'referral');
-
+      const body = new FormData();
+      body.append('file', file);
+      body.append('upload_token', uploadToken || '');
       try {
-        const response = await fetch(`${supabaseUrl}/functions/v1/guest-upload-document`, {
-          method: 'POST',
-          body: formData,
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          console.error('Failed to upload document:', file.name, errorData);
-        }
-      } catch (error) {
-        console.error('Error uploading document:', error);
+        const result = await supabase.functions.invoke('guest-upload-document', {body});
+        if (result.error || !result.data?.success) failed.push(file.name);
+      } catch {
+        failed.push(file.name);
       }
     }
+    return failed;
   };
 
   const handleSelectClinic = () => {
@@ -285,10 +275,7 @@ export default function GuestBooking() {
         throw new Error(data.error || 'שגיאה בשליחת הבקשה');
       }
 
-      // Upload documents if any (using booking ID)
-      if (documents.length > 0 && data.bookingId) {
-        await uploadDocuments(data.bookingId);
-      }
+      const failedFiles = await uploadDocuments(data.uploadToken);
 
       // Reset CAPTCHA after successful submit
       captchaRef.current?.resetCaptcha();
@@ -305,6 +292,7 @@ export default function GuestBooking() {
 
       navigate('/book/success', {
         state: {
+          failedFiles,
           email,
           clinicName: selectedClinic?.name,
           typeName: selectedType?.name_he,

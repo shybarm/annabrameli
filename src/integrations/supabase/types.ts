@@ -2519,6 +2519,10 @@ export type Database = {
         }
         Returns: string
       }
+      create_telephone_appointment: {
+        Args: { p_patient_id: string; p_clinic_id: string; p_appointment_type_id: string; p_scheduled_at: string; p_duration_minutes: number; p_notes: string; p_meeting_url: string; p_status?: string }
+        Returns: string
+      }
       finish_patient_intake: {
         Args: { p_data: Json; p_token: string }
         Returns: string

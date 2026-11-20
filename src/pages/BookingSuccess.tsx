@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { CheckCircle } from 'lucide-react';
 
 interface BookingSuccessState {
+  failedFiles?: string[];
   email?: string;
   clinicName?: string;
   typeName?: string;
@@ -35,6 +36,9 @@ export default function BookingSuccess() {
             פרטי התור נשמרו במערכת.
             {email && <><br />אישור נשלח לכתובת <strong>{email}</strong>.</>}
           </p>
+          {!!state.failedFiles?.length && <p role="alert" className="mb-4 text-destructive">
+            התור נקבע. הקבצים הבאים לא נקלטו: {state.failedFiles.join(', ')}. אפשר לבקש מהמרפאה קישור אישי להעלאה.
+          </p>}
           {(clinicName || typeName || dateLabel) && (
             <div className="bg-muted p-4 rounded-lg mb-6 text-right">
               <p className="text-sm text-muted-foreground">פרטי התור:</p>

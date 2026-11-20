@@ -27,6 +27,8 @@ export default function NewAppointment() {
   const [appointmentClinicId, setAppointmentClinicId] = useState<string | undefined>(selectedClinicId || undefined);
   const { data: patients } = usePatients(selectedClinicId);
   const [searchQuery, setSearchQuery] = useState('');
+  const [telephone, setTelephone] = useState(false);
+  const [meetUrl, setMeetUrl] = useState('');
   const [sendEmail, setSendEmail] = useState(true);
   
   // Get pre-filled patient/date/time from URL params (from patient context or availability grid)
@@ -69,6 +71,7 @@ export default function NewAppointment() {
         clinic_id: appointmentClinicId || undefined,
         scheduled_at,
         duration_minutes: formData.duration_minutes,
+        meeting_url: telephone ? meetUrl.trim() : undefined,
         notes: formData.notes || undefined,
       });
 
@@ -79,7 +82,7 @@ export default function NewAppointment() {
             appointmentId: appointment.id,
             patientEmail: selectedPatient.email,
             patientName: `${selectedPatient.first_name} ${selectedPatient.last_name}`,
-            appointmentDate: scheduled_at,
+            appointmentDate: appointment.scheduled_at,
             appointmentTypeName: selectedType?.name_he || 'ביקור',
             clinicName: selectedClinic.name,
             clinicAddress: selectedClinic.address || '',
@@ -190,6 +193,16 @@ export default function NewAppointment() {
               <CardTitle>פרטי התור</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              <label className="flex gap-2"><input type="checkbox" checked={telephone}
+                onChange={e => setTelephone(e.target.checked)} />תור טלפוני עם אפשרות לווידאו</label>
+              {telephone && <div className="space-y-2">
+                <a className="underline" href="https://meet.google.com/" target="_blank" rel="noreferrer">יצירת פגישה ב-Google Meet</a>
+                <p>בחשבון המרפאה בחרו פגישה חדשה לשימוש מאוחר יותר והדביקו כאן את הקישור.</p>
+                <Label htmlFor="meeting-url">קישור וידאו לתור הזה</Label>
+                <Input id="meeting-url" required type="url" dir="ltr" pattern="https://meet[.]google[.]com/[a-z]{3}-[a-z]{4}-[a-z]{3}"
+                  value={meetUrl} onChange={e => setMeetUrl(e.target.value.trim())} />
+                {!appointmentClinicId && <p>יש לבחור מרפאה עבור היומן.</p>}
+              </div>}
               <div className="space-y-2">
                 <Label>סוג הביקור</Label>
                 <Select 
@@ -352,7 +365,7 @@ export default function NewAppointment() {
             <Button 
               type="submit" 
               className="bg-primary text-primary-foreground hover:bg-primary/90" 
-              disabled={!selectedPatientId || createAppointment.isPending}
+              disabled={!selectedPatientId || (telephone && !appointmentClinicId) || createAppointment.isPending || sendConfirmation.isPending}
             >
               <Save className="h-4 w-4 ml-2" />
               {createAppointment.isPending ? 'שומר...' : 'קבע תור'}

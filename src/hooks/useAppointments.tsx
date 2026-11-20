@@ -49,6 +49,7 @@ export interface Appointment {
 }
 
 export interface AppointmentInput {
+  meeting_url?: string;
   patient_id: string;
   appointment_type_id?: string;
   clinic_id?: string;
@@ -218,7 +219,7 @@ export function useCreateAppointment() {
   return useMutation({
     mutationFn: async (input: AppointmentInput) => {
       // Use atomic RPC to prevent race conditions
-      const { data: appointmentId, error: rpcError } = await supabase.rpc('create_appointment_atomic', {
+      const args = {
         p_patient_id: input.patient_id,
         p_clinic_id: input.clinic_id || null,
         p_appointment_type_id: input.appointment_type_id || null,
@@ -226,7 +227,10 @@ export function useCreateAppointment() {
         p_duration_minutes: input.duration_minutes || 30,
         p_notes: input.notes || null,
         p_status: 'scheduled',
-      });
+      };
+      const {data: appointmentId, error: rpcError} = input.meeting_url
+        ? await supabase.rpc('create_telephone_appointment', {...args, p_meeting_url: input.meeting_url})
+        : await supabase.rpc('create_appointment_atomic', args);
       
       if (rpcError) {
         // Check if it's a slot taken error

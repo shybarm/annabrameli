@@ -765,6 +765,10 @@ export default function AppointmentDetail() {
                 </div>
               )}
 
+              {appointment.modality === 'telephone' && <div>
+                <strong>תור טלפוני</strong>{appointment.meeting_url && <p><a className="underline"
+                  href={appointment.meeting_url} target="_blank" rel="noreferrer">הצטרפות לווידאו ב-Google Meet</a></p>}
+              </div>}
               {appointment.notes && (
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">הערות מהמטופל</p>
