@@ -601,6 +601,11 @@ export default function AppointmentDetail() {
           </div>
         </div>
 
+        {appointment.modality === 'telephone' && ['scheduled','confirmed'].includes(appointment.status) &&
+          new Date(appointment.scheduled_at).getTime() + (appointment.duration_minutes + 60) * 60000 > Date.now() &&
+          <Card><CardContent className="pt-6"><TelephoneInvitation appointment={appointment}
+            phone={appointment.patients?.phone} email={appointment.patients?.email} /></CardContent></Card>}
+
         {/* Status Row */}
         <div className="flex items-center gap-3" data-tutorial="status-dropdown">
           <span className="text-sm text-muted-foreground">סטטוס:</span>
@@ -765,8 +770,7 @@ export default function AppointmentDetail() {
                 </div>
               )}
 
-              {appointment.modality === 'telephone' && <TelephoneInvitation appointment={appointment}
-                phone={appointment.patients?.phone} email={appointment.patients?.email} />}
+
               {appointment.notes && (
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">הערות מהמטופל</p>

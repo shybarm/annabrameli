@@ -2522,6 +2522,7 @@ export type Database = {
         }
         Returns: string
       }
+      telephone_intake_token: { Args: { p_visit: string }; Returns: string }
       create_telephone_appointment: {
         Args: { p_patient_id: string; p_clinic_id: string; p_appointment_type_id: string; p_scheduled_at: string; p_duration_minutes: number; p_notes: string; p_meeting_url: string | null; p_status?: string }
         Returns: string

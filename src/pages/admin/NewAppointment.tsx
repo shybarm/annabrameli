@@ -26,7 +26,7 @@ export default function NewAppointment() {
   const [clinicChoice, setClinicChoice] = useState<string>();
   const { data: patients } = usePatients(selectedClinicId);
   const [searchQuery, setSearchQuery] = useState('');
-  const [telephone, setTelephone] = useState(false);
+  const [videoOption, setVideoOption] = useState(false);
   const [sendEmail, setSendEmail] = useState(true);
   
   // Get pre-filled patient/date/time from URL params (from patient context or availability grid)
@@ -55,6 +55,9 @@ export default function NewAppointment() {
   const { data: prefilledPatient } = usePatient(!listedPatient && selectedPatientId === prefilledPatientId ? selectedPatientId : undefined);
   const selectedPatient = listedPatient || prefilledPatient;
   const selectedType = appointmentTypes?.find(t => t.id === formData.appointment_type_id);
+  const phoneType = appointmentTypes?.find(type => type.name_he.trim() === 'תור טלפוני');
+  const isPhoneType = !!phoneType && selectedType?.id === phoneType.id;
+  const telephone = isPhoneType || videoOption;
   const defaultClinic = selectedClinicId || selectedPatient?.clinic_id || (clinics?.length === 1 ? clinics[0].id : undefined);
   const appointmentClinicId = clinicChoice === 'unassigned' ? undefined : clinicChoice || defaultClinic;
   const selectedClinic = clinics?.find(c => c.id === appointmentClinicId);
@@ -196,9 +199,15 @@ export default function NewAppointment() {
             </CardHeader>
             <CardContent className="space-y-4">
               <label className="flex gap-2"><input type="checkbox" checked={telephone}
-                onChange={e => setTelephone(e.target.checked)} />תור טלפוני עם אפשרות לווידאו</label>
+                onChange={e => {
+                  setVideoOption(e.target.checked);
+                  if (!e.target.checked && isPhoneType) setFormData(prev => ({...prev, appointment_type_id: ''}));
+                  if (e.target.checked && !selectedType && phoneType) {
+                    setFormData(prev => ({...prev, appointment_type_id: phoneType.id, duration_minutes: phoneType.duration_minutes}));
+                  }
+                }} />תור טלפוני עם אפשרות לווידאו</label>
               {telephone && <div className="space-y-2">
-                <p>בשמירת התור ייווצר קישור אישי ותוכן הזמנה מוכן לשליחה למטופל.</p>
+                <p>בשמירת התור תופיע הודעת וואטסאפ מוכנה לשליחה, עם קישור להרשמה ולהעלאת תמונות וקישור לתור עם Google Meet.</p>
                 {!appointmentClinicId && <p>יש לבחור מרפאה עבור היומן.</p>}
               </div>}
               <div className="space-y-2">
@@ -207,6 +216,7 @@ export default function NewAppointment() {
                   value={formData.appointment_type_id} 
                   onValueChange={(v) => {
                     const type = appointmentTypes?.find(t => t.id === v);
+                    if (isPhoneType) setVideoOption(false);
                     setFormData(prev => ({
                       ...prev,
                       appointment_type_id: v,
