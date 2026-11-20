@@ -247,6 +247,7 @@ export type Database = {
           internal_notes: string | null
           is_deleted: boolean | null
           medications: string | null
+          invitation_token: string | null
           meeting_url: string | null
           modality: string
           notes: string | null
@@ -285,6 +286,7 @@ export type Database = {
           internal_notes?: string | null
           is_deleted?: boolean | null
           medications?: string | null
+          invitation_token?: string | null
           meeting_url?: string | null
           modality?: string
           notes?: string | null
@@ -323,6 +325,7 @@ export type Database = {
           internal_notes?: string | null
           is_deleted?: boolean | null
           medications?: string | null
+          invitation_token?: string | null
           meeting_url?: string | null
           modality?: string
           notes?: string | null
@@ -2520,7 +2523,7 @@ export type Database = {
         Returns: string
       }
       create_telephone_appointment: {
-        Args: { p_patient_id: string; p_clinic_id: string; p_appointment_type_id: string; p_scheduled_at: string; p_duration_minutes: number; p_notes: string; p_meeting_url: string; p_status?: string }
+        Args: { p_patient_id: string; p_clinic_id: string; p_appointment_type_id: string; p_scheduled_at: string; p_duration_minutes: number; p_notes: string; p_meeting_url: string | null; p_status?: string }
         Returns: string
       }
       finish_patient_intake: {

@@ -12,6 +12,7 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [react(), mcpPlugin(), mode === "development" && componentTagger()].filter(Boolean),
 
+  build: { rollupOptions: { input: { main: path.resolve(__dirname, "index.html"), visit: path.resolve(__dirname, "visit.html") } } },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

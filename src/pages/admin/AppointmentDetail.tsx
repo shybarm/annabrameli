@@ -18,7 +18,7 @@ import { VoiceRecorder } from '@/components/admin/VoiceRecorder';
 import { ScoringToolbar } from '@/components/admin/scoring/ScoringToolbar';
 import { SignaturePad } from '@/components/admin/SignaturePad';
 import { useElectronicSignatures, useCreateElectronicSignature } from '@/hooks/useElectronicSignatures';
-import { visitLogistics } from '../../../supabase/functions/_shared/visit-logistics';
+import { TelephoneInvitation } from '@/components/admin/TelephoneInvitation';
 import { useAuth } from '@/hooks/useAuth';
 import { useStaffProfile } from '@/hooks/useStaffProfile';
 import { generateMedicalVisitSummaryPdf } from '@/utils/medicalPdfTemplate';
@@ -766,15 +766,8 @@ export default function AppointmentDetail() {
                 </div>
               )}
 
-              {appointment.modality === 'telephone' && <div>
-                <strong>תור טלפוני</strong>{appointment.meeting_url && <p><a className="underline"
-                  href={appointment.meeting_url} target="_blank" rel="noreferrer">הצטרפות לווידאו ב-Google Meet</a></p>}
-                {appointment.patients?.email && appointment.meeting_url && <Button asChild variant="outline">
-                  <a href={visitLogistics(appointment, {name: 'מרפאת ד״ר אנה ברמלי'}, appointment.patients.email).google}
-                    target="_blank" rel="noreferrer">פתיחת זימון לשליחה ביומן Google</a>
-                </Button>}
-                <p className="text-sm text-muted-foreground">הקישור לתור כבר מופיע בשדה המיקום ביומן. אם Google הוסיפה שיחת Meet נוספת, הסירו אותה לפני בחירת שמירה ושליחה מחשבון המרפאה.</p>
-              </div>}
+              {appointment.modality === 'telephone' && <TelephoneInvitation appointment={appointment}
+                phone={appointment.patients?.phone} email={appointment.patients?.email} />}
               {appointment.notes && (
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">הערות מהמטופל</p>

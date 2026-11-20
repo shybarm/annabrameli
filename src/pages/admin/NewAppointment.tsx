@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,11 +24,10 @@ export default function NewAppointment() {
   const sendConfirmation = useSendAppointmentConfirmation();
   const { data: appointmentTypes } = useAppointmentTypes();
   const { data: clinics } = useClinics();
-  const [appointmentClinicId, setAppointmentClinicId] = useState<string | undefined>(selectedClinicId || undefined);
+  const [clinicChoice, setClinicChoice] = useState<string>();
   const { data: patients } = usePatients(selectedClinicId);
   const [searchQuery, setSearchQuery] = useState('');
   const [telephone, setTelephone] = useState(false);
-  const [meetUrl, setMeetUrl] = useState('');
   const [sendEmail, setSendEmail] = useState(true);
   
   // Get pre-filled patient/date/time from URL params (from patient context or availability grid)
@@ -55,6 +54,8 @@ export default function NewAppointment() {
 
   const selectedPatient = patients?.find(p => p.id === selectedPatientId);
   const selectedType = appointmentTypes?.find(t => t.id === formData.appointment_type_id);
+  const defaultClinic = selectedClinicId || selectedPatient?.clinic_id || (clinics?.length === 1 ? clinics[0].id : undefined);
+  const appointmentClinicId = clinicChoice === 'unassigned' ? undefined : clinicChoice || defaultClinic;
   const selectedClinic = clinics?.find(c => c.id === appointmentClinicId);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -71,7 +72,7 @@ export default function NewAppointment() {
         clinic_id: appointmentClinicId || undefined,
         scheduled_at,
         duration_minutes: formData.duration_minutes,
-        meeting_url: telephone ? meetUrl.trim() : undefined,
+        telephone,
         notes: formData.notes || undefined,
       });
 
@@ -196,12 +197,7 @@ export default function NewAppointment() {
               <label className="flex gap-2"><input type="checkbox" checked={telephone}
                 onChange={e => setTelephone(e.target.checked)} />תור טלפוני עם אפשרות לווידאו</label>
               {telephone && <div className="space-y-2">
-                <a className="underline" href="https://meet.google.com/" target="_blank" rel="noreferrer">יצירת פגישה ב-Google Meet</a>
-                <p>בחשבון המרפאה בחרו פגישה חדשה לשימוש מאוחר יותר והדביקו כאן את הקישור.</p>
-                <Label htmlFor="meeting-url">קישור וידאו לתור הזה</Label>
-                <Input id="meeting-url" required type="url" dir="ltr" pattern="https://meet[.]google[.]com/[a-z]{3}-[a-z]{4}-[a-z]{3}"
-                  value={meetUrl} onChange={e => setMeetUrl(e.target.value.trim())} />
-                <p>לאחר שמירת התור אפשר לשלוח למטופל זימון דרך יומן Google.</p>
+                <p>בשמירת התור ייווצר קישור אישי ותוכן הזמנה מוכן לשליחה למטופל.</p>
                 {!appointmentClinicId && <p>יש לבחור מרפאה עבור היומן.</p>}
               </div>}
               <div className="space-y-2">
@@ -290,7 +286,7 @@ export default function NewAppointment() {
                 </Label>
                 <Select 
                   value={appointmentClinicId || 'unassigned'}
-                  onValueChange={(v) => setAppointmentClinicId(v === 'unassigned' ? undefined : v)}
+                  onValueChange={(v) => setClinicChoice(v)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="בחר מרפאה" />

@@ -49,7 +49,7 @@ export interface Appointment {
 }
 
 export interface AppointmentInput {
-  meeting_url?: string;
+  telephone?: boolean;
   patient_id: string;
   appointment_type_id?: string;
   clinic_id?: string;
@@ -228,8 +228,8 @@ export function useCreateAppointment() {
         p_notes: input.notes || null,
         p_status: 'scheduled',
       };
-      const {data: appointmentId, error: rpcError} = input.meeting_url
-        ? await supabase.rpc('create_telephone_appointment', {...args, p_meeting_url: input.meeting_url})
+      const {data: appointmentId, error: rpcError} = input.telephone
+        ? await supabase.rpc('create_telephone_appointment', {...args, p_meeting_url: null})
         : await supabase.rpc('create_appointment_atomic', args);
       
       if (rpcError) {
