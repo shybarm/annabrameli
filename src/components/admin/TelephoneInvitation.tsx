@@ -36,8 +36,8 @@ export function TelephoneInvitation({ appointment, phone, email }: Props) {
   });
   const meetingUrl = room.data || appointment.meeting_url;
   const status = delivery.isError ? 'לא ניתן לבדוק כרגע את מצב השליחה האוטומטית.'
-    : !delivery.data ? 'בודקים את מצב השליחה האוטומטית…'
-    : !delivery.data.auto_enabled ? 'התור נקבע לפני הפעלת השליחה האוטומטית. אפשר לשלוח את ההזמנה ידנית.'
+    : delivery.isPending ? 'בודקים את מצב השליחה האוטומטית…'
+    : !delivery.data?.auto_enabled ? 'התור נקבע לפני הפעלת השליחה האוטומטית. אפשר לשלוח את ההזמנה ידנית.'
     : delivery.data.state === 'accepted' ? 'ההזמנה הועברה לוואטסאפ ממספר המרפאה 055-507-0399. זהו אישור קבלה בשירות, ולא אישור קריאה של המטופל.'
     : delivery.data.state === 'delivered' ? 'הזמנת התור נמסרה בוואטסאפ ממספר המרפאה 055-507-0399.'
     : delivery.data.state === 'failed' ? (delivery.data.error_code === 'delivery_uncertain'
@@ -74,7 +74,7 @@ export function TelephoneInvitation({ appointment, phone, email }: Props) {
     <Label htmlFor="patient-invitation">הודעת הזמנה למטופל</Label>
     <Textarea id="patient-invitation" readOnly value={message} rows={6} />
     <div className="flex flex-wrap gap-2">
-      {number && delivery.data && (!delivery.data.auto_enabled || delivery.data.state === 'failed') && <Button asChild><a href={whatsapp.href} target="_blank" rel="noreferrer">פתיחת הזמנה לשליחה ידנית</a></Button>}
+      {number && delivery.isSuccess && (!delivery.data?.auto_enabled || delivery.data.state === 'failed') && <Button asChild><a href={whatsapp.href} target="_blank" rel="noreferrer">פתיחת הזמנה לשליחה ידנית</a></Button>}
       {!number && <p>כדי לשלוח בוואטסאפ יש לעדכן מספר טלפון בתיק המטופל.</p>}
       {email && <Button asChild variant="outline"><a href={'mailto:' + encodeURIComponent(email) + '?subject=' + encodeURIComponent('הזמנה לתור טלפוני במרפאת ד״ר אנה ברמלי') + '&body=' + encodeURIComponent(message)}>פתיחת הודעת מייל</a></Button>}
       <Button type="button" variant="outline" onClick={() => copyToClipboard(message)}>העתקת ההזמנה</Button>
