@@ -18,7 +18,7 @@ import { VoiceRecorder } from '@/components/admin/VoiceRecorder';
 import { ScoringToolbar } from '@/components/admin/scoring/ScoringToolbar';
 import { SignaturePad } from '@/components/admin/SignaturePad';
 import { useElectronicSignatures, useCreateElectronicSignature } from '@/hooks/useElectronicSignatures';
-import { useSendAppointmentConfirmation } from '@/hooks/useAppointmentConfirmation';
+import { visitLogistics } from '../../../supabase/functions/_shared/visit-logistics';
 import { useAuth } from '@/hooks/useAuth';
 import { useStaffProfile } from '@/hooks/useStaffProfile';
 import { generateMedicalVisitSummaryPdf } from '@/utils/medicalPdfTemplate';
@@ -35,7 +35,6 @@ import { he } from 'date-fns/locale';
 
 export default function AppointmentDetail() {
   const { id } = useParams();
-  const sendInvitation = useSendAppointmentConfirmation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -770,10 +769,11 @@ export default function AppointmentDetail() {
               {appointment.modality === 'telephone' && <div>
                 <strong>תור טלפוני</strong>{appointment.meeting_url && <p><a className="underline"
                   href={appointment.meeting_url} target="_blank" rel="noreferrer">הצטרפות לווידאו ב-Google Meet</a></p>}
-                {appointment.patients?.email && <Button type="button" variant="outline" disabled={sendInvitation.isPending}
-                  onClick={() => sendInvitation.mutate({appointmentId: appointment.id, patientEmail: appointment.patients.email})}>
-                  שליחת זימון לתור במייל
+                {appointment.patients?.email && appointment.meeting_url && <Button asChild variant="outline">
+                  <a href={visitLogistics(appointment, {name: 'מרפאת ד״ר אנה ברמלי'}, appointment.patients.email).google}
+                    target="_blank" rel="noreferrer">פתיחת זימון לשליחה ביומן Google</a>
                 </Button>}
+                <p className="text-sm text-muted-foreground">ביומן המרפאה בוחרים שמירה ושליחה כדי להזמין את המטופל.</p>
               </div>}
               {appointment.notes && (
                 <div>

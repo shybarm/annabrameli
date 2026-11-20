@@ -76,12 +76,18 @@ export default function NewAppointment() {
       });
 
       // Send confirmation email if enabled and patient has email
-      if (sendEmail && selectedPatient?.email && selectedClinic) {
+      if (!telephone && sendEmail && selectedPatient?.email && selectedClinic) {
         try {
           await sendConfirmation.mutateAsync({
             appointmentId: appointment.id,
             patientEmail: selectedPatient.email,
-
+            patientName: `${selectedPatient.first_name} ${selectedPatient.last_name}`,
+            appointmentDate: appointment.scheduled_at,
+            appointmentTypeName: selectedType?.name_he || 'ביקור',
+            clinicName: selectedClinic.name,
+            clinicAddress: selectedClinic.address || '',
+            clinicCity: selectedClinic.city || '',
+            clinicPhone: selectedClinic.phone || undefined
           });
         } catch (emailError) {
           // Email error already handled by hook toast, don't block navigation
@@ -89,7 +95,7 @@ export default function NewAppointment() {
         }
       }
 
-      navigate('/admin/appointments');
+      navigate(telephone ? '/admin/appointments/' + appointment.id : '/admin/appointments');
     } catch (error: any) {
       // Error handling is done in the hook, just prevent navigation
       // The hook shows appropriate Hebrew toast messages for SLOT_TAKEN and SLOT_RACE_CONDITION
@@ -195,6 +201,7 @@ export default function NewAppointment() {
                 <Label htmlFor="meeting-url">קישור וידאו לתור הזה</Label>
                 <Input id="meeting-url" required type="url" dir="ltr" pattern="https://meet[.]google[.]com/[a-z]{3}-[a-z]{4}-[a-z]{3}"
                   value={meetUrl} onChange={e => setMeetUrl(e.target.value.trim())} />
+                <p>לאחר שמירת התור אפשר לשלוח למטופל זימון דרך יומן Google.</p>
                 {!appointmentClinicId && <p>יש לבחור מרפאה עבור היומן.</p>}
               </div>}
               <div className="space-y-2">
@@ -311,7 +318,7 @@ export default function NewAppointment() {
               </div>
 
               {/* Send confirmation email checkbox */}
-              {selectedPatient?.email && selectedClinic && (
+              {!telephone && selectedPatient?.email && selectedClinic && (
                 <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
                   <Checkbox 
                     id="sendEmail" 

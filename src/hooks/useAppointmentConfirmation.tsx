@@ -5,6 +5,13 @@ import { toast } from '@/hooks/use-toast';
 interface SendConfirmationEmailParams {
   appointmentId: string;
   patientEmail: string;
+  patientName: string;
+  appointmentDate: string;
+  appointmentTypeName: string;
+  clinicName: string;
+  clinicAddress: string;
+  clinicCity: string;
+  clinicPhone?: string;
 }
 
 /**
