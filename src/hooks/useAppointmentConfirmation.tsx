@@ -5,7 +5,6 @@ import { toast } from '@/hooks/use-toast';
 interface SendConfirmationEmailParams {
   appointmentId: string;
   patientEmail: string;
-
 }
 
 /**
@@ -22,8 +21,10 @@ export function useSendAppointmentConfirmation() {
       });
       
       if (error) {
-        console.error('Error sending confirmation email:', error);
-        throw new Error(error.message || 'Failed to send confirmation email');
+        const payload = error.context instanceof Response
+          ? await error.context.json().catch(() => null)
+          : null;
+        throw new Error(payload?.error || payload?.message || error.message || 'שליחת הזימון נכשלה');
       }
       
       if (!data?.success) {
