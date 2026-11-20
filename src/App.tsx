@@ -89,6 +89,8 @@ const GeoOptimizationPage = React.lazy(adminNavPages["/admin/geo"]);
 import PrivateAllergistLanding from "./pages/PrivateAllergistLanding";
 import RegionalAllergist from "./pages/RegionalAllergist";
 
+const AdminLayout = React.lazy(() => import("./components/admin/AdminLayout"));
+
 // Layout for public pages
 const PublicLayout = ({ children }: { children: React.ReactNode }) => (
   <div className="min-h-screen flex flex-col">
@@ -235,27 +237,29 @@ const App = () => {
               {/* <Route path="/portal" element={<PatientPortal />} /> */}
               
               {/* Admin routes */}
-              <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/admin/patients" element={<PatientsList />} />
-              <Route path="/admin/patients/new" element={<NewPatient />} />
-              <Route path="/admin/patients/:id" element={<PatientDetail />} />
-              <Route path="/admin/appointments" element={<AppointmentsList />} />
-              <Route path="/admin/appointments/new" element={<NewAppointment />} />
-              <Route path="/admin/appointments/:id" element={<AppointmentDetail />} />
-              <Route path="/admin/billing" element={<BillingPage />} />
-              <Route path="/admin/billing/new" element={<NewInvoice />} />
-              <Route path="/admin/billing/:id" element={<InvoiceDetail />} />
-              <Route path="/admin/expenses" element={<ExpensesPage />} />
-              <Route path="/admin/messages" element={<MessagesPage />} />
-              <Route path="/admin/team" element={<TeamPage />} />
-              <Route path="/admin/referrals" element={<ReferralDashboard />} />
-              <Route path="/admin/intake" element={<StaffIntake />} />
-              <Route path="/admin/settings" element={<SettingsPage />} />
-              <Route path="/admin/audit-log" element={<AuditLogPage />} />
-              <Route path="/admin/doctor-diary" element={<DoctorDiaryPage />} />
-              <Route path="/admin/work-hours" element={<WorkHoursPage />} />
-              <Route path="/admin/cancellations" element={<CancellationsReport />} />
-              <Route path="/admin/geo" element={<GeoOptimizationPage />} />
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<AdminDashboard />} />
+                <Route path="patients" element={<PatientsList />} />
+                <Route path="patients/new" element={<NewPatient />} />
+                <Route path="patients/:id" element={<PatientDetail />} />
+                <Route path="appointments" element={<AppointmentsList />} />
+                <Route path="appointments/new" element={<NewAppointment />} />
+                <Route path="appointments/:id" element={<AppointmentDetail />} />
+                <Route path="billing" element={<BillingPage />} />
+                <Route path="billing/new" element={<NewInvoice />} />
+                <Route path="billing/:id" element={<InvoiceDetail />} />
+                <Route path="expenses" element={<ExpensesPage />} />
+                <Route path="messages" element={<MessagesPage />} />
+                <Route path="team" element={<TeamPage />} />
+                <Route path="referrals" element={<ReferralDashboard />} />
+                <Route path="intake" element={<StaffIntake />} />
+                <Route path="settings" element={<SettingsPage />} />
+                <Route path="audit-log" element={<AuditLogPage />} />
+                <Route path="doctor-diary" element={<DoctorDiaryPage />} />
+                <Route path="work-hours" element={<WorkHoursPage />} />
+                <Route path="cancellations" element={<CancellationsReport />} />
+                <Route path="geo" element={<GeoOptimizationPage />} />
+              </Route>
               
               <Route path="*" element={<NotFound />} />
             </Routes>

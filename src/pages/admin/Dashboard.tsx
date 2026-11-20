@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -305,7 +304,7 @@ export default function AdminDashboard() {
   const daysOfWeek = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי'];
 
   return (
-    <AdminLayout>
+    <>
       <div className="space-y-6">
         {/* Onboarding Tutorial */}
         <OnboardingTutorial />
@@ -724,6 +723,6 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
+    </>
   );
 }

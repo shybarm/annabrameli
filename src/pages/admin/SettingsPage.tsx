@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AdminLayout } from '@/components/admin/AdminLayout';
 import { PermissionGuard } from '@/components/admin/PermissionGuard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -373,16 +372,16 @@ export default function SettingsPage() {
 
   if (loadingClinic) {
     return (
-      <AdminLayout>
+      <>
         <div className="flex justify-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
         </div>
-      </AdminLayout>
+      </>
     );
   }
 
   return (
-    <AdminLayout>
+    <>
       <PermissionGuard permission="canViewSettings">
         <div className="space-y-6 max-w-3xl">
         <div>
@@ -816,6 +815,6 @@ export default function SettingsPage() {
         />
       )}
       </PermissionGuard>
-    </AdminLayout>
+    </>
   );
 }

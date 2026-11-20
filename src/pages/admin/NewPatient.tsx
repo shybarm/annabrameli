@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -93,7 +92,7 @@ export default function NewPatient() {
   };
 
   return (
-    <AdminLayout>
+    <>
       <div className="max-w-3xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
@@ -343,6 +342,6 @@ export default function NewPatient() {
           </div>
         </form>
       </div>
-    </AdminLayout>
+    </>
   );
 }

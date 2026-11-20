@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { AdminLayout } from '@/components/admin/AdminLayout';
 import { PermissionGuard } from '@/components/admin/PermissionGuard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -312,7 +311,7 @@ export default function DoctorDiaryPage() {
   };
 
   return (
-    <AdminLayout>
+    <>
       <PermissionGuard permission="canViewDoctorDiary">
         <div className="space-y-4 sm:space-y-6">
           {/* Compliance Banner */}
@@ -607,6 +606,6 @@ export default function DoctorDiaryPage() {
           )}
         </div>
       </PermissionGuard>
-    </AdminLayout>
+    </>
   );
 }

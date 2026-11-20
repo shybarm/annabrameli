@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -57,7 +56,7 @@ export default function MessagesPage() {
   // Thread view
   if (selectedThreadId && thread) {
     return (
-      <AdminLayout>
+      <>
         <div className="space-y-4">
           {/* Header */}
           <div className="flex items-center gap-4">
@@ -133,12 +132,12 @@ export default function MessagesPage() {
             </div>
           </Card>
         </div>
-      </AdminLayout>
+      </>
     );
   }
 
   return (
-    <AdminLayout>
+    <>
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">הודעות</h1>
@@ -209,6 +208,6 @@ export default function MessagesPage() {
           </Card>
         )}
       </div>
-    </AdminLayout>
+    </>
   );
 }

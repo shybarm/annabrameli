@@ -1,4 +1,3 @@
-import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useReferralStats } from '@/hooks/useReferralSources';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
@@ -16,7 +15,7 @@ export default function ReferralDashboard() {
   const total = chartData.reduce((sum, item) => sum + item.value, 0);
 
   return (
-    <AdminLayout>
+    <>
       <div className="space-y-6">
         {/* Header */}
         <div>
@@ -128,6 +127,6 @@ export default function ReferralDashboard() {
           </Card>
         )}
       </div>
-    </AdminLayout>
+    </>
   );
 }

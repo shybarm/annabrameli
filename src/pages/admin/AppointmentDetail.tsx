@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -548,29 +547,29 @@ export default function AppointmentDetail() {
 
   if (isLoading) {
     return (
-      <AdminLayout>
+      <>
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
         </div>
-      </AdminLayout>
+      </>
     );
   }
 
   if (!appointment) {
     return (
-      <AdminLayout>
+      <>
         <div className="text-center py-12">
           <p className="text-muted-foreground">התור לא נמצא</p>
           <Button variant="link" onClick={() => navigate('/admin/appointments')}>
             חזור לרשימת התורים
           </Button>
         </div>
-      </AdminLayout>
+      </>
     );
   }
 
   return (
-    <AdminLayout>
+    <>
       <div className="space-y-6 max-w-5xl">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -1318,6 +1317,6 @@ export default function AppointmentDetail() {
           </TabsContent>
         </Tabs>
       </div>
-    </AdminLayout>
+    </>
   );
 }

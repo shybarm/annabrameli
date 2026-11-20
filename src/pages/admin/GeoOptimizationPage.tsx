@@ -1,4 +1,3 @@
-import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { GeoDashboard } from '@/components/admin/geo/GeoDashboard';
 import { GeoOrganicOpportunities } from '@/components/admin/geo/GeoOrganicOpportunities';
@@ -13,7 +12,7 @@ import { Brain, BarChart3, Layers, Target, Layout, CalendarDays, PenLine, Micros
 
 export default function GeoOptimizationPage() {
   return (
-    <AdminLayout>
+    <>
       <GeoLiveDataProvider>
         <div className="space-y-6 pt-14 lg:pt-0">
           {/* Header */}
@@ -67,6 +66,6 @@ export default function GeoOptimizationPage() {
           </Tabs>
         </div>
       </GeoLiveDataProvider>
-    </AdminLayout>
+    </>
   );
 }

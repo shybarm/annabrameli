@@ -75,7 +75,7 @@ export interface PatientInput {
 
 export function usePatients(clinicId?: string | null) {
   return useQuery({
-    queryKey: ['patients', clinicId],
+    queryKey: ['patients', 'list', clinicId],
     queryFn: async () => {
       // Get staff user IDs to exclude
       const { data: staffRoles } = await supabase
@@ -112,7 +112,7 @@ export function usePatients(clinicId?: string | null) {
 
 export function usePatient(id: string | undefined) {
   return useQuery({
-    queryKey: ['patients', id],
+    queryKey: ['patients', 'detail', id],
     queryFn: async () => {
       if (!id) return null;
       const { data, error } = await supabase
@@ -191,7 +191,6 @@ export function useUpdatePatient() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['patients'] });
-      queryClient.invalidateQueries({ queryKey: ['patients', variables.id] });
       toast({ title: 'המטופל עודכן בהצלחה' });
     },
     onError: (error) => {

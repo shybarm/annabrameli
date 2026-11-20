@@ -10,7 +10,7 @@ if (container) {
   const tree = (
     <React.StrictMode>
       <HelmetProvider>
-        <BrowserRouter>
+        <BrowserRouter future={{ v7_startTransition: true }}>
           <App />
         </BrowserRouter>
       </HelmetProvider>

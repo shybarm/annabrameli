@@ -1,6 +1,6 @@
 import { adminNavPages } from "@/lib/adminNavPages";
-import { ReactNode, useEffect, useRef, useState } from 'react';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { Suspense, useEffect, useRef, useState } from 'react';
+import { useNavigate, Link, useLocation, Outlet } from 'react-router-dom';
 import { useAuth, UserPermissions } from '@/hooks/useAuth';
 import { useWorkSessions } from '@/hooks/useWorkSessions';
 import { useUnreviewedPatientsCount } from '@/hooks/useUnreviewedPatients';
@@ -38,10 +38,6 @@ import { ClinicSelector } from './ClinicSelector';
 import { useClinicContext } from '@/contexts/ClinicContext';
 import { useClinics } from '@/hooks/useClinics';
 
-interface AdminLayoutProps {
-  children: ReactNode;
-}
-
 interface NavItem {
   href: keyof typeof adminNavPages;
   icon: any;
@@ -65,7 +61,7 @@ const navItems: NavItem[] = [
   { href: '/admin/geo', icon: Brain, label: 'GEO', adminOnly: true },
 ];
 
-export function AdminLayout({ children }: AdminLayoutProps) {
+export default function AdminLayout() {
   const { user, loading, isStaff, isAdmin, signOut, roles, hasPermission } = useAuth();
   const { todaySession } = useWorkSessions();
   const { clinicTheme, selectedClinicId } = useClinicContext();
@@ -228,9 +224,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         className={cn(
           'fixed top-0 right-0 z-40 h-screen w-72 lg:w-64 bg-card border-l border-border/50 shadow-xl lg:shadow-none overflow-hidden',
           'lg:translate-x-0 transition-transform duration-300 ease-out',
-          sidebarOpen && !isClosing ? 'translate-x-0' : '',
-          isClosing ? '' : '',
-          !sidebarOpen && !isClosing ? 'translate-x-full lg:translate-x-0' : '',
+          sidebarOpen && !isClosing ? 'translate-x-0' : 'translate-x-full lg:translate-x-0',
           hasMultipleClinics && clinicTheme.border
         )}
       >
@@ -356,7 +350,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
       {/* Main content */}
       <main className="lg:mr-64 min-h-screen overflow-x-hidden">
-        <div className="p-4 lg:p-6 w-full max-w-full">{children}</div>
+        <div className="p-4 lg:p-6 w-full max-w-full"><Suspense fallback={<p role="status" className="p-4 text-muted-foreground">טוען את העמוד…</p>}><Outlet /></Suspense></div>
       </main>
       
       {/* Team Chat Widget */}

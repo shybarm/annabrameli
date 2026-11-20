@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { AdminLayout } from '@/components/admin/AdminLayout';
 import { PermissionGuard } from '@/components/admin/PermissionGuard';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -30,11 +29,11 @@ import { cn } from '@/lib/utils';
 
 export default function PatientsList() {
   return (
-    <AdminLayout>
+    <>
       <PermissionGuard permission="canViewPatients">
         <PatientsListContent />
       </PermissionGuard>
-    </AdminLayout>
+    </>
   );
 }
 

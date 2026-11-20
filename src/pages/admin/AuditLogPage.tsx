@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { AdminLayout } from '@/components/admin/AdminLayout';
 import { PermissionGuard } from '@/components/admin/PermissionGuard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -122,7 +121,7 @@ export default function AuditLogPage() {
   };
 
   return (
-    <AdminLayout>
+    <>
       <PermissionGuard permission="canViewAuditLog">
         <div className="space-y-6" dir="rtl">
         <div className="flex items-center justify-between">
@@ -324,6 +323,6 @@ export default function AuditLogPage() {
         </Card>
       </div>
       </PermissionGuard>
-    </AdminLayout>
+    </>
   );
 }

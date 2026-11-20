@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
 import { useLocation } from "react-router-dom";
 
 /** New pages always start at the top; in-page section links keep working. */
@@ -11,12 +11,8 @@ export function RouteScrollReset() {
     return () => { window.history.scrollRestoration = previous; };
   }, []);
 
-  useEffect(() => {
-    const root = document.documentElement;
-    const previous = root.style.scrollBehavior;
-    root.style.scrollBehavior = "auto";
-    window.scrollTo(0, 0);
-    root.style.scrollBehavior = previous;
+  useLayoutEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   }, [pathname]);
 
   return null;

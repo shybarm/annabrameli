@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { AdminLayout } from '@/components/admin/AdminLayout';
 import { PermissionGuard } from '@/components/admin/PermissionGuard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -93,7 +92,7 @@ export default function ExpensesPage() {
   };
 
   return (
-    <AdminLayout>
+    <>
       <PermissionGuard permission="canViewExpenses">
         <div className="space-y-6">
         {/* Header */}
@@ -319,6 +318,6 @@ export default function ExpensesPage() {
         </Card>
       </div>
       </PermissionGuard>
-    </AdminLayout>
+    </>
   );
 }

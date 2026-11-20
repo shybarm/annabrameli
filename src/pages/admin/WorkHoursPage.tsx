@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { AdminLayout } from "@/components/admin/AdminLayout";
 import { PermissionGuard } from "@/components/admin/PermissionGuard";
 import { useWorkSessions, calculateHours } from "@/hooks/useWorkSessions";
 import { useAuth } from "@/hooks/useAuth";
@@ -118,7 +117,7 @@ const WorkHoursPage = () => {
   };
 
   return (
-    <AdminLayout>
+    <>
       <PermissionGuard permission="canViewWorkHours">
         <div className="space-y-4 sm:space-y-6">
           {/* Header */}
@@ -339,7 +338,7 @@ const WorkHoursPage = () => {
           </Card>
         </div>
       </PermissionGuard>
-    </AdminLayout>
+    </>
   );
 };
 

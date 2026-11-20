@@ -1,4 +1,3 @@
-import { AdminLayout } from '@/components/admin/AdminLayout';
 import { PermissionGuard } from '@/components/admin/PermissionGuard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,11 +18,11 @@ import {
 
 export default function BillingPage() {
   return (
-    <AdminLayout>
+    <>
       <PermissionGuard permission="canViewBilling">
         <BillingContent />
       </PermissionGuard>
-    </AdminLayout>
+    </>
   );
 }
 
