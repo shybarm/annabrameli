@@ -121,6 +121,8 @@ export default function PatientDetail() {
         .from('intake_tokens')
         .select('*')
         .eq('patient_id', id)
+        .gt('expires_at', new Date().toISOString())
+        .is('completed_at', null)
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();

@@ -773,7 +773,7 @@ export default function AppointmentDetail() {
                   <a href={visitLogistics(appointment, {name: 'מרפאת ד״ר אנה ברמלי'}, appointment.patients.email).google}
                     target="_blank" rel="noreferrer">פתיחת זימון לשליחה ביומן Google</a>
                 </Button>}
-                <p className="text-sm text-muted-foreground">ביומן המרפאה בוחרים שמירה ושליחה כדי להזמין את המטופל.</p>
+                <p className="text-sm text-muted-foreground">הקישור לתור כבר מופיע בשדה המיקום ביומן. אם Google הוסיפה שיחת Meet נוספת, הסירו אותה לפני בחירת שמירה ושליחה מחשבון המרפאה.</p>
               </div>}
               {appointment.notes && (
                 <div>
