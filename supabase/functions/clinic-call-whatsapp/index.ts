@@ -119,30 +119,37 @@ Deno.serve(async (request) => {
   const { error } = await table.insert({ call_hash: hash });
   if (error?.code === "23505") {
     const { data } = await table.select("status").eq("call_hash", hash).single();
-    return selected && data?.status === "queued" ? confirmed() : Response.json({ redirect: "100" });
+    return selected && (data?.status === "queued" || data?.status === "pending") ? confirmed() : Response.json({ redirect: "100" });
   }
   if (error) return new Response(null, { status: 503 });
-  let status = "review";
-  try {
-    const response = await fetch(
-      "https://7107.api.greenapi.com/waInstance710722808546/sendMessage/" + encodeURIComponent(token),
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chatId: phone + "@c.us", message: welcome }),
-        signal: AbortSignal.timeout(5000),
-      },
-    );
-    if (response.ok && (await response.json()).idMessage) status = "queued";
-  } catch {
-    // Delivery is uncertain. Keep the reservation to avoid sending a second welcome.
-  }
-  await table.update({ status }).eq("call_hash", hash);
-  console.info("clinic_whatsapp", status, selected ? "ivr" : "legacy_extension");
-  const measurement = measureCall(status);
-  const runtime = (globalThis as unknown as { EdgeRuntime?: { waitUntil: (promise: Promise<void>) => void } })
+  const dispatch = async () => {
+    let status = "review";
+    try {
+      const response = await fetch(
+        "https://7107.api.greenapi.com/waInstance710722808546/sendMessage/" + encodeURIComponent(token),
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ chatId: phone + "@c.us", message: welcome }),
+          signal: AbortSignal.timeout(5000),
+        },
+      );
+      if (response.ok && (await response.json()).idMessage) status = "queued";
+    } catch {
+      // Preserve the reservation on uncertain delivery; never send duplicates.
+    }
+    await table.update({ status }).eq("call_hash", hash);
+    console.info("clinic_whatsapp", status, selected ? "ivr" : "legacy_extension");
+    await measureCall(status);
+    return status;
+  };
+  const runtime = (globalThis as unknown as { EdgeRuntime?: { waitUntil: (promise: Promise<unknown>) => void } })
     .EdgeRuntime;
-  if (runtime) runtime.waitUntil(measurement);
-  else await measurement;
+  if (runtime && selected) {
+    // The durable call reservation exists before playback; dispatch continues during the thank-you.
+    runtime.waitUntil(dispatch().catch(() => console.error("clinic_whatsapp", "dispatch_failed")));
+    return confirmed();
+  }
+  const status = await dispatch();
   return selected && status === "queued" ? confirmed() : Response.json({ redirect: "100" });
 });
