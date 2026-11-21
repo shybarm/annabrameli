@@ -66,7 +66,7 @@ Deno.serve(async (request) => {
   const clinicCall = did.replace(/^\+/, "") === "972555070399";
   const prompt = () =>
     Response.json({
-      ivr_play: "6b003480a91e14aa940d97b5",
+      ivr_play: "6b01cd5bc4a32095b3051281",
       wait_dtmf: { timeout: 5, attempts: 1, maxdigits: 1, name: "clinic_menu", default: "100" },
     });
   const confirmed = () =>
