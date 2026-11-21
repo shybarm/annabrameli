@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,11 +10,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { useInvoice, useUpdateInvoiceStatus, useUpdateInvoice } from '@/hooks/useInvoices';
+import { useInvoice, useUpdateInvoice } from '@/hooks/useInvoices';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { ArrowRight, Printer, Mail, CheckCircle, Edit, Save, X, Plus, Trash2, Link2, Copy, ExternalLink, CreditCard, Wallet } from 'lucide-react';
 import { format } from 'date-fns';
+import { SumitDocumentAction } from '@/components/admin/SumitDocumentAction';
 
 
 interface EditableItem {
@@ -26,7 +29,6 @@ export default function InvoiceDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { data: invoice, isLoading } = useInvoice(id);
-  const updateStatus = useUpdateInvoiceStatus();
   const updateInvoice = useUpdateInvoice();
 
   const [isEditing, setIsEditing] = useState(false);
@@ -34,6 +36,8 @@ export default function InvoiceDetail() {
   const [editNotes, setEditNotes] = useState('');
   const [editDueDate, setEditDueDate] = useState('');
   const [editPaymentLink, setEditPaymentLink] = useState('');
+  const queryClient = useQueryClient();
+  const [recordingPayment, setRecordingPayment] = useState(false);
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<string>('bit');
   const [paymentReference, setPaymentReference] = useState('');
@@ -107,25 +111,22 @@ export default function InvoiceDetail() {
     if (!id) return;
     
     try {
-      // Update invoice status
-      await updateStatus.mutateAsync({ id, status: 'paid', amount_paid: Number(invoice?.total) });
-      
-      // Record payment in payments table
-      const { error } = await supabase.from('payments').insert({
-        invoice_id: id,
-        patient_id: invoice?.patient_id,
-        amount: Number(invoice?.total),
-        payment_method: paymentMethod,
-        payment_reference: paymentReference || null,
-        status: 'completed',
+      setRecordingPayment(true);
+      const accountingClient: SupabaseClient = supabase;
+      const { error } = await accountingClient.rpc('record_external_invoice_payment', {
+        p_invoice_id: id,
+        p_method: paymentMethod,
+        p_reference: paymentReference || null,
       });
-      
       if (error) throw error;
-      
+      await queryClient.invalidateQueries({ queryKey: ['invoices'] });
+
       toast({ title: 'התשלום נרשם בהצלחה' });
       setShowPaymentDialog(false);
     } catch (error: any) {
       toast({ title: 'שגיאה ברישום התשלום', description: error.message, variant: 'destructive' });
+    } finally {
+      setRecordingPayment(false);
     }
   };
 
@@ -284,7 +285,7 @@ export default function InvoiceDetail() {
                     </Button>
                     <Button size="sm" onClick={handleOpenPaymentDialog}>
                       <Wallet className="h-4 w-4 sm:ml-1" />
-                      <span className="hidden sm:inline">גביית תשלום</span>
+                      <span className="hidden sm:inline">רישום תשלום שהתקבל</span>
                     </Button>
                   </>
                 )}
@@ -292,6 +293,15 @@ export default function InvoiceDetail() {
             )}
           </div>
         </div>
+
+        {invoice.status === 'paid' && (
+          <Card className="mb-6 print:hidden">
+            <CardHeader><CardTitle>מסמך חשבונאי ב-SUMIT</CardTitle></CardHeader>
+            <CardContent>
+              <SumitDocumentAction invoiceId={invoice.id} total={Number(invoice.total)} email={invoice.patients?.email || null} />
+            </CardContent>
+          </Card>
+        )}
 
         {/* Invoice Details */}
         <Card className="print:shadow-none print:border-none">
@@ -536,7 +546,7 @@ export default function InvoiceDetail() {
       <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
         <DialogContent className="sm:max-w-md" dir="rtl">
           <DialogHeader>
-            <DialogTitle className="text-right">גביית תשלום</DialogTitle>
+            <DialogTitle className="text-right">רישום תשלום שהתקבל</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="text-center text-2xl font-bold text-primary">
@@ -601,9 +611,9 @@ export default function InvoiceDetail() {
             </div>
           </div>
           <DialogFooter className="flex-row-reverse gap-2">
-            <Button onClick={handleCollectPayment} disabled={updateStatus.isPending}>
+            <Button onClick={handleCollectPayment} disabled={recordingPayment}>
               <CheckCircle className="h-4 w-4 ml-2" />
-              {updateStatus.isPending ? 'מעבד...' : 'אשר תשלום'}
+              {recordingPayment ? 'מעבד...' : 'אשר תשלום'}
             </Button>
             <Button variant="outline" onClick={() => setShowPaymentDialog(false)}>
               ביטול

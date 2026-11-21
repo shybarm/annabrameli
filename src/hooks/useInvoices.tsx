@@ -36,6 +36,7 @@ export interface Invoice {
     id: string;
     first_name: string;
     last_name: string;
+    email?: string | null;
   };
   invoice_items?: InvoiceItem[];
 }
@@ -72,7 +73,7 @@ export function useInvoices() {
         .from('invoices')
         .select(`
           *,
-          patients(id, first_name, last_name)
+          patients(id, first_name, last_name, email)
         `)
         .order('created_at', { ascending: false });
       
@@ -92,7 +93,7 @@ export function useInvoice(id: string | undefined) {
         .from('invoices')
         .select(`
           *,
-          patients(id, first_name, last_name),
+          patients(id, first_name, last_name, email),
           invoice_items(*)
         `)
         .eq('id', id)
