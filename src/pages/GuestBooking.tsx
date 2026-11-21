@@ -784,7 +784,7 @@ export default function GuestBooking() {
           </DialogHeader>
           {!waitlistJoined && <label className="flex items-start gap-2 text-sm leading-relaxed">
             <input type="checkbox" checked={whatsappConsent} onChange={e => setWhatsappConsent(e.target.checked)} className="mt-1" />
-            אני רוצה לקבל בוואטסאפ שאלות המשך מהמרפאה לגבי הפנייה והזמינות לתור מוקדם. התשובות יישמרו במערכת המרפאה ואפשר לבקש נציג או להפסיק בכל שלב.
+            אני מסכים/ה לקבל בוואטסאפ ממרפאת ד״ר אנה ברמלי אישור רישום ועדכונים על רשימת ההמתנה והתפנות תור. אפשר להפסיק בכל עת בהודעת ״הסר״.
           </label>}
           <DialogFooter className="flex-col gap-2 sm:flex-row sm:justify-start">
             {waitlistJoined ? (

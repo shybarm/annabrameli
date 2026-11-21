@@ -21,7 +21,7 @@ export type Database = {
         Relationships: []
       }
       whatsapp_conversations: {
-        Row: { id: string; phone: string; name: string; source: string; bot_stage: string; answers: Json; opted_out: boolean; unread: boolean; updated_at: string; created_at: string; clinic_id: string | null; bot_started_at: string | null }
+        Row: { id: string; phone: string; name: string; source: string; bot_stage: string; whatsapp_consent_at: string | null; whatsapp_consent_scope: string | null; whatsapp_consent_withdrawn_at: string | null; answers: Json; opted_out: boolean; unread: boolean; updated_at: string; created_at: string; clinic_id: string | null; bot_started_at: string | null }
         Insert: never
         Update: never
         Relationships: []
