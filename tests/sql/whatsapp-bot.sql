@@ -1,6 +1,6 @@
 BEGIN;
 DO $$
-DECLARE c uuid; answer_count int; before_count int; job jsonb;
+DECLARE failure_id uuid; c uuid; answer_count int; before_count int; job jsonb;
 BEGIN
  c:=public.register_whatsapp_waitlist('בדיקה אוטומטית','972500000000',NULL,true);
  PERFORM public.register_whatsapp_waitlist('בדיקה חוזרת','972500000000',NULL,true);
@@ -26,6 +26,12 @@ BEGIN
  c:=public.register_whatsapp_waitlist('מענה אנושי','972500000002',NULL,true);
  PERFORM public.receive_clinic_whatsapp('972500000002','bot-test-human','נציג','text',now());
  IF (SELECT bot_stage FROM public.whatsapp_conversations WHERE id=c)<>'human' THEN RAISE EXCEPTION 'Handoff failed'; END IF;
+ PERFORM public.queue_whatsapp_text(c,'בדיקת מניעת המשך אחרי כשל');
+ SELECT o.id INTO failure_id FROM public.whatsapp_outbox o JOIN public.whatsapp_messages m ON m.id=o.message_id WHERE m.conversation_id=c AND o.state='pending' ORDER BY o.ordinal LIMIT 1;
+ UPDATE public.whatsapp_outbox SET state='processing' WHERE id=failure_id;
+ PERFORM public.finish_clinic_whatsapp_outbox(failure_id,NULL,'delivery_uncertain');
+ IF EXISTS(SELECT 1 FROM public.whatsapp_outbox o JOIN public.whatsapp_messages m ON m.id=o.message_id WHERE m.conversation_id=c AND o.state='pending') THEN RAISE EXCEPTION 'Failure left queued replies'; END IF;
+ IF has_column_privilege('authenticated','public.whatsapp_bot_settings','dispatch_token','select') THEN RAISE EXCEPTION 'Dispatch credential exposed'; END IF;
  IF has_function_privilege('anon','public.whatsapp_bot_config()','execute') OR has_table_privilege('anon','public.whatsapp_conversations','select') OR has_function_privilege('authenticated','public.receive_clinic_whatsapp(text,text,text,text,timestamptz,boolean)','execute') THEN RAISE EXCEPTION 'Private APIs exposed'; END IF;
 END $$;
 ROLLBACK;
