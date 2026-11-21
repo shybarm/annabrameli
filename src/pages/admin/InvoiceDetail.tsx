@@ -557,7 +557,7 @@ export default function InvoiceDetail() {
 
       {/* Payment Collection Dialog */}
       <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
-        <DialogContent className="sm:max-w-md" dir="rtl">
+        <DialogContent className="sm:max-w-md max-h-[90dvh] overflow-y-auto" dir="rtl">
           <DialogHeader>
             <DialogTitle className="text-right">רישום תשלום שהתקבל</DialogTitle>
           </DialogHeader>

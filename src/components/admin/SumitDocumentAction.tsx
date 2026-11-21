@@ -41,7 +41,7 @@ export function SumitDocumentAction({ invoiceId, total, email, phone }: {
       if (result.error) throw result.error;
       return result.data as SumitDocument | null;
     },
-    refetchInterval: query => query.state.data?.state === 'pending' || ['scheduled', 'sending', 'awaiting_document'].includes(query.state.data?.delivery_state || '') ? 3000 : false,
+    refetchInterval: query => query.state.data?.state === 'pending' || (query.state.data?.state === 'issued' && ['scheduled', 'sending'].includes(query.state.data?.delivery_state || '')) ? 3000 : false,
   });
   const issue = useMutation({
     mutationFn: async () => {
