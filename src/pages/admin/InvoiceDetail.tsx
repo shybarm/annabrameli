@@ -298,7 +298,11 @@ export default function InvoiceDetail() {
           <Card className="mb-6 print:hidden">
             <CardHeader><CardTitle>מסמך חשבונאי ב-SUMIT</CardTitle></CardHeader>
             <CardContent>
-              <SumitDocumentAction invoiceId={invoice.id} total={Number(invoice.total)} email={invoice.patients?.email || null} />
+              {invoice.sumit_eligible ? (
+                <SumitDocumentAction invoiceId={invoice.id} total={Number(invoice.total)} email={invoice.patients?.email || null} />
+              ) : (
+                <p className="text-sm text-muted-foreground">חיוב ישן. העברה ל-SUMIT חסומה עבור חיוב זה.</p>
+              )}
             </CardContent>
           </Card>
         )}

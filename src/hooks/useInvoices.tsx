@@ -14,6 +14,7 @@ export interface InvoiceItem {
 export interface Invoice {
   id: string;
   invoice_number: string;
+  sumit_eligible?: boolean;
   patient_id: string | null;
   appointment_id: string | null;
   status: string;
