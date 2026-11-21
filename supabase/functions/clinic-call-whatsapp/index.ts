@@ -119,7 +119,9 @@ Deno.serve(async (request) => {
   const { error } = await table.insert({ call_hash: hash });
   if (error?.code === "23505") {
     const { data } = await table.select("status").eq("call_hash", hash).single();
-    return selected && (data?.status === "queued" || data?.status === "pending") ? confirmed() : Response.json({ redirect: "100" });
+    return selected && (data?.status === "queued" || data?.status === "pending")
+      ? confirmed()
+      : Response.json({ redirect: "100" });
   }
   if (error) return new Response(null, { status: 503 });
   const dispatch = async () => {
@@ -153,3 +155,5 @@ Deno.serve(async (request) => {
   const status = await dispatch();
   return selected && status === "queued" ? confirmed() : Response.json({ redirect: "100" });
 });
+
+// Non-blocking confirmation playback.
