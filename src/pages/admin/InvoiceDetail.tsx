@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useInvoice, useUpdateInvoice } from '@/hooks/useInvoices';
 import { supabase } from '@/integrations/supabase/client';
@@ -41,6 +42,9 @@ export default function InvoiceDetail() {
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<string>('bit');
   const [paymentReference, setPaymentReference] = useState('');
+  const [issueWithPayment, setIssueWithPayment] = useState(false);
+  const [paymentChannel, setPaymentChannel] = useState('whatsapp');
+  const [paymentDocumentType, setPaymentDocumentType] = useState('1');
 
   useEffect(() => {
     if (invoice) {
@@ -104,6 +108,9 @@ export default function InvoiceDetail() {
   const handleOpenPaymentDialog = () => {
     setPaymentMethod('bit');
     setPaymentReference('');
+    setIssueWithPayment(!!invoice?.sumit_eligible && !!(invoice.patients?.phone || invoice.patients?.email));
+    setPaymentChannel(invoice?.patients?.phone ? 'whatsapp' : 'email');
+    setPaymentDocumentType('1');
     setShowPaymentDialog(true);
   };
 
@@ -113,15 +120,17 @@ export default function InvoiceDetail() {
     try {
       setRecordingPayment(true);
       const accountingClient: SupabaseClient = supabase;
-      const { error } = await accountingClient.rpc('record_external_invoice_payment', {
+      const { error } = await accountingClient.rpc(issueWithPayment ? 'record_and_issue_sumit_document' : 'record_external_invoice_payment', {
         p_invoice_id: id,
         p_method: paymentMethod,
         p_reference: paymentReference || null,
+        ...(issueWithPayment ? { p_document_type: Number(paymentDocumentType), p_channel: paymentChannel } : {}),
       });
       if (error) throw error;
       await queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      await queryClient.invalidateQueries({ queryKey: ['sumit-document', id] });
 
-      toast({ title: 'התשלום נרשם בהצלחה' });
+      toast({ title: issueWithPayment ? 'התשלום נרשם ובקשת הפקת המסמך התקבלה' : 'התשלום נרשם בהצלחה' });
       setShowPaymentDialog(false);
     } catch (error: any) {
       toast({ title: 'שגיאה ברישום התשלום', description: error.message, variant: 'destructive' });
@@ -299,7 +308,7 @@ export default function InvoiceDetail() {
             <CardHeader><CardTitle>מסמך חשבונאי ב-SUMIT</CardTitle></CardHeader>
             <CardContent>
               {invoice.sumit_eligible ? (
-                <SumitDocumentAction invoiceId={invoice.id} total={Number(invoice.total)} email={invoice.patients?.email || null} />
+                <SumitDocumentAction invoiceId={invoice.id} total={Number(invoice.total)} email={invoice.patients?.email || null} phone={invoice.patients?.phone || null} />
               ) : (
                 <p className="text-sm text-muted-foreground">חיוב ישן. העברה ל-SUMIT חסומה עבור חיוב זה.</p>
               )}
@@ -603,6 +612,24 @@ export default function InvoiceDetail() {
               </RadioGroup>
             </div>
 
+            {invoice.sumit_eligible && <div className="space-y-3 border-t pt-4">
+              <div className="flex items-center gap-2">
+                <Checkbox id="issue-with-payment" checked={issueWithPayment} onCheckedChange={value => setIssueWithPayment(value === true)} />
+                <Label htmlFor="issue-with-payment">להפיק ולשלוח מסמך דרך SUMIT עם רישום התשלום</Label>
+              </div>
+              {issueWithPayment && <>
+                <RadioGroup value={paymentChannel} onValueChange={setPaymentChannel}>
+                  <div className="flex items-center gap-2"><RadioGroupItem value="whatsapp" id="payment-channel-whatsapp" disabled={!invoice.patients?.phone} /><Label htmlFor="payment-channel-whatsapp">וואטסאפ {invoice.patients?.phone || '(חסר טלפון)'}</Label></div>
+                  <div className="flex items-center gap-2"><RadioGroupItem value="email" id="payment-channel-email" disabled={!invoice.patients?.email} /><Label htmlFor="payment-channel-email">מייל {invoice.patients?.email || '(חסרה כתובת מייל)'}</Label></div>
+                </RadioGroup>
+                <RadioGroup value={paymentDocumentType} onValueChange={setPaymentDocumentType}>
+                  <div className="flex items-center gap-2"><RadioGroupItem value="1" id="payment-invoice-receipt" /><Label htmlFor="payment-invoice-receipt">חשבונית מס/קבלה</Label></div>
+                  <div className="flex items-center gap-2"><RadioGroupItem value="2" id="payment-receipt" /><Label htmlFor="payment-receipt">קבלה</Label></div>
+                </RadioGroup>
+                <p className="text-sm text-muted-foreground">{paymentChannel === 'whatsapp' ? 'וואטסאפ נשלח בשעות 09:00 עד 21:00. תשלום אחרי 21:00 יישלח למחרת ב-09:00 לפי שעון ישראל.' : 'מייל נשלח מיד לאחר ההפקה, בכל שעה.'}</p>
+              </>}
+            </div>}
+
             <div className="space-y-2">
               <Label htmlFor="reference">מספר אסמכתא (אופציונלי)</Label>
               <Input
@@ -617,7 +644,7 @@ export default function InvoiceDetail() {
           <DialogFooter className="flex-row-reverse gap-2">
             <Button onClick={handleCollectPayment} disabled={recordingPayment}>
               <CheckCircle className="h-4 w-4 ml-2" />
-              {recordingPayment ? 'מעבד...' : 'אשר תשלום'}
+              {recordingPayment ? 'מעבד...' : issueWithPayment ? 'רישום תשלום, הפקה ושליחה' : 'אשר תשלום'}
             </Button>
             <Button variant="outline" onClick={() => setShowPaymentDialog(false)}>
               ביטול
