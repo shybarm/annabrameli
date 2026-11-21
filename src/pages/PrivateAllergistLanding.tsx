@@ -28,8 +28,8 @@ import {
 } from "@/utils/medicalSchema";
 
 const CANONICAL_URL = "https://ihaveallergy.com/allergist-private";
-const PHONE_DISPLAY = "052-5916393";
-const PHONE_E164 = "+972525916393";
+const PHONE_DISPLAY = "055-507-0399";
+const PHONE_E164 = "+972555070399";
 
 const faqs = [
   {

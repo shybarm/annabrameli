@@ -620,12 +620,12 @@ const Index = () => {
               </div>
               <h3 className="text-base font-semibold text-foreground mb-1">טלפון</h3>
               <a
-                href="tel:+972525916393"
-                onClick={() => trackPhoneClick("homepage_contact", "+972525916393")}
+                href="tel:+972555070399"
+                onClick={() => trackPhoneClick("homepage_contact", "+972555070399")}
                 className="text-primary hover:underline"
                 dir="ltr"
               >
-                052-5916393
+                055-507-0399
               </a>
             </motion.div>
 

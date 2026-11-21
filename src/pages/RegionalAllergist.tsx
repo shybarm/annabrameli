@@ -6,7 +6,7 @@ import { buildBreadcrumbSchema, buildFaqSchema } from "@/utils/medicalSchema";
 import { trackPhoneClick } from "@/lib/analytics";
 
 const CANONICAL = "https://ihaveallergy.com/allergist-central-sharon";
-const PHONE_E164 = "+972525916393";
+const PHONE_E164 = "+972555070399";
 const areas = ["הוד השרון", "כפר סבא", "רעננה", "הרצליה", "נתניה", "פתח תקווה", "תל אביב", "רמת גן", "ראשון לציון", "חולון"];
 const faqs = [
   { question: "האם המרפאה מטפלת גם בילדים וגם במבוגרים?", answer: "כן. ד״ר אנה ברמלי מעניקה ייעוץ בתחום האלרגיה והאימונולוגיה לילדים ולמבוגרים, עם ניסיון מרכזי ברפואת ילדים ובאלרגיה בילדים." },

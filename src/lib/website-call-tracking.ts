@@ -3,8 +3,8 @@ import { publicPath, sanitizeAttribution } from "./analytics";
 // Exact Google Ads event snippet generated in account 664-227-1731 on 2026-10-09.
 export const WEBSITE_CALL_TAG = "AW-18186381713/CyUZCMS40ZYdEJHT-N9D";
 const ADS_TAG = "AW-18186381713";
-const CLINIC_NUMBER = "052-5916393";
-const isClinicNumber = (value: string) => /^(0525916393|972525916393)$/.test(value.replace(/\D/g, ""));
+const CLINIC_NUMBER = "055-507-0399";
+const isClinicNumber = (value: string) => /^(0555070399|972555070399)$/.test(value.replace(/\D/g, ""));
 
 /** Actual Google forwarding-number calls after ads, not phone-click conversions.
  * Never configure on private routes. Restore links when a SPA route unmounts.

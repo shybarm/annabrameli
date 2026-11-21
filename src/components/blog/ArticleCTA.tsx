@@ -7,7 +7,7 @@ interface ArticleCTAProps {
 }
 
 export const ArticleCTA = ({ variant = "inline" }: ArticleCTAProps) => {
-  const whatsappUrl = "https://wa.me/972525916393?text=%D7%A9%D7%9C%D7%95%D7%9D%2C%20%D7%90%D7%A9%D7%9E%D7%97%20%D7%9C%D7%A7%D7%91%D7%95%D7%A2%20%D7%99%D7%99%D7%A2%D7%95%D7%A5";
+  const whatsappUrl = "https://wa.me/972555070399?text=%D7%A9%D7%9C%D7%95%D7%9D%2C%20%D7%90%D7%A9%D7%9E%D7%97%20%D7%9C%D7%A7%D7%91%D7%95%D7%A2%20%D7%99%D7%99%D7%A2%D7%95%D7%A5";
 
   // Fire-and-forget: trackWhatsAppClick swallows its own errors, so the link
   // navigates exactly as before whether or not analytics is available.
