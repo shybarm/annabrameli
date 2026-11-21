@@ -1,0 +1,32 @@
+BEGIN;
+DO $$
+DECLARE c uuid; answer_count int; before_count int; job jsonb;
+BEGIN
+ c:=public.register_whatsapp_waitlist('בדיקה אוטומטית','972500000000',NULL,true);
+ PERFORM public.register_whatsapp_waitlist('בדיקה חוזרת','972500000000',NULL,true);
+ SELECT count(*) INTO before_count FROM public.whatsapp_messages WHERE conversation_id=c;
+ IF before_count<>1 THEN RAISE EXCEPTION 'Duplicate registration sent twice'; END IF;
+ PERFORM public.receive_clinic_whatsapp('972500000000','bot-test-1','סיבת פנייה לבדיקה','text',now());
+ PERFORM public.receive_clinic_whatsapp('972500000000','bot-test-1','כפילות','text',now());
+ IF (SELECT bot_stage FROM public.whatsapp_conversations WHERE id=c)<>'current_appointment' THEN RAISE EXCEPTION 'Duplicate changed stage'; END IF;
+ PERFORM public.receive_clinic_whatsapp('972500000000','bot-test-2','אין תור','text',now());
+ PERFORM public.receive_clinic_whatsapp('972500000000','bot-test-3','ימי ראשון אחרי 16','text',now());
+ PERFORM public.receive_clinic_whatsapp('972500000000','bot-test-4','שעתיים מראש','text',now());
+ PERFORM public.receive_clinic_whatsapp('972500000000','bot-test-5','שתי האפשרויות','text',now());
+ IF (SELECT bot_stage FROM public.whatsapp_conversations WHERE id=c)<>'completed' THEN RAISE EXCEPTION 'Flow did not complete'; END IF;
+ SELECT count(*) INTO answer_count FROM jsonb_object_keys((SELECT answers FROM public.whatsapp_conversations WHERE id=c));
+ IF answer_count<>5 THEN RAISE EXCEPTION 'Answers missing'; END IF;
+ PERFORM public.receive_clinic_whatsapp('972500000000','bot-test-extra','עוד פרט','text',now());
+ IF (SELECT count(*) FROM public.whatsapp_messages WHERE conversation_id=c AND direction='outgoing')<>6 THEN RAISE EXCEPTION 'Unexpected reply after completion'; END IF;
+ PERFORM public.receive_clinic_whatsapp('972500000000','bot-test-stop','עצור','text',now());
+ IF NOT (SELECT opted_out FROM public.whatsapp_conversations WHERE id=c) THEN RAISE EXCEPTION 'Opt-out failed'; END IF;
+ IF EXISTS(SELECT 1 FROM public.whatsapp_outbox o JOIN public.whatsapp_messages m ON m.id=o.message_id WHERE m.conversation_id=c AND o.state='pending' AND m.body<>'הבוט נעצר. צוות המרפאה יוכל לעיין בפנייה שכבר התקבלה.') THEN RAISE EXCEPTION 'Opt-out left pending questions'; END IF;
+ c:=public.register_whatsapp_waitlist('ללא הסכמה','972500000001',NULL,false);
+ IF EXISTS(SELECT 1 FROM public.whatsapp_messages WHERE conversation_id=c) THEN RAISE EXCEPTION 'Message without consent'; END IF;
+ c:=public.register_whatsapp_waitlist('מענה אנושי','972500000002',NULL,true);
+ PERFORM public.receive_clinic_whatsapp('972500000002','bot-test-human','נציג','text',now());
+ IF (SELECT bot_stage FROM public.whatsapp_conversations WHERE id=c)<>'human' THEN RAISE EXCEPTION 'Handoff failed'; END IF;
+ IF has_function_privilege('anon','public.whatsapp_bot_config()','execute') OR has_table_privilege('anon','public.whatsapp_conversations','select') OR has_function_privilege('authenticated','public.receive_clinic_whatsapp(text,text,text,text,timestamptz,boolean)','execute') THEN RAISE EXCEPTION 'Private APIs exposed'; END IF;
+END $$;
+ROLLBACK;
+SELECT 'PASS: answers, duplicate protection, opt-in, stop, handoff, permissions; changes rolled back' AS result;

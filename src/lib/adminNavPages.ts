@@ -1,4 +1,5 @@
 export const adminNavPages = {
+  "/admin/whatsapp": () => import("@/pages/admin/WhatsAppInbox"),
   "/admin": () => import("@/pages/admin/Dashboard"),
   "/admin/patients": () => import("@/pages/admin/PatientsList"),
   "/admin/appointments": () => import("@/pages/admin/AppointmentsList"),

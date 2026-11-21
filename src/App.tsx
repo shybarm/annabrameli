@@ -38,6 +38,7 @@ const BillingPage = React.lazy(adminNavPages["/admin/billing"]);
 const NewInvoice = React.lazy(() => import("./pages/admin/NewInvoice"));
 const InvoiceDetail = React.lazy(() => import("./pages/admin/InvoiceDetail"));
 const ExpensesPage = React.lazy(adminNavPages["/admin/expenses"]);
+const WhatsAppInbox = React.lazy(() => import("./pages/admin/WhatsAppInbox"));
 const MessagesPage = React.lazy(() => import("./pages/admin/MessagesPage"));
 const SettingsPage = React.lazy(adminNavPages["/admin/settings"]);
 const TeamPage = React.lazy(adminNavPages["/admin/team"]);
@@ -247,6 +248,7 @@ const App = () => {
                 <Route path="billing/new" element={<NewInvoice />} />
                 <Route path="billing/:id" element={<InvoiceDetail />} />
                 <Route path="expenses" element={<ExpensesPage />} />
+                <Route path="whatsapp" element={<WhatsAppInbox />} />
                 <Route path="messages" element={<MessagesPage />} />
                 <Route path="team" element={<TeamPage />} />
                 <Route path="referrals" element={<ReferralDashboard />} />

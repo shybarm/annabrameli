@@ -48,6 +48,7 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
+  { href: '/admin/whatsapp', icon: BookOpen, label: 'וואטסאפ ורשימת המתנה', requiredPermission: 'canEditAppointments' },
   { href: '/admin', icon: LayoutDashboard, label: 'לוח בקרה', exact: true },
   { href: '/admin/patients', icon: Users, label: 'מטופלים', requiredPermission: 'canViewPatients' },
   { href: '/admin/appointments', icon: Calendar, label: 'תורים', requiredPermission: 'canViewAppointments' },

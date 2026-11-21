@@ -325,6 +325,8 @@ export default function GuestBooking() {
   };
 
 
+  const [whatsappConsent, setWhatsappConsent] = useState(false);
+
   const handleJoinWaitlist = async () => {
     setWaitlistSending(true);
     try {
@@ -335,6 +337,7 @@ export default function GuestBooking() {
           email,
           clinicName: selectedClinic?.name || '',
           notes: 'הצטרפות לרשימת המתנה מתוך דף קביעת התור',
+          whatsappConsent,
         },
       });
       if (error) throw error;
@@ -779,6 +782,10 @@ export default function GuestBooking() {
                 : 'מוזמנים להיכנס לרשימת ההמתנה - ניצור איתכם קשר ברגע שיתפנה תור מוקדם יותר.'}
             </DialogDescription>
           </DialogHeader>
+          {!waitlistJoined && <label className="flex items-start gap-2 text-sm leading-relaxed">
+            <input type="checkbox" checked={whatsappConsent} onChange={e => setWhatsappConsent(e.target.checked)} className="mt-1" />
+            אני רוצה לקבל בוואטסאפ שאלות המשך מהמרפאה לגבי הפנייה והזמינות לתור מוקדם. התשובות יישמרו במערכת המרפאה ואפשר לבקש נציג או להפסיק בכל שלב.
+          </label>}
           <DialogFooter className="flex-col gap-2 sm:flex-row sm:justify-start">
             {waitlistJoined ? (
               <Button className="w-full sm:w-auto" onClick={() => setWaitlistOpen(false)}>

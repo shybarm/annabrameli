@@ -65,3 +65,6 @@ verify_jwt = false
 
 [functions.send-telephone-invitation]
 verify_jwt = false
+
+[functions.clinic-whatsapp-bot]
+verify_jwt = false

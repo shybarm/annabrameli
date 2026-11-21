@@ -14,6 +14,18 @@ export type Database = {
   }
   public: {
     Tables: {
+      whatsapp_conversations: {
+        Row: { id: string; phone: string; name: string; source: string; bot_stage: string; answers: Json; opted_out: boolean; unread: boolean; updated_at: string; created_at: string; clinic_id: string | null; bot_started_at: string | null }
+        Insert: never
+        Update: never
+        Relationships: []
+      }
+      whatsapp_messages: {
+        Row: { id: string; conversation_id: string; provider_id: string | null; direction: string; body: string; message_type: string; status: string; created_at: string }
+        Insert: never
+        Update: never
+        Relationships: []
+      }
       telephone_whatsapp_deliveries: {
         Row: { appointment_id: string; state: string; auto_enabled: boolean; updated_at: string; accepted_at: string | null; error_code: string | null }
         Insert: never
@@ -2484,6 +2496,7 @@ export type Database = {
       }
     }
     Functions: {
+      staff_whatsapp_action: { Args: { p_conversation: string; p_action: string; p_text?: string }; Returns: undefined }
       accept_team_invitation: {
         Args: { _invite_code: string; _user_id: string }
         Returns: boolean

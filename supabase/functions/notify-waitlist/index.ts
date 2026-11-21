@@ -58,6 +58,18 @@ serve(async (req: Request): Promise<Response> => {
       });
     }
 
+    // Only the explicit website opt-in starts the WhatsApp follow-up.
+    {
+      const normalizedPhone = phone.replace(/[\s()+-]/g, '').replace(/^0(?=\d{8,9}$)/, '972');
+      if (!/^9725\d{8}$/.test(normalizedPhone)) {
+        return new Response(JSON.stringify({ error: "Invalid mobile number" }), { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } });
+      }
+      const { error: registrationError } = await supabase.rpc('register_whatsapp_waitlist', {
+        p_name: name, p_phone: normalizedPhone, p_clinic: 'b53104e3-a21b-490b-bdc2-7636ce7d094c', p_start: body.whatsappConsent === true,
+      });
+      if (registrationError) throw new Error('Waitlist registration unavailable');
+    }
+
     const { data: settingsData } = await supabase
       .from("clinic_settings")
       .select("value")
