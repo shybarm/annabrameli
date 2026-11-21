@@ -6,18 +6,15 @@ const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
 const COPY_TO_EMAIL = "shy@createit.tv";
 
-const clean = (v: unknown, max = 200) =>
-  typeof v === "string" ? v.trim().slice(0, max) : "";
+const clean = (v: unknown, max = 200) => (typeof v === "string" ? v.trim().slice(0, max) : "");
 
 const escapeHtml = (s: string) =>
-  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 
 serve(async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
@@ -39,10 +36,7 @@ serve(async (req: Request): Promise<Response> => {
       });
     }
 
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-    );
+    const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
     // Basic abuse protection - 5 requests per phone per 10 minutes
     const { data: allowed } = await supabase.rpc("check_rate_limit", {
@@ -60,14 +54,20 @@ serve(async (req: Request): Promise<Response> => {
 
     // Only the explicit website opt-in starts the WhatsApp follow-up.
     {
-      const normalizedPhone = phone.replace(/[\s()+-]/g, '').replace(/^0(?=\d{8,9}$)/, '972');
+      const normalizedPhone = phone.replace(/[\s()+-]/g, "").replace(/^0(?=\d{8,9}$)/, "972");
       if (!/^9725\d{8}$/.test(normalizedPhone)) {
-        return new Response(JSON.stringify({ error: "Invalid mobile number" }), { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } });
+        return new Response(JSON.stringify({ error: "Invalid mobile number" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        });
       }
-      const { error: registrationError } = await supabase.rpc('register_whatsapp_waitlist', {
-        p_name: name, p_phone: normalizedPhone, p_clinic: 'b53104e3-a21b-490b-bdc2-7636ce7d094c', p_start: body.whatsappConsent === true,
+      const { error: registrationError } = await supabase.rpc("register_whatsapp_waitlist", {
+        p_name: name,
+        p_phone: normalizedPhone,
+        p_clinic: "b53104e3-a21b-490b-bdc2-7636ce7d094c",
+        p_start: body.whatsappConsent === true,
       });
-      if (registrationError) throw new Error('Waitlist registration unavailable');
+      if (registrationError) throw new Error("Waitlist registration unavailable");
     }
 
     const { data: settingsData } = await supabase
@@ -83,16 +83,11 @@ serve(async (req: Request): Promise<Response> => {
       .limit(1)
       .maybeSingle();
 
-    const notificationEmail = settingsData?.value || clinicData?.email ||
-      "info@ihaveallergy.com";
+    const notificationEmail = settingsData?.value || clinicData?.email || "info@ihaveallergy.com";
     const senderName = 'ד"ר אנה ברמלי';
 
     const row = (label: string, value: string) =>
-      value
-        ? `<p style="margin:5px 0;color:#4b5563;"><strong>${label}:</strong> ${
-          escapeHtml(value)
-        }</p>`
-        : "";
+      value ? `<p style="margin:5px 0;color:#4b5563;"><strong>${label}:</strong> ${escapeHtml(value)}</p>` : "";
 
     const emailResponse = await resend.emails.send({
       from: `${senderName} <info@ihaveallergy.com>`,
@@ -126,3 +121,5 @@ serve(async (req: Request): Promise<Response> => {
     });
   }
 });
+
+// Persist waitlist intake before sending staff notifications.
