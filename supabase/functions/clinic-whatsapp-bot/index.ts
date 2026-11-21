@@ -19,7 +19,7 @@ async function drain() {
   const client = db();
   for (let n = 0; n < 8; n++) {
     const { data: job, error } = await client.rpc("claim_clinic_whatsapp_outbox");
-    if (error) throw new Error("Queue unavailable");
+    if (error) { console.warn("whatsapp_queue_code", error.code); throw new Error("Queue unavailable: " + error.code); }
     if (!job) return;
     let id: string | null = null;
     try {
@@ -82,13 +82,17 @@ Deno.serve(async (request) => {
       return new Response(null, { status: 403 });
     if (String(body.instanceData?.idInstance) !== "710722808546" || body.instanceData?.wid !== "972555070399@c.us")
       return new Response(null, { status: 403 });
+    if (body.typeWebhook === "quotaExceeded") {
+      await client.from("whatsapp_bot_settings").update({quota_exceeded_at:new Date().toISOString()}).eq("singleton",true);
+      return new Response(null,{status:200});
+    }
     if (body.typeWebhook === "outgoingMessageStatus") {
       const status = body.status;
       if (["sent", "delivered", "read", "failed", "noAccount"].includes(status) && typeof body.idMessage === "string") {
         // Monotonic delivery statuses: late "sent" must never replace "read".
         const { data: message } = await client
           .from("whatsapp_messages")
-          .select("id,status")
+          .select("id,status,conversation_id")
           .eq("provider_id", body.idMessage)
           .maybeSingle();
         const rank: Record<string, number> = {
@@ -101,7 +105,7 @@ Deno.serve(async (request) => {
           failed: 2,
           noAccount: 2,
         };
-        if (message && (rank[status] ?? 0) > (rank[message.status] ?? 0))
+        if (message && ((rank[status] ?? 0) > (rank[message.status] ?? 0) || (["failed","noAccount"].includes(status) && (rank[message.status] ?? 0)<4)))
           await client.from("whatsapp_messages").update({ status }).eq("id", message.id);
         if (status === "delivered" || status === "read")
           await client
@@ -126,6 +130,7 @@ Deno.serve(async (request) => {
         p_from_staff: body.typeWebhook === "outgoingMessageReceived",
       });
       if (received.error) throw new Error("Incoming message not saved");
+      await client.from("whatsapp_bot_settings").update({last_incoming_at:new Date().toISOString()}).eq("singleton",true);
       // Outbound sends have their own durable queue; provider retries cannot duplicate replies.
       const background = drain().catch(() => console.warn("whatsapp_bot", "queue_pending"));
       const runtime = (globalThis as unknown as { EdgeRuntime?: { waitUntil: (p: Promise<void>) => void } })
@@ -134,9 +139,10 @@ Deno.serve(async (request) => {
       else await background;
     }
     return new Response(null, { status: 200 });
-  } catch {
-    console.error("whatsapp_bot", "operation_failed");
-    return new Response(null, { status: 503 });
+  } catch (error) {
+    const code = error instanceof Error && /^(Queue unavailable|Delivery status unavailable|Provider unavailable|Provider rejected request|Settings not saved)/.test(error.message) ? error.message : "operation_failed";
+    console.error("whatsapp_bot", code);
+    return Response.json({error:code}, { status: 503 });
   }
 });
 

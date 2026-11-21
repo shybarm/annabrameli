@@ -14,6 +14,12 @@ export type Database = {
   }
   public: {
     Tables: {
+      whatsapp_bot_settings: {
+        Row: {setup_state:string;updated_at:string;last_incoming_at:string|null;quota_exceeded_at:string|null}
+        Insert: never
+        Update: never
+        Relationships: []
+      }
       whatsapp_conversations: {
         Row: { id: string; phone: string; name: string; source: string; bot_stage: string; answers: Json; opted_out: boolean; unread: boolean; updated_at: string; created_at: string; clinic_id: string | null; bot_started_at: string | null }
         Insert: never

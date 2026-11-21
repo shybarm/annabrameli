@@ -9,10 +9,14 @@ import { toast } from '@/hooks/use-toast';
 
 const labels: Record<string,string>={reason:'סיבת הפנייה',current_appointment:'תור קיים',availability:'ימים ושעות מתאימים',notice:'זמינות בהתראה קצרה',format:'העדפת סוג הביקור'};
 const stages: Record<string,string>={human:'ממתין לצוות',completed:'השאלון הושלם',stopped:'הבוט נעצר',reason:'איסוף סיבת הפנייה',current_appointment:'בירור תור קיים',availability:'בירור זמינות',notice:'בירור התראה',format:'העדפת סוג ביקור'};
-const statuses: Record<string,string>={pending:'ממתינה לשליחה',processing:'בשליחה',accepted:'הועברה לשירות',sent:'נשלחה',delivered:'נמסרה',read:'נקראה',failed:'השליחה נכשלה',noAccount:'אין חשבון וואטסאפ',received:'התקבלה'};
+const statuses: Record<string,string>={pending:'ממתינה לשליחה',processing:'בשליחה',accepted:'הועברה לשירות',sent:'נשלחה',delivered:'נמסרה',read:'נקראה',failed:'השליחה נכשלה',noAccount:'אין חשבון וואטסאפ',received:'התקבלה',cancelled:'בוטלה'};
 export default function WhatsAppInbox() {
  const {hasPermission}=useAuth(); const allowed=hasPermission('canEditAppointments');
  const qc=useQueryClient(); const [selected,setSelected]=useState<string|null>(null); const [search,setSearch]=useState(''); const [reply,setReply]=useState('');
+ const health=useQuery({queryKey:['clinic-whatsapp-health'],enabled:allowed,queryFn:async()=>{
+  const {data,error}=await supabase.from('whatsapp_bot_settings').select('setup_state,updated_at,last_incoming_at,quota_exceeded_at').single();
+  if(error)throw error; return data;
+ },refetchInterval:10000});
  const conversations=useQuery({queryKey:['clinic-whatsapp'],enabled:allowed,queryFn:async()=>{
   const {data,error}=await supabase.from('whatsapp_conversations').select('*').order('updated_at',{ascending:false}).limit(200);
   if(error)throw error; return data;
@@ -29,6 +33,8 @@ export default function WhatsAppInbox() {
  return <div dir="rtl" className="space-y-4">
   <h1 className="text-2xl font-bold">וואטסאפ ורשימת המתנה</h1>
   <p className="text-sm text-muted-foreground">מספר המרפאה: 055-507-0399. התשובות נשמרות לצוות; תור מוקדם נקבע רק לאחר בדיקה ואישור.</p>
+  {health.data?.last_incoming_at&&<p className="text-xs text-muted-foreground">הודעה נכנסת אחרונה התקבלה במערכת: {new Date(health.data.last_incoming_at).toLocaleString('he-IL',{timeZone:'Asia/Jerusalem'})}</p>}
+  {health.data?.quota_exceeded_at&&<p role="alert" className="rounded-lg border border-amber-400 bg-amber-50 p-3">GREEN API דיווח על חריגה ממגבלת אנשי הקשר. ייתכן שחלק מההודעות אינן מתקבלות. יש לבדוק את המסלול בחשבון GREEN API.</p>}
   {conversations.isError&&<p role="alert">לא ניתן לטעון פניות כרגע.</p>}
   <div className="grid gap-4 lg:grid-cols-[320px_1fr]">
    <aside className="space-y-2"><Input placeholder="חיפוש לפי שם או טלפון" value={search} onChange={e=>setSearch(e.target.value)}/>
