@@ -1,3 +1,4 @@
+// Updated clinic greeting: children and adults, 21 November 2026.
 import { createClient } from "npm:@supabase/supabase-js@2.49.4";
 
 const welcome =
