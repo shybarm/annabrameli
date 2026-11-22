@@ -122,6 +122,13 @@ export function ClinicalTemplates({
     >
       <DialogContent
         dir="rtl"
+        onKeyDownCapture={(event) => {
+          if (event.key === 'Escape' && !event.nativeEvent.isComposing && !busy) {
+            event.preventDefault();
+            event.stopPropagation();
+            onClose();
+          }
+        }}
         className="visit-template-dialog max-h-[86dvh] max-w-lg overflow-y-auto text-start"
       >
         <DialogTitle className="pe-2 ps-5 text-start">

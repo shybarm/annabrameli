@@ -96,6 +96,7 @@ export function ClinicalVisitWorkspace({ appointmentId, legacy, patientName, pat
   const [includeMedication, setIncludeMedication] = useState(false);
   const [historyVersion, setHistoryVersion] = useState<number | null>(null);
   const [templates, setTemplates] = useState(false);
+  const templateTrigger = useRef<HTMLElement | null>(null);
   const [seed, setSeed] = useState<{ field: VisitField; body: string } | null>(null);
   const [selection, setSelection] = useState<{ field: VisitField; body: string } | null>(null);
   const [offline, setOffline] = useState(!navigator.onLine);
@@ -314,6 +315,7 @@ export function ClinicalVisitWorkspace({ appointmentId, legacy, patientName, pat
                   variant="ghost"
                   size="sm"
                   onClick={() => {
+                    templateTrigger.current = document.activeElement as HTMLElement;
                     setSeed(selection);
                     setTemplates(true);
                   }}
@@ -325,6 +327,7 @@ export function ClinicalVisitWorkspace({ appointmentId, legacy, patientName, pat
                 variant="outline"
                 size="sm"
                 onClick={() => {
+                  templateTrigger.current = document.activeElement as HTMLElement;
                   setSeed(null);
                   setTemplates(true);
                 }}
@@ -381,7 +384,10 @@ export function ClinicalVisitWorkspace({ appointmentId, legacy, patientName, pat
         <ClinicalTemplates
           selection={seed}
           identifiers={[patientName, patientIdNumber]}
-          onClose={() => setTemplates(false)}
+          onClose={() => {
+            setTemplates(false);
+            requestAnimationFrame(() => templateTrigger.current?.focus({ preventScroll: true }));
+          }}
           onInsert={(sections) => {
             setDraft((prev) => {
               if (!prev) return prev;
