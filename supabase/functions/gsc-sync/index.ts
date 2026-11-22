@@ -207,7 +207,7 @@ async function ingestGrain(
         if (error) throw new Error(`Upsert failed: ${error.message}`);
       }
 
-      await supabase.from("gsc_dataset_sync_cursor").upsert(
+      const { error: cursorError } = await supabase.from("gsc_dataset_sync_cursor").upsert(
         {
           property: target.property,
           dataset,
@@ -220,6 +220,7 @@ async function ingestGrain(
         { onConflict: "property,dataset,date" },
       );
 
+      if (cursorError) throw new Error("Cannot record page sync: " + cursorError.message);
       daysProcessed++;
       rowsWritten += records.length;
     } catch (err) {
@@ -419,6 +420,33 @@ serve(async (req) => {
     }
 
 
+    // Daily runs refresh the settling tail and also repair gaps left by an
+    // outage. Each grain has its own cursor, including checked zero-row days.
+    async function recentTargets(dataset: "query" | "page" | "totals") {
+      const jobs: { property: string; date: string }[] = [];
+      for (const property of properties) {
+        for (let i = 0; i <= RESETTLE_DAYS; i++) {
+          jobs.push({ property, date: isoDate(addDays(latest, -i)) });
+        }
+        const cursor = dataset === "query"
+          ? supabase.from("gsc_sync_cursor").select("date")
+          : supabase.from("gsc_dataset_sync_cursor").select("date").eq("dataset", dataset);
+        const { data, error } = await cursor.eq("property", property).eq("status", "ok")
+          .gte("date", isoDate(addDays(latest, -179))).lte("date", isoDate(latest));
+        if (error) throw new Error("Cannot read daily sync coverage: " + error.message);
+        const done = new Set((data ?? []).map(row => row.date));
+        let repairs = 0;
+        for (let i = RESETTLE_DAYS + 1; i < 180 && repairs < 2; i++) {
+          const date = isoDate(addDays(latest, -i));
+          if (!done.has(date)) {
+            jobs.push({ property, date });
+            repairs++;
+          }
+        }
+      }
+      return jobs;
+    }
+
     // --- Decide which (property, day) pairs to process ----------------------
     let targets: { property: string; date: string }[] = [];
 
@@ -457,12 +485,7 @@ serve(async (req) => {
       if (error) throw new Error(`Cursor read failed: ${error.message}`);
       targets = pending ?? [];
     } else {
-      // "recent": always re-fetch the settle window, ok or not.
-      for (const property of properties) {
-        for (let i = RESETTLE_DAYS; i >= 0; i--) {
-          targets.push({ property, date: isoDate(addDays(latest, -i)) });
-        }
-      }
+      targets = await recentTargets("query");
     }
 
     // --- Ingest ------------------------------------------------------------
@@ -490,7 +513,7 @@ serve(async (req) => {
           if (error) throw new Error(`Upsert failed: ${error.message}`);
         }
 
-        await supabase.from("gsc_sync_cursor").upsert(
+        const { error: cursorError } = await supabase.from("gsc_sync_cursor").upsert(
           {
             property: target.property,
             date: target.date,
@@ -502,6 +525,7 @@ serve(async (req) => {
           { onConflict: "property,date" },
         );
 
+        if (cursorError) throw new Error("Cannot record query sync: " + cursorError.message);
         daysProcessed++;
         rowsWritten += records.length;
       } catch (err) {
@@ -585,11 +609,7 @@ serve(async (req) => {
         if (error) throw new Error(`Dataset cursor read failed: ${error.message}`);
         grainTargets = pending ?? [];
       } else {
-        for (const property of properties) {
-          for (let i = RESETTLE_DAYS; i >= 0; i--) {
-            grainTargets.push({ property, date: isoDate(addDays(latest, -i)) });
-          }
-        }
+        grainTargets = await recentTargets(dataset);
       }
 
       const result = await ingestGrain(supabase, token, dataset, grainTargets, startMs);
@@ -602,7 +622,7 @@ serve(async (req) => {
         .neq("status", "ok");
 
       grainResults[dataset] = {
-        status: result.failures.length === 0 ? "ok" : "partial",
+        status: !result.timedOut && result.failures.length === 0 ? "ok" : "partial",
         daysProcessed: result.daysProcessed,
         rowsWritten: result.rowsWritten,
         failureCount: result.failures.length,
@@ -635,7 +655,7 @@ serve(async (req) => {
 
     const summary = {
       status:
-        failures.length === 0 && grainFailureCount === 0 ? "ok" : "partial",
+        !timedOut && !grainTimedOut && failures.length === 0 && grainFailureCount === 0 ? "ok" : "partial",
       mode,
       startedAt,
       finishedAt: new Date().toISOString(),
@@ -644,7 +664,7 @@ serve(async (req) => {
         // Query grain: discovery only. Never a traffic or page-performance
         // measure - Google suppresses anonymised queries.
         query: {
-          status: failures.length === 0 ? "ok" : "partial",
+          status: !timedOut && failures.length === 0 ? "ok" : "partial",
           daysProcessed,
           rowsWritten,
           failureCount: failures.length,

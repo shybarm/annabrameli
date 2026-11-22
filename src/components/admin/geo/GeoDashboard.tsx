@@ -69,11 +69,11 @@ export function GeoDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Data source indicator */}
+      <p className="text-sm text-muted-foreground">ציוני התוכן הם הערכות עריכה. לצד ציונים שמקורם בסריקה שמורה מופיע מועד הסריקה האחרון. מדידות חיפוש מופיעות בלשונית ההזדמנויות האורגניות.</p>
       {hasScanData && (
         <div className="flex items-center gap-2 text-[10px] text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800">
           <Database className="h-3 w-3" />
-          נתונים חיים מ-{Object.keys(scanResults).length} סריקות AI
+          הערכות שמורות מתוך {Object.keys(scanResults).length} סריקות AI
           {latestScanAt && ` • עודכן ${new Date(latestScanAt).toLocaleDateString('he-IL')}`}
           {savedPages > 0 && ` • ${savedPages} דפים נשמרו`}
           {clusterActions.filter(a => a.status === 'completed').length > 0 && ` • ${clusterActions.filter(a => a.status === 'completed').length} פעולות הושלמו`}
@@ -91,7 +91,7 @@ export function GeoDashboard() {
               </div>
               <p className="text-xs text-muted-foreground mt-1">{s.label}</p>
               {s.live && (
-                <span className="text-[8px] text-emerald-500">● חי</span>
+                <span className="text-[8px] text-emerald-500">מתועד</span>
               )}
             </CardContent>
           </Card>

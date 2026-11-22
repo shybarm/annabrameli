@@ -8,6 +8,8 @@
  * Nothing on this screen changes the website. These are recommendations.
  */
 
+import { shiftDay } from '@/lib/geo/reporting-window';
+import { useGeoSync } from '@/hooks/useGeoSync';
 import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -80,7 +82,7 @@ function ScoreDial({ score }: { score: number }) {
   return (
     <div className={cn('flex flex-col items-center justify-center rounded-xl border w-16 h-16 shrink-0', tone)}>
       <span className="text-xl font-bold leading-none tabular-nums">{score}</span>
-      <span className="text-[10px] opacity-70">ציון</span>
+      <span className="text-[10px] opacity-70">עדיפות משוערת</span>
     </div>
   );
 }
@@ -131,7 +133,7 @@ function OpportunityCard({ opp }: { opp: Opportunity }) {
                 sub={opp.trend.positionChange === null ? undefined
                   : `${opp.trend.positionChange > 0 ? '↑' : '↓'} ${Math.abs(opp.trend.positionChange).toFixed(1)}`} />
               <Metric
-                label="אפסייד משוער"
+                label="תוספת קליקים משוערת"
                 value={opp.upside.incrementalClicks === null ? '-' : `+${opp.upside.incrementalClicks}`}
                 sub={opp.upside.targetPosition ? `יעד ${opp.upside.targetPosition}` : undefined}
               />
@@ -178,7 +180,7 @@ function OpportunityCard({ opp }: { opp: Opportunity }) {
                 </ul>
               </Section>
 
-              <Section title="אפסייד משוער">
+              <Section title="תוספת קליקים משוערת">
                 <p className="text-muted-foreground">{opp.upside.assumptions}</p>
                 {opp.upside.basedOnAssumedCtr && opp.upside.incrementalClicks !== null && (
                   <p className="text-amber-700 mt-1">
@@ -260,6 +262,10 @@ export function GeoOrganicOpportunities() {
 
   const { data, isLoading, isError, refetch } = useOrganicOpportunities(windowDays, host);
 
+  const needsRepair = !!data && (data.pageDays !== windowDays || data.prevPageDays !== windowDays ||
+    !data.ga4Date || data.ga4Date < shiftDay(data.endDate, -2) || data.totalsDate !== data.endDate);
+  const sync = useGeoSync(windowDays, host, needsRepair);
+  const complete = data?.pageDays === windowDays && data?.prevPageDays === windowDays;
   const filtered = useMemo(() => {
     const list = data?.opportunities ?? [];
     return list.filter((o) => {
@@ -275,25 +281,44 @@ export function GeoOrganicOpportunities() {
         <CardHeader className="pb-3">
           <CardTitle className="text-base">מה כדאי לעשות עכשיו כדי להגדיל תנועה אורגנית?</CardTitle>
           <p className="text-xs text-muted-foreground">
-            הזדמנויות מדורגות מנתוני Search Console ו-GA4 אמיתיים. אלו המלצות בלבד - שום פעולה כאן אינה משנה את האתר.
+            קליקים, חשיפות ומיקום ממוצע נמדדים ב-Google Search Console. ביקורים אורגניים נמדדים בנפרד ב-GA4. העדיפות, מיקום היעד ותוספת הקליקים הם הערכות.
           </p>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex flex-wrap gap-2">
             {WINDOWS.map((w) => (
               <Button key={w.value} size="sm"
-                variant={windowDays === w.value ? 'default' : 'outline'}
+                disabled={sync.isPending} variant={windowDays === w.value ? 'default' : 'outline'}
                 onClick={() => setWindowDays(w.value)}>{w.label}</Button>
             ))}
             <span className="w-px bg-border mx-1" />
             {[PRIMARY_HOST, SEO_HOST].map((h) => (
               <Button key={h} size="sm"
-                variant={host === h ? 'default' : 'outline'}
+                disabled={sync.isPending} variant={host === h ? 'default' : 'outline'}
                 onClick={() => setHost(h)}>{h}</Button>
             ))}
           </div>
 
-          <div className="flex flex-wrap gap-1.5">
+          <div className="space-y-2 rounded-lg border p-3 text-sm">
+            {data && <>
+              <p className="font-semibold">תקופת הדיווח: {shiftDay(data.endDate, 1 - windowDays)} עד {data.endDate}</p>
+              <p className="text-xs text-muted-foreground">התאריך האחרון שהתקבלה עבורו מדידה בכל מקור</p>
+              <dl className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                {[
+                  ['סך החיפוש בדומיין', data.totalsDate], ['ביצועי עמודים', data.pageDate],
+                  ['שאילתות שגוגל חשפה', data.queryDate], ['ביקורים אורגניים ב-GA4', data.ga4Date],
+                ].map(([label, date]) => <div key={label}><dt className="text-xs">{label}</dt>
+                  <dd className={date && date >= data.endDate ? 'font-medium' : 'text-amber-800'}>{date ?? 'אין מדידה זמינה'}</dd></div>)}
+              </dl>
+              {!complete && <p className="text-xs text-amber-800">כיסוי סנכרון העמודים: {data.pageDays ?? '?'} מתוך {windowDays} ימים בתקופה זו, {data.prevPageDays ?? '?'} בתקופה הקודמת. דירוג ההזדמנויות יוצג אחרי השלמת שתי התקופות.</p>}
+            </>}
+            <Button size="sm" variant="outline" disabled={sync.isPending} onClick={() => sync.mutate()}>
+              {sync.isPending ? sync.progress || 'מתחיל סנכרון' : 'סנכרון מגוגל'}
+            </Button>
+            <p role="status" className="text-xs">{sync.error?.message ??
+              (sync.isSuccess ? 'בקשת הסנכרון הסתיימה. התאריכים מציגים את המדידות שהתקבלו.' : '')}</p>
+          </div>
+          {complete && <div className="flex flex-wrap gap-1.5">
             <FilterChip active={signalFilter === 'all'} onClick={() => setSignalFilter('all')}>הכל</FilterChip>
             {(Object.keys(SIGNAL_META) as SignalType[])
               .filter((t) => t !== 'query_opportunity' && t !== 'content_gap')
@@ -309,7 +334,7 @@ export function GeoOrganicOpportunities() {
                 {CONFIDENCE_META[c].label}
               </FilterChip>
             ))}
-          </div>
+          </div>}
 
           {/* Site traffic truth, kept visually separate from page rows so it is
               never confused with the sum of anything below. */}
@@ -320,14 +345,14 @@ export function GeoOrganicOpportunities() {
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
                 <Metric label="קליקים" value={String(data.totals.clicks)}
-                  sub={`תקופה קודמת: ${data.totals.prev_clicks}`} />
+                  sub={`תקופה קודמת: ${data.totals.prev_days === windowDays ? data.totals.prev_clicks : "כיסוי חלקי"}`} />
                 <Metric label="חשיפות" value={String(data.totals.impressions)}
-                  sub={`תקופה קודמת: ${data.totals.prev_impressions}`} />
+                  sub={`תקופה קודמת: ${data.totals.prev_days === windowDays ? data.totals.prev_impressions : "כיסוי חלקי"}`} />
                 <Metric label="CTR" value={pct(data.totals.ctr, 2)} />
                 <Metric label="מיקום ממוצע" value={data.totals.avg_position.toFixed(1)} />
               </div>
               <p className="text-[10px] text-muted-foreground mt-1.5">
-                מקור אמת לתנועה: נתוני סך-הכל של Search Console. אינו סכום של העמודים ואינו סכום של השאילתות.
+                דווחו {data.totals.days_with_data} מתוך {windowDays} ימים. נתוני הדומיין כוללים את תת-הדומיינים. Google מציגה רק חלק מהשאילתות.
               </p>
             </div>
           )}
@@ -351,7 +376,7 @@ export function GeoOrganicOpportunities() {
         </Card>
       )}
 
-      {!isLoading && !isError && data && !data.unavailable && (
+      {!isLoading && !isError && data && !data.unavailable && complete && (
         <>
           <div className="text-xs text-muted-foreground">
             {filtered.length} הזדמנויות מתוך {data?.opportunities.length ?? 0} עמודים

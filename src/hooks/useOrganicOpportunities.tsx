@@ -29,6 +29,8 @@ import {
   type CtrCurveRow,
 } from '@/lib/geo/opportunity-engine';
 
+import { settledSearchDay, shiftDay } from '@/lib/geo/reporting-window';
+
 export const PRIMARY_HOST = 'ihaveallergy.com';
 export const SEO_HOST = 'seo.ihaveallergy.com';
 
@@ -58,78 +60,69 @@ export interface OrganicOpportunitiesData {
   opportunities: Opportunity[];
   /** Site traffic truth, straight from Google's undimensioned totals. */
   totals: SiteTotals | null;
+  endDate: string;
+  pageDate: string | null;
+  queryDate: string | null;
+  ga4Date: string | null;
+  totalsDate: string | null;
+  pageDays: number | null;
+  prevPageDays: number | null;
   /** True when the Stage 1B SQL functions are not deployed yet. */
   unavailable: boolean;
   unavailableReason?: string;
 }
 
-const EMPTY: OrganicOpportunitiesData = {
-  opportunities: [],
-  totals: null,
-  unavailable: true,
-  unavailableReason: 'טרם הופעלו פונקציות הניתוח במסד הנתונים',
-};
-
 export function useOrganicOpportunities(
   windowDays: WindowDays = 28,
   host: string = PRIMARY_HOST,
 ) {
+  const endDate = settledSearchDay();
+  const startDate = shiftDay(endDate, 1 - windowDays);
+  const priorStart = shiftDay(startDate, -windowDays);
   return useQuery<OrganicOpportunitiesData>({
-    queryKey: ['organic-opportunities', windowDays, host],
+    queryKey: ['organic-opportunities', windowDays, host, endDate],
     queryFn: async () => {
-      // Page grain - the page-performance source of truth.
-      const pagesRes = await supabase.rpc('geo_page_window', {
-        p_host: host,
-        p_window_days: windowDays,
-      });
-
-      // A missing function means the Stage 1B migration has not been applied.
-      // Report that honestly instead of rendering an empty dashboard that
-      // looks like "no opportunities".
-      if (pagesRes.error) return { ...EMPTY, unavailableReason: pagesRes.error.message };
-
-      const pages: PageWindow[] = pagesRes.data ?? [];
-      if (pages.length === 0) {
-        return {
-          opportunities: [],
-          totals: null,
-          unavailable: true,
-          unavailableReason: 'אין עדיין נתוני Search Console לתקופה שנבחרה',
-        };
-      }
-
-      const [queriesRes, ga4Res, curveRes, totalsRes] = await Promise.all([
-        supabase.rpc('geo_query_window', {
-          p_host: host,
-          p_window_days: windowDays,
-        }),
-        supabase.rpc('geo_ga4_page_window', {
-          p_window_days: windowDays,
-        }),
-        supabase.rpc('geo_ctr_curve', {
-          p_host: host,
-          p_window_days: 90,
-        }),
-        supabase.rpc('geo_totals_window', {
-          p_property: MAIN_PROPERTY,
-          p_window_days: windowDays,
-        }),
-      ]);
-
-      // Queries, GA4 and the CTR curve are all optional enrichment: if any of
-      // them fails the page grain still stands on its own.
-      const queries: QueryRow[] = queriesRes.data ?? [];
-      const ga4Rows: Ga4PageRow[] = ga4Res.data ?? [];
-      const curve: CtrCurveRow[] = curveRes.data ?? [];
-      const totalsRows: SiteTotals[] = totalsRes.data ?? [];
+      const bounds = { p_window_days: windowDays, p_end_date: endDate };
+      const [pages, queries, ga4, curve, totals, pageDate, queryDate, ga4Date, totalsDate, coverage] =
+        await Promise.all([
+          supabase.rpc('geo_page_window', { ...bounds, p_host: host }),
+          supabase.rpc('geo_query_window', { ...bounds, p_host: host, p_min_impressions: 1 }),
+          supabase.rpc('geo_ga4_page_window', bounds),
+          supabase.rpc('geo_ctr_curve', { ...bounds, p_host: host, p_window_days: 90 }),
+          supabase.rpc('geo_totals_window', { ...bounds, p_property: MAIN_PROPERTY }),
+          supabase.from('search_console_page_daily').select('date').eq('page_host', host)
+            .lte('date', endDate).order('date', { ascending: false }).limit(1),
+          supabase.from('search_console_daily').select('date').eq('page_host', host)
+            .lte('date', endDate).order('date', { ascending: false }).limit(1),
+          supabase.from('analytics_landing_daily').select('date').eq('channel_group', 'Organic Search')
+            .lte('date', endDate).order('date', { ascending: false }).limit(1),
+          supabase.from('search_console_totals_daily').select('date').eq('property', MAIN_PROPERTY)
+            .lte('date', endDate).order('date', { ascending: false }).limit(1),
+          supabase.from('gsc_dataset_sync_cursor').select('date').eq('dataset', 'page')
+            .eq('property', MAIN_PROPERTY).eq('status', 'ok').gte('date', priorStart).lte('date', endDate),
+        ]);
+      const pageRows: PageWindow[] = pages.data ?? [];
+      const queryRows: QueryRow[] = queries.data ?? [];
+      const ga4Rows: Ga4PageRow[] = ga4.data ?? [];
+      const ctrRows: CtrCurveRow[] = curve.data ?? [];
+      const total = totals.data?.[0];
+      const unavailable = Boolean(pages.error) || !pageRows.length;
 
       return {
-        opportunities: buildOpportunities(pages, queries, ga4Rows, curve, {
-          primaryHost: PRIMARY_HOST,
-          windowDays,
+        opportunities: buildOpportunities(pageRows, queryRows, host === PRIMARY_HOST ? ga4Rows : [], ctrRows, {
+          primaryHost: PRIMARY_HOST, windowDays,
         }),
-        totals: totalsRows[0] ?? null,
-        unavailable: false,
+        totals: total?.days_with_data ? total : null,
+        endDate,
+        pageDate: pageDate.data?.[0]?.date ?? null,
+        queryDate: queryDate.data?.[0]?.date ?? null,
+        ga4Date: ga4Date.data?.[0]?.date ?? null,
+        totalsDate: totalsDate.data?.[0]?.date ?? null,
+        pageDays: coverage.data?.filter(row => row.date >= startDate).length ?? null,
+        prevPageDays: coverage.data?.filter(row => row.date < startDate).length ?? null,
+        unavailable,
+        unavailableReason: pages.error ? 'טעינת נתוני העמודים נכשלה' :
+          'טרם התקבלו נתוני עמודים לתקופה שנבחרה. אפשר לסנכרן מגוגל.',
       };
     },
     staleTime: 10 * 60 * 1000,
