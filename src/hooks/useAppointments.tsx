@@ -276,9 +276,7 @@ export function useUpdateAppointment() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ id, telephone, ...input }: Partial<AppointmentInput> & { id: string; status?: string; cancelled_at?: string; cancellation_reason?: string }) => {
-      // `telephone` is a create-time routing flag (choose the telephone RPC), not an appointments column.
-      void telephone;
+    mutationFn: async ({ id, ...input }: Partial<AppointmentInput> & { id: string; status?: string; cancelled_at?: string; cancellation_reason?: string }) => {
       const { data, error } = await supabase
         .from('appointments')
         .update(input)
