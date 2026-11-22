@@ -678,6 +678,21 @@ export type Database = {
         }
         Relationships: []
       }
+      clinical_stamp_renderings: {
+        Row: {
+          original_hash: string
+          stamp_data: string
+        }
+        Insert: {
+          original_hash: string
+          stamp_data: string
+        }
+        Update: {
+          original_hash?: string
+          stamp_data?: string
+        }
+        Relationships: []
+      }
       clinical_templates: {
         Row: {
           body: string
@@ -3058,6 +3073,7 @@ export type Database = {
         Returns: Json
       }
       cleanup_expired_data: { Args: never; Returns: undefined }
+      clinical_document_stamp: { Args: { p_document: string }; Returns: string }
       clinical_signing_ready: { Args: never; Returns: boolean }
       create_appointment_atomic: {
         Args: {
