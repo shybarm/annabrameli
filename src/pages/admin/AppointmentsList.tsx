@@ -7,14 +7,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useAppointments, useAppointmentsRealtime, useAppointmentTypes } from '@/hooks/useAppointments';
-import { useNavigate } from 'react-router-dom';
+import { useAppointments, useAppointmentsRealtime } from '@/hooks/useAppointments';
+import { Link, useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Plus, Calendar, Clock, ChevronRight, ChevronLeft, CalendarDays, MapPin, Sparkles, LayoutGrid, List } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { format, addDays, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, isWeekend, addWeeks } from 'date-fns';
+import { format, addDays, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, addWeeks } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { PageHelpButton } from '@/components/tutorial/PageHelpButton';
 import { pageTutorials } from '@/components/tutorial/tutorialData';
@@ -31,11 +31,7 @@ export default function AppointmentsList() {
   const { selectedClinicId } = useClinicContext();
   const { data: currentClinic } = useClinic(selectedClinicId ?? undefined);
   
-  // Determine if today is weekend (Friday evening or Saturday in Israel context)
-  const isCurrentlyWeekend = isWeekend(today);
-  
-  // For the week view: show current week, or next week if it's weekend
-  const [weekOffset, setWeekOffset] = useState(isCurrentlyWeekend ? 1 : 0);
+  const [weekOffset, setWeekOffset] = useState(0);
   const viewDate = addWeeks(today, weekOffset);
   const weekStart = startOfWeek(viewDate, { weekStartsOn: 0 });
   const weekEnd = endOfWeek(viewDate, { weekStartsOn: 0 });
@@ -45,29 +41,22 @@ export default function AppointmentsList() {
   const [cancellingAppointmentId, setCancellingAppointmentId] = useState<string | null>(null);
   const [cancellationReason, setCancellationReason] = useState('');
   const [selectedReasonType, setSelectedReasonType] = useState<string>('');
-  const [dayViewDate, setDayViewDate] = useState<Date | null>(null);
+  const [selectedWeekday, setSelectedWeekday] = useState(today.getDay());
+  const selectedDate = weekDays[selectedWeekday];
   const [viewMode, setViewMode] = useState<'list' | 'availability'>('list');
   const [availabilityDate, setAvailabilityDate] = useState<Date>(today);
 
   const CANCELLATION_REASONS = [
-    { value: 'patient_no_show', label: 'המטופל לא הגיע' },
     { value: 'patient_cancelled', label: 'ביטול ע״י מטופל' },
     { value: 'clinic_cancelled', label: 'ביטול ע״י מרפאה' },
     { value: 'scheduling_error', label: 'טעות בקביעת תור' },
     { value: 'other', label: 'אחר' },
   ];
 
-  // Fetch today's appointments for current clinic
-  const { data: todayAppointments, isLoading: todayLoading } = useAppointments(
-    format(today, 'yyyy-MM-dd'),
-    format(addDays(today, 1), 'yyyy-MM-dd'),
-    selectedClinicId
-  );
-
   // Fetch week appointments for current clinic
-  const { data: weekAppointments, isLoading: weekLoading } = useAppointments(
-    format(weekStart, 'yyyy-MM-dd'),
-    format(addDays(weekEnd, 1), 'yyyy-MM-dd'),
+  const { data: weekAppointments, isLoading: weekLoading, isError: weekError, refetch: reloadWeek } = useAppointments(
+    weekStart.toISOString(),
+    weekEnd.toISOString(),
     selectedClinicId
   );
 
@@ -102,24 +91,12 @@ export default function AppointmentsList() {
     },
   });
 
-  const statusColors: Record<string, string> = {
-    scheduled: 'bg-blue-100 text-blue-700 border-blue-200',
-    waiting_room: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-    in_treatment: 'bg-purple-100 text-purple-700 border-purple-200',
-    completed: 'bg-green-100 text-green-700 border-green-200',
-    cancelled: 'bg-red-100 text-red-700 border-red-200',
-  };
-
   const statusLabels: Record<string, string> = {
     scheduled: 'מתוכנן',
     waiting_room: 'בחדר המתנה',
     in_treatment: 'חדר רופא',
     completed: 'הושלם',
     cancelled: 'בוטל',
-  };
-
-  const getTodayAppointments = () => {
-    return todayAppointments?.filter(apt => apt.status !== 'cancelled') || [];
   };
 
   const getAppointmentsForDay = (date: Date) => {
@@ -132,8 +109,7 @@ export default function AppointmentsList() {
     setWeekOffset(prev => prev + (direction === 'next' ? 1 : -1));
   };
 
-  const handleStatusChange = (id: string, newStatus: string, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleStatusChange = (id: string, newStatus: string) => {
     if (newStatus === 'cancelled') {
       setCancellingAppointmentId(id);
       setCancellationReason('');
@@ -165,28 +141,25 @@ export default function AppointmentsList() {
     }
   };
 
-  const isThisWeek = weekOffset === 0;
-  const isNextWeek = weekOffset === 1;
-
   return (
     <>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">תורים</h1>
-            <p className="text-muted-foreground">ניהול ומעקב אחר תורים</p>
+            <h1 className="text-2xl font-bold text-gray-900">יומן מרפאה</h1>
+
           </div>
           <div className="flex gap-2">
             <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'list' | 'availability')} className="w-auto">
               <TabsList className="grid grid-cols-2 h-10">
                 <TabsTrigger value="list" className="gap-1.5 px-3">
                   <List className="h-4 w-4" />
-                  <span className="hidden sm:inline">רשימה</span>
+                  <span>יומן שבועי</span>
                 </TabsTrigger>
                 <TabsTrigger value="availability" className="gap-1.5 px-3">
                   <LayoutGrid className="h-4 w-4" />
-                  <span className="hidden sm:inline">זמינות</span>
+                  <span>זמינות</span>
                 </TabsTrigger>
               </TabsList>
             </Tabs>
@@ -276,271 +249,35 @@ export default function AppointmentsList() {
           </Card>
         )}
 
-        {/* List View - Today's Appointments */}
-        {viewMode === 'list' && (
-          <>
-          <Card data-tutorial="appointments-list" className="border-2 border-primary/20 bg-primary/5">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-primary" />
-              תורים להיום - {format(today, 'EEEE, d בMMMM', { locale: he })}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {todayLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-              </div>
-            ) : getTodayAppointments().length > 0 ? (
-              <div className="space-y-3">
-                {getTodayAppointments()
-                  .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime())
-                  .map((apt) => {
-                    const isNewPatient = apt.patients?.intake_completed_at && !apt.patients?.reviewed_at;
-                    return (
-                  <div
-                    key={apt.id}
-                    className={cn(
-                      "p-4 rounded-lg border hover:shadow-md transition-shadow cursor-pointer",
-                      isNewPatient ? "bg-amber-50 border-amber-300 ring-2 ring-amber-400" : "bg-white"
-                    )}
-                    onClick={() => navigate(`/admin/appointments/${apt.id}`)}
-                  >
-                    {/* Mobile-friendly stacked layout */}
-                    <div className="flex items-start gap-3">
-                      <div className={cn(
-                        "flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-lg flex-shrink-0",
-                        isNewPatient ? "bg-amber-200 text-amber-700" : "bg-primary/15 text-primary"
-                      )}>
-                        <Clock className="h-5 w-5 sm:h-6 sm:w-6" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="font-semibold text-base sm:text-lg">
-                            {apt.patients?.first_name} {apt.patients?.last_name}
-                          </p>
-                          <p className="text-lg sm:text-xl font-bold text-primary">
-                            {format(new Date(apt.scheduled_at), 'HH:mm')}
-                          </p>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-2 mt-1">
-                          {isNewPatient && (
-                            <Badge className="bg-amber-500 text-white text-xs animate-pulse">
-                              <Sparkles className="h-3 w-3 ml-1" />
-                              מטופל חדש
-                            </Badge>
-                          )}
-                          <Badge className={statusColors[apt.status]} data-tutorial="appointment-status">
-                            {statusLabels[apt.status]}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {apt.appointment_types?.name_he || 'ייעוץ'} | {apt.duration_minutes} דקות
-                        </p>
-                        {apt.patients?.phone && (
-                          <p className="text-sm text-muted-foreground" dir="ltr">
-                            {apt.patients.phone}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    
-                    {/* Status dropdown - full width on mobile */}
-                    <div onClick={(e) => e.stopPropagation()} className="mt-3 pt-3 border-t">
-                      <Select
-                        value={apt.status}
-                        onValueChange={(newStatus) => handleStatusChange(apt.id, newStatus, { stopPropagation: () => {} } as React.MouseEvent)}
-                      >
-                        <SelectTrigger className={`w-full sm:w-40 min-h-[44px] text-sm ${statusColors[apt.status] || 'bg-gray-100'}`}>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="scheduled">מתוכנן</SelectItem>
-                          <SelectItem value="waiting_room">בחדר המתנה</SelectItem>
-                          <SelectItem value="in_treatment">חדר רופא</SelectItem>
-                          <SelectItem value="completed">הושלם</SelectItem>
-                          <SelectItem value="cancelled">בוטל</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                    );
-                  })}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                <p className="text-muted-foreground">אין תורים מתוכננים להיום</p>
-                <Button 
-                  variant="link" 
-                  className="mt-2"
-                  onClick={() => navigate('/admin/appointments/new')}
-                >
-                  קבע תור חדש
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Week View - SECOND */}
-        <Card data-tutorial="calendar-view">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <Button variant="ghost" size="icon" onClick={() => navigateWeek('next')} aria-label="שבוע הבא">
-                <ChevronRight className="h-5 w-5" />
-              </Button>
-              <div className="text-center">
-                <CardTitle className="flex items-center justify-center gap-2">
-                  <CalendarDays className="h-5 w-5 text-muted-foreground" />
-                  {isThisWeek ? 'השבוע' : isNextWeek ? 'שבוע הבא' : format(weekStart, 'd בMMMM', { locale: he })} 
-                  {' - '}
-                  {format(weekStart, 'd', { locale: he })} עד {format(weekEnd, 'd בMMMM yyyy', { locale: he })}
-                </CardTitle>
-                {currentClinic && (
-                  <p className="text-sm font-medium text-primary mt-1 flex items-center justify-center gap-1">
-                    <MapPin className="h-4 w-4" />
-                    {currentClinic.name}
-                  </p>
-                )}
-                {isCurrentlyWeekend && isNextWeek && (
-                  <p className="text-xs text-muted-foreground mt-1">מוצג שבוע הבא (היום סוף שבוע)</p>
-                )}
-              </div>
-              <Button variant="ghost" size="icon" onClick={() => navigateWeek('prev')} aria-label="שבוע קודם">
-                <ChevronLeft className="h-5 w-5" />
-              </Button>
+        {viewMode === 'list' && <>
+          <section className="clinic-week" data-tutorial="calendar-view" aria-label="יומן שבועי">
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" aria-label="שבוע קודם" onClick={()=>navigateWeek('prev')}><ChevronRight/></Button>
+              <bdi>{format(weekStart,'d/M')} - {format(weekEnd,'d/M/yyyy')}</bdi>
+              <Button variant="ghost" size="icon" aria-label="שבוע הבא" onClick={()=>navigateWeek('next')}><ChevronLeft/></Button>
+              <Button className="ms-auto" variant="outline" size="sm" onClick={()=>{setWeekOffset(0);setSelectedWeekday(today.getDay())}}>היום</Button>
             </div>
-          </CardHeader>
-          <CardContent>
-            {weekLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-              </div>
-            ) : (
-              <>
-                {/* Mobile: Horizontal scroll list of days */}
-                <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:hidden snap-x snap-mandatory">
-                  {weekDays.map((day) => {
-                    const dayAppointments = getAppointmentsForDay(day);
-                    const isToday = isSameDay(day, today);
-                    
-                    return (
-                      <div
-                        key={day.toISOString()}
-                        className={cn(
-                          "min-w-[140px] flex-shrink-0 p-3 rounded-lg border snap-start",
-                          isToday ? 'border-primary bg-primary/5' : 'border-border'
-                        )}
-                      >
-                        <div className="text-center mb-2">
-                          <p className="text-xs text-muted-foreground">
-                            {format(day, 'EEEE', { locale: he })}
-                          </p>
-                          <p className={cn("text-lg font-semibold", isToday && "text-primary")}>
-                            {format(day, 'd')}
-                          </p>
-                        </div>
-                        <div className="space-y-1">
-                          {dayAppointments.slice(0, 2).map((apt) => {
-                            const isNewPatient = apt.patients?.intake_completed_at && !apt.patients?.reviewed_at;
-                            return (
-                            <div
-                              key={apt.id}
-                              className={cn(
-                                "text-xs p-1.5 rounded cursor-pointer hover:opacity-80",
-                                isNewPatient ? "bg-amber-200 text-amber-800" : statusColors[apt.status]
-                              )}
-                              onClick={() => navigate(`/admin/appointments/${apt.id}`)}
-                            >
-                              <p className="font-medium truncate">
-                                {apt.patients?.first_name}
-                              </p>
-                              <p>{format(new Date(apt.scheduled_at), 'HH:mm')}</p>
-                            </div>
-                            );
-                          })}
-                          {dayAppointments.length > 2 && (
-                            <button
-                              className="text-xs text-center text-primary hover:underline w-full py-1"
-                              onClick={() => setDayViewDate(day)}
-                            >
-                              +{dayAppointments.length - 2} נוספים
-                            </button>
-                          )}
-                          {dayAppointments.length === 0 && (
-                            <p className="text-xs text-center text-muted-foreground py-2">-</p>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-                
-                {/* Desktop: Grid layout */}
-                <div className="hidden sm:grid grid-cols-7 gap-2">
-                  {weekDays.map((day) => {
-                    const dayAppointments = getAppointmentsForDay(day);
-                    const isToday = isSameDay(day, today);
-                    
-                    return (
-                      <div
-                        key={day.toISOString()}
-                        className={cn(
-                          "min-h-[120px] p-2 rounded-lg border",
-                          isToday ? 'border-primary bg-primary/5' : 'border-border'
-                        )}
-                      >
-                        <div className="text-center mb-2">
-                          <p className="text-xs text-muted-foreground">
-                            {format(day, 'EEEE', { locale: he })}
-                          </p>
-                          <p className={cn("text-lg font-semibold", isToday && "text-primary")}>
-                            {format(day, 'd')}
-                          </p>
-                        </div>
-                        <div className="space-y-1">
-                          {dayAppointments.slice(0, 3).map((apt) => {
-                            const isNewPatient = apt.patients?.intake_completed_at && !apt.patients?.reviewed_at;
-                            return (
-                            <div
-                              key={apt.id}
-                              className={cn(
-                                "text-xs p-1.5 rounded cursor-pointer hover:opacity-80",
-                                isNewPatient ? "bg-amber-200 text-amber-800 ring-1 ring-amber-400" : statusColors[apt.status]
-                              )}
-                              onClick={() => navigate(`/admin/appointments/${apt.id}`)}
-                            >
-                              <div className="flex items-center gap-1">
-                                {isNewPatient && <Sparkles className="h-3 w-3" />}
-                                <p className="font-medium truncate">
-                                  {apt.patients?.first_name} {apt.patients?.last_name}
-                                </p>
-                              </div>
-                              <p>{format(new Date(apt.scheduled_at), 'HH:mm')}</p>
-                            </div>
-                            );
-                          })}
-                          {dayAppointments.length > 3 && (
-                            <button
-                              className="text-xs text-center text-primary hover:underline w-full py-1"
-                              onClick={() => setDayViewDate(day)}
-                            >
-                              +{dayAppointments.length - 3} נוספים
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
-        </>
-        )}
-
+            <div className="clinic-days">{weekDays.map((day,i)=><button type="button" key={day.toISOString()} aria-pressed={selectedWeekday===i} onClick={()=>setSelectedWeekday(i)}>
+              <span>{format(day,'EEEE',{locale:he})}</span><strong>{format(day,'d/M')}</strong>
+              <small>{weekLoading || weekError ? '…' : getAppointmentsForDay(day).length+' תורים'}</small>
+            </button>)}</div>
+          </section>
+          <section data-tutorial="appointments-list" className="clinic-agenda">
+            <h2 className="!text-xl">{format(selectedDate,'EEEE, d בMMMM',{locale:he})}</h2>
+            {weekError ? <div role="alert">טעינת היומן נכשלה. <Button variant="ghost" onClick={()=>reloadWeek()}>ניסיון נוסף</Button></div> : weekLoading ? <p role="status">טוען תורים…</p> :
+            getAppointmentsForDay(selectedDate).length===0 ? <p>אין תורים ביום זה.</p> :
+            <ul>{getAppointmentsForDay(selectedDate).map(apt=><li key={apt.id}>
+              <time dir="ltr">{format(new Date(apt.scheduled_at),'HH:mm')}</time>
+              <div><Link to={'/admin/appointments/'+apt.id}>{apt.patients?.first_name} {apt.patients?.last_name}</Link>
+                <small>{apt.appointment_types?.name_he || 'ביקור'} · {apt.duration_minutes} דקות</small></div>
+              <bdi className="agenda-phone">{apt.patients?.phone}</bdi>
+              <Select value={apt.status} onValueChange={value=>handleStatusChange(apt.id,value)}>
+                <SelectTrigger aria-label="מצב התור" className="w-28"><SelectValue/></SelectTrigger>
+                <SelectContent>{!['scheduled','in_treatment','completed','cancelled'].includes(apt.status) && <SelectItem value={apt.status} disabled>{statusLabels[apt.status] || 'מצב קודם'}</SelectItem>}
+                  <SelectItem value="scheduled">מתוכנן</SelectItem><SelectItem value="in_treatment">חדר רופא</SelectItem><SelectItem value="completed">הושלם</SelectItem><SelectItem value="cancelled">ביטול תור</SelectItem>
+                </SelectContent>
+              </Select></li>)}</ul>}
+          </section></>}
         {/* Cancellation Reason Dialog */}
         <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
           <DialogContent className="sm:max-w-md">
@@ -595,67 +332,7 @@ export default function AppointmentsList() {
         </Dialog>
 
         {/* Day View Dialog */}
-        <Dialog open={!!dayViewDate} onOpenChange={(open) => !open && setDayViewDate(null)}>
-          <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-hidden flex flex-col">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
-                {dayViewDate && format(dayViewDate, 'EEEE, d בMMMM yyyy', { locale: he })}
-              </DialogTitle>
-            </DialogHeader>
-            <div className="flex-1 overflow-y-auto space-y-2 py-2">
-              {dayViewDate && getAppointmentsForDay(dayViewDate)
-                .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime())
-                .map((apt) => {
-                  const isNewPatient = apt.patients?.intake_completed_at && !apt.patients?.reviewed_at;
-                  return (
-                    <div
-                      key={apt.id}
-                      className={cn(
-                        "p-3 rounded-lg border cursor-pointer hover:shadow-md transition-shadow",
-                        isNewPatient ? "bg-amber-50 border-amber-300" : "bg-white"
-                      )}
-                      onClick={() => {
-                        setDayViewDate(null);
-                        navigate(`/admin/appointments/${apt.id}`);
-                      }}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <span className="text-lg font-bold text-primary">
-                            {format(new Date(apt.scheduled_at), 'HH:mm')}
-                          </span>
-                          <span className="font-medium">
-                            {apt.patients?.first_name} {apt.patients?.last_name}
-                          </span>
-                          {isNewPatient && (
-                            <Badge className="bg-amber-500 text-white text-xs">
-                              <Sparkles className="h-3 w-3 ml-1" />
-                              חדש
-                            </Badge>
-                          )}
-                        </div>
-                        <Badge className={statusColors[apt.status]}>
-                          {statusLabels[apt.status]}
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {apt.appointment_types?.name_he || 'ייעוץ'} | {apt.duration_minutes} דקות
-                      </p>
-                    </div>
-                  );
-                })}
-              {dayViewDate && getAppointmentsForDay(dayViewDate).length === 0 && (
-                <p className="text-center text-muted-foreground py-8">אין תורים ביום זה</p>
-              )}
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setDayViewDate(null)}>
-                סגור
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+
       </div>
     </>
   );

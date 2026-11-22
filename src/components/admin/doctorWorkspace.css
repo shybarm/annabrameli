@@ -153,3 +153,30 @@
     animation: none !important;
   }
 }
+.doctor-workspace { --primary: 217 46% 34%; --ring: 215 55% 44%; }
+.doctor-workspace main { background:hsl(215 37% 96%); }
+.dark .doctor-workspace main { background:hsl(var(--background)); }
+.dark .doctor-workspace { --primary:213 55% 76%; }
+.clinic-week,.clinic-agenda,.clinic-intake-bar { background:hsl(var(--card)); border:1px solid hsl(var(--border)); border-radius:14px; padding:clamp(12px,2vw,22px); }
+.clinic-intake-bar { display:flex; flex-wrap:wrap; align-items:center; gap:10px; }
+.clinic-intake-bar small,.clinic-agenda small { display:block; color:hsl(var(--muted-foreground)); font-size:.8rem; }
+.clinic-intake-bar input { flex:1; min-width:8rem; max-width:22rem; font-size:.8rem; padding:.45rem; border-radius:.4rem; background:hsl(var(--muted)); }
+.clinic-days { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:.4rem; margin-top:12px; }
+.clinic-days button { display:grid; gap:.18rem; padding:.45rem .2rem; border-radius:8px; background:hsl(var(--muted)/.6); }
+.clinic-days button[aria-pressed=true] { color:hsl(var(--primary-foreground)); background:hsl(var(--primary)); }
+.clinic-days button span,.clinic-days button small { font-size:.78rem; }
+.clinic-days button strong,.clinic-agenda time { font-variant-numeric:tabular-nums; }
+.clinic-agenda ul { margin-top:1rem; }
+.clinic-agenda li { display:grid; grid-template-columns:4rem minmax(0,1fr) minmax(7rem,.5fr) auto; align-items:center; gap:.75rem; padding:.75rem 0; border-top:1px solid hsl(var(--border)); }
+.clinic-agenda li a { color:hsl(var(--primary)); font-weight:650; }
+.clinic-agenda li a:hover { text-decoration:underline; }
+.clinic-thread { display:grid; gap:.65rem; max-height:26rem; overflow:auto; }
+.clinic-thread li { width:fit-content; max-width:85%; border-radius:.65rem; padding:.5rem .8rem; background:hsl(var(--muted)); }
+.clinic-thread li[data-outgoing=true] { justify-self:end; background:hsl(var(--primary)/.09); }
+.clinic-thread small { color:hsl(var(--muted-foreground)); }
+.clinic-thread p { white-space:pre-wrap; overflow-wrap:anywhere; }
+@media(max-width:620px) {
+ .clinic-agenda li { grid-template-columns:3rem minmax(0,1fr) auto; gap:.35rem; }
+ .agenda-phone { display:none; }
+ .clinic-days { grid-template-columns:repeat(7,minmax(50px,1fr)); overflow:auto; padding-bottom:4px; }
+}

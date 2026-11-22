@@ -1,3 +1,4 @@
+import { CLINIC } from '@/data/clinic';
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -217,10 +218,10 @@ export default function PatientIntake() {
         <Card className="max-w-md w-full">
           <CardContent className="pt-6 text-center">
             <AlertCircle className="h-16 w-16 text-destructive mx-auto mb-4" />
-            <h2 className="text-xl font-bold mb-2">הקישור לא תקף</h2>
+            <h2 className="text-xl font-bold mb-2">פתיחת טופס הקליטה</h2>
             <p className="text-muted-foreground">{error}</p>
             <p className="text-sm text-muted-foreground mt-4">
-              אנא פנו למרפאה לקבלת קישור חדש
+              {error.includes('טעינת') ? <Button variant="outline" onClick={() => {setError('');setLoading(true);void loadTokenData();}}>ניסיון נוסף</Button> : <a className="underline" href={'tel:'+CLINIC.phoneE164}>פנייה למרפאה לקבלת קישור חדש</a>}
             </p>
           </CardContent>
         </Card>
@@ -236,7 +237,7 @@ export default function PatientIntake() {
             <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
             <h2 className="text-xl font-bold mb-2">תודה רבה!</h2>
             <p className="text-muted-foreground">
-              הטופס התקבל במרפאה.
+              הפרטים התקבלו במרפאה. אפשר לסגור את העמוד.
             </p>
             <p className="text-sm text-muted-foreground mt-4">
               מרפאת ד"ר אנה ברמלי
@@ -253,7 +254,7 @@ export default function PatientIntake() {
         {/* Header */}
         <div className="text-center mb-8">
           <Stethoscope className="h-12 w-12 text-primary mx-auto mb-4" />
-          <h1 className="text-2xl font-bold">טופס קליטה למטופל חדש</h1>
+          <h1 className="text-2xl font-bold">מילוי פרטים לקראת הביקור</h1>
           <p className="text-muted-foreground">מרפאת ד"ר אנה ברמלי</p>
         </div>
 
@@ -271,7 +272,7 @@ export default function PatientIntake() {
                 <div className="space-y-2">
                   <Label htmlFor="first_name">שם פרטי *</Label>
                   <Input
-                    id="first_name"
+                    id="first_name" autoComplete="given-name"
                     value={formData.first_name}
                     onChange={(e) => handleChange('first_name', e.target.value)}
                     required
@@ -280,7 +281,7 @@ export default function PatientIntake() {
                 <div className="space-y-2">
                   <Label htmlFor="last_name">שם משפחה *</Label>
                   <Input
-                    id="last_name"
+                    id="last_name" autoComplete="family-name"
                     value={formData.last_name}
                     onChange={(e) => handleChange('last_name', e.target.value)}
                     required
@@ -289,7 +290,7 @@ export default function PatientIntake() {
                 <div className="space-y-2">
                   <Label htmlFor="id_number">תעודת זהות *</Label>
                   <Input
-                    id="id_number"
+                    id="id_number" inputMode="numeric"
                     value={formData.id_number}
                     onChange={(e) => handleChange('id_number', e.target.value)}
                     required
@@ -323,7 +324,7 @@ export default function PatientIntake() {
                 <div className="space-y-2">
                   <Label htmlFor="phone">טלפון *</Label>
                   <Input
-                    id="phone"
+                    id="phone" autoComplete="tel"
                     type="tel"
                     value={formData.phone}
                     onChange={(e) => handleChange('phone', e.target.value)}
@@ -334,7 +335,7 @@ export default function PatientIntake() {
                 <div className="space-y-2">
                   <Label htmlFor="email">אימייל</Label>
                   <Input
-                    id="email"
+                    id="email" autoComplete="email"
                     type="email"
                     value={formData.email}
                     onChange={(e) => handleChange('email', e.target.value)}
@@ -377,7 +378,7 @@ export default function PatientIntake() {
               <div className="space-y-2">
                 <Label htmlFor="address">כתובת</Label>
                 <Input
-                  id="address"
+                  id="address" autoComplete="street-address"
                   value={formData.address}
                   onChange={(e) => handleChange('address', e.target.value)}
                 />
@@ -385,7 +386,7 @@ export default function PatientIntake() {
               <div className="space-y-2">
                 <Label htmlFor="city">עיר</Label>
                 <Input
-                  id="city"
+                  id="city" autoComplete="address-level2"
                   value={formData.city}
                   onChange={(e) => handleChange('city', e.target.value)}
                 />
@@ -777,7 +778,7 @@ export default function PatientIntake() {
                 שולח...
               </>
             ) : (
-              'שלח טופס'
+              'שליחת הפרטים למרפאה'
             )}
           </Button>
         </form>

@@ -258,7 +258,7 @@ export function GeoOrganicOpportunities() {
   const [signalFilter, setSignalFilter] = useState<SignalType | 'all'>('all');
   const [confFilter, setConfFilter] = useState<Confidence | 'all'>('all');
 
-  const { data, isLoading } = useOrganicOpportunities(windowDays, host);
+  const { data, isLoading, isError, refetch } = useOrganicOpportunities(windowDays, host);
 
   const filtered = useMemo(() => {
     const list = data?.opportunities ?? [];
@@ -334,6 +334,7 @@ export function GeoOrganicOpportunities() {
         </CardContent>
       </Card>
 
+      {isError && <p role="alert">טעינת נתוני החיפוש נכשלה. <Button variant="outline" onClick={()=>refetch()}>רענון נתונים</Button></p>}
       {isLoading && (
         <div className="space-y-2">
           {[0, 1, 2].map((i) => <Skeleton key={i} className="h-28 w-full rounded-xl" />)}
@@ -345,11 +346,12 @@ export function GeoOrganicOpportunities() {
           <CardContent className="py-8 text-center">
             <p className="font-medium text-foreground">אין נתונים זמינים</p>
             <p className="text-sm text-muted-foreground mt-1">{data.unavailableReason}</p>
+            <Button className="mt-3" variant="outline" onClick={() => refetch()}>רענון נתונים</Button>
           </CardContent>
         </Card>
       )}
 
-      {!isLoading && !data?.unavailable && (
+      {!isLoading && !isError && data && !data.unavailable && (
         <>
           <div className="text-xs text-muted-foreground">
             {filtered.length} הזדמנויות מתוך {data?.opportunities.length ?? 0} עמודים

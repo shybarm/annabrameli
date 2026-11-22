@@ -1,3 +1,4 @@
+import {PatientConversation, mobileChatNumber} from '@/components/admin/PatientConversation';
 import { ClinicalPatientTimeline } from '@/components/admin/clinical/ClinicalPatientTimeline';
 import { useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -63,7 +64,7 @@ export default function PatientDetail() {
   const [aiSummary, setAiSummary] = useState('');
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [isGeneratingIntake, setIsGeneratingIntake] = useState(false);
-  const [intakeLink, setIntakeLink] = useState<string | null>(null);
+
   const [deletingDocId, setDeletingDocId] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<{ total: number; completed: number } | null>(null);
@@ -414,8 +415,8 @@ export default function PatientDetail() {
 
       if (error) throw error;
 
-      const link = buildIntakeLink(data.token);
-      if (link) setIntakeLink(link);
+
+      queryClient.setQueryData(['intake-token', id], data);
 
       queryClient.invalidateQueries({ queryKey: ['intake-token', id] });
       toast({ title: 'הקישור נוצר בהצלחה' });
@@ -427,11 +428,10 @@ export default function PatientDetail() {
     }
   };
 
-  const handleCopyIntakeLink = () => {
-    const link = intakeLink || buildIntakeLink(intakeToken?.token);
+  const handleCopyIntakeLink = async () => {
+    const link = buildIntakeLink(intakeToken?.token);
     if (!link) return;
-    navigator.clipboard.writeText(link);
-    toast({ title: 'הקישור הועתק!' });
+    try {await navigator.clipboard.writeText(link);toast({title:'הקישור הועתק'});} catch {toast({title:'ההעתקה נכשלה. אפשר לבחור את הקישור ולהעתיק.',variant:'destructive'});}
   };
 
   const buildPortalInviteLink = (code?: string | null) => {
@@ -451,11 +451,10 @@ export default function PatientDetail() {
     }
   };
 
-  const handleCopyPortalLink = () => {
+  const handleCopyPortalLink = async () => {
     const link = portalInviteLink || buildPortalInviteLink(portalInvitation?.invite_code);
     if (!link) return;
-    navigator.clipboard.writeText(link);
-    toast({ title: 'הקישור הועתק!' });
+    try {await navigator.clipboard.writeText(link);toast({title:'הקישור הועתק'});} catch {toast({title:'ההעתקה נכשלה. אפשר לבחור את הקישור ולהעתיק.',variant:'destructive'});}
   };
 
   if (isLoading) {
@@ -595,6 +594,16 @@ export default function PatientDetail() {
           </div>
         </div>
 
+        <section className="clinic-intake-bar" aria-label="קישור לטופס קליטה">
+          <div><strong>טופס קליטה</strong><small>{patient.intake_completed_at ? 'הפרטים מולאו' : 'מילוי פרטים לפני הביקור'}</small></div>
+          {intakeToken?.token ? <>
+            <input dir="ltr" aria-label="קישור אישי לטופס" readOnly value={buildIntakeLink(intakeToken.token) || ''} onFocus={e=>e.currentTarget.select()} />
+            <Button variant="outline" size="sm" onClick={handleCopyIntakeLink}>העתקת קישור</Button>
+            {patient.phone && mobileChatNumber(patient.phone) && <Button variant="outline" size="sm" asChild>
+              <a target="_blank" rel="noopener noreferrer" href={'https://wa.me/'+mobileChatNumber(patient.phone)+'?text='+encodeURIComponent('שלום ממרפאת ד״ר אנה ברמלי. אפשר למלא כאן את פרטי הקליטה לפני הביקור: '+buildIntakeLink(intakeToken.token))}>שיתוף בוואטסאפ</a></Button>}
+          </> : <Button size="sm" variant="outline" disabled={isGeneratingIntake} onClick={handleGenerateIntakeLink}>
+            {isGeneratingIntake?'יוצר קישור…':'יצירת קישור אישי'}</Button>}
+        </section>
         {/* Portal Access Card - DISABLED per ISO 27799 */}
         {/* Patient portal has been disabled for security compliance */}
 
@@ -602,6 +611,7 @@ export default function PatientDetail() {
           <TabsList aria-label="מדורים בתיק המטופל" className="doctor-file-tabs">
             <TabsTrigger value="visits">ביקורים</TabsTrigger>
             <TabsTrigger value="info">פרטים אישיים</TabsTrigger>
+            <TabsTrigger value="conversations">שיחות</TabsTrigger>
             <TabsTrigger value="intake">נתוני קליטה</TabsTrigger>
             <TabsTrigger value="appointments">תורים ({appointments?.length || 0})</TabsTrigger>
             <TabsTrigger value="billing">חיוב ({invoices?.length || 0})</TabsTrigger>
@@ -610,6 +620,7 @@ export default function PatientDetail() {
             <TabsTrigger value="internal">הערות פנימיות</TabsTrigger>
           </TabsList>
 
+          <TabsContent value="conversations"><PatientConversation key={patient.id+patient.phone} patientId={patient.id} phone={patient.phone || ''} /></TabsContent>
           <TabsContent value="info">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
@@ -721,44 +732,6 @@ export default function PatientDetail() {
 
           {/* Intake Data Tab */}
           <TabsContent value="intake" className="space-y-3">
-        {/* Intake Form Card - Only show if NOT completed */}
-        {!(patient as any).intake_completed_at && (
-          <Card className="border-border shadow-none">
-            <CardContent className="flex items-center justify-between py-4">
-              <div className="flex items-center gap-3">
-                <ClipboardList className="h-5 w-5 text-primary" />
-                <div>
-                  <p className="font-medium">טופס קליטה</p>
-                  <p className="text-sm text-muted-foreground">
-                    {intakeToken?.token && !intakeToken.completed_at
-                      ? 'קישור נוצר - ממתין למילוי'
-                      : 'קישור לטופס לפני הביקור הראשון'}
-                  </p>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                {intakeToken?.token && !intakeToken.completed_at ? (
-                  <Button variant="outline" size="sm" onClick={handleCopyIntakeLink}>
-                    <Link className="h-4 w-4 ml-1" />
-                    העתק קישור
-                  </Button>
-                ) : (
-                  <Button
-                    size="sm"
-                    onClick={handleGenerateIntakeLink}
-                    disabled={isGeneratingIntake}
-                    className="bg-primary text-primary-foreground"
-                  >
-                    <ClipboardList className="h-4 w-4 ml-1" />
-                    {isGeneratingIntake ? 'יוצר...' : 'צור קישור'}
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">

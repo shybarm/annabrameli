@@ -63,4 +63,38 @@ assert.equal((await db.query('select snapshot from clinical_documents where id=$
 await db.exec("set test.role='patient';set test.uid='00000000-0000-0000-0000-000000000005'");
 await assert.rejects(db.query('select clinical_document_stamp($1)',[doc.id]),/CLINICAL_FORBIDDEN/);
 console.log('PASS: corrected stamp rendering, original snapshot preserved, unrelated patient denied');
+// Use the production outbox schema and queue function with an in-memory clock/job scheduler.
+const inboxSql=readFileSync(new URL('../../supabase/migrations/20261121073256_waitlist_whatsapp_bot.sql',import.meta.url),'utf8');
+await db.exec("reset role; set test.role='doctor';set test.uid='00000000-0000-0000-0000-000000000001';create table clinics(id uuid primary key);alter table appointments add column status text default 'completed';create schema cron;create function cron.schedule(text,text,text) returns int language sql as $$select 1$$;");
+await db.exec(inboxSql.slice(inboxSql.indexOf('CREATE TABLE'),inboxSql.indexOf('CREATE TABLE public.whatsapp_bot_settings')));
+await db.exec(inboxSql.slice(inboxSql.indexOf('CREATE FUNCTION public.queue_whatsapp_text'),inboxSql.indexOf('GRANT EXECUTE ON FUNCTION public.queue_whatsapp_text')));
+await db.exec("create function can_edit_appointments(uuid) returns boolean language sql as $$select public.is_staff($1)$$;create function can_view_patients(uuid) returns boolean language sql as $$select public.is_staff($1)$$;");
+await db.exec(readFileSync(new URL('../../supabase/migrations/20261122224000_visit_communications.sql',import.meta.url),'utf8'));
+const count=async(table)=>(await db.query('select count(*)::int n from '+table)).rows[0].n;
+await db.exec("update clinical_document_deliveries set state='accepted'");
+assert.equal(await count('visit_review_requests'),0);
+const signed=(await finalize(3,{history:'after signing',medications:'synthetic prescription'})).rows[0];
+for(const kind of ['summary','prescription']){
+  await db.query('select claim_clinical_delivery($1,$2,$3)',[signed.id,kind,'972500000000']);
+  await db.query("update clinical_document_deliveries set state='accepted' where document_id=$1 and kind=$2",[signed.id,kind]);
+}
+assert.equal(await count('visit_review_requests'),1);
+assert.equal((await db.query("select due_at>now()+interval '2 days 23 hours' as delayed from visit_review_requests")).rows[0].delayed,true);
+await db.exec("select queue_due_visit_reviews()"); assert.equal(await count('whatsapp_outbox'),0);
+for (const setup of ["update patients set phone='0501111111'", "insert into whatsapp_conversations(phone,opted_out) values ('972500000000',true)", "update appointments set status='cancelled'"]){
+  await db.exec('begin;'+setup+";update visit_review_requests set due_at=now();select queue_due_visit_reviews()");
+  assert.equal(await count('whatsapp_outbox'),0); await db.exec('rollback');
+}
+await db.exec('update visit_review_requests set due_at=now();select queue_due_visit_reviews();select queue_due_visit_reviews();');
+assert.equal(await count('whatsapp_outbox'),1);
+assert.match((await db.query('select body from whatsapp_messages')).rows[0].body,/share.google\/yMYmOjmUzoxx1kXUX/);
+const patientId='00000000-0000-0000-0000-000000000003';
+const reply=()=>db.query('select patient_whatsapp_reply($1,$2,$3,$4) id',[patientId,'972500000000','synthetic message','00000000-0000-0000-0000-000000000006']);
+assert.equal((await reply()).rows[0].id,(await reply()).rows[0].id);assert.equal(await count('whatsapp_outbox'),2);
+const thread=async()=>(await db.query('select patient_whatsapp_thread($1) thread',[patientId])).rows[0].thread;
+assert.equal((await thread()).messages.length,2);
+await db.exec("insert into patients(id,phone) values(gen_random_uuid(),'+972500000000')");
+assert.equal((await thread()).state,'shared');await assert.rejects(reply(),/RECIPIENT_CHANGED/);
+await db.exec("set test.role='patient'");await assert.rejects(thread(),/FORBIDDEN/);await assert.rejects(reply(),/FORBIDDEN/);
+console.log('PASS: future-only review scheduling, three-day delay, one review per visit, opt-out and changed recipient, isolated chart conversations and idempotent replies');
 await db.close();

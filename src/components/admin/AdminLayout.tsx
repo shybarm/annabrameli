@@ -5,11 +5,8 @@ import { useNavigate, Link, useLocation, Outlet } from 'react-router-dom';
 import { useAuth, UserPermissions } from '@/hooks/useAuth';
 import { useWorkSessions } from '@/hooks/useWorkSessions';
 import { useUnreviewedPatientsCount } from '@/hooks/useUnreviewedPatients';
-import { TeamChatWidget } from './TeamChatWidget';
-import { WorkSessionCheckInModal } from './WorkSessionCheckInModal';
 import { LogoutConfirmDialog } from './LogoutConfirmDialog';
 import { IdleTimeoutProvider } from './IdleTimeoutProvider';
-import { WorkStatusToggle } from './WorkStatusToggle';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -49,16 +46,15 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { href: '/admin/whatsapp', icon: BookOpen, label: 'וואטסאפ ורשימת המתנה', requiredPermission: 'canEditAppointments' },
+  { href: '/admin/whatsapp', icon: BookOpen, label: 'שיחות וואטסאפ', requiredPermission: 'canEditAppointments' },
   { href: '/admin', icon: LayoutDashboard, label: 'לוח בקרה', exact: true },
   { href: '/admin/patients', icon: Users, label: 'מטופלים', requiredPermission: 'canViewPatients' },
-  { href: '/admin/appointments', icon: Calendar, label: 'תורים', requiredPermission: 'canViewAppointments' },
+  { href: '/admin/appointments', icon: Calendar, label: 'יומן מרפאה', requiredPermission: 'canViewAppointments' },
   { href: '/admin/doctor-diary', icon: BookOpen, label: 'יומן רופא', requiredPermission: 'canViewDoctorDiary' },
   { href: '/admin/cancellations', icon: XCircle, label: 'ביטולי תורים', requiredPermission: 'canViewCancellations' },
   { href: '/admin/billing', icon: Receipt, label: 'חיוב וחשבוניות', requiredPermission: 'canViewBilling' },
   { href: '/admin/expenses', icon: Wallet, label: 'הוצאות', requiredPermission: 'canViewExpenses' },
   { href: '/admin/team', icon: UsersRound, label: 'צוות', requiredPermission: 'canViewTeam' },
-  { href: '/admin/work-hours', icon: Clock, label: 'שעות עבודה', requiredPermission: 'canViewWorkHours' },
   { href: '/admin/settings', icon: Settings, label: 'הגדרות', requiredPermission: 'canViewSettings' },
   { href: '/admin/geo', icon: Brain, label: 'GEO', adminOnly: true },
 ];
@@ -101,9 +97,9 @@ export default function AdminLayout() {
 
   useEffect(() => {
     if (!loading && !user) {
-      navigate('/auth');
+      navigate('/auth?next=' + encodeURIComponent(location.pathname), {replace:true});
     }
-  }, [user, loading, navigate]);
+  }, [user, loading, navigate, location.pathname]);
 
   // Close sidebar on route change (mobile)
   useEffect(() => {
@@ -281,13 +277,6 @@ export default function AdminLayout() {
 
           <Separator className="opacity-50" />
 
-          {/* Work Status Toggle */}
-          <div className="px-4 py-3">
-            <WorkStatusToggle isStaff={isStaff} />
-          </div>
-
-          <Separator className="opacity-50" />
-
           {/* User section */}
           <div className="p-4 safe-area-inset-bottom">
             <div className="flex items-center gap-3 mb-4 p-3 rounded-xl bg-muted/30">
@@ -342,12 +331,6 @@ export default function AdminLayout() {
       <main className="lg:mr-56 min-h-screen overflow-x-clip">
         <div className="p-4 lg:p-6 w-full max-w-full"><Suspense fallback={<p role="status" className="p-4 text-muted-foreground">טוען את העמוד…</p>}><Outlet /></Suspense></div>
       </main>
-      
-      {/* Team Chat Widget */}
-      <TeamChatWidget />
-      
-      {/* Work Session Check-in Modal */}
-      <WorkSessionCheckInModal isStaff={isStaff} />
       
       {/* Logout Confirmation Dialog */}
       <LogoutConfirmDialog

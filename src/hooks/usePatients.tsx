@@ -73,6 +73,33 @@ export interface PatientInput {
   status?: string;
 }
 
+type DirectoryPatient = Pick<Patient, 'id' | 'first_name' | 'last_name' | 'phone' | 'email' |
+  'id_number' | 'created_at' | 'reviewed_at' | 'user_id' | 'clinic'>;
+
+export function usePatientDirectory(clinicId?: string | null) {
+  return useQuery({
+    queryKey: ['patients', 'directory', clinicId],
+    queryFn: async () => {
+      const roles = await supabase.from('user_roles').select('user_id').in('role', ['admin','doctor','secretary']);
+      if (roles.error) throw roles.error;
+      const staff = new Set(roles.data.map(role => role.user_id));
+      const rows: DirectoryPatient[] = [];
+      const batchSize = 500;
+      for (let offset = 0; ; offset += batchSize) {
+        let query = supabase.from('patients')
+          .select('id,first_name,last_name,phone,email,id_number,created_at,reviewed_at,user_id,clinic:clinics(id,name)')
+          .neq('status', 'inactive').order('created_at', {ascending:false}).order('id')
+          .range(offset, offset + batchSize - 1);
+        if (clinicId) query = query.eq('clinic_id', clinicId);
+        const {data,error} = await query;
+        if (error) throw error;
+        rows.push(...data.filter(patient => !patient.user_id || !staff.has(patient.user_id)));
+        if (data.length < batchSize) return rows;
+      }
+    },
+  });
+}
+
 export function usePatients(clinicId?: string | null) {
   return useQuery({
     queryKey: ['patients', 'list', clinicId],

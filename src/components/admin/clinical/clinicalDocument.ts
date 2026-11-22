@@ -19,9 +19,9 @@ export function clinicalDocumentHtml(doc: ClinicalDocument, kind: DocumentKind, 
   const date = e(new Date(s.visit_date).toLocaleDateString('he-IL', { timeZone: 'Asia/Jerusalem' }));
   const css = `
    *{box-sizing:border-box}html{color-scheme:light}body{margin:0;width:700px;background:#fff;color:#232b36;font:16px/1.55 Arial,sans-serif}
-   header{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;border-bottom:2px solid #80506a;padding-bottom:12px}
+   header{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;border-bottom:2px solid #385673;padding-bottom:12px}
    header strong{display:block;font-size:19px}header div,header small{font-size:13px}header small{text-align:end;color:#485461}
-   h1{font-size:27px;line-height:1.2;margin:22px 0 12px}h2{font-size:16px;line-height:1.4;margin:16px 0 3px}
+   h1{font-size:27px;line-height:1.2;margin:22px 0 12px}h2{font-size:14px;font-weight:700;color:#36536f;line-height:1.4;margin:16px 0 4px}
    .patient{display:flex;flex-wrap:wrap;gap:4px 20px;padding-bottom:12px;border-bottom:1px solid #dce0e5}
    .patient span{font-size:14px}.patient b{font-weight:normal;color:#505b67}
    p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}section{margin:0 0 4px}

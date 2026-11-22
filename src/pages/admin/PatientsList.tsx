@@ -15,7 +15,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import { usePatients } from '@/hooks/usePatients';
+import { usePatientDirectory } from '@/hooks/usePatients';
 import { useUnreadMessageCount } from '@/hooks/useAdminMessages';
 import { useMarkPatientReviewed } from '@/hooks/useUnreviewedPatients';
 import { Link, useNavigate } from 'react-router-dom';
@@ -41,13 +41,13 @@ function PatientsListContent() {
   const navigate = useNavigate();
   const { selectedClinicId } = useClinicContext();
   const [searchQuery, setSearchQuery] = useState('');
-  const [showOnlyNew, setShowOnlyNew] = useState(false);
+  const [page, setPage] = useState(1);
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   
   // When searching, show all patients; otherwise filter by clinic
   const query = searchQuery.trim().replace(/\s+/g, ' ').toLowerCase();
   const isSearching = query.length >= 2;
-  const { data: patients, isLoading } = usePatients(isSearching ? null : selectedClinicId);
+  const { data: patients, isLoading, isError, refetch } = usePatientDirectory(isSearching ? null : selectedClinicId);
   const { data: unreadCount } = useUnreadMessageCount();
   const markReviewed = useMarkPatientReviewed();
 
@@ -64,16 +64,9 @@ function PatientsListContent() {
     });
   };
 
-  // Sort and filter patients - new patients always at top
+  // Search across the directory, then page the matching rows.
   const sortedAndFilteredPatients = patients
     ?.filter(patient => {
-      // Filter by new patients if toggle is on
-      if (showOnlyNew) {
-        // New patient = reviewed_at is null
-        const isNew = !patient.reviewed_at;
-        if (!isNew) return false;
-      }
-      
       if (!isSearching) return true;
       return (
         [patient.first_name, patient.last_name].join(' ').toLowerCase().includes(query) ||
@@ -82,17 +75,13 @@ function PatientsListContent() {
       );
     })
     ?.sort((a, b) => {
-      // New patients (not reviewed) always at top
-      const aIsNew = !a.reviewed_at;
-      const bIsNew = !b.reviewed_at;
-      
-      if (aIsNew && !bIsNew) return -1;
-      if (!aIsNew && bIsNew) return 1;
-      
-      // Then sort by created_at descending
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     }) || [];
 
+  const pageSize = 25;
+  const lastPage = Math.max(1, Math.ceil(sortedAndFilteredPatients.length / pageSize));
+  const currentPage = Math.min(page, lastPage);
+  const rows = sortedAndFilteredPatients.slice((currentPage - 1) * pageSize, currentPage * pageSize);
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Header */}
@@ -125,33 +114,26 @@ function PatientsListContent() {
           <Input
             aria-label="חיפוש מטופלים" placeholder="שם, טלפון או מספר זהות"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {setSearchQuery(e.target.value);setPage(1)}}
             className="pr-10 h-9 sm:h-10"
           />
         </div>
-        <Button
-          variant={showOnlyNew ? "default" : "outline"}
-          aria-pressed={showOnlyNew}
-          onClick={() => setShowOnlyNew(!showOnlyNew)}
-          size="sm"
-          className={cn(
-            "gap-1.5 sm:gap-2 h-9 sm:h-10",
-            showOnlyNew && "bg-primary text-primary-foreground"
-          )}
-        >
-          <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-          <span className="text-sm">חדשים בלבד</span>
-        </Button>
+
       </div>
 
+      {lastPage > 1 && <nav className="flex items-center justify-between" aria-label="עמודי מטופלים">
+        <Button variant="outline" size="sm" disabled={currentPage===1} onClick={()=>setPage(currentPage-1)}>הקודם</Button>
+        <span className="text-sm">עמוד {currentPage} מתוך {lastPage}</span>
+        <Button variant="outline" size="sm" disabled={currentPage===lastPage} onClick={()=>setPage(currentPage+1)}>הבא</Button>
+      </nav>}
       {/* Patients List */}
-      {isLoading ? (
+      {isError ? <p role="alert">טעינת הרשימה נכשלה. <Button variant="outline" onClick={() => refetch()}>ניסיון נוסף</Button></p> : isLoading ? (
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
         </div>
       ) : sortedAndFilteredPatients.length > 0 ? (
         <div className="patient-directory" data-tutorial="patients-list">
-          {sortedAndFilteredPatients.map((patient) => {
+          {rows.map((patient) => {
             const patientUnreadCount = unreadCount?.byPatient[patient.id] || 0;
             const isNewPatient = !patient.reviewed_at;
             const isExpanded = expandedCards.has(patient.id);
@@ -164,11 +146,6 @@ function PatientsListContent() {
                 <CardContent className="patient-row-body">
                   {/* Top Row: Avatar, Name, Badges, Actions */}
                   <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-                    {/* Compact Avatar */}
-                    <div className="relative flex-shrink-0 flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/10 text-primary font-medium text-sm sm:text-base">
-                      {patient.first_name.charAt(0)}{patient.last_name.charAt(0)}
-                    </div>
-                    
                     {/* Name + Inline Badges */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 flex-wrap">
@@ -332,13 +309,12 @@ function PatientsListContent() {
           <CardContent className="text-center">
             <User className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground/30 mx-auto mb-3 sm:mb-4" />
             <h3 className="text-base sm:text-lg font-medium text-foreground mb-2">
-              {isSearching ? 'לא נמצאו תוצאות' : showOnlyNew ? 'אין מטופלים חדשים' : 'אין מטופלים במערכת'}
+              {isSearching ? 'לא נמצאו תוצאות' : 'אין מטופלים במערכת'}
             </h3>
             <p className="text-sm text-muted-foreground mb-4">
-              {isSearching ? 'אפשר לחפש לפי שם, טלפון או מספר זהות.' : showOnlyNew ? 'אפשר להציג את כל המטופלים.' : 'אפשר להוסיף את המטופל הראשון.'}
+              {isSearching ? 'אפשר לחפש לפי שם, טלפון או מספר זהות.' : 'אפשר להוסיף את המטופל הראשון.'}
             </p>
-            {showOnlyNew && <Button variant="outline" onClick={()=>setShowOnlyNew(false)}>כל המטופלים</Button>}
-            {!isSearching && !showOnlyNew && (
+            {!isSearching && (
               <Button onClick={() => navigate('/admin/patients/new')} size="sm">
                 <Plus className="h-4 w-4 ml-2" />
                 הוסף מטופל ראשון

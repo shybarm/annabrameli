@@ -463,6 +463,11 @@ export default function AppointmentDetail() {
   const statusLabels: Record<string, string> = {
     scheduled: 'מתוכנן',
     waiting_room: 'בחדר המתנה',
+    no_show: 'לא הגיע',
+    with_doctor: 'אצל הרופאה',
+    in_progress: 'בטיפול',
+    arrived: 'הגיע',
+    confirmed: 'מאושר',
     in_treatment: 'חדר רופא',
     completed: 'הושלם',
     cancelled: 'בוטל',
@@ -473,7 +478,6 @@ export default function AppointmentDetail() {
   const [selectedReasonType, setSelectedReasonType] = useState('');
 
   const CANCELLATION_REASONS = [
-    { value: 'patient_no_show', label: 'המטופל לא הגיע' },
     { value: 'patient_cancelled', label: 'ביטול ע״י מטופל' },
     { value: 'clinic_cancelled', label: 'ביטול ע״י מרפאה' },
     { value: 'scheduling_error', label: 'טעות בקביעת תור' },
@@ -592,8 +596,8 @@ export default function AppointmentDetail() {
               <SelectValue placeholder="בחר סטטוס" />
             </SelectTrigger>
             <SelectContent>
+              {status && !['scheduled','in_treatment','completed','cancelled'].includes(status) && <SelectItem value={status} disabled>{statusLabels[status] || 'מצב קודם'}</SelectItem>}
               <SelectItem value="scheduled">מתוכנן</SelectItem>
-              <SelectItem value="waiting_room">בחדר המתנה</SelectItem>
               <SelectItem value="in_treatment">חדר רופא</SelectItem>
               <SelectItem value="completed">הושלם</SelectItem>
               <SelectItem value="cancelled">בוטל</SelectItem>
@@ -799,12 +803,12 @@ export default function AppointmentDetail() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
+                      {status && !['scheduled','confirmed','arrived','in_progress','completed','cancelled'].includes(status) && <SelectItem value={status} disabled>{statusLabels[status] || 'מצב קודם'}</SelectItem>}
                       <SelectItem value="scheduled">מתוכנן</SelectItem>
                       <SelectItem value="confirmed">מאושר</SelectItem>
                       <SelectItem value="arrived">הגיע</SelectItem>
                       <SelectItem value="in_progress">בטיפול</SelectItem>
                       <SelectItem value="completed">הושלם</SelectItem>
-                      <SelectItem value="no_show">לא הגיע</SelectItem>
                       <SelectItem value="cancelled">בוטל</SelectItem>
                     </SelectContent>
                   </Select>

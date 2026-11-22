@@ -31,7 +31,7 @@ export default function WhatsAppInbox() {
  const current=conversations.data?.find(c=>c.id===selected);
  if(!allowed)return <p>אין הרשאה לצפייה בפניות המרפאה.</p>;
  return <div dir="rtl" className="space-y-4">
-  <h1 className="text-2xl font-bold">וואטסאפ ורשימת המתנה</h1>
+  <h1 className="text-2xl font-bold">הודעות וואטסאפ</h1>
   <p className="text-sm text-muted-foreground">מספר המרפאה: 055-507-0399. התשובות נשמרות לצוות; תור מוקדם נקבע רק לאחר בדיקה ואישור.</p>
   {health.data?.last_incoming_at&&<p className="text-xs text-muted-foreground">הודעה נכנסת אחרונה התקבלה במערכת: {new Date(health.data.last_incoming_at).toLocaleString('he-IL',{timeZone:'Asia/Jerusalem'})}</p>}
   {health.data?.quota_exceeded_at&&<p role="alert" className="rounded-lg border border-amber-400 bg-amber-50 p-3">GREEN API דיווח על חריגה ממגבלת אנשי הקשר. ייתכן שחלק מההודעות אינן מתקבלות. יש לבדוק את המסלול בחשבון GREEN API.</p>}

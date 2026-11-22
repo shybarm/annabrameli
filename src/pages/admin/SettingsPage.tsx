@@ -1,3 +1,4 @@
+import { GreenConnectionCheck } from '@/components/admin/GreenConnectionCheck';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PermissionGuard } from '@/components/admin/PermissionGuard';
@@ -10,8 +11,6 @@ import { Switch } from '@/components/ui/switch';
 import { Settings, Building, Clock, Users, Bell, Plus, Trash2, Play, HelpCircle, RotateCcw, History } from 'lucide-react';
 import { TreatmentManagement } from '@/components/admin/TreatmentManagement';
 import { MFASettings } from '@/components/auth/MFASettings';
-import { useOnboarding } from '@/components/tutorial/OnboardingTutorial';
-import { FullAppTour } from '@/components/tutorial/FullAppTour';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -96,8 +95,6 @@ export default function SettingsPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [newHours, setNewHours] = useState('');
-  const { resetOnboarding } = useOnboarding();
-  const [showTutorial, setShowTutorial] = useState(false);
   
   // Get current clinic context
   const { selectedClinicId } = useClinicContext();
@@ -188,11 +185,6 @@ export default function SettingsPage() {
       });
     }
   }, [clinicSettings]);
-
-  const handleResetTutorial = () => {
-    resetOnboarding();
-    setShowTutorial(true);
-  };
 
   // Fetch reminder schedules
   const { data: reminders, isLoading: loadingReminders } = useQuery({
@@ -764,56 +756,8 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        {/* Audit Log Link */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <History className="h-5 w-5" />
-              לוג אבטחה
-            </CardTitle>
-            <CardDescription>צפייה בלוג פעילות ואבטחה</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground mb-4">
-              צפה בהיסטוריית הפעולות והגישות במערכת
-            </p>
-            <Button variant="outline" onClick={() => navigate('/admin/audit-log')}>
-              <History className="h-4 w-4 ml-2" />
-              צפה בלוג אבטחה
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Help & Tutorial */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <HelpCircle className="h-5 w-5" />
-              עזרה והדרכה
-            </CardTitle>
-            <CardDescription>הצג את ההדרכה הראשונית מחדש</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground mb-4">
-              לחץ כאן כדי לאפס ולהציג מחדש את ההדרכה הראשונית של המערכת
-            </p>
-            <Button 
-              variant="outline" 
-              onClick={handleResetTutorial}
-            >
-              <RotateCcw className="h-4 w-4 ml-2" />
-              הפעל הדרכה מחדש
-            </Button>
-          </CardContent>
-        </Card>
+        <GreenConnectionCheck />
       </div>
-
-      {/* Full App Tour */}
-      {showTutorial && (
-        <FullAppTour 
-          onComplete={() => setShowTutorial(false)} 
-        />
-      )}
       </PermissionGuard>
     </>
   );

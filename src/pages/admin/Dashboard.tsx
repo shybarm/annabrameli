@@ -1,4 +1,3 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -33,7 +32,7 @@ import {
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { he } from 'date-fns/locale';
-import { OnboardingTutorial } from '@/components/tutorial/OnboardingTutorial';
+
 import { PageHelpButton } from '@/components/tutorial/PageHelpButton';
 import { pageTutorials } from '@/components/tutorial/tutorialData';
 
@@ -122,86 +121,10 @@ export default function AdminDashboard() {
   });
 
   const activeAppointments = todaysAppointments?.filter(a => a.status !== 'cancelled') || [];
-  const waitingCount = activeAppointments.filter(a => a.status === 'arrived' || a.status === 'in_progress' || a.status === 'waiting_room').length;
   const completedCount = activeAppointments.filter(a => a.status === 'completed').length;
 
   // Analytics data
   const { data: analyticsData, isLoading: analyticsLoading } = useProjectAnalytics();
-
-  // Track appointments that changed to waiting_room status
-  const [waitingStartTimes, setWaitingStartTimes] = useState<Record<string, Date>>({});
-  const alertedAppointments = useRef<Set<string>>(new Set());
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  // Calculate waiting time for an appointment
-  const getWaitingMinutes = useCallback((appointmentId: string): number => {
-    const startTime = waitingStartTimes[appointmentId];
-    if (!startTime) return 0;
-    return differenceInMinutes(new Date(), startTime);
-  }, [waitingStartTimes]);
-
-  // Track when appointments enter waiting_room status
-  useEffect(() => {
-    if (!activeAppointments) return;
-    
-    const newWaitingTimes: Record<string, Date> = { ...waitingStartTimes };
-    let hasChanges = false;
-    
-    activeAppointments.forEach(apt => {
-      if (apt.status === 'waiting_room' && !waitingStartTimes[apt.id]) {
-        // Started waiting now
-        newWaitingTimes[apt.id] = new Date();
-        hasChanges = true;
-      } else if (apt.status !== 'waiting_room' && waitingStartTimes[apt.id]) {
-        // No longer waiting
-        delete newWaitingTimes[apt.id];
-        alertedAppointments.current.delete(apt.id);
-        hasChanges = true;
-      }
-    });
-    
-    if (hasChanges) {
-      setWaitingStartTimes(newWaitingTimes);
-    }
-  }, [activeAppointments]);
-
-  // Check for long waiting times and show alerts
-  useEffect(() => {
-    const checkWaitingTimes = () => {
-      Object.entries(waitingStartTimes).forEach(([aptId, startTime]) => {
-        const waitingMinutes = differenceInMinutes(new Date(), startTime);
-        
-        if (waitingMinutes >= 15 && !alertedAppointments.current.has(aptId)) {
-          alertedAppointments.current.add(aptId);
-          
-          const apt = activeAppointments.find(a => a.id === aptId);
-          const patientName = apt?.patients ? `${(apt.patients as any).first_name} ${(apt.patients as any).last_name}` : 'מטופל';
-          
-          // Play alert sound
-          try {
-            if (!audioRef.current) {
-              audioRef.current = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1iZ2xvcXJzdHNycnJycnJycnJycnJycXBvbmxraWhmY2BeW1hVUk9MSUZDQDs4NTIvLCknJCEeGxgVEg8MCgcEAQAAAAAAAQQHCg0QExYZHB8iJScqLTAzNjlASUtOUVRXWl1gY2ZpbG9ycnJycnJycnJycnJycnNycnJxcG5sa2loZmRhXltYVVJPTElGQz86NzQxLisnJCEeGxgVEg8MCgcEAQAAAAAAAQQHCg0QExYZHB8iJSgqLTAzNjpASUtOUVRXWl1gY2ZpbG9ycnJycnJycnJycnJy');
-            }
-            audioRef.current.play().catch(() => {});
-          } catch (e) {}
-          
-          // Show toast notification
-          toast({
-            title: '⚠️ המתנה ארוכה',
-            description: `${patientName} ממתין/ה יותר מ-15 דקות בחדר ההמתנה`,
-            variant: 'destructive',
-            duration: 10000,
-          });
-        }
-      });
-    };
-    
-    // Check immediately and then every minute
-    checkWaitingTimes();
-    const interval = setInterval(checkWaitingTimes, 60000);
-    
-    return () => clearInterval(interval);
-  }, [waitingStartTimes, activeAppointments]);
 
   const statusColors: Record<string, string> = {
     scheduled: 'bg-blue-100 text-blue-700',
@@ -306,8 +229,7 @@ export default function AdminDashboard() {
   return (
     <>
       <div className="space-y-6">
-        {/* Onboarding Tutorial */}
-        <OnboardingTutorial />
+
 
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 py-2">
@@ -338,14 +260,6 @@ export default function AdminDashboard() {
                 {appointmentsLoading ? '...' : activeAppointments.length}
               </div>
               <p className="text-sm text-muted-foreground">תורים היום</p>
-            </div>
-          </div>
-          <div className="doctor-stat">
-            <div>
-              <div className="text-3xl font-bold text-foreground">
-                {appointmentsLoading ? '...' : waitingCount}
-              </div>
-              <p className="text-sm text-muted-foreground">ממתינים</p>
             </div>
           </div>
           <div className="doctor-stat">
@@ -422,52 +336,17 @@ export default function AdminDashboard() {
                   const isNew = isNewPatient(apt.patient_id);
                   const lastMessage = patientLastMessages?.[apt.patient_id];
                   
-                  const waitingMinutes = apt.status === 'waiting_room' ? getWaitingMinutes(apt.id) : 0;
-                  const isLongWait = waitingMinutes >= 15;
-                  
                   return (
                     <div
                       key={apt.id}
-                      className={`p-4 rounded-lg transition-colors cursor-pointer border-r-4 ${
-                        apt.status === 'waiting_room'
-                          ? isLongWait 
-                            ? 'waiting-alert border-r-red-500' 
-                            : 'bg-yellow-50 border-r-yellow-500'
-                          : apt.status === 'with_doctor' || apt.status === 'in_treatment'
-                            ? 'bg-purple-50 border-r-purple-500'
-                            : apt.status === 'arrived' || apt.status === 'in_progress' 
-                              ? 'bg-orange-50 border-r-orange-500' 
-                              : apt.status === 'completed' 
-                                ? 'bg-green-50 border-r-green-500' 
-                                : apt.status === 'no_show' 
-                                  ? 'bg-red-50 border-r-red-500' 
-                                  : 'bg-gray-50 border-r-blue-500 hover:bg-gray-100'
-                      }`}
+                      className="rounded-lg border border-border/70 bg-card p-4 hover:border-primary/40 cursor-pointer"
                       onClick={() => navigate(`/admin/appointments/${apt.id}`)}
                     >
                       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
                         {/* Patient Info */}
                         <div className="flex items-start gap-3 flex-1 min-w-0">
-                          <div className={`flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex-shrink-0 ${
-                            apt.status === 'waiting_room'
-                              ? isLongWait ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
-                              : apt.status === 'with_doctor' || apt.status === 'in_treatment'
-                                ? 'bg-purple-100 text-purple-700'
-                                : apt.status === 'arrived' || apt.status === 'in_progress'
-                                  ? 'bg-orange-100 text-orange-700'
-                                  : apt.status === 'completed'
-                                    ? 'bg-green-100 text-green-700'
-                                    : apt.status === 'no_show'
-                                      ? 'bg-red-100 text-red-700'
-                                      : 'bg-medical-100 text-medical-700'
-                          }`}>
-                            {apt.status === 'waiting_room' ? (
-                              isLongWait ? <AlertTriangle className="h-5 w-5" /> : <Armchair className="h-5 w-5" />
-                            ) : apt.status === 'with_doctor' || apt.status === 'in_treatment' ? (
-                              <Stethoscope className="h-5 w-5" />
-                            ) : (
-                              <Clock className="h-5 w-5" />
-                            )}
+                          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-muted text-primary">
+                            <Stethoscope className="h-5 w-5" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
@@ -538,56 +417,12 @@ export default function AdminDashboard() {
                             <Badge className={statusColors[apt.status] || statusColors.scheduled}>
                               {statusLabels[apt.status] || apt.status}
                             </Badge>
-                            {/* Show waiting time for waiting_room status */}
-                            {apt.status === 'waiting_room' && waitingMinutes > 0 && (
-                              <p className={`text-xs mt-1 font-medium ${isLongWait ? 'text-red-600' : 'text-yellow-600'}`}>
-                                {isLongWait && <AlertTriangle className="h-3 w-3 inline ml-1" />}
-                                ממתין {waitingMinutes} דק׳
-                              </p>
-                            )}
                           </div>
                           
                           {/* Status action buttons with next step indicator */}
                           {apt.status !== 'cancelled' && apt.status !== 'completed' && apt.status !== 'no_show' && (
                             <div className="flex flex-row sm:flex-col gap-1">
-                              {/* Scheduled/Confirmed -> Waiting Room or No Show */}
-                              {(apt.status === 'scheduled' || apt.status === 'confirmed') && (
-                                <>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="h-8 px-2 text-yellow-600 border-yellow-300 hover:bg-yellow-100 hover:text-yellow-700 gap-1"
-                                    onClick={(e) => handleStatusChange(e, apt.id, 'waiting_room')}
-                                    title="העבר לחדר המתנה"
-                                  >
-                                    <Armchair className="h-4 w-4" />
-                                    <span className="text-xs hidden sm:inline">חדר המתנה</span>
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="h-8 px-2 text-red-600 border-red-300 hover:bg-red-100 hover:text-red-700 gap-1"
-                                    onClick={(e) => handleStatusChange(e, apt.id, 'no_show')}
-                                    title="לא הגיע"
-                                  >
-                                    <XCircle className="h-4 w-4" />
-                                    <span className="text-xs hidden sm:inline">לא הגיע</span>
-                                  </Button>
-                                </>
-                              )}
-                              {/* Arrived -> Waiting Room */}
-                              {apt.status === 'arrived' && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="h-8 px-2 text-yellow-600 border-yellow-300 hover:bg-yellow-100 hover:text-yellow-700 gap-1"
-                                  onClick={(e) => handleStatusChange(e, apt.id, 'waiting_room')}
-                                  title="העבר לחדר המתנה"
-                                >
-                                  <Armchair className="h-4 w-4" />
-                                  <span className="text-xs hidden sm:inline">חדר המתנה</span>
-                                </Button>
-                              )}
+                              {['scheduled','confirmed','arrived'].includes(apt.status) && <Button variant="outline" size="sm" onClick={e=>handleStatusChange(e,apt.id,'in_treatment')}>התחלת ביקור</Button>}
                               {/* Waiting Room -> In Treatment (Doctor) */}
                               {apt.status === 'waiting_room' && (
                                 <Button

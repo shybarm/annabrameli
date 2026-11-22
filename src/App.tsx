@@ -6,7 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useMatch } from "react-router-dom";
 import { AuthProvider, setQueryClientRef } from "@/hooks/useAuth";
 import { ClinicProvider } from "@/contexts/ClinicContext";
 import { PageContentProvider } from "@/contexts/PageContentContext";
@@ -146,6 +146,7 @@ function useCleanPlatformMeta() {
 }
 
 const App = () => {
+  const adminRoute = useMatch("/admin/*");
   useCleanPlatformMeta();
   return (
   <DirectionProvider dir="rtl">
@@ -266,7 +267,7 @@ const App = () => {
               <Route path="*" element={<NotFound />} />
             </Routes>
             </React.Suspense>
-            <MedicalDisclaimer />
+            {!adminRoute && <MedicalDisclaimer />}
           </>
         </TooltipProvider>
         </PageContentProvider>

@@ -212,3 +212,5 @@
     border-radius: 0.7rem;
   }
 }
+.clinical-field > span { color:hsl(var(--primary)); font-size:.84rem; font-weight:700; }
+.clinical-field textarea { color:hsl(var(--foreground)); font-size:1.075rem; font-weight:400; line-height:1.75; }
