@@ -1,4 +1,4 @@
-import type { ClinicalDocument } from './clinicalApi';
+import { clinicalDb, type ClinicalDocument } from './clinicalApi';
 import { visitFields } from './visitModel';
 export type DocumentKind = 'summary' | 'prescription';
 export const escapeClinicalHtml = (s:unknown) => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
@@ -11,6 +11,9 @@ export function clinicalDocumentHtml(doc:ClinicalDocument,kind:DocumentKind) {
 }
 // Local PDF generation keeps clinical data in the browser and removes browser print headers.
 export async function clinicalDocumentPdf(doc:ClinicalDocument,kind:DocumentKind):Promise<Blob>{
+ const stampResult=await clinicalDb.rpc('clinical_document_stamp',{p_document:doc.id});
+ if(stampResult.error||typeof stampResult.data!=='string')throw new Error('לא ניתן לטעון את החותמת המאושרת. נסו שוב.');
+ doc={...doc,snapshot:{...doc.snapshot,issuer:{...doc.snapshot.issuer,stamp_data:stampResult.data}}};
  const [{default:html2canvas},{jsPDF}]=await Promise.all([import('html2canvas'),import('jspdf')]);
  const frame=document.createElement('iframe');frame.setAttribute('aria-hidden','true');frame.style.cssText='position:fixed;left:-12000px;top:0;width:700px;height:1000px;border:0;';document.body.append(frame);
  try{
