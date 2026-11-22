@@ -271,11 +271,13 @@ export function useUpdateInvoiceStatus() {
   
   return useMutation({
     mutationFn: async ({ id, status, amount_paid }: { id: string; status: string; amount_paid?: number }) => {
-      const updateData = {
-        status,
-        ...(amount_paid !== undefined ? { amount_paid } : {}),
-        ...(status === 'paid' ? { paid_at: new Date().toISOString() } : {}),
-      };
+      const updateData: Record<string, unknown> = { status };
+      if (amount_paid !== undefined) {
+        updateData.amount_paid = amount_paid;
+      }
+      if (status === 'paid') {
+        updateData.paid_at = new Date().toISOString();
+      }
       
       const { data, error } = await supabase
         .from('invoices')
