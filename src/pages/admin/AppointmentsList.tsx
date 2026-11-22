@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { type CSSProperties, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -147,7 +147,7 @@ export default function AppointmentsList() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">יומן מרפאה</h1>
+            <h1 className="text-2xl font-bold text-foreground">יומן מרפאה</h1>
 
           </div>
           <div className="flex gap-2">
@@ -257,19 +257,21 @@ export default function AppointmentsList() {
               <Button variant="ghost" size="icon" aria-label="שבוע הבא" onClick={()=>navigateWeek('next')}><ChevronLeft/></Button>
               <Button className="ms-auto" variant="outline" size="sm" onClick={()=>{setWeekOffset(0);setSelectedWeekday(today.getDay())}}>היום</Button>
             </div>
-            <div className="clinic-days">
-              {weekDays.map((day, index) => {
-                const count = getAppointmentsForDay(day).length;
-                const dayCount = count === 0 ? 'אין תורים' : count === 1 ? 'תור אחד' : count + ' תורים';
-                return (
-                  <button type="button" key={day.toISOString()} aria-pressed={selectedWeekday === index}
-                    onClick={() => setSelectedWeekday(index)}>
-                    <span>{format(day, 'EEEE', { locale: he })}</span>
-                    <strong>{format(day, 'd/M')}</strong>
-                    <small>{weekLoading || weekError ? '…' : dayCount}</small>
-                  </button>
-                );
-              })}
+            <div className="clinic-days-scroll">
+              <div className="clinic-days" style={{ '--selected-day': selectedWeekday } as CSSProperties}>
+                {weekDays.map((day, index) => {
+                  const count = getAppointmentsForDay(day).length;
+                  const dayCount = count === 0 ? 'אין תורים' : count === 1 ? 'תור אחד' : count + ' תורים';
+                  return (
+                    <button type="button" key={day.toISOString()} aria-pressed={selectedWeekday === index}
+                      onClick={() => setSelectedWeekday(index)}>
+                      <span>{format(day, 'EEEE', { locale: he })}</span>
+                      <strong>{format(day, 'd/M')}</strong>
+                      <small>{weekLoading || weekError ? '…' : dayCount}</small>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </section>
           <section data-tutorial="appointments-list" className="clinic-agenda">
