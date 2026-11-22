@@ -21,7 +21,7 @@ Deno.serve(async(req)=>{
  let state='uncertain',messageId:string|null=null;
  try{
   const payload=new FormData();payload.append('chatId',job.phone+'@c.us');payload.append('file',file,kind==='summary'?'visit-summary.pdf':'prescription.pdf');payload.append('fileName',kind==='summary'?'visit-summary.pdf':'prescription.pdf');
-  const response=await fetch('https://7107.media.greenapi.com/waInstance710722808546/sendFileByUpload/'+encodeURIComponent(token),{method:'POST',body:payload,signal:AbortSignal.timeout(20000)});
+  const response=await fetch('https://7107.api.greenapi.com/waInstance710722808546/sendFileByUpload/'+encodeURIComponent(token),{method:'POST',body:payload,signal:AbortSignal.timeout(20000)});
   const result=await response.json().catch(()=>({}));
   if(response.ok&&typeof result.idMessage==='string'){state='accepted';messageId=result.idMessage;}
   else if(response.status>=400&&response.status<500)state='failed';
