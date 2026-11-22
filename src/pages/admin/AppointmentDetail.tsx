@@ -1,3 +1,4 @@
+import { ClinicalVisitWorkspace } from '@/components/admin/clinical/ClinicalVisitWorkspace';
 import { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,7 +16,6 @@ import { toast } from '@/hooks/use-toast';
 import { DocumentViewer } from '@/components/admin/DocumentViewer';
 import { VoiceRecorder } from '@/components/admin/VoiceRecorder';
 import { ScoringToolbar } from '@/components/admin/scoring/ScoringToolbar';
-import { SignaturePad } from '@/components/admin/SignaturePad';
 import { useElectronicSignatures, useCreateElectronicSignature } from '@/hooks/useElectronicSignatures';
 import { TelephoneInvitation } from '@/components/admin/TelephoneInvitation';
 import { useAuth } from '@/hooks/useAuth';
@@ -53,7 +53,6 @@ export default function AppointmentDetail() {
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [viewerOpen, setViewerOpen] = useState(false);
   const [viewerIndex, setViewerIndex] = useState(0);
-  const [showSignaturePad, setShowSignaturePad] = useState(false);
   const [aiSummary, setAiSummary] = useState('');
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [reviewBeforeSend, setReviewBeforeSend] = useState(true);
@@ -308,27 +307,6 @@ export default function AppointmentDetail() {
     return fields.some(field => field.trim().length > 2);
   };
 
-  const handleSaveVisitSummary = () => {
-    if (!hasValidContent()) {
-      toast({ title: 'נדרש למלא לפחות שדה אחד', description: 'יש להזין לפחות 3 תווים בשדה אחד', variant: 'destructive' });
-      return;
-    }
-    // Save first, then open signature
-    const isCompleted = visitSummary.trim() || treatmentPlan.trim() || medications.trim();
-    updateAppointment.mutate({ 
-      visit_summary: visitSummary, 
-      treatment_plan: treatmentPlan,
-      medications,
-      visit_completed_at: isCompleted ? new Date().toISOString() : undefined,
-      status: isCompleted ? 'completed' : status,
-    }, {
-      onSuccess: () => {
-        // After save, open signature popup
-        setShowSignaturePad(true);
-      }
-    });
-  };
-
   const buildVisitSummaryText = () => {
     const patientName = `${appointment?.patients?.first_name || ''} ${appointment?.patients?.last_name || ''}`.trim();
     const visitDate = appointment?.scheduled_at ? format(new Date(appointment.scheduled_at), 'dd/MM/yyyy', { locale: he }) : '';
@@ -431,7 +409,7 @@ export default function AppointmentDetail() {
       {
         doctor_name: clinicSettings?.doctor_name || 'ד״ר אנה ברמלי',
         doctor_license: clinicSettings?.doctor_license || '',
-        doctor_specialty: clinicSettings?.doctor_specialty || 'רפואה משלימה',
+        doctor_specialty: clinicSettings?.doctor_specialty || 'מומחית לאלרגיה ואימונולוגיה',
         clinic_name: clinicSettings?.clinic_name || '',
         clinic_address: clinicSettings?.clinic_address || '',
         clinic_phone: clinicSettings?.clinic_phone || '',
@@ -799,367 +777,8 @@ export default function AppointmentDetail() {
           </TabsList>
 
           {/* Visit Summary Tab */}
-          <TabsContent value="visit">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Stethoscope className="h-5 w-5 text-primary" />
-                  סיכום ביקור ותוכנית טיפול
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6" data-tutorial="visit-summary-form">
-                {/* Scoring Toolbar */}
-                <ScoringToolbar 
-                  onScoreAdd={(toolName, score, interpretation) => {
-                    const scoreText = `\n${toolName}: ${score} - ${interpretation}`;
-                    setVisitSummary(prev => prev + scoreText);
-                    toast({ title: `${toolName} נוסף לסיכום` });
-                  }}
-                />
-
-                {/* Chief Complaint */}
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-2">תלונה עיקרית</Label>
-                  <Textarea
-                    value={chiefComplaint}
-                    onChange={(e) => setChiefComplaint(e.target.value)}
-                    placeholder="תלונה עיקרית של המטופל בביקור זה..."
-                    rows={2}
-                    className="resize-none text-right"
-                    dir="rtl"
-                  />
-                </div>
-
-                {/* Current Illness with Voice Recording */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="flex items-center gap-2">מחלה נוכחית</Label>
-                    <VoiceRecorder 
-                      onTranscription={(text) => setCurrentIllness(prev => prev ? prev + '\n' + text : text)}
-                    />
-                  </div>
-                  <Textarea
-                    value={currentIllness}
-                    onChange={(e) => setCurrentIllness(e.target.value)}
-                    placeholder="תיאור המחלה הנוכחית, אנמנזה..."
-                    rows={5}
-                    className="resize-none text-right"
-                    dir="rtl"
-                  />
-                </div>
-
-
-                {/* Medical Background from Intake */}
-                {appointment?.patients && (
-                  <div className="space-y-2">
-                    <Label>רקע רפואי (מטופס קליטה)</Label>
-                    <div className="p-3 bg-muted/30 rounded-lg text-sm space-y-1">
-                      {appointment.patients.chronic_conditions?.length ? (
-                        <p><strong>מחלות כרוניות:</strong> {appointment.patients.chronic_conditions.join(', ')}</p>
-                      ) : null}
-                      {appointment.patients.previous_surgeries && (
-                        <p><strong>ניתוחים קודמים:</strong> {appointment.patients.previous_surgeries}</p>
-                      )}
-                      {appointment.patients.current_medications && (
-                        <p><strong>תרופות נוכחיות:</strong> {appointment.patients.current_medications}</p>
-                      )}
-                      {appointment.patients.allergies?.length ? (
-                        <p><strong>אלרגיות:</strong> {appointment.patients.allergies.join(', ')}</p>
-                      ) : null}
-                      {!appointment.patients.chronic_conditions?.length && !appointment.patients.previous_surgeries && !appointment.patients.current_medications && !appointment.patients.allergies?.length && (
-                        <p className="text-muted-foreground">אין מידע רפואי מטופס הקליטה</p>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Family History from Intake */}
-                {appointment?.patients?.family_medical_history && (
-                  <div className="space-y-2">
-                    <Label>רקע משפחתי (מטופס קליטה)</Label>
-                    <div className="p-3 bg-muted/30 rounded-lg text-sm">
-                      {appointment.patients.family_medical_history}
-                    </div>
-                  </div>
-                )}
-
-                {/* Physical Examination */}
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-2">
-                    <Activity className="h-4 w-4" />
-                    בדיקה גופנית
-                  </Label>
-                  <Textarea
-                    value={physicalExam}
-                    onChange={(e) => setPhysicalExam(e.target.value)}
-                    placeholder="ממצאי הבדיקה הגופנית..."
-                    rows={4}
-                    className="resize-none text-right"
-                    dir="rtl"
-                  />
-                </div>
-
-                {/* Lab Tests */}
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-2">
-                    <FlaskConical className="h-4 w-4" />
-                    בדיקות מעבדה
-                  </Label>
-                  <Textarea
-                    value={labTests}
-                    onChange={(e) => setLabTests(e.target.value)}
-                    placeholder="בדיקות דם, שתן, תרביות וכו'..."
-                    rows={3}
-                    className="resize-none text-right"
-                    dir="rtl"
-                  />
-                </div>
-
-                {/* Auxiliary Tests */}
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-2">
-                    <ScanLine className="h-4 w-4" />
-                    בדיקות עזר (הדמייה, פתולוגיה, פרוצדורות)
-                  </Label>
-                  <Textarea
-                    value={auxiliaryTests}
-                    onChange={(e) => setAuxiliaryTests(e.target.value)}
-                    placeholder="CT, MRI, אולטרסאונד, ביופסיה וכו'..."
-                    rows={3}
-                    className="resize-none text-right"
-                    dir="rtl"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-2">
-                    <FileText className="h-4 w-4" />
-                    סיכום הביקור
-                  </Label>
-                  <Textarea
-                    value={visitSummary}
-                    onChange={(e) => setVisitSummary(e.target.value)}
-                    placeholder="תאר את מהלך הביקור, ממצאים, אבחנה..."
-                    rows={5}
-                    className="resize-none text-right"
-                    dir="rtl"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-2">
-                    <Stethoscope className="h-4 w-4" />
-                    תוכנית טיפול
-                  </Label>
-                  <Textarea
-                    value={treatmentPlan}
-                    onChange={(e) => setTreatmentPlan(e.target.value)}
-                    placeholder="המלצות לטיפול, פעולות נדרשות, תור המשך..."
-                    rows={4}
-                    className="resize-none text-right"
-                    dir="rtl"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-2">
-                    <Pill className="h-4 w-4" />
-                    תרופות ומרשמים
-                  </Label>
-                  <Textarea
-                    value={medications}
-                    onChange={(e) => setMedications(e.target.value)}
-                    placeholder="רשום תרופות, מינון, אופן השימוש..."
-                    rows={4}
-                    className="resize-none text-right"
-                    dir="rtl"
-                  />
-                </div>
-
-                <div className="flex flex-wrap gap-3 pt-4 border-t" data-tutorial="share-buttons">
-                  <Button 
-                    onClick={handleSaveVisitSummary} 
-                    disabled={updateAppointment.isPending || !hasValidContent()}
-                    className="bg-primary text-primary-foreground hover:bg-primary/90"
-                  >
-                    <Save className="h-4 w-4 ml-2" />
-                    {updateAppointment.isPending ? 'שומר...' : 'שמור וחתום'}
-                  </Button>
-                  
-                  <Button 
-                    variant="outline" 
-                    onClick={handleSendEmailClick}
-                    disabled={isSendingEmail || !appointment.patients?.email || !pdfReady}
-                    title={!pdfReady ? 'יש לשמור ולחתום תחילה' : ''}
-                  >
-                    <Mail className="h-4 w-4 ml-2" />
-                    {isSendingEmail ? 'שולח...' : 'שלח באימייל'}
-                  </Button>
-
-                  <Button 
-                    variant="outline" 
-                    onClick={async () => {
-                      const text = buildVisitSummaryText();
-                      const success = await shareViaWhatsApp({
-                        title: 'סיכום ביקור',
-                        text,
-                        phone: appointment.patients?.phone
-                      });
-                      if (success) {
-                        updateAppointment.mutate({ visit_shared_whatsapp_at: new Date().toISOString() });
-                      }
-                    }}
-                    disabled={!pdfReady}
-                    title={!pdfReady ? 'יש לשמור ולחתום תחילה' : ''}
-                    className="bg-green-50 hover:bg-green-100 text-green-700 border-green-200"
-                  >
-                    <MessageCircle className="h-4 w-4 ml-2" />
-                    שתף ב-WhatsApp
-                  </Button>
-
-                  <Button 
-                    variant="outline" 
-                    onClick={() => copyToClipboard(buildVisitSummaryText())}
-                    disabled={!pdfReady}
-                    title={!pdfReady ? 'יש לשמור ולחתום תחילה' : ''}
-                  >
-                    <Copy className="h-4 w-4 ml-2" />
-                    העתק טקסט
-                  </Button>
-
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      id="reviewBeforeSend"
-                      checked={reviewBeforeSend}
-                      onCheckedChange={(checked) => setReviewBeforeSend(checked as boolean)}
-                    />
-                    <Label htmlFor="reviewBeforeSend" className="text-sm cursor-pointer">
-                      בדיקה לפני שליחה
-                    </Label>
-                  </div>
-                  
-                  <Button 
-                    variant="outline" 
-                    onClick={handlePrint}
-                    disabled={!pdfReady}
-                    title={!pdfReady ? 'יש לשמור ולחתום תחילה' : ''}
-                  >
-                    <Printer className="h-4 w-4 ml-2" />
-                    הדפס
-                  </Button>
-
-                  <Dialog open={showSignaturePad} onOpenChange={setShowSignaturePad}>
-                    <DialogContent className="sm:max-w-md">
-                      <DialogHeader>
-                        <DialogTitle>חתימה דיגיטלית על סיכום הביקור</DialogTitle>
-                      </DialogHeader>
-                      <SignaturePad 
-                        defaultName={staffProfile?.full_name || ''}
-                        defaultRole="doctor"
-                        onSign={async (signatureData, signerName, signerRole, signatureMeaning) => {
-                          try {
-                            await createSignature.mutateAsync({
-                              record_type: 'appointment',
-                              record_id: id!,
-                              signature_data: signatureData,
-                              signer_name: signerName,
-                              signer_role: signerRole,
-                              signature_meaning: signatureMeaning
-                            });
-                            setShowSignaturePad(false);
-                            // PDF is now ready, show preview
-                            setPdfReady(true);
-                            setShowReviewDialog(true);
-                          } catch (error: any) {
-                            toast({ title: 'שגיאה ביצירת PDF', description: error.message, variant: 'destructive' });
-                          }
-                        }}
-                        onCancel={() => setShowSignaturePad(false)}
-                      />
-                    </DialogContent>
-                  </Dialog>
-
-                  {/* Review Before Send Dialog */}
-                  <Dialog open={showReviewDialog} onOpenChange={setShowReviewDialog}>
-                    <DialogContent className="sm:max-w-4xl max-h-[90vh]">
-                      <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2">
-                          <Eye className="h-5 w-5" />
-                          בדיקה לפני שליחה
-                        </DialogTitle>
-                      </DialogHeader>
-                      <div className="overflow-auto max-h-[60vh] border rounded-lg">
-                        <iframe
-                          srcDoc={generatePrintHtml()}
-                          className="w-full h-[500px] bg-white"
-                          title="תצוגה מקדימה של סיכום הביקור"
-                        />
-                      </div>
-                      <DialogFooter className="flex gap-2 sm:gap-0">
-                        <Button
-                          variant="outline"
-                          onClick={() => setShowReviewDialog(false)}
-                        >
-                          חזרה
-                        </Button>
-                        <Button
-                          onClick={handleConfirmSendFromReview}
-                          disabled={isSendingEmail}
-                          className="bg-primary text-primary-foreground"
-                        >
-                          <Mail className="h-4 w-4 ml-2" />
-                          {isSendingEmail ? 'שולח...' : 'שלח עכשיו'}
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                </div>
-
-                {/* Existing Signatures Display */}
-                {signatures && signatures.length > 0 && (
-                  <div className="pt-4 border-t space-y-3" data-tutorial="signature-section">
-                    <Label className="flex items-center gap-2">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                      חתימות דיגיטליות
-                    </Label>
-                    <div className="grid gap-3">
-                      {signatures.map((sig) => (
-                        <div 
-                          key={sig.id} 
-                          className="flex items-start gap-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800"
-                        >
-                          <img 
-                            src={sig.signature_data} 
-                            alt="חתימה" 
-                            className="h-12 w-24 object-contain bg-white rounded border"
-                          />
-                          <div className="flex-1 text-sm">
-                            <p className="font-medium">{sig.signer_name}</p>
-                            <p className="text-muted-foreground">
-                              {sig.signer_role === 'doctor' ? 'רופא' : sig.signer_role === 'admin' ? 'מנהל' : 'מזכירה'} - {sig.signature_meaning === 'approval' ? 'אישור' : sig.signature_meaning === 'review' ? 'סקירה' : 'כותב'}
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {format(new Date(sig.signed_at), 'dd/MM/yyyy HH:mm:ss', { locale: he })}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {(appointment.visit_shared_whatsapp_at || appointment.visit_shared_email_at) && (
-                  <div className="text-sm text-muted-foreground pt-2 border-t">
-                    {appointment.visit_shared_whatsapp_at && (
-                      <p>✓ נשלח ב-WhatsApp: {format(new Date(appointment.visit_shared_whatsapp_at), 'dd/MM/yyyy HH:mm')}</p>
-                    )}
-                    {appointment.visit_shared_email_at && (
-                      <p>✓ נשלח באימייל: {format(new Date(appointment.visit_shared_email_at), 'dd/MM/yyyy HH:mm')}</p>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+          <TabsContent value="visit" forceMount className="data-[state=inactive]:hidden">
+            <ClinicalVisitWorkspace key={id} appointmentId={id!} legacy={appointment} />
           </TabsContent>
 
           {/* Internal Notes Tab */}

@@ -1,3 +1,4 @@
+import { ClinicalDocuments } from '@/components/admin/clinical/ClinicalDocuments';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { usePatientPortalAppointments } from '@/hooks/usePatientPortal';
@@ -69,7 +70,7 @@ export default function PatientVisitSummariesTab() {
 
   if (!completedWithSummary.length) {
     return (
-      <Card>
+      <><ClinicalDocuments /><Card>
         <CardContent className="py-12 text-center">
           <ClipboardList className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-medium text-foreground mb-2">אין סיכומי ביקור</h3>
@@ -77,7 +78,7 @@ export default function PatientVisitSummariesTab() {
             סיכומי הביקורים שלך יופיעו כאן לאחר ביקור במרפאה.
           </p>
         </CardContent>
-      </Card>
+      </Card></>
     );
   }
 
@@ -130,6 +131,7 @@ export default function PatientVisitSummariesTab() {
 
   return (
     <div className="space-y-4">
+      <ClinicalDocuments />
       <Accordion type="single" collapsible className="space-y-3">
         {completedWithSummary.map((apt) => {
           const isSigned = signaturesMap?.[apt.id]?.length > 0;

@@ -1,3 +1,5 @@
+import { ClinicalDocuments } from '@/components/admin/clinical/ClinicalDocuments';
+import { ClinicalPatientTimeline } from '@/components/admin/clinical/ClinicalPatientTimeline';
 import { useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -811,6 +813,7 @@ export default function PatientDetail() {
 
           {/* Visit Summaries Tab */}
           <TabsContent value="visits">
+            <ClinicalPatientTimeline patientId={id!} /><ClinicalDocuments patientId={id!} />
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
