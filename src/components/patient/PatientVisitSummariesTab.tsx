@@ -1,7 +1,7 @@
-import { ClinicalDocuments } from '@/components/admin/clinical/ClinicalDocuments';
+import { VisitDocumentButton, useVisitDocuments } from '@/components/admin/clinical/ClinicalDocuments';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
-import { usePatientPortalAppointments } from '@/hooks/usePatientPortal';
+import { usePatientRecord, usePatientPortalAppointments } from '@/hooks/usePatientPortal';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -15,6 +15,13 @@ import { generateMedicalVisitSummaryPdf } from '@/utils/medicalPdfTemplate';
 
 export default function PatientVisitSummariesTab() {
   const { data: appointments, isLoading } = usePatientPortalAppointments();
+
+  const patient = usePatientRecord();
+  const approved = useVisitDocuments({patientId: patient.data?.id});
+  const latest = new Map<string, NonNullable<typeof approved.data>[number]>();
+  for (const entry of approved.data ?? []) {
+    if (!latest.has(entry.appointment_id)) latest.set(entry.appointment_id,entry);
+  }
 
   // Fetch clinic settings for doctor info
   const { data: clinicSettings } = useQuery({
@@ -54,7 +61,7 @@ export default function PatientVisitSummariesTab() {
     enabled: !!appointments?.length
   });
 
-  if (isLoading) {
+  if (isLoading || patient.isLoading || (patient.data && approved.isPending)) {
     return (
       <div className="space-y-4">
         {[1, 2, 3].map((i) => (
@@ -65,12 +72,13 @@ export default function PatientVisitSummariesTab() {
   }
 
   const completedWithSummary = appointments?.filter(
-    (apt) => apt.status === 'completed' && (apt.visit_summary || apt.medications || apt.treatment_plan)
+    (apt) => !latest.has(apt.id) && apt.status === 'completed' && (apt.visit_summary || apt.medications || apt.treatment_plan)
   ) || [];
 
-  if (!completedWithSummary.length) {
+  if (approved.isError || patient.isError) return <p role="alert">טעינת המסמכים נכשלה. אפשר לרענן ולנסות שוב.</p>;
+  if (!latest.size && !completedWithSummary.length) {
     return (
-      <><ClinicalDocuments /><Card>
+      <Card>
         <CardContent className="py-12 text-center">
           <ClipboardList className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-medium text-foreground mb-2">אין סיכומי ביקור</h3>
@@ -78,7 +86,7 @@ export default function PatientVisitSummariesTab() {
             סיכומי הביקורים שלך יופיעו כאן לאחר ביקור במרפאה.
           </p>
         </CardContent>
-      </Card></>
+      </Card>
     );
   }
 
@@ -131,7 +139,14 @@ export default function PatientVisitSummariesTab() {
 
   return (
     <div className="space-y-4">
-      <ClinicalDocuments />
+      {[...latest.values()].sort((a,b)=>b.signed_at.localeCompare(a.signed_at)).map(entry=>{
+        const visit=appointments?.find(a=>a.id===entry.appointment_id);
+        return <div key={entry.id} dir="rtl" className="flex flex-wrap items-center justify-between gap-3 border-b py-3">
+          <div><strong>{visit?.appointment_type?.name_he || 'סיכום ביקור'}</strong>
+          <p className="text-sm text-muted-foreground">{visit ? new Date(visit.scheduled_at).toLocaleDateString('he-IL') : 'אושר ב'+new Date(entry.signed_at).toLocaleDateString('he-IL')}</p></div>
+          <VisitDocumentButton entry={entry} patientView />
+        </div>;
+      })}
       <Accordion type="single" collapsible className="space-y-3">
         {completedWithSummary.map((apt) => {
           const isSigned = signaturesMap?.[apt.id]?.length > 0;

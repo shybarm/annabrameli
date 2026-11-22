@@ -1,4 +1,3 @@
-import { ClinicalDocuments } from '@/components/admin/clinical/ClinicalDocuments';
 import { ClinicalPatientTimeline } from '@/components/admin/clinical/ClinicalPatientTimeline';
 import { useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -46,7 +45,7 @@ export default function PatientDetail() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { data: patient, isLoading } = usePatient(id);
-  const { data: appointments } = usePatientAppointments(id);
+  const { data: appointments, isPending: visitsLoading, isError: visitsFailed } = usePatientAppointments(id);
   const { data: invoices } = usePatientInvoices(id);
   const { data: clinics } = useClinics();
   const updatePatient = useUpdatePatient();
@@ -492,7 +491,7 @@ export default function PatientDetail() {
               <ArrowRight className="h-5 w-5" />
             </Button>
             <div className="flex items-center gap-4">
-              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary font-bold text-xl">
+              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 text-primary font-bold text-xl">
                 {patient.first_name.charAt(0)}{patient.last_name.charAt(0)}
               </div>
               <div>
@@ -503,7 +502,7 @@ export default function PatientDetail() {
                   {patient.id_number && <span>ת.ז: {patient.id_number}</span>}
                   {/* New patient badge */}
                   {isUnreviewed && (
-                    <Badge className="bg-amber-500 text-white text-xs animate-pulse">
+                    <Badge className="bg-muted text-foreground text-xs">
                       <Sparkles className="h-3 w-3 ml-1" />
                       מטופל חדש
                     </Badge>
@@ -545,7 +544,7 @@ export default function PatientDetail() {
             {isUnreviewed && (
               <Button 
                 variant="default"
-                className="bg-amber-500 hover:bg-amber-600 text-white"
+                className="shadow-none"
                 onClick={() => {
                   if (!id) return;
                   markReviewed.mutate(id);
@@ -562,7 +561,7 @@ export default function PatientDetail() {
             </Button>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" size="icon">
+                <Button variant="ghost" size="icon" aria-label="מחיקת מטופל">
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </AlertDialogTrigger>
@@ -596,51 +595,14 @@ export default function PatientDetail() {
           </div>
         </div>
 
-        {/* Intake Form Card - Only show if NOT completed */}
-        {!(patient as any).intake_completed_at && (
-          <Card className="border-primary/50 bg-primary/5">
-            <CardContent className="flex items-center justify-between py-4">
-              <div className="flex items-center gap-3">
-                <ClipboardList className="h-5 w-5 text-primary" />
-                <div>
-                  <p className="font-medium">טופס קליטה</p>
-                  <p className="text-sm text-muted-foreground">
-                    {intakeToken?.token && !intakeToken.completed_at 
-                      ? 'קישור נוצר - ממתין למילוי' 
-                      : 'שלח קישור למטופל למילוי הטופס לפני הביקור הראשון'}
-                  </p>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                {intakeToken?.token && !intakeToken.completed_at ? (
-                  <Button variant="outline" size="sm" onClick={handleCopyIntakeLink}>
-                    <Link className="h-4 w-4 ml-1" />
-                    העתק קישור
-                  </Button>
-                ) : (
-                  <Button 
-                    size="sm" 
-                    onClick={handleGenerateIntakeLink}
-                    disabled={isGeneratingIntake}
-                    className="bg-primary text-primary-foreground"
-                  >
-                    <ClipboardList className="h-4 w-4 ml-1" />
-                    {isGeneratingIntake ? 'יוצר...' : 'צור קישור'}
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
         {/* Portal Access Card - DISABLED per ISO 27799 */}
         {/* Patient portal has been disabled for security compliance */}
 
-        <Tabs defaultValue="info" className="space-y-4">
-          <TabsList className="flex-wrap">
+        <Tabs dir="rtl" defaultValue="visits" className="space-y-4">
+          <TabsList className="h-auto max-w-full flex-wrap justify-start gap-1 p-1">
             <TabsTrigger value="info">פרטים אישיים</TabsTrigger>
             <TabsTrigger value="intake">נתוני קליטה</TabsTrigger>
-            <TabsTrigger value="visits">סיכומי ביקורים</TabsTrigger>
+            <TabsTrigger value="visits">ביקורים</TabsTrigger>
             <TabsTrigger value="appointments">תורים ({appointments?.length || 0})</TabsTrigger>
             <TabsTrigger value="billing">חיוב ({invoices?.length || 0})</TabsTrigger>
             <TabsTrigger value="documents">מסמכים ({documents?.length || 0})</TabsTrigger>
@@ -758,7 +720,45 @@ export default function PatientDetail() {
           </TabsContent>
 
           {/* Intake Data Tab */}
-          <TabsContent value="intake">
+          <TabsContent value="intake" className="space-y-3">
+        {/* Intake Form Card - Only show if NOT completed */}
+        {!(patient as any).intake_completed_at && (
+          <Card className="border-border shadow-none">
+            <CardContent className="flex items-center justify-between py-4">
+              <div className="flex items-center gap-3">
+                <ClipboardList className="h-5 w-5 text-primary" />
+                <div>
+                  <p className="font-medium">טופס קליטה</p>
+                  <p className="text-sm text-muted-foreground">
+                    {intakeToken?.token && !intakeToken.completed_at
+                      ? 'קישור נוצר - ממתין למילוי'
+                      : 'קישור לטופס לפני הביקור הראשון'}
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                {intakeToken?.token && !intakeToken.completed_at ? (
+                  <Button variant="outline" size="sm" onClick={handleCopyIntakeLink}>
+                    <Link className="h-4 w-4 ml-1" />
+                    העתק קישור
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    onClick={handleGenerateIntakeLink}
+                    disabled={isGeneratingIntake}
+                    className="bg-primary text-primary-foreground"
+                  >
+                    <ClipboardList className="h-4 w-4 ml-1" />
+                    {isGeneratingIntake ? 'יוצר...' : 'צור קישור'}
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -813,61 +813,7 @@ export default function PatientDetail() {
 
           {/* Visit Summaries Tab */}
           <TabsContent value="visits">
-            <ClinicalPatientTimeline patientId={id!} /><ClinicalDocuments patientId={id!} />
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Stethoscope className="h-5 w-5 text-primary" />
-                  סיכומי ביקורים
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {appointments && appointments.filter(a => a.visit_summary || a.treatment_plan || a.medications).length > 0 ? (
-                  <div className="space-y-4">
-                    {appointments
-                      .filter(apt => apt.visit_summary || apt.treatment_plan || apt.medications)
-                      .map((apt) => (
-                        <div 
-                          key={apt.id}
-                          className="p-4 rounded-lg border bg-card cursor-pointer hover:shadow-md transition-shadow"
-                          onClick={() => navigate(`/admin/appointments/${apt.id}`)}
-                        >
-                          <div className="flex items-center justify-between mb-3">
-                            <p className="font-semibold">{apt.appointment_types?.name_he || 'ביקור'}</p>
-                            <span className="text-sm text-muted-foreground">
-                              {format(new Date(apt.scheduled_at), 'dd/MM/yyyy', { locale: he })}
-                            </span>
-                          </div>
-                          {apt.visit_summary && (
-                            <div className="mb-2">
-                              <p className="text-xs font-medium text-muted-foreground mb-1">סיכום:</p>
-                              <p className="text-sm whitespace-pre-wrap line-clamp-3 text-right" dir="rtl">{apt.visit_summary}</p>
-                            </div>
-                          )}
-                          {apt.treatment_plan && (
-                            <div className="mb-2">
-                              <p className="text-xs font-medium text-muted-foreground mb-1">תוכנית טיפול:</p>
-                              <p className="text-sm whitespace-pre-wrap line-clamp-2 text-right" dir="rtl">{apt.treatment_plan}</p>
-                            </div>
-                          )}
-                          {apt.medications && (
-                            <div>
-                              <p className="text-xs font-medium text-muted-foreground mb-1">תרופות:</p>
-                              <p className="text-sm whitespace-pre-wrap line-clamp-2">{apt.medications}</p>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <Stethoscope className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                    <p className="text-muted-foreground">אין סיכומי ביקורים</p>
-                    <p className="text-sm text-muted-foreground">סיכומי ביקורים יופיעו כאן לאחר שיתווספו בדף התור</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <ClinicalPatientTimeline key={id} patientId={id!} appointments={appointments ?? []} loading={visitsLoading} failed={visitsFailed} />
           </TabsContent>
 
           <TabsContent value="appointments">

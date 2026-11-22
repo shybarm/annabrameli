@@ -100,7 +100,7 @@ function PatientsListContent() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-foreground">מטופלים</h1>
-          <p className="text-sm text-muted-foreground hidden sm:block">ניהול רשימת המטופלים במרפאה</p>
+
         </div>
         <div className="flex gap-2">
           <PageHelpButton tutorial={pageTutorials['/admin/patients']} />
@@ -124,7 +124,7 @@ function PatientsListContent() {
         <div className="relative flex-1 max-w-md" data-tutorial="search-patients">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="חיפוש לפי שם, טלפון או ת.ז..."
+            aria-label="חיפוש מטופלים" placeholder="שם, טלפון או מספר זהות"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pr-10 h-9 sm:h-10"
@@ -161,7 +161,7 @@ function PatientsListContent() {
                 key={patient.id} 
                 className={cn(
                   "cursor-pointer hover:shadow-md transition-all",
-                  isNewPatient && "ring-2 ring-amber-400 bg-amber-50/30",
+                  isNewPatient && "border-primary/25",
                   "overflow-hidden"
                 )}
                 onClick={() => navigate(`/admin/patients/${patient.id}`)}
@@ -183,10 +183,10 @@ function PatientsListContent() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <h3 className="font-semibold text-sm sm:text-base text-foreground truncate">
-                          {patient.first_name} {patient.last_name}
+                          <button className="text-start focus-visible:underline" onClick={e => { e.stopPropagation(); navigate(`/admin/patients/${patient.id}`); }}>{patient.first_name} {patient.last_name}</button>
                         </h3>
                         {isNewPatient && (
-                          <Badge className="bg-amber-500 text-white text-[10px] px-1.5 py-0 h-4 flex-shrink-0">
+                          <Badge className="bg-muted text-foreground text-xs px-1.5 py-0 h-4 flex-shrink-0">
                             <Sparkles className="h-2.5 w-2.5 ml-0.5" />
                             חדש
                           </Badge>

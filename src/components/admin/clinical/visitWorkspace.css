@@ -1,0 +1,31 @@
+.visit-actions {
+  --clinical-action: #834362;
+  border-radius: 14px;
+  padding: 12px clamp(12px, 3vw, 20px);
+  margin-bottom: max(12px, env(safe-area-inset-bottom));
+  box-shadow: 0 2px 4px rgb(30 27 34 / 4%), 0 8px 24px rgb(30 27 34 / 7%);
+}
+.visit-actions .visit-primary {
+  min-height: 44px;
+  border-radius: 10px;
+  background-color: var(--clinical-action);
+  color: white;
+}
+.visit-actions button, .visit-template-dialog button { min-height: 40px; }
+.visit-actions button:focus-visible, .visit-template-dialog button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+@media (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .visit-actions button { transition: transform 120ms cubic-bezier(.23,1,.32,1), background-color 120ms ease; }
+  .visit-actions button:enabled:active { transform: scale(.98); }
+}
+@media (hover: hover) and (pointer: fine) {
+  .visit-actions .visit-primary:enabled:hover { background-color: #723854; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .visit-actions button, .visit-template-dialog, .visit-document-dialog { animation: none !important; transition: none !important; }
+}
+@media (pointer: coarse) {
+  .visit-actions button, .visit-template-dialog button, .visit-document-dialog button { min-height: 44px; }
+}

@@ -193,6 +193,7 @@ export default function AdminLayout() {
           variant="ghost" 
           size="icon" 
           onClick={toggleSidebar}
+          aria-label="תפריט ניווט" aria-expanded={sidebarOpen}
           className="h-10 w-10 rounded-xl tap-highlight spring-bounce hover:bg-primary/5 active:bg-primary/10"
         >
           <Menu className={cn(
@@ -214,7 +215,7 @@ export default function AdminLayout() {
       </header>
 
       {/* Clinic Selector - positioned after mobile header, before sidebar */}
-      <div className="lg:mr-64 pt-14 lg:pt-0 relative z-40">
+      <div className="lg:mr-56 pt-14 lg:pt-0 relative z-40">
         <ClinicSelector />
       </div>
 
@@ -223,7 +224,7 @@ export default function AdminLayout() {
       <aside
         ref={sidebarRef}
         className={cn(
-          'fixed top-0 right-0 z-40 h-screen w-72 lg:w-64 bg-card border-l border-border/50 shadow-xl lg:shadow-none overflow-hidden',
+          'fixed top-0 right-0 z-40 h-screen w-72 lg:w-56 bg-card border-l border-border/50 shadow-xl lg:shadow-none overflow-hidden',
           'lg:translate-x-0 transition-transform duration-300 ease-out',
           sidebarOpen && !isClosing ? 'translate-x-0' : 'translate-x-full lg:translate-x-0',
           hasMultipleClinics && clinicTheme.border
@@ -350,7 +351,7 @@ export default function AdminLayout() {
       )}
 
       {/* Main content */}
-      <main className="lg:mr-64 min-h-screen overflow-x-hidden">
+      <main className="lg:mr-56 min-h-screen overflow-x-clip">
         <div className="p-4 lg:p-6 w-full max-w-full"><Suspense fallback={<p role="status" className="p-4 text-muted-foreground">טוען את העמוד…</p>}><Outlet /></Suspense></div>
       </main>
       

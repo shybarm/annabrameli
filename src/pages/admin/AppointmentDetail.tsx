@@ -548,15 +548,15 @@ export default function AppointmentDetail() {
 
   return (
     <>
-      <div className="space-y-6 max-w-5xl">
+      <div dir="rtl" className="mx-auto max-w-5xl space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/admin/appointments')}>
+            <Button aria-label="חזרה לתורים" variant="ghost" size="icon" onClick={() => navigate('/admin/appointments')}>
               <ArrowRight className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-2xl font-bold text-foreground">פרטי התור</h1>
+              <h1 className="text-2xl font-bold text-foreground">{appointment.patients?.first_name} {appointment.patients?.last_name}</h1>
               <p className="text-muted-foreground">
                 {format(new Date(appointment.scheduled_at), 'EEEE, d בMMMM yyyy', { locale: he })}
               </p>
@@ -654,7 +654,7 @@ export default function AppointmentDetail() {
           </DialogContent>
         </Dialog>
 
-        <div className="grid gap-6 lg:grid-cols-2">
+        <details className="rounded-xl border bg-card px-4 py-3"><summary className="cursor-pointer font-medium">פרטי התור והמטופל{appointment.notes && <span className="ms-2 text-sm text-muted-foreground">כולל הערה מהמטופל</span>}</summary><div className="mt-3 grid gap-4 lg:grid-cols-2">
           {/* Patient Info */}
           <Card>
             <CardHeader>
@@ -759,8 +759,9 @@ export default function AppointmentDetail() {
           </Card>
         </div>
 
+        </details>
         {/* Tabs for visit management */}
-        <Tabs defaultValue="visit" className="space-y-4">
+        <Tabs dir="rtl" defaultValue="visit" className="space-y-4">
           <TabsList>
             <TabsTrigger value="visit" className="flex items-center gap-2">
               <Stethoscope className="h-4 w-4" />
@@ -778,7 +779,7 @@ export default function AppointmentDetail() {
 
           {/* Visit Summary Tab */}
           <TabsContent value="visit" forceMount className="data-[state=inactive]:hidden">
-            <ClinicalVisitWorkspace key={id} appointmentId={id!} legacy={appointment} />
+            <ClinicalVisitWorkspace key={id} appointmentId={id!} legacy={appointment} patientName={[appointment.patients?.first_name, appointment.patients?.last_name].filter(Boolean).join(' ')} patientIdNumber={appointment.patients?.id_number ?? ''} />
           </TabsContent>
 
           {/* Internal Notes Tab */}
