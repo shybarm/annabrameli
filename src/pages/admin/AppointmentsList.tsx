@@ -257,10 +257,20 @@ export default function AppointmentsList() {
               <Button variant="ghost" size="icon" aria-label="שבוע הבא" onClick={()=>navigateWeek('next')}><ChevronLeft/></Button>
               <Button className="ms-auto" variant="outline" size="sm" onClick={()=>{setWeekOffset(0);setSelectedWeekday(today.getDay())}}>היום</Button>
             </div>
-            <div className="clinic-days">{weekDays.map((day,i)=><button type="button" key={day.toISOString()} aria-pressed={selectedWeekday===i} onClick={()=>setSelectedWeekday(i)}>
-              <span>{format(day,'EEEE',{locale:he})}</span><strong>{format(day,'d/M')}</strong>
-              <small>{weekLoading || weekError ? '…' : getAppointmentsForDay(day).length+' תורים'}</small>
-            </button>)}</div>
+            <div className="clinic-days">
+              {weekDays.map((day, index) => {
+                const count = getAppointmentsForDay(day).length;
+                const dayCount = count === 0 ? 'אין תורים' : count === 1 ? 'תור אחד' : count + ' תורים';
+                return (
+                  <button type="button" key={day.toISOString()} aria-pressed={selectedWeekday === index}
+                    onClick={() => setSelectedWeekday(index)}>
+                    <span>{format(day, 'EEEE', { locale: he })}</span>
+                    <strong>{format(day, 'd/M')}</strong>
+                    <small>{weekLoading || weekError ? '…' : dayCount}</small>
+                  </button>
+                );
+              })}
+            </div>
           </section>
           <section data-tutorial="appointments-list" className="clinic-agenda">
             <h2 className="!text-xl">{format(selectedDate,'EEEE, d בMMMM',{locale:he})}</h2>
