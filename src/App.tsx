@@ -1,3 +1,4 @@
+import { DirectionProvider } from "@radix-ui/react-direction";
 import { adminNavPages } from "@/lib/adminNavPages";
 import { RouteScrollReset } from "@/components/RouteScrollReset";
 import React from "react";
@@ -147,6 +148,7 @@ function useCleanPlatformMeta() {
 const App = () => {
   useCleanPlatformMeta();
   return (
+  <DirectionProvider dir="rtl">
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <ClinicProvider>
@@ -271,6 +273,7 @@ const App = () => {
       </ClinicProvider>
     </AuthProvider>
   </QueryClientProvider>
+  </DirectionProvider>
   );
 };
 

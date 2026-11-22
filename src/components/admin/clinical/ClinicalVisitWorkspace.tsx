@@ -17,7 +17,6 @@ import {
 } from './visitModel';
 
 type VisitRow = { revision: number; content: VisitContent; updated_at: string };
-type Version = { revision: number; content: VisitContent; saved_at: string };
 type Props = {
   appointmentId: string;
   patientName: string;
@@ -92,9 +91,7 @@ export function ClinicalVisitWorkspace({ appointmentId, legacy, patientName, pat
   const [remote, setRemote] = useState<VisitRow | null>(null);
   const [choices, setChoices] = useState<Partial<Record<VisitField, 'local' | 'remote'>>>({});
   const [editingCorrection, setEditingCorrection] = useState(false);
-  const [history, setHistory] = useState(false);
   const [includeMedication, setIncludeMedication] = useState(false);
-  const [historyVersion, setHistoryVersion] = useState<number | null>(null);
   const [templates, setTemplates] = useState(false);
   const templateTrigger = useRef<HTMLElement | null>(null);
   const [seed, setSeed] = useState<{ field: VisitField; body: string } | null>(null);
@@ -125,19 +122,6 @@ export function ClinicalVisitWorkspace({ appointmentId, legacy, patientName, pat
       const r = await db.rpc('clinical_signing_ready');
       if (r.error) throw r.error;
       return r.data === true;
-    },
-  });
-  const versions = useQuery({
-    queryKey: ['clinical-versions', user?.id, appointmentId],
-    enabled: history,
-    queryFn: async () => {
-      const r = await db
-        .from('clinical_visit_versions')
-        .select('revision,content,saved_at')
-        .eq('appointment_id', appointmentId)
-        .order('revision', { ascending: false });
-      if (r.error) throw r.error;
-      return r.data as Version[];
     },
   });
   useEffect(() => {
@@ -223,7 +207,6 @@ export function ClinicalVisitWorkspace({ appointmentId, legacy, patientName, pat
           void cache.invalidateQueries({ queryKey: ['clinical-documents'] });
         }
         void cache.invalidateQueries({ queryKey: ['clinical-timeline'] });
-        void cache.invalidateQueries({ queryKey: ['clinical-versions', user?.id, appointmentId] });
       } catch (e) {
         const msg = (e as { message?: string }).message ?? '';
         if (msg.includes('CLINICAL_CONFLICT')) {
@@ -407,43 +390,15 @@ export function ClinicalVisitWorkspace({ appointmentId, legacy, patientName, pat
           }}
         />
       )}
-      {(revision > 0 || latest) && (
-        <details className="px-2 py-4 text-sm" onToggle={(e) => setHistory(e.currentTarget.open)}>
-          <summary className="w-fit cursor-pointer rounded text-muted-foreground">
-            היסטוריית הביקור
-          </summary>
-          {history && (
-            <div className="mt-2 space-y-2 border-s ps-4">
-              {docs.data?.slice(1).map((d) => (
-                <VisitDocumentButton
-                  key={d.id}
-                  entry={d}
-                  label={'מסמך מאושר · ' + new Date(d.signed_at).toLocaleString('he-IL')}
-                />
-              ))}
-              {versions.isError && <p role="alert">ההיסטוריה לא נטענה.</p>}
-              {versions.data?.map((v) => (
-                <div key={v.revision}>
-                  <button
-                    className="py-1 underline"
-                    aria-expanded={historyVersion === v.revision}
-                    onClick={() => setHistoryVersion(historyVersion === v.revision ? null : v.revision)}
-                  >
-                    שמירה מ־{new Date(v.saved_at).toLocaleString('he-IL')}
-                  </button>
-                  {historyVersion === v.revision &&
-                    visitFields
-                      .filter(([k]) => v.content[k])
-                      .map(([k, label]) => (
-                        <p key={k} className="whitespace-pre-wrap">
-                          <strong>{label} </strong>
-                          {v.content[k]}
-                        </p>
-                      ))}
-                </div>
-              ))}
-            </div>
-          )}
+      {docs.data && docs.data.length > 1 && (
+        <details className="px-2 py-3 text-sm">
+          <summary className="w-fit cursor-pointer text-muted-foreground">מסמכים חתומים קודמים</summary>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {docs.data.slice(1).map(d => (
+              <VisitDocumentButton key={d.id} entry={d}
+                label={'מסמך מ־' + new Date(d.signed_at).toLocaleString('he-IL')} />
+            ))}
+          </div>
         </details>
       )}
       {error && (
