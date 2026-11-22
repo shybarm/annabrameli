@@ -599,10 +599,10 @@ export default function PatientDetail() {
         {/* Patient portal has been disabled for security compliance */}
 
         <Tabs dir="rtl" defaultValue="visits" className="space-y-4">
-          <TabsList className="h-auto max-w-full flex-wrap justify-start gap-1 p-1">
+          <TabsList aria-label="מדורים בתיק המטופל" className="doctor-file-tabs">
+            <TabsTrigger value="visits">ביקורים</TabsTrigger>
             <TabsTrigger value="info">פרטים אישיים</TabsTrigger>
             <TabsTrigger value="intake">נתוני קליטה</TabsTrigger>
-            <TabsTrigger value="visits">ביקורים</TabsTrigger>
             <TabsTrigger value="appointments">תורים ({appointments?.length || 0})</TabsTrigger>
             <TabsTrigger value="billing">חיוב ({invoices?.length || 0})</TabsTrigger>
             <TabsTrigger value="documents">מסמכים ({documents?.length || 0})</TabsTrigger>

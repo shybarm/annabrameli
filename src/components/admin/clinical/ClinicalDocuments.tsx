@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { FileText } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -40,11 +41,14 @@ export function VisitDocumentButton({
   label?: string;
   patientView?: boolean;
 }) {
+  const trigger = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
   return (
     <>
       <Button
+        ref={trigger}
         type="button"
+        aria-haspopup="dialog"
         className={primary ? 'visit-primary' : undefined}
         variant={primary ? 'default' : 'outline'}
         size="sm"
@@ -53,7 +57,14 @@ export function VisitDocumentButton({
         <FileText className="size-4 me-2" />
         {label}
       </Button>
-      {open && <OpenedDocument id={entry.id} patientView={patientView} onClose={() => setOpen(false)} />}
+      {open && (
+        <OpenedDocument
+          id={entry.id}
+          patientView={patientView}
+          onClose={() => setOpen(false)}
+          restoreFocus={() => trigger.current?.focus({ preventScroll: true })}
+        />
+      )}
     </>
   );
 }
@@ -62,7 +73,9 @@ function OpenedDocument({
   id,
   onClose,
   patientView,
+  restoreFocus,
 }: {
+  restoreFocus: () => void;
   id: string;
   onClose: () => void;
   patientView: boolean;
@@ -138,23 +151,45 @@ function OpenedDocument({
       setBusy(false);
     }
   };
-  if (!document.data)
-    return (
-      <div role="status">
-        {document.isError ? 'טעינת המסמך נכשלה' : 'טוען מסמך…'}{' '}
-        <Button variant="ghost" size="sm" onClick={onClose}>
-          סגור
-        </Button>
-      </div>
-    );
   return (
-    <ClinicalDocumentViewer
-      doc={document.data}
-      onClose={onClose}
-      canSend={!patientView && !!ready.data && deliveries.isSuccess}
-      sending={busy}
-      deliveryState={(k) => deliveries.data?.find((x) => x.kind === k)?.state}
-      onSend={send}
-    />
+    <Dialog
+      open
+      onOpenChange={(open) => {
+        if (!open && !busy) onClose();
+      }}
+    >
+      <DialogContent
+        dir="rtl"
+        className="visit-document-dialog flex h-[94dvh] max-h-[96dvh] w-[98vw] max-w-5xl flex-col gap-0 overflow-hidden p-0 sm:w-[94vw]"
+        onCloseAutoFocus={(event) => {
+          event.preventDefault();
+          restoreFocus();
+        }}
+      >
+        {document.data ? (
+          <ClinicalDocumentViewer
+            key={id}
+            doc={document.data}
+            onClose={onClose}
+            canSend={!patientView && !!ready.data && deliveries.isSuccess}
+            sending={busy}
+            deliveryState={(k) => deliveries.data?.find((x) => x.kind === k)?.state}
+            onSend={send}
+          />
+        ) : (
+          <div className="m-auto grid gap-3 text-center">
+            <DialogTitle>מסמכי הביקור</DialogTitle>
+            <DialogDescription role="status">
+              {document.isError ? 'טעינת המסמך נכשלה.' : 'טוען מסמך…'}
+            </DialogDescription>
+            {document.isError && (
+              <Button variant="outline" onClick={() => document.refetch()}>
+                ניסיון נוסף
+              </Button>
+            )}
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -548,7 +548,7 @@ export default function AppointmentDetail() {
 
   return (
     <>
-      <div dir="rtl" className="mx-auto max-w-5xl space-y-4">
+      <div dir="rtl" className="mx-auto max-w-6xl space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -565,7 +565,7 @@ export default function AppointmentDetail() {
           <div className="flex items-center gap-2">
             {status !== 'cancelled' && (
               <Button 
-                variant="destructive" 
+                variant="ghost" className="text-destructive"
                 size="sm"
                 onClick={() => {
                   setCancellationReason('');
@@ -762,7 +762,7 @@ export default function AppointmentDetail() {
         </details>
         {/* Tabs for visit management */}
         <Tabs dir="rtl" defaultValue="visit" className="space-y-4">
-          <TabsList>
+          <TabsList className="doctor-file-tabs" aria-label="מדורי הביקור">
             <TabsTrigger value="visit" className="flex items-center gap-2">
               <Stethoscope className="h-4 w-4" />
               סיכום ביקור

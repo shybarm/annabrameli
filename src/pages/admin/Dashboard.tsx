@@ -310,10 +310,10 @@ export default function AdminDashboard() {
         <OnboardingTutorial />
 
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-[#343e42] -mx-4 sm:-mx-6 px-4 sm:px-6 py-4 rounded-lg">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 py-2">
           <div>
-            <h1 className="text-2xl font-bold text-white">לוח בקרה</h1>
-            <p className="text-gray-300">
+            <h1 className="text-2xl font-bold text-foreground">לוח בקרה</h1>
+            <p className="text-muted-foreground">
               {format(new Date(), 'EEEE, d בMMMM yyyy', { locale: he })}
             </p>
           </div>
@@ -331,39 +331,39 @@ export default function AdminDashboard() {
         </div>
 
         {/* Quick Stats */}
-        <div className="grid gap-4 grid-cols-2 sm:grid-cols-4" data-tutorial="stats-cards">
-          <Card className="bg-blue-50 border-blue-200">
-            <CardContent className="py-4 text-center">
-              <div className="text-3xl font-bold text-blue-700">
+        <div className="doctor-stats" data-tutorial="stats-cards">
+          <div className="doctor-stat">
+            <div>
+              <div className="text-3xl font-bold text-foreground">
                 {appointmentsLoading ? '...' : activeAppointments.length}
               </div>
-              <p className="text-sm text-blue-600">תורים היום</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-orange-50 border-orange-200">
-            <CardContent className="py-4 text-center">
-              <div className="text-3xl font-bold text-orange-700">
-                {waitingCount}
+              <p className="text-sm text-muted-foreground">תורים היום</p>
+            </div>
+          </div>
+          <div className="doctor-stat">
+            <div>
+              <div className="text-3xl font-bold text-foreground">
+                {appointmentsLoading ? '...' : waitingCount}
               </div>
-              <p className="text-sm text-orange-600">ממתינים</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-green-50 border-green-200">
-            <CardContent className="py-4 text-center">
-              <div className="text-3xl font-bold text-green-700">
-                {completedCount}
+              <p className="text-sm text-muted-foreground">ממתינים</p>
+            </div>
+          </div>
+          <div className="doctor-stat">
+            <div>
+              <div className="text-3xl font-bold text-foreground">
+                {appointmentsLoading ? '...' : completedCount}
               </div>
-              <p className="text-sm text-green-600">הושלמו</p>
-            </CardContent>
-          </Card>
+              <p className="text-sm text-muted-foreground">הושלמו</p>
+            </div>
+          </div>
           
           {/* Visitors KPI */}
-          <Card className="bg-purple-50 border-purple-200">
-            <CardContent className="py-4">
+          <div className="doctor-stat">
+            <div>
               <div className="flex items-center justify-between">
-                <div className="flex-1 text-center">
+                <div className="flex-1">
                   <div className={cn(
-                    "font-bold text-purple-700",
+                    "font-bold text-foreground",
                     analyticsData?.available === false && !analyticsLoading
                       ? "text-base py-2"
                       : "text-3xl"
@@ -374,7 +374,7 @@ export default function AdminDashboard() {
                         ? analyticsData.visitors.today
                         : 'אין נתונים זמינים'}
                   </div>
-                  <p className="text-sm text-purple-600">
+                  <p className="text-sm text-muted-foreground">
                     {analyticsData?.available === false && !analyticsLoading
                       ? analyticsData.unavailableReason ?? 'מבקרים באתר היום'
                       : 'מבקרים באתר היום'}
@@ -384,7 +384,7 @@ export default function AdminDashboard() {
                   <div className={cn(
                     "flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full",
                     analyticsData.visitors.trend === 'up' 
-                      ? "bg-green-100 text-green-700"
+                      ? "bg-green-100 text-foreground"
                       : analyticsData.visitors.trend === 'down'
                         ? "bg-gray-100 text-gray-600"
                         : "bg-gray-100 text-gray-600"
@@ -398,8 +398,8 @@ export default function AdminDashboard() {
                   </div>
                 )}
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
         {/* Today's Patients - Main View (FIRST) */}

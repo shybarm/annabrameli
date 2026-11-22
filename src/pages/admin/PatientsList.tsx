@@ -18,7 +18,7 @@ import {
 import { usePatients } from '@/hooks/usePatients';
 import { useUnreadMessageCount } from '@/hooks/useAdminMessages';
 import { useMarkPatientReviewed } from '@/hooks/useUnreviewedPatients';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Plus, Search, Phone, Mail, User, UserPlus, MessageCircle, MapPin, Sparkles, CheckCircle, MoreHorizontal, ChevronDown, Eye, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { PageHelpButton } from '@/components/tutorial/PageHelpButton';
@@ -45,7 +45,8 @@ function PatientsListContent() {
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   
   // When searching, show all patients; otherwise filter by clinic
-  const isSearching = searchQuery.length >= 2;
+  const query = searchQuery.trim().replace(/\s+/g, ' ').toLowerCase();
+  const isSearching = query.length >= 2;
   const { data: patients, isLoading } = usePatients(isSearching ? null : selectedClinicId);
   const { data: unreadCount } = useUnreadMessageCount();
   const markReviewed = useMarkPatientReviewed();
@@ -74,10 +75,8 @@ function PatientsListContent() {
       }
       
       if (!isSearching) return true;
-      const query = searchQuery.toLowerCase();
       return (
-        patient.first_name.toLowerCase().includes(query) ||
-        patient.last_name.toLowerCase().includes(query) ||
+        [patient.first_name, patient.last_name].join(' ').toLowerCase().includes(query) ||
         patient.phone?.toLowerCase().includes(query) ||
         patient.id_number?.toLowerCase().includes(query)
       );
@@ -102,19 +101,19 @@ function PatientsListContent() {
           <h1 className="text-xl sm:text-2xl font-bold text-foreground">מטופלים</h1>
 
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <PageHelpButton tutorial={pageTutorials['/admin/patients']} />
           <PatientInviteDialog 
             trigger={
               <Button variant="outline" size="sm" className="sm:size-default">
                 <UserPlus className="h-4 w-4 sm:ml-2" />
-                <span className="hidden sm:inline">הזמן מטופל</span>
+                <span>הזמנת מטופל</span>
               </Button>
             }
           />
           <Button onClick={() => navigate('/admin/patients/new')} size="sm" className="sm:size-default bg-primary text-primary-foreground hover:bg-primary/90" data-tutorial="new-patient-btn">
             <Plus className="h-4 w-4 sm:ml-2" />
-            <span className="hidden sm:inline">מטופל חדש</span>
+            <span>מטופל חדש</span>
           </Button>
         </div>
       </div>
@@ -132,11 +131,12 @@ function PatientsListContent() {
         </div>
         <Button
           variant={showOnlyNew ? "default" : "outline"}
+          aria-pressed={showOnlyNew}
           onClick={() => setShowOnlyNew(!showOnlyNew)}
           size="sm"
           className={cn(
             "gap-1.5 sm:gap-2 h-9 sm:h-10",
-            showOnlyNew && "bg-amber-500 hover:bg-amber-600 text-white"
+            showOnlyNew && "bg-primary text-primary-foreground"
           )}
         >
           <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -150,7 +150,7 @@ function PatientsListContent() {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
         </div>
       ) : sortedAndFilteredPatients.length > 0 ? (
-        <div className="grid gap-2 sm:gap-4 md:grid-cols-2 lg:grid-cols-3" data-tutorial="patients-list">
+        <div className="patient-directory" data-tutorial="patients-list">
           {sortedAndFilteredPatients.map((patient) => {
             const patientUnreadCount = unreadCount?.byPatient[patient.id] || 0;
             const isNewPatient = !patient.reviewed_at;
@@ -159,31 +159,21 @@ function PatientsListContent() {
             return (
               <Card 
                 key={patient.id} 
-                className={cn(
-                  "cursor-pointer hover:shadow-md transition-all",
-                  isNewPatient && "border-primary/25",
-                  "overflow-hidden"
-                )}
-                onClick={() => navigate(`/admin/patients/${patient.id}`)}
+                className="patient-directory-row"
               >
-                <CardContent className="p-3 sm:p-4">
+                <CardContent className="patient-row-body">
                   {/* Top Row: Avatar, Name, Badges, Actions */}
-                  <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="flex min-w-0 items-center gap-2 sm:gap-3">
                     {/* Compact Avatar */}
                     <div className="relative flex-shrink-0 flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/10 text-primary font-medium text-sm sm:text-base">
                       {patient.first_name.charAt(0)}{patient.last_name.charAt(0)}
-                      {patientUnreadCount > 0 && (
-                        <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center w-4 h-4 sm:w-5 sm:h-5 bg-primary text-primary-foreground text-[10px] sm:text-xs rounded-full">
-                          {patientUnreadCount}
-                        </span>
-                      )}
                     </div>
                     
                     {/* Name + Inline Badges */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <h3 className="font-semibold text-sm sm:text-base text-foreground truncate">
-                          <button className="text-start focus-visible:underline" onClick={e => { e.stopPropagation(); navigate(`/admin/patients/${patient.id}`); }}>{patient.first_name} {patient.last_name}</button>
+                          <Link className="patient-name-link" to={`/admin/patients/${patient.id}`}>{patient.first_name} {patient.last_name}</Link>
                         </h3>
                         {isNewPatient && (
                           <Badge className="bg-muted text-foreground text-xs px-1.5 py-0 h-4 flex-shrink-0">
@@ -213,7 +203,7 @@ function PatientsListContent() {
                     </div>
                     
                     {/* Actions */}
-                    <div className="flex items-center gap-1 flex-shrink-0">
+                    <div className="relative z-[1] flex items-center gap-1 flex-shrink-0">
                       {/* Primary action for new patients */}
                       {isNewPatient && (
                         <Button
@@ -235,11 +225,11 @@ function PatientsListContent() {
                       {/* More menu on mobile */}
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground">
+                          <Button aria-label={'פעולות עבור ' + patient.first_name + ' ' + patient.last_name} variant="ghost" size="icon" className="text-muted-foreground">
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-40 pointer-events-auto bg-popover">
+                        <DropdownMenuContent align="end" className="patient-row-menu w-40 pointer-events-auto bg-popover">
                           <DropdownMenuItem onClick={(e) => {
                             e.stopPropagation();
                             navigate(`/admin/patients/${patient.id}`);
@@ -303,7 +293,7 @@ function PatientsListContent() {
                     <CollapsibleTrigger asChild>
                       <button
                         onClick={(e) => toggleExpanded(patient.id, e)}
-                        className="w-full flex items-center justify-center gap-1 pt-2 mt-2 text-[11px] text-muted-foreground hover:text-foreground transition-colors border-t border-border/30 sm:hidden"
+                        className="relative z-[1] w-full flex items-center justify-center gap-1 pt-2 mt-2 text-[11px] text-muted-foreground hover:text-foreground transition-colors border-t border-border/30 sm:hidden"
                       >
                         <span>{isExpanded ? 'הצג פחות' : 'הצג עוד'}</span>
                         <ChevronDown className={cn(
@@ -315,7 +305,7 @@ function PatientsListContent() {
                   </Collapsible>
                   
                   {/* Desktop: Always show details */}
-                  <div className="hidden sm:block pt-2 mt-2 border-t border-border/50 space-y-1.5 text-xs text-muted-foreground">
+                  <div className="patient-row-meta hidden min-w-0 text-xs text-muted-foreground sm:grid">
                     {patient.id_number && (
                       <div className="flex items-center gap-2">
                         <User className="h-3.5 w-3.5" />
@@ -342,12 +332,13 @@ function PatientsListContent() {
           <CardContent className="text-center">
             <User className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground/30 mx-auto mb-3 sm:mb-4" />
             <h3 className="text-base sm:text-lg font-medium text-foreground mb-2">
-              {searchQuery ? 'לא נמצאו תוצאות' : 'אין מטופלים במערכת'}
+              {isSearching ? 'לא נמצאו תוצאות' : showOnlyNew ? 'אין מטופלים חדשים' : 'אין מטופלים במערכת'}
             </h3>
             <p className="text-sm text-muted-foreground mb-4">
-              {searchQuery ? 'נסה לחפש עם מילות מפתח אחרות' : 'התחל להוסיף מטופלים למרפאה'}
+              {isSearching ? 'אפשר לחפש לפי שם, טלפון או מספר זהות.' : showOnlyNew ? 'אפשר להציג את כל המטופלים.' : 'אפשר להוסיף את המטופל הראשון.'}
             </p>
-            {!searchQuery && (
+            {showOnlyNew && <Button variant="outline" onClick={()=>setShowOnlyNew(false)}>כל המטופלים</Button>}
+            {!isSearching && !showOnlyNew && (
               <Button onClick={() => navigate('/admin/patients/new')} size="sm">
                 <Plus className="h-4 w-4 ml-2" />
                 הוסף מטופל ראשון

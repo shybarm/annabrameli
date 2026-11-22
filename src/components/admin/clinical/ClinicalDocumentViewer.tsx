@@ -1,16 +1,251 @@
-import {useEffect,useRef,useState} from 'react';
-import {Download,Printer,Send,Loader2} from 'lucide-react';
-import {Dialog,DialogContent,DialogTitle,DialogDescription} from '@/components/ui/dialog';
-import {Button} from '@/components/ui/button';
-import {toast} from 'sonner';
-import {clinicalDocumentPdf,type DocumentKind} from './clinicalDocument';
-import type {ClinicalDocument} from './clinicalApi';
-export function ClinicalDocumentViewer({doc,onClose,onSend,canSend,sending,deliveryState}:{doc:ClinicalDocument;onClose:()=>void;onSend:(kind:DocumentKind,blob:Blob)=>Promise<void>;canSend:boolean;sending:boolean;deliveryState:(kind:DocumentKind)=>string|undefined}){
- const [kind,setKind]=useState<DocumentKind>('summary');const [pdf,setPdf]=useState<{url:string;blob:Blob;kind:DocumentKind}|null>(null);const [error,setError]=useState('');const frame=useRef<HTMLIFrameElement>(null);
- useEffect(()=>{let cancelled=false,url='';setPdf(null);setError('');clinicalDocumentPdf(doc,kind).then(blob=>{if(cancelled)return;url=URL.createObjectURL(blob);setPdf({url,blob,kind});}).catch(()=>{if(!cancelled)setError('לא ניתן להציג את המסמך. סגרו ונסו שוב.');});return()=>{cancelled=true;if(url)URL.revokeObjectURL(url);};},[doc,kind]);
- const currentPdf=pdf?.kind===kind ? pdf : null;
- const print=()=>{try{frame.current?.contentWindow?.focus();frame.current?.contentWindow?.print();}catch{toast.error('לא ניתן לפתוח הדפסה. אפשר להוריד את ה-PDF ולהדפיס ממנו.');}};
- const download=()=>{if(!currentPdf)return;const a=document.createElement('a');a.href=currentPdf.url;a.download=kind==='summary'?'visit-summary.pdf':'prescription.pdf';a.click();};
- const status=deliveryState(kind);
- return <Dialog open onOpenChange={open=>{if(!open&&!sending)onClose();}}><DialogContent dir="rtl" className="visit-document-dialog flex h-[90dvh] w-[96vw] max-w-5xl flex-col gap-0 overflow-hidden p-0"><div className="border-b px-6 py-4 pr-12"><DialogTitle className="!text-xl text-right">מסמכי הביקור</DialogTitle><DialogDescription className="mt-1 text-right">{doc.snapshot.patient.name} · {new Date(doc.snapshot.visit_date).toLocaleDateString('he-IL')}</DialogDescription></div><div className="flex flex-wrap items-center justify-between gap-3 border-b bg-muted/30 px-5 py-3"><select aria-label="סוג המסמך" disabled={sending} className="rounded-md border bg-background px-3 py-2 text-sm" value={kind} onChange={e=>setKind(e.target.value as DocumentKind)}><option value="summary">סיכום ביקור</option>{doc.snapshot.content.medications?.trim()&&<option value="prescription">מרשם</option>}</select><div className="flex flex-wrap items-center gap-1">{canSend&&<Button size="sm" variant="ghost" disabled={!currentPdf||sending||!!status} onClick={()=>currentPdf&&onSend(kind,currentPdf.blob)}><Send className="ml-2 h-4 w-4"/>{sending?'שולח...':'שלח בוואטסאפ'}</Button>}<Button size="sm" variant="ghost" disabled={!currentPdf||sending} onClick={print}><Printer className="ml-2 h-4 w-4"/>הדפס</Button><Button size="sm" variant="ghost" disabled={!currentPdf||sending} onClick={download}><Download className="ml-2 h-4 w-4"/>הורד PDF</Button></div></div>{status&&<p role="status" className="border-b px-5 py-2 text-sm text-muted-foreground">{status==='accepted'?'המסמך התקבל לשליחה בוואטסאפ':status==='delivered'?'המסמך נמסר':status==='processing'?'ממתין לאישור השליחה':'יש לבדוק את השליחה בוואטסאפ'}</p>}<div className="min-h-0 flex-1 bg-slate-100">{currentPdf?<iframe ref={frame} title="תצוגת המסמך" className="h-full w-full border-0" src={currentPdf.url+'#toolbar=0&navpanes=0'}/>:<div className="flex h-full items-center justify-center gap-2 text-sm" role="status">{error||<><Loader2 className="h-4 w-4 animate-spin"/>מכין את המסמך...</>}</div>}</div></DialogContent></Dialog>;
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Download, Printer, Send, Loader2, FileText } from 'lucide-react';
+import { DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { toast } from 'sonner';
+import {
+  clinicalDocumentHtml,
+  loadApprovedRendering,
+  renderApprovedPdf,
+  type DocumentKind,
+} from './clinicalDocument';
+import type { ClinicalDocument } from './clinicalApi';
+import './visitWorkspace.css';
+
+type Action = 'print' | 'download' | 'send';
+type Props = {
+  doc: ClinicalDocument;
+  onClose: () => void;
+  onSend: (kind: DocumentKind, blob: Blob) => Promise<void>;
+  canSend: boolean;
+  sending: boolean;
+  deliveryState: (kind: DocumentKind) => string | undefined;
+};
+
+export function ClinicalDocumentViewer({
+  doc,
+  onClose,
+  onSend,
+  canSend,
+  sending,
+  deliveryState,
+}: Props) {
+  const [kind, setKind] = useState<DocumentKind>('summary');
+  const [approved, setApproved] = useState<ClinicalDocument>();
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  const [working, setWorking] = useState<Action | null>(null);
+  const [printUrl, setPrintUrl] = useState('');
+  const printer = useRef<HTMLIFrameElement>(null);
+  const pendingPrint = useRef(false);
+  const printTimer = useRef<number>();
+  const lock = useRef(false);
+  const alive = useRef(false);
+  const files = useRef(new Map<DocumentKind, { blob: Blob; url: string }>());
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+      window.clearTimeout(printTimer.current);
+      for (const file of files.current.values()) URL.revokeObjectURL(file.url);
+      files.current.clear();
+    };
+  }, []);
+  useEffect(() => {
+    let cancelled = false;
+    setLoadFailed(false);
+    loadApprovedRendering(doc)
+      .then((d) => {
+        if (!cancelled) setApproved(d);
+      })
+      .catch(() => {
+        if (!cancelled) setLoadFailed(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [doc, attempt]);
+  const html = useMemo(
+    () => (approved ? clinicalDocumentHtml(approved, kind, true) : ''),
+    [approved, kind],
+  );
+  const status = deliveryState(kind);
+  const busy = !!working || sending;
+  const print = () => {
+    try {
+      const target = printer.current?.contentWindow;
+      if (!target) throw Error();
+      target.focus();
+      target.print();
+    } catch {
+      toast.error('ההדפסה לא נפתחה. אפשר להוריד את הקובץ ולהדפיס ממנו.');
+    }
+  };
+  const act = async (action: Action) => {
+    if (!approved || lock.current || sending) return;
+    lock.current = true;
+    setWorking(action);
+    try {
+      let file = files.current.get(kind);
+      if (!file) {
+        const blob = await renderApprovedPdf(approved, kind);
+        if (!alive.current) return;
+        file = { blob, url: URL.createObjectURL(blob) };
+        files.current.set(kind, file);
+      }
+      if (action === 'send') await onSend(kind, file.blob);
+      if (action === 'download') {
+        const link = document.createElement('a');
+        link.href = file.url;
+        link.download = kind === 'summary' ? 'visit-summary.pdf' : 'prescription.pdf';
+        link.click();
+      }
+      if (action === 'print') {
+        if (printUrl === file.url) print();
+        else {
+          pendingPrint.current = true;
+          printTimer.current = window.setTimeout(() => {
+            if (!pendingPrint.current) return;
+            pendingPrint.current = false;
+            lock.current = false;
+            setPrintUrl('');
+            setWorking(null);
+            toast.error('ההדפסה לא נפתחה. אפשר להוריד את הקובץ ולהדפיס ממנו.');
+          }, 15000);
+          setPrintUrl(file.url);
+        }
+      }
+    } catch {
+      toast.error('הכנת הקובץ נכשלה. אפשר לנסות שוב.');
+    } finally {
+      if (!pendingPrint.current) {
+        lock.current = false;
+        if (alive.current) setWorking(null);
+      }
+    }
+  };
+  const statusText =
+    status === 'accepted'
+      ? 'התקבל לשליחה בוואטסאפ'
+      : status === 'delivered'
+        ? 'נמסר בוואטסאפ'
+        : status === 'processing'
+          ? 'ממתין לאישור השליחה'
+          : status
+            ? 'יש לבדוק את מצב השליחה בוואטסאפ'
+            : '';
+  return (
+    <Tabs
+      dir="rtl"
+      className="flex min-h-0 flex-1 flex-col"
+      value={kind}
+      onValueChange={(v) => setKind(v as DocumentKind)}
+    >
+      <header className="doc-heading">
+        <span className="doc-heading-icon" aria-hidden="true">
+          <FileText size={21} />
+        </span>
+        <div>
+          <DialogTitle className="!text-xl">מסמכי הביקור</DialogTitle>
+          <DialogDescription>
+            {doc.snapshot.patient.name} ·{' '}
+            {new Date(doc.snapshot.visit_date).toLocaleDateString('he-IL', {
+              timeZone: 'Asia/Jerusalem',
+            })}
+          </DialogDescription>
+        </div>
+      </header>
+      <div className="doc-tools">
+        {doc.snapshot.content.medications?.trim() ? (
+          <TabsList aria-label="סוג המסמך">
+            <TabsTrigger disabled={busy} value="summary">
+              סיכום ביקור
+            </TabsTrigger>
+            <TabsTrigger disabled={busy} value="prescription">
+              מרשם
+            </TabsTrigger>
+          </TabsList>
+        ) : (
+          <strong className="text-sm">סיכום ביקור</strong>
+        )}
+        <div className="doc-commands">
+          {canSend && (
+            <Button size="sm" disabled={!approved || busy || !!status} onClick={() => act('send')}>
+              {working === 'send' ? <Loader2 className="animate-spin" /> : <Send />}שלח בוואטסאפ
+            </Button>
+          )}
+          <Button size="sm" variant="outline" disabled={!approved || busy} onClick={() => act('print')}>
+            {working === 'print' ? <Loader2 className="animate-spin" /> : <Printer />}הדפס
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={!approved || busy}
+            onClick={() => act('download')}
+          >
+            {working === 'download' ? <Loader2 className="animate-spin" /> : <Download />}הורד PDF
+          </Button>
+        </div>
+      </div>
+      {statusText && (
+        <p className="border-b px-5 py-2 text-sm" role="status">
+          {statusText}
+        </p>
+      )}
+      <TabsContent
+        value={kind}
+        aria-label={kind === 'summary' ? 'סיכום ביקור' : 'מרשם'}
+        className="m-0 flex min-h-0 flex-1 flex-col"
+      >
+        {html ? (
+          <iframe
+            title="תצוגת המסמך"
+            className="min-h-0 w-full flex-1 border-0"
+            sandbox="allow-same-origin"
+            srcDoc={html}
+            onLoad={(e) => {
+              e.currentTarget.contentDocument?.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && !lock.current) onClose();
+              });
+            }}
+          />
+        ) : (
+          <div className="grid flex-1 place-content-center text-center" role="status">
+            {loadFailed ? (
+              <>
+                <p>לא ניתן לטעון את המסמך.</p>
+                <Button variant="outline" onClick={() => setAttempt((n) => n + 1)}>
+                  נסה שוב
+                </Button>
+              </>
+            ) : (
+              <p>טוען מסמך…</p>
+            )}
+          </div>
+        )}
+      </TabsContent>
+      {printUrl && (
+        <iframe
+          ref={printer}
+          title="קובץ להדפסה"
+          tabIndex={-1}
+          aria-hidden="true"
+          className="pointer-events-none absolute h-px w-px opacity-0"
+          src={printUrl}
+          onLoad={() => {
+            if (!pendingPrint.current) return;
+            window.clearTimeout(printTimer.current);
+            pendingPrint.current = false;
+            try {
+              print();
+            } finally {
+              lock.current = false;
+              setWorking(null);
+            }
+          }}
+        />
+      )}
+    </Tabs>
+  );
 }

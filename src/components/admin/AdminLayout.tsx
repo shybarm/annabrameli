@@ -1,3 +1,4 @@
+import './doctorWorkspace.css';
 import { adminNavPages } from "@/lib/adminNavPages";
 import { Suspense, useEffect, useRef, useState } from 'react';
 import { useNavigate, Link, useLocation, Outlet } from 'react-router-dom';
@@ -181,7 +182,7 @@ export default function AdminLayout() {
   return (
     <IdleTimeoutProvider isStaff={isStaff}>
       <div className={cn(
-        "min-h-screen transition-colors duration-500",
+        "doctor-workspace min-h-screen",
         hasMultipleClinics ? clinicTheme.bg : "bg-background"
       )} dir="rtl">
         <Helmet>
@@ -226,6 +227,7 @@ export default function AdminLayout() {
         className={cn(
           'fixed top-0 right-0 z-40 h-screen w-72 lg:w-56 bg-card border-l border-border/50 shadow-xl lg:shadow-none overflow-hidden',
           'lg:translate-x-0 transition-transform duration-300 ease-out',
+          !sidebarOpen && 'invisible lg:visible',
           sidebarOpen && !isClosing ? 'translate-x-0' : 'translate-x-full lg:translate-x-0',
           hasMultipleClinics && clinicTheme.border
         )}
@@ -244,7 +246,7 @@ export default function AdminLayout() {
 
           {/* Navigation */}
           <ScrollArea className="flex-1 px-3 py-4">
-            <nav className="space-y-1">
+            <nav aria-label="ניווט במערכת המרפאה" className="doctor-navigation">
               {filteredNavItems.map((item) => {
                 const preloadPage = () => { void adminNavPages[item.href]().catch(() => {}); };
                 const isActive = item.exact
@@ -256,33 +258,18 @@ export default function AdminLayout() {
                   <Link
                     key={item.href}
                     to={item.href}
+                    aria-current={isActive ? "page" : undefined}
                     onPointerEnter={preloadPage}
                     onFocus={preloadPage}
                     onTouchStart={preloadPage}
-                    className={cn(
-                      'flex items-center justify-between gap-3 px-3.5 py-3 rounded-xl text-sm font-medium',
-                      'transition-all duration-200 ease-out tap-highlight spring-bounce',
-                      isActive
-                        ? 'bg-primary/10 text-primary shadow-sm'
-                        : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground active:bg-muted'
-                    )}
+                    className="doctor-nav-link"
                   >
                     <div className="flex items-center gap-3">
-                      <div className={cn(
-                        "w-8 h-8 rounded-lg flex items-center justify-center transition-colors duration-200",
-                        isActive ? "bg-primary text-primary-foreground" : "bg-muted/80"
-                      )}>
-                        <item.icon className="h-4 w-4" />
-                      </div>
+                      <item.icon aria-hidden="true" className="h-[18px] w-[18px]" />
                       {item.label}
                     </div>
                     {badgeCount > 0 && (
-                      <span className={cn(
-                        "flex items-center justify-center min-w-[22px] h-[22px] px-1.5 text-xs font-semibold rounded-full transition-transform spring-bounce",
-                        isPatients 
-                          ? "bg-amber-500 text-white animate-pulse" 
-                          : "bg-primary text-primary-foreground"
-                      )}>
+                      <span className="doctor-nav-count">
                         {badgeCount}
                       </span>
                     )}
@@ -329,6 +316,7 @@ export default function AdminLayout() {
               <Button
                 variant="ghost"
                 size="sm"
+                aria-label="התנתקות"
                 onClick={handleSignOutClick}
                 className="rounded-xl h-10 w-10 spring-bounce text-destructive hover:text-destructive hover:bg-destructive/10"
               >

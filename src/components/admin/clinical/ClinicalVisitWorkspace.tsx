@@ -38,15 +38,15 @@ function WritingField({
   onSelectText: (field: VisitField, text: string) => void;
 }) {
   const ref = useRef<HTMLTextAreaElement>(null);
+  const resize = useCallback(() => {
+    const el = ref.current;
+    if (el && el.clientWidth) {
+      el.style.height = 'auto';
+      el.style.height = el.scrollHeight + 2 + 'px';
+    }
+  }, []);
+  useLayoutEffect(resize, [value, resize]);
   useLayoutEffect(() => {
-    const resize = () => {
-      const el = ref.current;
-      if (el && el.clientWidth) {
-        el.style.height = 'auto';
-        el.style.height = el.scrollHeight + 2 + 'px';
-      }
-    };
-    resize();
     let width = 0;
     const observer = new ResizeObserver((entries) => {
       const next = entries[0].contentRect.width;
@@ -57,21 +57,21 @@ function WritingField({
     });
     if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
-  }, [value]);
+  }, [resize]);
   return (
-    <label className="block border-b border-border/60 px-5 py-3 last:border-0 focus-within:bg-muted/20 sm:px-8">
+    <label className="clinical-field">
       <span className="block text-sm font-semibold">{label}</span>
       <textarea
         ref={ref}
         id={'clinical-' + field}
-        rows={2}
+        rows={1}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onSelect={(e) => {
           const el = e.currentTarget;
           onSelectText(field, el.value.slice(el.selectionStart, el.selectionEnd));
         }}
-        className="mt-1 block min-h-12 w-full resize-none rounded-md bg-transparent px-1 py-1 text-base leading-7 text-start outline-none focus-visible:ring-1 focus-visible:ring-primary"
+        className="mt-1 block min-h-10 w-full resize-none rounded-md bg-transparent px-1 py-1 text-base leading-7 text-start outline-none focus-visible:ring-1 focus-visible:ring-primary"
       />
     </label>
   );
@@ -91,6 +91,7 @@ export function ClinicalVisitWorkspace({ appointmentId, legacy, patientName, pat
   const [remote, setRemote] = useState<VisitRow | null>(null);
   const [choices, setChoices] = useState<Partial<Record<VisitField, 'local' | 'remote'>>>({});
   const [editingCorrection, setEditingCorrection] = useState(false);
+  const [activeField, setActiveField] = useState<VisitField>(visitFields[0][0]);
   const [includeMedication, setIncludeMedication] = useState(false);
   const [templates, setTemplates] = useState(false);
   const templateTrigger = useRef<HTMLElement | null>(null);
@@ -246,19 +247,15 @@ export function ClinicalVisitWorkspace({ appointmentId, legacy, patientName, pat
   const locked = signed || !writable || busy === 'approve' || !!remote;
   const status = offline
     ? 'אין חיבור לרשת'
-    : busy === 'save'
-      ? 'שומר…'
+    : error
+      ? 'נדרשת בדיקה'
       : busy === 'approve'
         ? 'מאשר…'
-        : error
-          ? 'נדרשת בדיקה'
-          : dirty
-            ? 'ממתין לשמירה'
-            : signed
-              ? 'אושר'
-              : revision
-                ? 'נשמר'
-                : '';
+        : signed
+          ? 'אושר'
+          : writable
+            ? 'שמירה אוטומטית'
+            : '';
   const server = readVisit(remote?.content);
   const overlapping = visitFields.filter(
     ([k]) => server[k] !== base[k] && draft[k] !== base[k] && draft[k] !== server[k],
@@ -286,57 +283,98 @@ export function ClinicalVisitWorkspace({ appointmentId, legacy, patientName, pat
     setError('');
     setConflict(false);
   };
+  const visibleFields = visitFields.filter(
+    ([k]) => k !== 'medications' || includeMedication || draft.medications,
+  );
+  const jump = (key: VisitField) => {
+    const target = document.getElementById('clinical-' + key);
+    target?.focus({ preventScroll: true });
+    target?.scrollIntoView({ block: 'center' });
+  };
   return (
-    <section aria-label="כתיבת ביקור" dir="rtl" className="relative mx-auto max-w-4xl">
-      <div className="overflow-hidden rounded-2xl border bg-card shadow-sm">
-        <header className="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-4 sm:px-8">
-          <h2 className="!text-xl font-semibold">{signed ? 'סיכום הביקור' : 'כתיבת ביקור'}</h2>
-          {!locked && (
-            <div className="flex flex-wrap gap-1">
-              {selection && (
+    <section aria-label="כתיבת ביקור" dir="rtl" className="clinical-workspace relative mx-auto">
+      <div className={locked ? 'clinical-reading-layout' : 'clinical-writing-layout'}>
+        {!locked && (
+          <nav className="clinical-index" aria-label="ניווט במקטעי הביקור">
+            <p className="clinical-index-title">מקטעי הביקור</p>
+            <div className="clinical-index-items">
+              {visibleFields.map(([key, label]) => (
+                <button
+                  type="button"
+                  key={key}
+                  aria-current={activeField === key ? 'location' : undefined}
+                  onClick={() => jump(key)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <select
+              aria-label="מעבר למקטע"
+              value={activeField}
+              onChange={(e) => jump(e.target.value as VisitField)}
+            >
+              {visibleFields.map(([key, label]) => (
+                <option key={key} value={key}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </nav>
+        )}
+        <div className="clinical-sheet">
+          <header className="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-4 sm:px-8">
+            <h2 className="!text-xl font-semibold">{signed ? 'סיכום הביקור' : 'כתיבת ביקור'}</h2>
+            {!locked && (
+              <div className="flex flex-wrap gap-1">
+                {selection && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      templateTrigger.current = document.activeElement as HTMLElement;
+                      setSeed(selection);
+                      setTemplates(true);
+                    }}
+                  >
+                    שמור בחירה כתבנית
+                  </Button>
+                )}
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
                   onClick={() => {
                     templateTrigger.current = document.activeElement as HTMLElement;
-                    setSeed(selection);
+                    setSeed(null);
                     setTemplates(true);
                   }}
                 >
-                  שמור בחירה כתבנית
+                  <BookOpen className="me-2 size-4" />
+                  תבניות
                 </Button>
-              )}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  templateTrigger.current = document.activeElement as HTMLElement;
-                  setSeed(null);
-                  setTemplates(true);
-                }}
-              >
-                <BookOpen className="me-2 size-4" />
-                תבניות
-              </Button>
+              </div>
+            )}
+          </header>
+          {locked && !remote && busy !== 'approve' ? (
+            <div className="divide-y px-5 sm:px-8">
+              {visitFields
+                .filter(([k]) => draft[k].trim())
+                .map(([k, label]) => (
+                  <section key={k} className="py-3">
+                    <h3 className="!text-sm font-semibold">{label}</h3>
+                    <p className="whitespace-pre-wrap break-words leading-7">{draft[k]}</p>
+                  </section>
+                ))}
             </div>
-          )}
-        </header>
-        {locked && !remote && busy !== 'approve' ? (
-          <div className="divide-y px-5 sm:px-8">
-            {visitFields
-              .filter(([k]) => draft[k].trim())
-              .map(([k, label]) => (
-                <section key={k} className="py-3">
-                  <h3 className="!text-sm font-semibold">{label}</h3>
-                  <p className="whitespace-pre-wrap break-words leading-7">{draft[k]}</p>
-                </section>
-              ))}
-          </div>
-        ) : (
-          <fieldset disabled={locked}>
-            {visitFields
-              .filter(([k]) => k !== 'medications' || includeMedication || draft.medications)
-              .map(([k, label]) => (
+          ) : (
+            <fieldset
+              disabled={locked}
+              onFocus={(e) => {
+                const match = visibleFields.find(([key]) => e.target.id === 'clinical-' + key);
+                if (match) setActiveField(match[0]);
+              }}
+            >
+              {visibleFields.map(([k, label]) => (
                 <WritingField
                   key={k}
                   field={k}
@@ -346,22 +384,23 @@ export function ClinicalVisitWorkspace({ appointmentId, legacy, patientName, pat
                   onSelectText={(field, body) => setSelection(body.trim() ? { field, body } : null)}
                 />
               ))}
-          </fieldset>
-        )}
-        {!locked && !includeMedication && !draft.medications && (
-          <div className="px-5 pb-3 sm:px-8">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setIncludeMedication(true);
-                requestAnimationFrame(() => document.getElementById('clinical-medications')?.focus());
-              }}
-            >
-              הוספת תרופות למרשם
-            </Button>
-          </div>
-        )}
+            </fieldset>
+          )}
+          {!locked && !includeMedication && !draft.medications && (
+            <div className="px-5 pb-3 sm:px-8">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setIncludeMedication(true);
+                  requestAnimationFrame(() => document.getElementById('clinical-medications')?.focus());
+                }}
+              >
+                הוספת תרופות למרשם
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
       {templates && (
         <ClinicalTemplates
@@ -394,9 +433,12 @@ export function ClinicalVisitWorkspace({ appointmentId, legacy, patientName, pat
         <details className="px-2 py-3 text-sm">
           <summary className="w-fit cursor-pointer text-muted-foreground">מסמכים חתומים קודמים</summary>
           <div className="mt-2 flex flex-wrap gap-2">
-            {docs.data.slice(1).map(d => (
-              <VisitDocumentButton key={d.id} entry={d}
-                label={'מסמך מ־' + new Date(d.signed_at).toLocaleString('he-IL')} />
+            {docs.data.slice(1).map((d) => (
+              <VisitDocumentButton
+                key={d.id}
+                entry={d}
+                label={'מסמך מ־' + new Date(d.signed_at).toLocaleString('he-IL')}
+              />
             ))}
           </div>
         </details>
