@@ -4,6 +4,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { clinicalDb } from './clinical/clinicalApi';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { FileText, ChevronDown } from 'lucide-react';
+
+const reviewRequestMessage = 'תודה שביקרתם במרפאת ד״ר אנה ברמלי. נשמח אם תשתפו בחוות דעת על חוויית הביקור בגוגל:\nhttps://g.page/r/CfTaOxAB2XlhEAE/review\nתודה על הזמן שלכם 🌷';
 
 export function mobileChatNumber(input: string) {
   const phone = input.replace(/\D/g, '').replace(/^0/, '972');
@@ -103,7 +107,29 @@ export function PatientConversation({ patientId, phone }: { patientId: string; p
             <p>עדכונים למספר זה הופסקו.</p>
           ) : (
             <>
+              <div className="flex items-center justify-between gap-3" dir="rtl">
+                <label htmlFor="patient-whatsapp-message" className="text-sm font-medium">הודעה למטופל</label>
+                <DropdownMenu dir="rtl">
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" disabled={sending}>
+                      <FileText className="h-4 w-4" aria-hidden="true" />
+                      הוספת תבנית
+                      <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onSelect={() => {
+                      setBody(current => current.trim() ? current.trimEnd() + '\n\n' + reviewRequestMessage : reviewRequestMessage);
+                      setNotice('הנוסח נוסף להודעה. אפשר לערוך אותו לפני השליחה.');
+                    }} disabled={body.includes('https://g.page/r/CfTaOxAB2XlhEAE/review') || body.length + reviewRequestMessage.length + 2 > 4000}>
+                      בקשת חוות דעת בגוגל
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
               <Textarea
+                id="patient-whatsapp-message"
+                dir="rtl"
                 aria-label="הודעה למטופל"
                 disabled={sending}
                 value={body}
