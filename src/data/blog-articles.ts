@@ -3,6 +3,7 @@ import { editorialArticles } from "./editorial-articles";
 export interface ArticleSource { id: string; title: string; url: string; note?: string; }
 
 export interface BlogArticleSection {
+  image?: { src: string; alt: string; width: number; height: number };
   sourceIds?: string[];
   id: string;
   title: string;

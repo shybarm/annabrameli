@@ -176,6 +176,17 @@ export const ArticleTemplate = ({ article }: ArticleTemplateProps) => {
             className="scroll-mt-28"
           >
             <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4">{section.title}</h2>
+            {section.image && (
+              <img
+                src={section.image.src}
+                alt={section.image.alt}
+                width={section.image.width}
+                height={section.image.height}
+                loading="lazy"
+                decoding="async"
+                className="mb-6 h-auto w-full rounded-2xl"
+              />
+            )}
             <div className="text-muted-foreground leading-relaxed whitespace-pre-line prose-content">
               {renderContentWithLinks(section.content)}
             </div>
