@@ -227,4 +227,12 @@ await db.exec('select queue_due_clinic_referrals()');assert.equal((await q('sele
 await q('select clinic_private.schedule_referral_offer($1)',[(await flow(aiPhone)).conversation_id]);
 await receive(aiPhone,'הסר','delayed-stop');assert.equal((await flow(aiPhone)).state,'cancelled');
 console.log('PASS: delayed offer waits, dispatches once, and honors stop while waiting.');
+await db.exec(await readFile('supabase/migrations/20261124183000_waitlist_conversation.sql','utf8'));
+await receive('972500000092','אפשר רשימת המתנה','waitlist-request');
+assert.equal((await q("select count(*)::int n from clinic_private.whatsapp_waitlist_intake where awaiting_name"))[0].n,1);
+await receive('972500000092','ישראל ישראלי','waitlist-name');
+assert.equal((await q("select source from whatsapp_conversations where phone='972500000092'"))[0].source,'waitlist');
+const registered=(await q('select count(*)::int n from whatsapp_messages'))[0].n;
+await receive('972500000092','ישראל ישראלי','waitlist-name');assert.equal((await q('select count(*)::int n from whatsapp_messages'))[0].n,registered);
+console.log('PASS: waitlist asks name, saves before confirmation, ignores duplicate delivery.');
 await db.close();
