@@ -3302,6 +3302,10 @@ export type Database = {
         }[]
       }
       queue_due_clinic_referrals: { Args: never; Returns: undefined }
+      queue_due_clinic_referrals_before_offer: {
+        Args: never
+        Returns: undefined
+      }
       queue_whatsapp_text: {
         Args: { p_body: string; p_conversation: string }
         Returns: string
@@ -3317,7 +3321,29 @@ export type Database = {
         }
         Returns: undefined
       }
+      receive_clinic_whatsapp_before_inbound: {
+        Args: {
+          p_body: string
+          p_from_staff?: boolean
+          p_phone: string
+          p_provider_id: string
+          p_timestamp: string
+          p_type: string
+        }
+        Returns: undefined
+      }
       receive_clinic_whatsapp_before_referral: {
+        Args: {
+          p_body: string
+          p_from_staff?: boolean
+          p_phone: string
+          p_provider_id: string
+          p_timestamp: string
+          p_type: string
+        }
+        Returns: undefined
+      }
+      receive_clinic_whatsapp_before_waitlist: {
         Args: {
           p_body: string
           p_from_staff?: boolean
