@@ -235,4 +235,15 @@ assert.equal((await q("select source from whatsapp_conversations where phone='97
 const registered=(await q('select count(*)::int n from whatsapp_messages'))[0].n;
 await receive('972500000092','ישראל ישראלי','waitlist-name');assert.equal((await q('select count(*)::int n from whatsapp_messages'))[0].n,registered);
 console.log('PASS: waitlist asks name, saves before confirmation, ignores duplicate delivery.');
+await db.exec(await readFile('supabase/migrations/20261124190000_ai_referral_consent.sql','utf8'));
+await q("update whatsapp_conversations set opted_out=false,whatsapp_consent_withdrawn_at=null where phone=$1",[aiPhone]);
+await q("update clinic_private.referral_flows set state='cancelled' where conversation_id<>$1",[(await flow(aiPhone)).conversation_id]);
+for(const action of ['consent_clarify','consent_no','consent_yes']) {
+ await q("update clinic_private.referral_flows set state='awaiting_consent',reply_id=null where conversation_id=$1",[(await flow(aiPhone)).conversation_id]);
+ await db.exec("update whatsapp_messages set status='accepted'");
+ await receive(aiPhone,'בשמחה','ai-consent-'+action);job=await claim();assert.ok(job);assert.deepEqual(job.asked,['consent_reply']);await finish(job,action);
+ assert.equal((await flow(aiPhone)).state,action==='consent_clarify'?'awaiting_consent':'completed');
+ assert.equal(!!(await flow(aiPhone)).reply_id,action==='consent_yes');
+}
+console.log('PASS: AI consent yes sends details; no and ambiguity never send; context reaches classifier.');
 await db.close();
