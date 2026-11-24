@@ -22,7 +22,7 @@ export async function processReferralAi(client: RpcClient) {
         const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
           method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
           signal: AbortSignal.timeout(15000),
-          body: JSON.stringify({ model: 'google/gemini-2.5-flash', temperature: 0.1, max_tokens: 100,
+          body: JSON.stringify({ model: 'google/gemini-2.5-flash', temperature: 0.1, max_tokens: 2048,
             response_format: { type: 'json_object' },
             messages: [{ role: 'system', content: prompt }, { role: 'user', content: JSON.stringify({
               asked: job.asked, conversation: Array.isArray(job.messages) ? job.messages.map((m: any) => ({
@@ -33,10 +33,16 @@ export async function processReferralAi(client: RpcClient) {
         });
         if (response.ok) {
           const result = await response.json();
-          const parsed = JSON.parse(result.choices?.[0]?.message?.content ?? '{}');
-          if (actions.has(parsed.action)) { action = parsed.action; origin = 'model'; }
-        }
-      } catch { /* Fixed referral is the safe service fallback; no indefinite wait or raw AI output. */ }
+          const choice = result.choices?.[0];
+          if (choice?.finish_reason === 'length') {
+            console.warn('referral_ai', 'output_truncated');
+          } else {
+            const parsed = JSON.parse(choice?.message?.content ?? '{}');
+            if (actions.has(parsed.action)) { action = parsed.action; origin = 'model'; }
+            else console.warn('referral_ai', 'invalid_action');
+          }
+        } else console.warn('referral_ai', 'gateway_http', response.status);
+      } catch { console.warn('referral_ai', 'request_or_parse_failed'); }
     }
     const finished = await client.rpc('finish_clinic_referral_ai', {
       p_conversation: job.conversation_id, p_claim: job.claim, p_action: action, p_origin: origin,

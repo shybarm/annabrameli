@@ -90,3 +90,9 @@ The forward phone migration records each call's existing stable hash. A new call
 - Local PostgreSQL integration, actual-handler mocks and AI-worker mocks passed. Deno check passed for both deployed Edge Functions. Production build passed 54 routes with zero failures and content-style checks passed.
 - Independent server-side phone-source test (not a real IVR event) scheduled at 12:22:38 UTC for 12:24:38 UTC. Welcome, allergy question and fixed referral all reached read status. This verified the server queue and revised deterministic question flow before AI activation.
 - At 12:35:51 UTC no new real phone request hash had been recorded after deployment, and no live AI decision had occurred. Owner has been asked to call again and reply using test details. End-to-end real-call and AI verification remain pending; do not mark them completed based on local tests or the earlier synthetic scheduling.
+
+## Real IVR verification and AI truncation fix
+
+At 12:43:05 UTC on 24 November, the owner's real key-1 call created a hashed phone event and scheduled welcome for 12:45:05. The minute-based dispatcher queued it at 12:46:00. At 12:47:36 the welcome, fixed allergy question and alternatives all had read status. Real IVR delivery is verified, but AI was fallback, not model.
+
+Read-only gateway inspection identified request 01a20d98-2a95-7187-9355-a18e23b24c96 at 12:46:47 UTC: HTTP 200, 1720ms, finish_reason=length. The configured 100 token cap was consumed by reasoning (95 of 96 reported tokens), leaving incomplete JSON. The Git fix increases the allowance to 2048, rejects truncated responses explicitly, and logs only non-sensitive error categories/status codes. No keys or integration configuration changed. Mock regression tests cover truncation; content style and production build pass (54 routes). Corrected live AI decision still requires verification.
