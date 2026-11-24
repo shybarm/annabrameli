@@ -36,3 +36,9 @@ Integration test runs actual SQL functions in isolated PostgreSQL-compatible PGl
 Checks: disabled rollout, phone eligibility, 20/2 minute persisted delay, no early dispatch, duplicate submissions/ticks/webhooks, one referral response, missing provider acceptance, opt-out, human request, staff takeover before/after welcome, pending referral cancellation, existing conversation suppression, public-function grants. This does not replace live schema, provider or end-to-end deployment checks.
 
 Production build and content-style checks also required before Git push.
+
+## Narrow deployment authorization and test isolation
+
+Owner approved on 24 November deployment of the committed migration and only notify-contact / clinic-call-whatsapp through the existing Lovable Cloud deployment path. No source edits in Lovable, no integration or secret changes. Cloud is owned by Eipok workspace in the existing account. Live receiver and staff-action definitions were compared to the preserved baseline.
+
+Rollout defaults disabled and test_mode=true. Activation requires a protected test_phone value; no personal test number is committed. Scheduling, due dispatch and follow-up all enforce this recipient gate. Only this explicit test recipient may reuse an existing conversation; opt-outs still suppress. Production enablement is a separate deliberate setting change after verification. Existing IVR behavior outside the test gate stays unchanged.

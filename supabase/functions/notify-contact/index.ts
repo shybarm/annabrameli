@@ -26,7 +26,7 @@ serve(async (req: Request): Promise<Response> => {
   }
 
   if (req.method === "GET") {
-    return new Response(JSON.stringify({ service: "notify-contact", version: "2026-10-06-attribution-v1" }), {
+    return new Response(JSON.stringify({ service: "notify-contact", version: "2026-11-24-delayed-referral-v1" }), {
       status: 200, headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   }

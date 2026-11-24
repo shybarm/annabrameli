@@ -23,6 +23,8 @@ const flow=async(phone) => (await q('select f.* from clinic_private.referral_flo
 const receive=async(phone,text,id,staff=false) => q('select receive_clinic_whatsapp($1,$2,$3,\'text\',now(),$4)',[phone,id,text,staff]);
 assert.equal(await schedule('972500000001'),'disabled');
 await db.exec('update clinic_private.referral_settings set enabled=true');
+assert.equal(await schedule('972500000001'),'disabled');
+await db.exec('update clinic_private.referral_settings set test_mode=false');
 assert.equal(await schedule('123'),'ineligible');
 for (const [phone,source,minutes] of [['972500000001','contact_form',20],['972500000002','phone_ivr',2]]) {
  assert.equal(await schedule(phone,source),'scheduled');
@@ -62,5 +64,16 @@ await receive('972500000001','אני מטפל בפנייה','staff-after-referra
 assert.equal((await q('select state from whatsapp_outbox where message_id=$1',[(await flow('972500000001')).reply_id]))[0].state,'cancelled');
 assert.equal((await q("select has_function_privilege('anon','public.schedule_clinic_referral(text,text,text)','EXECUTE') permitted"))[0].permitted,false);
 assert.equal((await q("select has_function_privilege('authenticated','public.receive_clinic_whatsapp_before_referral(text,text,text,text,timestamptz,boolean)','EXECUTE') permitted"))[0].permitted,false);
-console.log('PASS: disabled rollout, invalid numbers, 20/2-minute delays, deduplication, no early sends, source copy, one reply, opt-out, staff takeover, existing conversation suppression');
+// Test-only activation must exclude every other number, even previously scheduled work.
+await db.exec("update clinic_private.referral_settings set test_mode=true,test_phone='972500000005'");
+assert.equal(await schedule('972500000007'),'disabled');
+assert.equal(await schedule('972500000005'),'scheduled'); // Explicit test recipient may reuse their existing conversation.
+await db.exec("update clinic_private.referral_flows set due_at=now()-interval '1 minute'; select queue_due_clinic_referrals()");
+assert.equal((await flow('972500000005')).state,'awaiting_reply');
+await db.exec("update clinic_private.referral_settings set test_phone='972500000008'; update whatsapp_messages set status='accepted' where id in (select welcome_id from clinic_private.referral_flows)");
+await receive('972500000005','למבוגר','wrong-test-recipient');
+assert.equal((await flow('972500000005')).state,'cancelled');
+await db.exec("update clinic_private.referral_settings set test_phone='972500000002'");
+assert.equal(await schedule('972500000002'),'suppressed'); // Test mode never overrides an opt-out.
+console.log('PASS: test-only recipient isolation, existing test conversation, opt-out protection,  disabled rollout, invalid numbers, 20/2-minute delays, deduplication, no early sends, source copy, one reply, opt-out, staff takeover, existing conversation suppression');
 await db.close();
