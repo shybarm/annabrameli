@@ -64,3 +64,11 @@ Verified 24 November at 12:00 UTC (14:00 Jerusalem):
 - Three incoming messages during the test did not create repeated referral replies. Flow completed. Zero non-test recipients were enrolled.
 - The completed test-flow record was exported to a local verification artifact, then only that owner-specific completed flow row was removed to permit the independent IVR test. Existing conversation and all messages were preserved. No real patient records were changed.
 - Asked owner to call from the authorized number and press 1. End-to-end IVR two-minute delivery remains pending that real call; isolated handler and SQL-delay tests have passed. Do not present that remaining check as completed.
+
+## Owner-requested conversation refinement and phone investigation
+
+24 November: after the live test, owner requested a short conversation before alternatives and removal of the explicit agent/stop footer. Forward migration 20261124122500 adds an awaiting_reason step and a tracked question message. Welcome still identifies the automated clinic response, asks child/adult, then the next message asks the reason for the inquiry. Only after an additional response is the alternatives message queued. This is a bounded service flow, not medical diagnosis or an AI clinical assessment. No health details are copied into analytics. Opt-out and staff takeover continue working without the footer. Retries and replies before provider acceptance cannot skip stages or duplicate questions/referrals.
+
+Phone issue is still under investigation: live endpoint answered the harmless zd_echo challenge with HTTP 200. Read-only function-log and edge-request queries returned no entries; this does not establish that no requests happened because log availability/filtering is not confirmed. No owner phone_ivr flow exists. Provider login at my.zadarma.com is required to inspect routing read-only. Do not claim the phone issue is repaired based on endpoint availability or local tests alone. No keys, webhook configuration or routing changed.
+
+The read-only Lovable diagnostic unexpectedly created .lovable/plan.md. Removed that diagnostic-only artifact through Git; no application source changes were introduced by it.

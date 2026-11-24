@@ -18,6 +18,7 @@ for(const [src,name] of [[original,'queue_whatsapp_text'],[original,'staff_whats
 }
 await db.exec(await readFile('supabase/migrations/20261124105427_delayed_clinic_referral.sql','utf8'));
 await db.exec(await readFile('supabase/migrations/20261124111700_referral_test_gate_fail_closed.sql','utf8'));
+await db.exec(await readFile('supabase/migrations/20261124122500_referral_reason_conversation.sql','utf8'));
 const q=async(sql,params=[]) => (await db.query(sql,params)).rows;
 const schedule=async(phone,source='contact_form') => (await q('select schedule_clinic_referral($1, $2, $3) s',[phone,'בדיקה',source]))[0].s;
 const flow=async(phone) => (await q('select f.* from clinic_private.referral_flows f join whatsapp_conversations c on c.id=f.conversation_id where c.phone=$1',[phone]))[0];
@@ -37,12 +38,19 @@ assert.equal((await q('select count(*)::int n from whatsapp_messages'))[0].n,0);
 await db.exec("update clinic_private.referral_flows set due_at=now()-interval '1 minute'; select queue_due_clinic_referrals(); select queue_due_clinic_referrals();");
 assert.equal((await q('select count(*)::int n from whatsapp_messages'))[0].n,2);
 assert.match((await q('select body from whatsapp_messages where id=$1',[(await flow('972500000002')).welcome_id]))[0].body,/תודה שהתקשרתם/);
+assert.doesNotMatch((await q('select body from whatsapp_messages limit 1'))[0].body,/כתבו ״נציג״/);
 await db.exec("update whatsapp_messages set status='accepted'");
 await receive('972500000001','לילד','reply1');
 await receive('972500000001','לילד','reply1');
-await receive('972500000001','תודה','reply2');
+assert.equal((await flow('972500000001')).state,'awaiting_reason');
+await receive('972500000001','חשד לאלרגיה למזון','before-question-accepted');
+assert.equal((await flow('972500000001')).state,'awaiting_reason');
+await db.exec("update whatsapp_messages set status='accepted' where id in (select question_id from clinic_private.referral_flows)");
+await receive('972500000001','חשד לאלרגיה למזון','reply2');
+await receive('972500000001','חשד לאלרגיה למזון','reply2');
+await receive('972500000001','תודה','reply3');
 assert.equal((await flow('972500000001')).state,'completed');
-assert.equal((await q("select count(*)::int n from whatsapp_messages where direction='outgoing' and conversation_id=$1",[(await flow('972500000001')).conversation_id]))[0].n,2);
+assert.equal((await q("select count(*)::int n from whatsapp_messages where direction='outgoing' and conversation_id=$1",[(await flow('972500000001')).conversation_id]))[0].n,3);
 await receive('972500000002','הסר','stop1');
 assert.equal((await flow('972500000002')).state,'cancelled');
 assert.equal(await schedule('972500000002'),'suppressed');
@@ -65,6 +73,14 @@ await receive('972500000001','אני מטפל בפנייה','staff-after-referra
 assert.equal((await q('select state from whatsapp_outbox where message_id=$1',[(await flow('972500000001')).reply_id]))[0].state,'cancelled');
 assert.equal((await q("select has_function_privilege('anon','public.schedule_clinic_referral(text,text,text)','EXECUTE') permitted"))[0].permitted,false);
 assert.equal((await q("select has_function_privilege('authenticated','public.receive_clinic_whatsapp_before_referral(text,text,text,text,timestamptz,boolean)','EXECUTE') permitted"))[0].permitted,false);
+// A staff takeover must also cancel a queued reason question.
+await schedule('972500000010');
+await db.exec("update clinic_private.referral_flows set due_at=now()-interval '1 minute' where state='scheduled'; select queue_due_clinic_referrals(); update whatsapp_messages set status='accepted' where id in (select welcome_id from clinic_private.referral_flows)");
+await receive('972500000010','ילד','reason-stage');
+assert.equal((await flow('972500000010')).state,'awaiting_reason');
+await q("select staff_whatsapp_action($1,'pause','')",[(await flow('972500000010')).conversation_id]);
+assert.equal((await flow('972500000010')).state,'cancelled');
+assert.equal((await q('select state from whatsapp_outbox where message_id=$1',[(await flow('972500000010')).question_id]))[0].state,'cancelled');
 // Test-only activation must exclude every other number, even previously scheduled work.
 await db.exec("update clinic_private.referral_settings set test_mode=true,test_phone='972500000005'");
 assert.equal(await schedule('972500000007'),'disabled');
