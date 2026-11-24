@@ -147,4 +147,26 @@ assert.equal((await flow(aiPhone)).ai_questions.length,0);
 const referral=(await q('select body from whatsapp_messages where id=$1',[(await flow(aiPhone)).reply_id]))[0].body;
 assert.match(referral,/לכמה חודשים קדימה/);assert.match(referral,/הזמינות נקבעת מול המרפאות/);
 console.log('PASS: revised two-question intake, transparent sender, no extra AI questions, short alternatives.');
+await db.exec("CREATE FUNCTION public.claim_clinic_whatsapp_outbox() RETURNS jsonb LANGUAGE sql AS $$select null::jsonb$$");
+await db.exec(await readFile('supabase/migrations/20261124140000_referral_consent.sql','utf8'));
+for(const [suffix,answer] of [['d','לא'],['e','כן']]) {
+ assert.equal(await newCall(suffix.repeat(64)),'scheduled');
+ await db.exec("update clinic_private.referral_flows set due_at=now()-interval '1 minute' where state='scheduled'; select queue_due_clinic_referrals(); update whatsapp_messages set status='accepted'");
+ await receive(aiPhone,'ילד','consent-child-'+suffix);
+ await db.exec("update whatsapp_messages set status='accepted'");
+ await receive(aiPhone,'מזון','consent-reason-'+suffix);job=await claim();await finish(job,'finish');
+ assert.equal((await flow(aiPhone)).state,'awaiting_consent');
+ assert.equal((await flow(aiPhone)).reply_id,null);
+ await db.exec("update whatsapp_messages set status='accepted'");
+ await receive(aiPhone,'אולי','unclear-'+suffix);
+ assert.equal((await flow(aiPhone)).state,'awaiting_consent');
+ await db.exec("update whatsapp_messages set status='accepted'");
+ await receive(aiPhone,answer,'decision-'+suffix);
+ assert.equal((await flow(aiPhone)).state,'completed');
+ assert.equal(!!(await flow(aiPhone)).reply_id,answer==='כן');
+ const count=(await q('select count(*)::int n from whatsapp_messages'))[0].n;
+ await receive(aiPhone,answer,'decision-'+suffix);
+ assert.equal((await q('select count(*)::int n from whatsapp_messages'))[0].n,count);
+}
+console.log('PASS: no referral before consent, ambiguous answer clarification, no declines silently, yes sends once.');
 await db.close();
