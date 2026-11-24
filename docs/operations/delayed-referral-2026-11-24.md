@@ -2,9 +2,9 @@
 
 ## Scope and status
 
-Owner requested prospective contact-form replies after 20 minutes and IVR key 1 replies after 2 minutes, followed by alternatives when no clinic appointments are available. This is a deterministic service conversation, not a clinical assistant. No messages have been sent during development.
+Owner requested prospective contact-form replies after 20 minutes and IVR key 1 replies after 2 minutes, followed by alternatives when no clinic appointments are available. This is a deterministic service conversation, not a clinical assistant. Development tests use mocked providers. Live tests use only the explicitly authorized owner number.
 
-Prepared in Git, integration-tested locally. NOT activated or verified in production. Live frontend reports source 32b3591. Supabase connector refused read access to project ftatmcyrmeyhghgckvbj. Do not replace live receiver definitions without comparing them to this migration's preserved baseline. There is no verified Git-to-backend deployment pipeline in this checkout.
+Implemented and tested in Git. Deployed to the existing Lovable-managed Cloud project ftatmcyrmeyhghgckvbj under the owner's narrow deployment exception. Active only for the owner-designated test recipient; no patient rollout. Live frontend contains the opt-in at source 7fd60ca. Both deployed Edge Functions match 8f1a231. Database source hashes match the committed migrations, including the fail-closed follow-up fix at 55ceb4c. Real delayed delivery and incoming-response verification are recorded below as they complete. A normal Git push alone does not deploy the backend.
 
 ## Behavior
 
@@ -17,13 +17,13 @@ Prepared in Git, integration-tested locally. NOT activated or verified in produc
 - Replies before the opening, media, human-support requests, opt-outs and staff takeover suppress automation. Other messages remain in the existing staff conversation inbox. Provider webhooks are deduplicated. Uncertain sends are not retried blindly.
 - No medical inference or patient data is sent to external AI or analytics. IVR scheduled events are not reported as sent messages.
 
-## Deployment prerequisites, via Git pipeline only
+## Deployment procedure under the explicit exception
 
 1. Compare live receive_clinic_whatsapp, staff_whatsapp_action and tables with the checked-in baseline using a connection with read permission.
-2. Apply only 20261124105427_delayed_clinic_referral.sql through the repository's verified deployment process; default enabled=false. No existing cron or provider settings are overwritten.
+2. Apply only 20261124105427_delayed_clinic_referral.sql from the committed Git file through the existing Cloud database tool; default enabled=false. No existing cron or provider settings are overwritten.
 3. Deploy notify-contact and clinic-call-whatsapp from the same Git revision; deploy frontend opt-in. Existing clinic-whatsapp-bot stays unchanged.
 4. Check new cron presence, function grants, healthy existing queue dispatcher and webhook settings, using aggregate data only.
-5. Verify against an explicitly designated test number before activation. Do not use an actual patient inquiry as a test. Then activate the referral_settings singleton in a reviewed Git-managed deployment.
+5. Set test_mode=true and the owner-designated test_phone in the protected settings, then enable. Do not enroll actual patients. The allowlist is checked in scheduling, due processing and follow-up. Enabling all future patients is distinct from this test-only rollout.
 6. Verify accepted/delivered status separately; do not describe pending/accepted as delivered. Update release evidence only after these checks.
 
 Rollback: disable referral_settings; cancel pending outbox entries referencing referral_flows.welcome_id or reply_id and mark corresponding pending messages cancelled. Do not cancel invoices or staff messages. Existing contact email and phone routing remain functional. Do not blindly re-enable old conversations.
@@ -52,3 +52,15 @@ Rollout defaults disabled and test_mode=true. Activation requires a protected te
 - One marked contact test accepted by live notify-contact at 11:12:03 UTC; persisted deadline 11:32:03 UTC, exactly +20 minutes. Delivery/follow-up verification still pending at this entry. No actual patient was used.
 - Added handler tests running the actual TypeScript with mocked providers: authenticated key 1, rejected signature, key 0 unchanged, other DID ignored, phone normalization, no immediate send in delayed mode, errors, existing fallback, optional form consent and failed email behavior.
 - Additional negative test found a nullable test-recipient edge case in the follow-up gate. Separate forward migration 20261124111700 makes missing recipient settings fail closed. No editing of the already-applied migration or rewriting history.
+
+## Live contact-flow result
+
+Verified 24 November at 12:00 UTC (14:00 Jerusalem):
+
+- Live notify-contact accepted the marked owner-only inquiry at 11:12:03.642 UTC.
+- Deadline persisted at 11:32:03.642 UTC (+20 minutes). Existing scheduler queued the welcome at 11:33:00.120 UTC. No accelerated deadline or manual dispatcher invocation was used.
+- Provider accepted the welcome; its status progressed to read.
+- A real incoming WhatsApp response triggered the single referral reply at 11:34:34.014 UTC. Provider accepted it and status progressed to read.
+- Three incoming messages during the test did not create repeated referral replies. Flow completed. Zero non-test recipients were enrolled.
+- The completed test-flow record was exported to a local verification artifact, then only that owner-specific completed flow row was removed to permit the independent IVR test. Existing conversation and all messages were preserved. No real patient records were changed.
+- Asked owner to call from the authorized number and press 1. End-to-end IVR two-minute delivery remains pending that real call; isolated handler and SQL-delay tests have passed. Do not present that remaining check as completed.
