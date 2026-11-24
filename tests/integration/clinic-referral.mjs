@@ -200,4 +200,9 @@ await receive('972500000001','שלום','old-conversation');assert.notEqual((awa
 assert.equal(await schedule('972500000090'),'scheduled');
 assert.equal(await schedule('972500000091','phone_ivr'),'scheduled');
 console.log('PASS: public form/phone enabled; fresh inbound starts once; optout and existing histories protected.');
+await db.exec(await readFile('supabase/migrations/20261124161500_natural_positive_consent.sql','utf8'));
+await db.exec("update clinic_private.referral_flows set state='awaiting_consent',reply_id=null where conversation_id='"+(await flow(aiPhone)).conversation_id+"'; update whatsapp_messages set status='accepted'");
+await receive(aiPhone,'בטח','sure-consent');
+assert.equal((await flow(aiPhone)).state,'completed');assert.ok((await flow(aiPhone)).reply_id);
+console.log('PASS: natural affirmative sure sends details without redundant question.');
 await db.close();
