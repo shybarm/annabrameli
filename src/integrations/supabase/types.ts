@@ -3063,6 +3063,7 @@ export type Database = {
         Returns: boolean
       }
       check_team_invite_code: { Args: { _code: string }; Returns: boolean }
+      claim_clinic_referral_ai: { Args: never; Returns: Json }
       claim_clinic_whatsapp_outbox: { Args: never; Returns: Json }
       claim_clinical_delivery: {
         Args: { p_confirmed_phone: string; p_document: string; p_kind: string }
@@ -3123,6 +3124,15 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      finish_clinic_referral_ai: {
+        Args: {
+          p_action: string
+          p_claim: string
+          p_conversation: string
+          p_origin?: string
+        }
+        Returns: undefined
       }
       finish_clinic_whatsapp_outbox: {
         Args: { p_error: string; p_id: string; p_provider_id: string }
@@ -3374,7 +3384,12 @@ export type Database = {
         }
       }
       schedule_clinic_referral: {
-        Args: { p_name: string; p_phone: string; p_source: string }
+        Args: {
+          p_name: string
+          p_phone: string
+          p_request_id?: string
+          p_source: string
+        }
         Returns: string
       }
       staff_whatsapp_action: {
