@@ -147,7 +147,7 @@ assert.equal((await flow(aiPhone)).ai_questions.length,0);
 const referral=(await q('select body from whatsapp_messages where id=$1',[(await flow(aiPhone)).reply_id]))[0].body;
 assert.match(referral,/לכמה חודשים קדימה/);assert.match(referral,/הזמינות נקבעת מול המרפאות/);
 console.log('PASS: revised two-question intake, transparent sender, no extra AI questions, short alternatives.');
-await db.exec("CREATE FUNCTION public.claim_clinic_whatsapp_outbox() RETURNS jsonb LANGUAGE sql AS $$select null::jsonb$$");
+await db.exec("CREATE OR REPLACE FUNCTION public.claim_clinic_whatsapp_outbox() RETURNS jsonb LANGUAGE sql AS $$select null::jsonb$$");
 await db.exec(await readFile('supabase/migrations/20261124140000_referral_consent.sql','utf8'));
 for(const [suffix,answer] of [['d','לא'],['e','כן']]) {
  assert.equal(await newCall(suffix.repeat(64)),'scheduled');
@@ -293,4 +293,19 @@ await receive(aiPhone,'תודה','thanks-heart-2');assert.equal(await hearts(),1
 await q("update clinic_private.referral_flows set state='awaiting_consent',ai_message_id=reply_id where conversation_id=$1",[memoryId]);
 await receive(aiPhone,'כן תודה','thanks-consent');assert.equal((await flow(aiPhone)).state,'ai_pending');assert.equal(await hearts(),1);
 console.log('PASS: closing thanks gets one heart; duplicate/repeated thanks suppressed; yes-thanks still routes to consent.');
+// This suite mocks the unrelated delivery queue, while testing routing against SQL.
+await db.exec("CREATE OR REPLACE FUNCTION public.claim_clinic_whatsapp_outbox() RETURNS jsonb LANGUAGE sql AS $$select null::jsonb$$;");
+await db.exec(await readFile('supabase/migrations/20261124230000_contextual_closing_reactions.sql','utf8'));
+await q("update clinic_private.referral_flows set state='completed',thanks_for_flow_at=null where conversation_id=$1",[memoryId]);
+const outgoing=async()=>(await q("select count(*)::int n from whatsapp_messages where conversation_id=$1 and direction='outgoing'",[memoryId]))[0].n;
+const beforeClosing=await outgoing();
+await receive(aiPhone,'פשש','closing-wow');job=await claim();assert.deepEqual(job.asked,['closing_reply']);await finish(job,'closing_ack');
+assert.equal(await outgoing(),beforeClosing);assert.equal((await flow(aiPhone)).state,'completed');
+await receive(aiPhone,'תודה רבה','closing-thanks');job=await claim();await finish(job,'closing_thanks');
+assert.equal(await outgoing(),beforeClosing+1);
+assert.equal((await q("select reaction_target from whatsapp_messages where conversation_id=$1 and body='🙏'",[memoryId]))[0].reaction_target,'closing-thanks');
+await receive(aiPhone,'תודה רבה','closing-thanks');assert.equal(await claim(),null);
+await receive(aiPhone,'תודה','closing-thanks-again');job=await claim();await finish(job,'closing_thanks');assert.equal(await outgoing(),beforeClosing+1);
+await receive(aiPhone,'הגזמת','closing-complaint');job=await claim();await finish(job,'human');assert.equal((await flow(aiPhone)).state,'cancelled');assert.equal(await outgoing(),beforeClosing+1);
+console.log('PASS: closing exclamation stays quiet, thanks targets original message once, complaint goes to staff without generic reply.');
 await db.close();

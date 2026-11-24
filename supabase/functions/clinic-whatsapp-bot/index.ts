@@ -27,7 +27,9 @@ async function drain() {
     if (!job) return;
     let id: string | null = null;
     try {
-      const result = await provider("sendMessage", { chatId: job.phone + "@c.us", message: job.body, ...(job.typing_time === 3500 ? { typingTime: 3500 } : {}) });
+      const result = job.reaction_target
+        ? await provider("sendReaction", { chatId: job.phone + "@c.us", idMessage: job.reaction_target, reaction: "🙏" })
+        : await provider("sendMessage", { chatId: job.phone + "@c.us", message: job.body, ...(job.typing_time === 3500 ? { typingTime: 3500 } : {}) });
       if (typeof result.idMessage === "string") id = result.idMessage;
     } catch {
       /* Never blindly retry an ambiguous send. */
