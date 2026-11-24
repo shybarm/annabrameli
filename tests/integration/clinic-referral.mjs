@@ -214,4 +214,17 @@ await receive(aiPhone,'תור למבוגר עם חשד לבוטנים','owner-fr
 assert.equal((await flow(aiPhone)).source,'whatsapp_inbound');
 await db.exec('delete from clinic_private.referral_owner_test');
 console.log('PASS: expiring owner-only channel reset preserves message history and enables isolated channel verification.');
+await db.exec(await readFile('supabase/migrations/20261124180000_delayed_referral_offer.sql','utf8'));
+await q('select clinic_private.schedule_referral_offer($1)',[(await flow(aiPhone)).conversation_id]);
+assert.equal((await flow(aiPhone)).state,'offer_scheduled');
+const remaining=(Date.parse((await flow(aiPhone)).due_at)-Date.now())/1000;assert.ok(remaining>=175&&remaining<=305);
+await db.exec("update whatsapp_messages set status='accepted';select queue_due_clinic_referrals()");
+assert.equal((await flow(aiPhone)).state,'offer_scheduled');
+await q("update clinic_private.referral_flows set due_at=now()-interval '1 second' where conversation_id=$1",[(await flow(aiPhone)).conversation_id]);
+await db.exec('select queue_due_clinic_referrals()');assert.equal((await flow(aiPhone)).state,'awaiting_consent');
+const offerCount=(await q('select count(*)::int n from whatsapp_messages'))[0].n;
+await db.exec('select queue_due_clinic_referrals()');assert.equal((await q('select count(*)::int n from whatsapp_messages'))[0].n,offerCount);
+await q('select clinic_private.schedule_referral_offer($1)',[(await flow(aiPhone)).conversation_id]);
+await receive(aiPhone,'הסר','delayed-stop');assert.equal((await flow(aiPhone)).state,'cancelled');
+console.log('PASS: delayed offer waits, dispatches once, and honors stop while waiting.');
 await db.close();
