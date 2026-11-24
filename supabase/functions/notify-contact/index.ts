@@ -139,6 +139,15 @@ serve(async (req: Request): Promise<Response> => {
       );
     }
 
+    // Service reply is opt-in. Email remains successful if WhatsApp scheduling is unavailable.
+    if (body.whatsappServiceConsent === true) {
+      const normalizedPhone = phone.replace(/[^0-9]/g, "").replace(/^0/, "972");
+      const { error: queueError } = await supabase.rpc("schedule_clinic_referral", {
+        p_phone: normalizedPhone, p_name: name, p_source: "contact_form",
+      });
+      if (queueError) console.warn("contact_whatsapp_schedule_unavailable", queueError.code);
+    }
+
     return new Response(JSON.stringify({ success: true, inquiry_reference: inquiryReference }), {
       status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },

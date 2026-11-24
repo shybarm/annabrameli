@@ -83,6 +83,7 @@ const process = [
 export default function PrivateAllergistLanding() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [whatsappServiceConsent, setWhatsappServiceConsent] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -113,6 +114,7 @@ export default function PrivateAllergistLanding() {
         body: {
           name: formData.name.trim(),
           phone: formData.phone.trim(),
+          whatsappServiceConsent,
           email: formData.email.trim(),
           subject: "פנייה מעמוד אלרגולוג פרטי",
           message: formData.message.trim(),
@@ -380,6 +382,12 @@ export default function PrivateAllergistLanding() {
                 onChange={(event) => setFormData({ ...formData, message: event.target.value })}
               />
             </div>
+            <label className="flex items-start gap-3 text-sm leading-6 text-muted-foreground">
+              <input type="checkbox" checked={whatsappServiceConsent}
+                onChange={(event) => setWhatsappServiceConsent(event.target.checked)}
+                className="mt-1 h-4 w-4 shrink-0 accent-primary" />
+              <span>אפשר לחזור אליי בוואטסאפ בקשר לפנייה, גם באמצעות מענה אוטומטי של המרפאה.</span>
+            </label>
             <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
               <Send className="ml-2 h-5 w-5" />
               {isSubmitting ? "שולח..." : "שליחת פנייה"}

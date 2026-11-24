@@ -39,6 +39,7 @@ const hours = [
 const Contact = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [whatsappServiceConsent, setWhatsappServiceConsent] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -57,6 +58,7 @@ const Contact = () => {
         body: {
           name: formData.name.trim(),
           phone: formData.phone.trim(),
+          whatsappServiceConsent,
           email: formData.email.trim(),
           subject: formData.subject.trim(),
           message: formData.message.trim(),
@@ -219,7 +221,13 @@ const Contact = () => {
                       />
                     </div>
 
-                    <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
+                    <label className="flex items-start gap-3 text-sm leading-6 text-muted-foreground">
+              <input type="checkbox" checked={whatsappServiceConsent}
+                onChange={(event) => setWhatsappServiceConsent(event.target.checked)}
+                className="mt-1 h-4 w-4 shrink-0 accent-primary" />
+              <span>אפשר לחזור אליי בוואטסאפ בקשר לפנייה, גם באמצעות מענה אוטומטי של המרפאה.</span>
+            </label>
+            <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
                       {isSubmitting ? (
                         <span className="flex items-center gap-2">
                           <span className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />

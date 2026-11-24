@@ -11,7 +11,7 @@ async function measureCall(status: string) {
   const apiSecret = Deno.env.get("GA4_MEASUREMENT_API_SECRET");
   if (!apiSecret) return;
   const sessionId = Math.floor(Date.now() / 1000);
-  const names = ["clinic_ivr_press_1", status === "queued" ? "clinic_whatsapp_sent" : "clinic_whatsapp_failed"];
+  const names = ["clinic_ivr_press_1", status === "scheduled" ? "clinic_whatsapp_scheduled" : status === "queued" ? "clinic_whatsapp_sent" : "clinic_whatsapp_failed"];
   try {
     const response = await fetch(
       "https://www.google-analytics.com/mp/collect?measurement_id=G-671NNHCM9J&api_secret=" +
@@ -115,6 +115,18 @@ Deno.serve(async (request) => {
 
   const hash = hex(await crypto.subtle.digest("SHA-256", encode(JSON.stringify([caller, did, start]))));
   const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+  // New delayed flow is activated in the database only after deployment verification.
+  if (selected) {
+    const { data: scheduled, error: scheduleError } = await db.rpc("schedule_clinic_referral", {
+      p_phone: phone, p_name: "", p_source: "phone_ivr",
+    });
+    if (scheduleError && scheduleError.code !== "PGRST202") return new Response(null, { status: 503 });
+    if (["scheduled", "duplicate", "suppressed"].includes(scheduled)) {
+      if (scheduled === "scheduled") await measureCall("scheduled");
+      return confirmed();
+    }
+    if (!scheduleError && scheduled !== "disabled") return Response.json({ redirect: "100" });
+  }
   const table = db.from("clinic_call_messages");
   const { error } = await table.insert({ call_hash: hash });
   if (error?.code === "23505") {
