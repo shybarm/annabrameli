@@ -206,6 +206,7 @@ await receive(aiPhone,'בטח','sure-consent');
 assert.equal((await flow(aiPhone)).state,'completed');assert.ok((await flow(aiPhone)).reply_id);
 console.log('PASS: natural affirmative sure sends details without redundant question.');
 await db.exec(await readFile('supabase/migrations/20261124170000_owner_channel_verification.sql','utf8'));
+await q('update clinic_private.referral_settings set test_phone=$1',[aiPhone]);
 await db.exec("insert into clinic_private.referral_owner_test(source) values ('contact_form'); delete from clinic_private.referral_flows where conversation_id='"+(await flow(aiPhone)).conversation_id+"'");
 assert.equal(await schedule(aiPhone),'scheduled');
 await db.exec("delete from clinic_private.referral_flows where conversation_id='"+(await flow(aiPhone)).conversation_id+"'; update clinic_private.referral_owner_test set source='whatsapp_inbound',prepared_at=now()");
