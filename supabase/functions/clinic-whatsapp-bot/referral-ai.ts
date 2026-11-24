@@ -32,8 +32,8 @@ export async function processReferralAi(client: RpcClient) {
         const response = await fetch(endpoint, {
           method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
           signal: AbortSignal.timeout(15000),
-          body: JSON.stringify({ model: googleEnabled ? 'gemini-2.5-flash-lite' : 'google/gemini-2.5-flash', temperature: 0.1, max_tokens: 2048,
-            ...(googleEnabled ? { reasoning_effort: 'none' } : {}),
+          body: JSON.stringify({ model: googleEnabled ? 'gemini-3.1-flash-lite' : 'google/gemini-2.5-flash', temperature: 0.1, max_tokens: 2048,
+            ...(googleEnabled ? { reasoning_effort: 'minimal' } : {}),
             response_format: { type: 'json_object' },
             messages: [{ role: 'system', content: (consentReply ? consentPrompt : phoneOpening ? phonePrompt : prompt) + memoryRules }, { role: 'user', content: JSON.stringify({
               asked: job.asked, previous_conversation: !consentReply && Array.isArray(job.history) ? job.history.slice(-8).map((m: any) => ({
