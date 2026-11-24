@@ -308,4 +308,15 @@ await receive(aiPhone,'תודה רבה','closing-thanks');assert.equal(await cla
 await receive(aiPhone,'תודה','closing-thanks-again');job=await claim();await finish(job,'closing_thanks');assert.equal(await outgoing(),beforeClosing+1);
 await receive(aiPhone,'הגזמת','closing-complaint');job=await claim();await finish(job,'human');assert.equal((await flow(aiPhone)).state,'cancelled');assert.equal(await outgoing(),beforeClosing+1);
 console.log('PASS: closing exclamation stays quiet, thanks targets original message once, complaint goes to staff without generic reply.');
+await db.exec(await readFile('supabase/migrations/20261124233000_contextual_service_wording.sql','utf8'));
+async function contextual(stage,action) {
+ await q("update clinic_private.referral_flows set state='ai_pending',ai_questions=$2,ai_claim=null where conversation_id=$1",[memoryId,[stage]]);
+ const j=await claim();assert.ok(j);await finish(j,action);
+ return (await q("select body from whatsapp_messages where conversation_id=$1 and direction='outgoing' order by created_at desc limit 1",[memoryId]))[0].body;
+}
+assert.match(await contextual('phone_opening','reason_ack'),/סליחה על החזרה/);assert.equal((await flow(aiPhone)).state,'awaiting_ai_reply');
+assert.match(await contextual('consent_reply','availability'),/אפשר לשלוח/);assert.equal((await flow(aiPhone)).state,'awaiting_consent');
+assert.match(await contextual('closing_reply','apology'),/התשובה לא התאימה/);assert.equal((await flow(aiPhone)).state,'cancelled');
+assert.match(await contextual('phone_opening','human'),/אין לי מידע מספיק/);assert.equal((await flow(aiPhone)).state,'cancelled');
+console.log('PASS: contextual wording preserves missing-field/consent stages and routes complaints or unknown questions to staff.');
 await db.close();
