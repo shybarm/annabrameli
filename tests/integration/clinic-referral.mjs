@@ -19,6 +19,8 @@ for(const [src,name] of [[original,'queue_whatsapp_text'],[original,'staff_whats
 await db.exec(await readFile('supabase/migrations/20261124105427_delayed_clinic_referral.sql','utf8'));
 await db.exec(await readFile('supabase/migrations/20261124111700_referral_test_gate_fail_closed.sql','utf8'));
 await db.exec(await readFile('supabase/migrations/20261124122500_referral_reason_conversation.sql','utf8'));
+await db.exec(await readFile('supabase/migrations/20261124123500_bounded_referral_ai.sql','utf8'));
+await db.exec(await readFile('supabase/migrations/20261124124000_referral_new_phone_call.sql','utf8'));
 const q=async(sql,params=[]) => (await db.query(sql,params)).rows;
 const schedule=async(phone,source='contact_form') => (await q('select schedule_clinic_referral($1, $2, $3) s',[phone,'בדיקה',source]))[0].s;
 const flow=async(phone) => (await q('select f.* from clinic_private.referral_flows f join whatsapp_conversations c on c.id=f.conversation_id where c.phone=$1',[phone]))[0];
@@ -71,7 +73,7 @@ assert.equal((await flow('972500000006')).state,'cancelled');
 assert.equal((await q('select state from whatsapp_outbox where message_id=$1',[(await flow('972500000006')).welcome_id]))[0].state,'cancelled');
 await receive('972500000001','אני מטפל בפנייה','staff-after-referral',true);
 assert.equal((await q('select state from whatsapp_outbox where message_id=$1',[(await flow('972500000001')).reply_id]))[0].state,'cancelled');
-assert.equal((await q("select has_function_privilege('anon','public.schedule_clinic_referral(text,text,text)','EXECUTE') permitted"))[0].permitted,false);
+assert.equal((await q("select has_function_privilege('anon','public.schedule_clinic_referral(text,text,text,text)','EXECUTE') permitted"))[0].permitted,false);
 assert.equal((await q("select has_function_privilege('authenticated','public.receive_clinic_whatsapp_before_referral(text,text,text,text,timestamptz,boolean)','EXECUTE') permitted"))[0].permitted,false);
 // A staff takeover must also cancel a queued reason question.
 await schedule('972500000010');
@@ -97,5 +99,36 @@ await receive('972500000009','לילד','test-recipient-removed');
 assert.equal((await flow('972500000009')).state,'cancelled');
 await db.exec("update clinic_private.referral_settings set test_phone='972500000002'");
 assert.equal(await schedule('972500000002'),'suppressed'); // Test mode never overrides an opt-out.
+// AI turns are leased, bounded, and cannot publish after staff takeover.
+await db.exec("update clinic_private.referral_settings set test_mode=false,ai_enabled=true");
+const aiPhone='972500000020';
+await schedule(aiPhone);
+await db.exec("update clinic_private.referral_flows set due_at=now()-interval '1 minute' where state='scheduled'; select queue_due_clinic_referrals(); update whatsapp_messages set status='accepted' where id in (select welcome_id from clinic_private.referral_flows)");
+await receive(aiPhone,'ילד','ai-child');
+await db.exec("update whatsapp_messages set status='accepted' where id in (select question_id from clinic_private.referral_flows)");
+await receive(aiPhone,'אלרגיה למזון','ai-reason');
+const claim=async()=>(await q('select claim_clinic_referral_ai() j'))[0].j;
+const finish=async(job,action)=>q('select finish_clinic_referral_ai($1,$2,$3,$4)',[job.conversation_id,job.claim,action,'model']);
+let job=await claim();assert.equal((await flow(aiPhone)).state,'ai_pending');assert.equal(await claim(),null);
+assert.ok(job.messages.some(m=>m.content==='אלרגיה למזון'));assert.equal(job.phone,undefined);
+await finish(job,'known');await finish(job,'known');
+assert.deepEqual((await flow(aiPhone)).ai_questions,['known']);
+await db.exec("update whatsapp_messages set status='accepted' where id in (select ai_message_id from clinic_private.referral_flows)");
+await receive(aiPhone,'זה חשד שעדיין לא נבדק','ai-answer1');job=await claim();await finish(job,'age');
+await db.exec("update whatsapp_messages set status='accepted' where id in (select ai_message_id from clinic_private.referral_flows)");
+await receive(aiPhone,'בן 6','ai-answer2');job=await claim();await finish(job,'goal');
+assert.equal((await flow(aiPhone)).state,'completed');assert.deepEqual((await flow(aiPhone)).ai_questions,['known','age']);
+const callId='a'.repeat(64);
+const newCall=async(id)=>(await q('select schedule_clinic_referral($1,$2,$3,$4) s',[aiPhone,'בדיקה','phone_ivr',id]))[0].s;
+assert.equal(await newCall(callId),'scheduled');assert.equal(await newCall(callId),'duplicate');
+assert.equal((Date.parse((await flow(aiPhone)).due_at)-Date.parse((await flow(aiPhone)).created_at))/60000,2);
+assert.equal((await q('select count(*)::int n from clinic_private.referral_flow_history'))[0].n,1);
+await db.exec("update clinic_private.referral_flows set state='completed' where conversation_id='"+(await flow(aiPhone)).conversation_id+"'");
+assert.equal(await newCall('b'.repeat(64)),'scheduled');assert.equal(await newCall(callId),'duplicate'); // Old call retry stays duplicate after a later call.
+await db.exec("update clinic_private.referral_flows set due_at=now()-interval '1 minute' where state='scheduled'; select queue_due_clinic_referrals(); update whatsapp_messages set status='accepted' where id in (select welcome_id from clinic_private.referral_flows)");
+await receive(aiPhone,'ילד','ai-child2');await db.exec("update whatsapp_messages set status='accepted' where id in (select question_id from clinic_private.referral_flows)");
+await receive(aiPhone,'מזון','ai-reason2');job=await claim();await q("select staff_whatsapp_action($1,'pause','')",[job.conversation_id]);await finish(job,'known');
+assert.equal((await flow(aiPhone)).state,'cancelled');
+assert.equal((await q("select has_function_privilege('anon','public.claim_clinic_referral_ai()','EXECUTE') permitted"))[0].permitted,false);
 console.log('PASS: test-only recipient isolation, existing test conversation, opt-out protection,  disabled rollout, invalid numbers, 20/2-minute delays, deduplication, no early sends, source copy, one reply, opt-out, staff takeover, existing conversation suppression');
 await db.close();

@@ -118,7 +118,7 @@ Deno.serve(async (request) => {
   // New delayed flow is activated in the database only after deployment verification.
   if (selected) {
     const { data: scheduled, error: scheduleError } = await db.rpc("schedule_clinic_referral", {
-      p_phone: phone, p_name: "", p_source: "phone_ivr",
+      p_phone: phone, p_name: "", p_source: "phone_ivr", p_request_id: hash,
     });
     if (scheduleError && scheduleError.code !== "PGRST202") return new Response(null, { status: 503 });
     if (["scheduled", "duplicate", "suppressed"].includes(scheduled)) {

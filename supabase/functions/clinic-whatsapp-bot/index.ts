@@ -1,3 +1,4 @@
+import { processReferralAi } from "./referral-ai.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.49.4";
 
 const base = "https://7107.api.greenapi.com/waInstance710722808546/";
@@ -78,6 +79,7 @@ Deno.serve(async (request) => {
           .eq("singleton", true);
       }
       if (config.setup_state === "existing_webhook_requires_review") return new Response(null, { status: 409 });
+      await processReferralAi(client);
       await drain();
       return new Response(null, { status: 200 });
     }
@@ -145,7 +147,7 @@ Deno.serve(async (request) => {
         .update({ last_incoming_at: new Date().toISOString() })
         .eq("singleton", true);
       // Outbound sends have their own durable queue; provider retries cannot duplicate replies.
-      const background = drain().catch(() => console.warn("whatsapp_bot", "queue_pending"));
+      const background = processReferralAi(client).then(() => drain()).catch(() => console.warn("whatsapp_bot", "queue_pending"));
       const runtime = (globalThis as unknown as { EdgeRuntime?: { waitUntil: (p: Promise<void>) => void } })
         .EdgeRuntime;
       if (runtime) runtime.waitUntil(background);
