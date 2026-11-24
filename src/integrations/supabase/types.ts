@@ -3065,6 +3065,7 @@ export type Database = {
       check_team_invite_code: { Args: { _code: string }; Returns: boolean }
       claim_clinic_referral_ai: { Args: never; Returns: Json }
       claim_clinic_whatsapp_outbox: { Args: never; Returns: Json }
+      claim_clinic_whatsapp_outbox_before_typing: { Args: never; Returns: Json }
       claim_clinical_delivery: {
         Args: { p_confirmed_phone: string; p_document: string; p_kind: string }
         Returns: Json
