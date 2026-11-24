@@ -42,3 +42,13 @@ Production build and content-style checks also required before Git push.
 Owner approved on 24 November deployment of the committed migration and only notify-contact / clinic-call-whatsapp through the existing Lovable Cloud deployment path. No source edits in Lovable, no integration or secret changes. Cloud is owned by Eipok workspace in the existing account. Live receiver and staff-action definitions were compared to the preserved baseline.
 
 Rollout defaults disabled and test_mode=true. Activation requires a protected test_phone value; no personal test number is committed. Scheduling, due dispatch and follow-up all enforce this recipient gate. Only this explicit test recipient may reuse an existing conversation; opt-outs still suppress. Production enablement is a separate deliberate setting change after verification. Existing IVR behavior outside the test gate stays unchanged.
+
+## Deployment evidence
+
+- Git source `8f1a2310b2b87c45e0912e672ed04b8448a3a335` pushed to connected main. Applied exact committed migration through the explicitly authorized Cloud database operation and recorded migration version 20261124105427.
+- Lovable deployment request `umsg_01m86m0mr1e0d83gea4sp2e3ap` deployed only notify-contact and clinic-call-whatsapp. Agent verified source equality to 8f1a231. Automatic database type generation produced 48ac9fa; reviewed diff consists solely of 20 generated type lines. No integration/secret changes.
+- Live notify-contact GET reports `2026-11-24-delayed-referral-v1`. Live /contact reports frontend source 7fd60ca and contains the optional WhatsApp consent. No additional frontend publication needed for this change.
+- Protected rollout enabled with test_mode=true and only owner's designated test number. Database checks: one test flow, zero non-test flows, public RPC execution denied, original WhatsApp setup remains configured, new minute job succeeds.
+- One marked contact test accepted by live notify-contact at 11:12:03 UTC; persisted deadline 11:32:03 UTC, exactly +20 minutes. Delivery/follow-up verification still pending at this entry. No actual patient was used.
+- Added handler tests running the actual TypeScript with mocked providers: authenticated key 1, rejected signature, key 0 unchanged, other DID ignored, phone normalization, no immediate send in delayed mode, errors, existing fallback, optional form consent and failed email behavior.
+- Additional negative test found a nullable test-recipient edge case in the follow-up gate. Separate forward migration 20261124111700 makes missing recipient settings fail closed. No editing of the already-applied migration or rewriting history.

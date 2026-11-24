@@ -17,6 +17,7 @@ for(const [src,name] of [[original,'queue_whatsapp_text'],[original,'staff_whats
  await db.exec(src.match(re)[0]);
 }
 await db.exec(await readFile('supabase/migrations/20261124105427_delayed_clinic_referral.sql','utf8'));
+await db.exec(await readFile('supabase/migrations/20261124111700_referral_test_gate_fail_closed.sql','utf8'));
 const q=async(sql,params=[]) => (await db.query(sql,params)).rows;
 const schedule=async(phone,source='contact_form') => (await q('select schedule_clinic_referral($1, $2, $3) s',[phone,'בדיקה',source]))[0].s;
 const flow=async(phone) => (await q('select f.* from clinic_private.referral_flows f join whatsapp_conversations c on c.id=f.conversation_id where c.phone=$1',[phone]))[0];
@@ -73,6 +74,11 @@ assert.equal((await flow('972500000005')).state,'awaiting_reply');
 await db.exec("update clinic_private.referral_settings set test_phone='972500000008'; update whatsapp_messages set status='accepted' where id in (select welcome_id from clinic_private.referral_flows)");
 await receive('972500000005','למבוגר','wrong-test-recipient');
 assert.equal((await flow('972500000005')).state,'cancelled');
+await db.exec("update clinic_private.referral_settings set test_phone='972500000009'");
+await schedule('972500000009');
+await db.exec("update clinic_private.referral_flows set due_at=now()-interval '1 minute' where state='scheduled'; select queue_due_clinic_referrals(); update whatsapp_messages set status='accepted' where id in (select welcome_id from clinic_private.referral_flows); update clinic_private.referral_settings set test_phone=null");
+await receive('972500000009','לילד','test-recipient-removed');
+assert.equal((await flow('972500000009')).state,'cancelled');
 await db.exec("update clinic_private.referral_settings set test_phone='972500000002'");
 assert.equal(await schedule('972500000002'),'suppressed'); // Test mode never overrides an opt-out.
 console.log('PASS: test-only recipient isolation, existing test conversation, opt-out protection,  disabled rollout, invalid numbers, 20/2-minute delays, deduplication, no early sends, source copy, one reply, opt-out, staff takeover, existing conversation suppression');
