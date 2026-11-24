@@ -169,4 +169,16 @@ for(const [suffix,answer] of [['d','לא'],['e','כן']]) {
  assert.equal((await q('select count(*)::int n from whatsapp_messages'))[0].n,count);
 }
 console.log('PASS: no referral before consent, ambiguous answer clarification, no declines silently, yes sends once.');
+await db.exec(await readFile('supabase/migrations/20261124143000_referral_copy_correction.sql','utf8'));
+await db.exec(await readFile('supabase/migrations/20261124150000_phone_opening_intent.sql','utf8'));
+assert.equal(await newCall('f'.repeat(64)),'scheduled');
+await db.exec("update clinic_private.referral_flows set due_at=now()-interval '1 minute' where state='scheduled'; select queue_due_clinic_referrals(); update whatsapp_messages set status='accepted'");
+assert.equal((await flow(aiPhone)).state,'awaiting_ai_reply');
+assert.match((await q('select body from whatsapp_messages where id=$1',[(await flow(aiPhone)).welcome_id]))[0].body,/ראיתי שהתקשרת/);
+await receive(aiPhone,'רוצה תור','intent1');job=await claim();await finish(job,'who');
+assert.equal((await flow(aiPhone)).state,'awaiting_ai_reply');
+await db.exec("update whatsapp_messages set status='accepted'");
+await receive(aiPhone,'ילד עם חשד למזון','intent2');job=await claim();await finish(job,'finish');
+assert.equal((await flow(aiPhone)).state,'awaiting_consent');assert.equal((await flow(aiPhone)).reply_id,null);
+console.log('PASS: phone greeting, intent routing, known information skips questions, consent remains required.');
 await db.close();
