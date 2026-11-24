@@ -246,4 +246,12 @@ for(const action of ['consent_clarify','consent_no','consent_yes']) {
  assert.equal(!!(await flow(aiPhone)).reply_id,action==='consent_yes');
 }
 console.log('PASS: AI consent yes sends details; no and ambiguity never send; context reaches classifier.');
+await db.exec(await readFile('supabase/migrations/20261124200000_fresh_call_restarts_intake.sql','utf8'));
+await q("update clinic_private.referral_flows set state='awaiting_consent' where conversation_id=$1",[(await flow(aiPhone)).conversation_id]);
+assert.equal(await newCall('1'.repeat(64)),'scheduled');
+assert.equal(await newCall('1'.repeat(64)),'duplicate');
+assert.equal((await flow(aiPhone)).state,'scheduled');
+assert.equal(await newCall('2'.repeat(64)),'scheduled');
+assert.equal(await newCall('1'.repeat(64)),'duplicate');
+console.log('PASS: fresh calls restart waiting flows; repeated and old call events cannot duplicate or reset.');
 await db.close();
