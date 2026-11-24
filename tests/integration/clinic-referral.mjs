@@ -189,4 +189,15 @@ await db.exec("update clinic_private.referral_flows set state='awaiting_consent'
 await receive(aiPhone,'כמה עולה ביקור?','question-consent');
 assert.equal((await flow(aiPhone)).state,'cancelled');assert.equal((await flow(aiPhone)).reply_id,null);
 console.log('PASS: yes-thanks accepted; unrelated question pauses rather than sending referrals.');
+await db.exec(await readFile('supabase/migrations/20261124160000_public_referral_channels.sql','utf8'));
+await receive('972500000088','תור לילד עם אלרגיה לחלב','new-inbound');
+assert.equal((await flow('972500000088')).state,'ai_pending');
+assert.equal((await flow('972500000088')).source,'whatsapp_inbound');
+await receive('972500000088','תור לילד עם אלרגיה לחלב','new-inbound');
+assert.equal((await q("select count(*)::int n from clinic_private.referral_flows where source='whatsapp_inbound'"))[0].n,1);
+await receive('972500000089','הסר','new-stop');assert.equal(await flow('972500000089'),undefined);
+await receive('972500000001','שלום','old-conversation');assert.notEqual((await flow('972500000001')).source,'whatsapp_inbound');
+assert.equal(await schedule('972500000090'),'scheduled');
+assert.equal(await schedule('972500000091','phone_ivr'),'scheduled');
+console.log('PASS: public form/phone enabled; fresh inbound starts once; optout and existing histories protected.');
 await db.close();
