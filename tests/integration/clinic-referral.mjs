@@ -319,4 +319,11 @@ assert.match(await contextual('consent_reply','availability'),/אפשר לשלו
 assert.match(await contextual('closing_reply','apology'),/התשובה לא התאימה/);assert.equal((await flow(aiPhone)).state,'cancelled');
 assert.match(await contextual('phone_opening','human'),/אין לי מידע מספיק/);assert.equal((await flow(aiPhone)).state,'cancelled');
 console.log('PASS: contextual wording preserves missing-field/consent stages and routes complaints or unknown questions to staff.');
+await db.exec(await readFile('supabase/migrations/20261125080000_silent_unresolved_replies.sql','utf8'));
+const beforeSilent=await outgoing();
+await contextual('phone_opening','human');assert.equal(await outgoing(),beforeSilent);assert.equal((await flow(aiPhone)).state,'cancelled');
+assert.equal((await q('select unread from whatsapp_conversations where id=$1',[memoryId]))[0].unread,true);
+await contextual('consent_reply','human');assert.equal(await outgoing(),beforeSilent);
+assert.equal(await contextual('closing_reply','apology'),'סליחה, התשובה לא התאימה למה שכתבת.');
+console.log('PASS: unresolved replies silently pause intake/consent and stay unread; apology has no handoff boilerplate.');
 await db.close();
