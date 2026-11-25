@@ -102,7 +102,7 @@ serve(async (req: Request): Promise<Response> => {
             ${row("דוא\u201dל", email)}
             ${row("מרפאה", clinicName)}
             ${row("הערות", notes)}
-            ${row("תאריך", new Date().toLocaleString("he-IL"))}
+            ${row("תאריך", new Date().toLocaleString("he-IL", { timeZone: "Asia/Jerusalem" }))}
           </div>
           <p style="color:#9ca3af; font-size:12px; margin-top:24px;">הודעה זו נשלחה אוטומטית מאתר המרפאה.</p>
         </div>

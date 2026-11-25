@@ -326,4 +326,28 @@ assert.equal((await q('select unread from whatsapp_conversations where id=$1',[m
 await contextual('consent_reply','human');assert.equal(await outgoing(),beforeSilent);
 assert.equal(await contextual('closing_reply','apology'),'סליחה, התשובה לא התאימה למה שכתבת.');
 console.log('PASS: unresolved replies silently pause intake/consent and stay unread; apology has no handoff boilerplate.');
+await db.exec('alter table whatsapp_conversations add column clinic_id uuid');
+await db.exec(await readFile('supabase/migrations/20261125210000_waitlist_referral_service_hours.sql','utf8'));
+for(const [input,expected] of [
+ ['2026-11-25 20:31+02','2026-11-26 08:30'],['2026-11-26 20:31+02','2026-11-29 08:30'],
+ ['2026-11-27 10:00+02','2026-11-29 08:30'],['2026-11-28 19:00+02','2026-11-29 08:30'],
+ ['2026-11-29 07:00+02','2026-11-29 08:30'],['2026-11-29 12:00+02','2026-11-29 12:00'],
+ ['2026-07-02 21:00+03','2026-07-05 08:30']]) {
+ assert.equal((await q("select to_char(clinic_private.next_service_reply($1) at time zone 'Asia/Jerusalem','YYYY-MM-DD HH24:MI') t",[input]))[0].t,expected);
+}
+const wp='972500000099';
+await q("select register_whatsapp_waitlist('בדיקה',$1,null,true)",[wp]);
+const wf=await flow(wp);assert.equal(wf.source,'waitlist_form');assert.equal(wf.state,'scheduled');
+await q("select register_whatsapp_waitlist('בדיקה',$1,null,true)",[wp]);assert.equal((await flow(wp)).created_at.toISOString(),wf.created_at.toISOString());
+assert.equal((await q('select count(*)::int n from whatsapp_messages where conversation_id=$1',[wf.conversation_id]))[0].n,0);
+// Isolate dispatch from wall clock only after testing real timezone rules above.
+await db.exec("create or replace function clinic_private.next_service_reply(at_time timestamptz) returns timestamptz language sql immutable as $$select at_time$$");
+await q("update clinic_private.referral_flows set due_at=now()-interval '1 minute' where conversation_id=$1",[wf.conversation_id]);
+await db.exec('select queue_due_clinic_referrals(); select queue_due_clinic_referrals();');
+assert.equal((await flow(wp)).state,'awaiting_consent');
+assert.equal((await q('select count(*)::int n from whatsapp_messages where conversation_id=$1',[wf.conversation_id]))[0].n,1);
+await db.exec("update whatsapp_messages set status='accepted'");
+await receive(wp,'בשמחה','waitlist-yes');job=await claim();assert.ok(job);await finish(job,'consent_yes');assert.equal((await flow(wp)).state,'completed');
+await q("select register_whatsapp_waitlist('בדיקה',$1,null,true)",[wp]);assert.equal((await flow(wp)).state,'completed');
+console.log('PASS: Jerusalem overnight/weekend/DST scheduling, waitlist one combined welcome, consent and existing conversation suppression.');
 await db.close();
