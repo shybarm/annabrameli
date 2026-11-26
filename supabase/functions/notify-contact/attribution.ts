@@ -12,5 +12,9 @@ export function readLeadAttribution(body: Record<string, unknown>) {
     if (/^https?:$/.test(url.protocol)) referrer = url.origin;
   } catch { /* no valid referrer */ }
   // A known form source is authoritative; the landing path is descriptive, not a validated source of truth.
-  return { source, labels, referrer };
+  const landing = typeof raw.landing_page === "string" && /^\/[a-z0-9/_-]{0,150}$/i.test(raw.landing_page)
+    && !/^\/(admin|intake|portal|auth|verify|patient)/i.test(raw.landing_page) ? raw.landing_page : "";
+  const classification = labels.utm_source && labels.utm_medium ? "tagged"
+    : referrer ? "referrer_only" : "unknown";
+  return { source, labels, referrer, landing_page: landing, classification };
 }

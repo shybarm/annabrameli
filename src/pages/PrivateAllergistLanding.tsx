@@ -85,6 +85,7 @@ export default function PrivateAllergistLanding() {
   const { toast } = useToast();
   const [whatsappServiceConsent, setWhatsappServiceConsent] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [inquiryReference] = useState(() => crypto.randomUUID());
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -112,6 +113,7 @@ export default function PrivateAllergistLanding() {
     try {
       const { error } = await supabase.functions.invoke("notify-contact", {
         body: {
+          inquiry_reference: inquiryReference,
           name: formData.name.trim(),
           phone: formData.phone.trim(),
           whatsappServiceConsent,

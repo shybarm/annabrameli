@@ -41,6 +41,7 @@ const Contact = () => {
   const navigate = useNavigate();
   const [whatsappServiceConsent, setWhatsappServiceConsent] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [inquiryReference] = useState(() => crypto.randomUUID());
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -56,6 +57,7 @@ const Contact = () => {
     try {
       const { error } = await supabase.functions.invoke('notify-contact', {
         body: {
+          inquiry_reference: inquiryReference,
           name: formData.name.trim(),
           phone: formData.phone.trim(),
           whatsappServiceConsent,

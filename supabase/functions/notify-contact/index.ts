@@ -26,7 +26,7 @@ serve(async (req: Request): Promise<Response> => {
   }
 
   if (req.method === "GET") {
-    return new Response(JSON.stringify({ service: "notify-contact", version: "2026-11-24-delayed-referral-v1" }), {
+    return new Response(JSON.stringify({ service: "notify-contact", version: "2026-11-26-contact-receipts-v1" }), {
       status: 200, headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   }
@@ -44,7 +44,11 @@ serve(async (req: Request): Promise<Response> => {
     const subject = clean(body.subject, 200);
     const message = clean(body.message, 2000);
     const attribution = readLeadAttribution(body);
-    const inquiryReference = crypto.randomUUID();
+    const suppliedReference = clean(body.inquiry_reference, 36);
+    if (suppliedReference && !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(suppliedReference)) {
+      return new Response(JSON.stringify({ error: "Invalid inquiry reference" }), { status: 400, headers: corsHeaders });
+    }
+    const inquiryReference = suppliedReference || crypto.randomUUID();
 
     if (!name || !phone) {
       return new Response(JSON.stringify({ error: "Missing name or phone" }), {
@@ -93,6 +97,31 @@ serve(async (req: Request): Promise<Response> => {
       new Set([notificationEmail, COPY_TO_EMAIL].filter(Boolean)),
     );
 
+    // An atomic primary-key insert grants a single sender permission. Retries never
+    // resend an ambiguous attempt, even after a worker crash or provider timeout.
+    const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(JSON.stringify({
+      name, phone, email, subject, message, attribution, recipients,
+      whatsappServiceConsent: body.whatsappServiceConsent === true,
+    })));
+    const payloadHash = Array.from(new Uint8Array(digest), x => x.toString(16).padStart(2, "0")).join("");
+    const { data: receipt, error: receiptError } = await supabase.from("contact_inquiry_receipts")
+      .insert({ inquiry_reference: inquiryReference, payload_hash: payloadHash,
+        form_source: attribution.source, attribution }).select("created_at").single();
+    if (receiptError) {
+      if (receiptError.code !== "23505") throw new Error("Receipt storage unavailable");
+      const { data: existing, error: lookupError } = await supabase.from("contact_inquiry_receipts")
+        .select("payload_hash,email_status").eq("inquiry_reference", inquiryReference).single();
+      if (lookupError || !existing) throw new Error("Receipt lookup unavailable");
+      if (existing.payload_hash !== payloadHash) {
+        return new Response(JSON.stringify({ error: "Inquiry reference already used" }), { status: 409, headers: corsHeaders });
+      }
+      const accepted = existing.email_status === "accepted";
+      return new Response(JSON.stringify(accepted
+        ? { success: true, inquiry_reference: inquiryReference, duplicate: true }
+        : { error: "Submission requires delivery verification", inquiry_reference: inquiryReference }),
+        { status: accepted ? 200 : 409, headers: { "Content-Type": "application/json", ...corsHeaders } });
+    }
+
     const row = (label: string, value: string) =>
       value
         ? `<p style="margin:5px 0;color:#4b5563;"><strong>${label}:</strong> ${
@@ -114,14 +143,16 @@ serve(async (req: Request): Promise<Response> => {
             ${row("דוא\u201dל", email)}
             ${row("נושא", subject)}
             ${row("פרטים", message)}
-            ${row("תאריך", new Date().toLocaleString("he-IL", { timeZone: "Asia/Jerusalem" }))}
+            ${row("תאריך", new Date(receipt.created_at).toLocaleString("he-IL", { timeZone: "Asia/Jerusalem" }))}
             ${row("מזהה פנייה", inquiryReference)}
             ${row("טופס מקור", attribution.source)}
             ${row("מקור מתויג", attribution.labels.utm_source || "לא מתויג")}
             ${row("ערוץ", attribution.labels.utm_medium || "")}
             ${row("קמפיין", attribution.labels.utm_campaign || "")}
             ${row("קישור מתויג", attribution.labels.utm_content || "")}
-            ${row("אתר מפנה", attribution.referrer)}
+            ${row("אתר מפנה", attribution.referrer || "לא ידוע")}
+            ${row("עמוד כניסה", attribution.landing_page)}
+            ${row("רמת תיעוד המקור", attribution.classification === "tagged" ? "מקור מתויג" : attribution.classification === "referrer_only" ? "אתר מפנה בלבד, ערוץ לא ידוע" : "מקור לא ידוע")}
           </div>
           <p style="color:#9ca3af; font-size:12px; margin-top:24px;">הודעה זו נשלחה אוטומטית מאתר המרפאה.</p>
         </div>
@@ -129,7 +160,9 @@ serve(async (req: Request): Promise<Response> => {
     });
 
     if (emailResponse.error) {
-      console.error("notify-contact resend error:", emailResponse.error);
+      await supabase.from("contact_inquiry_receipts").update({ email_status: "failed" })
+        .eq("inquiry_reference", inquiryReference);
+      console.error("notify-contact resend rejected");
       return new Response(
         JSON.stringify({ error: "Email send failed", details: emailResponse.error }),
         {
@@ -138,6 +171,12 @@ serve(async (req: Request): Promise<Response> => {
         },
       );
     }
+
+    const { error: acceptedError } = await supabase.from("contact_inquiry_receipts").update({
+      email_status: "accepted", provider_message_id: emailResponse.data?.id ?? null,
+      accepted_at: new Date().toISOString(),
+    }).eq("inquiry_reference", inquiryReference);
+    if (acceptedError) throw new Error("Email accepted; receipt reconciliation required");
 
     // Service reply is opt-in. Email remains successful if WhatsApp scheduling is unavailable.
     if (body.whatsappServiceConsent === true) {
