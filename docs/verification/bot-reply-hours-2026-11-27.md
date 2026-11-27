@@ -33,4 +33,16 @@ Live checks confirmed the active-flow guard and outbox hours gate. Thursday 22:5
 
 The owner-only closed-notice function was invoked twice; exactly one notice was created and the provider marked it delivered. A transaction-scoped IVR test using the owner number verified scheduling, repeat-event suppression, and preservation after an incoming greeting. The transaction was rolled back and zero temporary event records remained. The owner's previous completed waitlist flow was preserved.
 
-Limits: morning continuation was verified with deterministic local database tests and production time calculations, not by waiting for a real morning delivery. No new real phone call or browser form submission was performed in this deployment check.
+Initial check limitation (resolved below): morning continuation had only been simulated. No new real phone call or browser form submission was performed in the deployment check.
+
+## Real morning continuation, 2026-11-27
+
+With explicit owner authorization, prepared only the owner conversation at offer_scheduled (paused before the referral offer), due Friday 08:30 Israel time, with Thursday carry-over context. Archived the previous completed flow to the existing flow-history table before preparing the fixture. This was an owner test fixture, not a real Thursday incoming call. No code, configuration, connection, or patient conversation was changed.
+
+Observed the existing production scheduler through the due time:
+- Before 08:30: no outgoing continuation.
+- 08:30:00.102 Israel: exactly one referral offer created.
+- By 08:30:56 Israel: provider status delivered.
+- 08:32:18 Israel: still exactly one outgoing message, zero pending/processing owner messages, state awaiting_consent.
+
+The flow continued with the referral offer and did not repeat the greeting, recipient-age question, or allergy question. Doctor details were not sent; the bot is waiting for consent. This confirms real scheduled dispatch and delivery for the prepared paused state, not every possible conversation state.
